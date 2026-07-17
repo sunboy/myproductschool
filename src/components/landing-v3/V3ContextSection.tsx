@@ -90,13 +90,11 @@ export function V3ContextSection() {
                 <div className="context-logo-group" aria-hidden={loopIndex > 0} key={loopIndex}>
                   {companies.map((company) => (
                     <div className="context-logo" key={`${loopIndex}-${company.name}`}>
+                      {/* Letter-mark tiles are banned (spec §8): companies without a
+                          real logo asset render as plain text. */}
                       {company.src ? (
                         <Image src={company.src} alt="" aria-hidden="true" width={24} height={24} />
-                      ) : (
-                        <span className="context-logo-initial" aria-hidden="true">
-                          {company.name.slice(0, 1)}
-                        </span>
-                      )}
+                      ) : null}
                       <span>{company.name}</span>
                     </div>
                   ))}

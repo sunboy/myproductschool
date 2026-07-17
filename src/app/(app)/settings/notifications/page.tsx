@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { ArrowLeft, Check, Loader2 } from 'lucide-react'
 import type { NotificationPreferenceKey } from '@/lib/notifications/unsubscribe'
 
 type NotificationPrefs = Record<NotificationPreferenceKey, boolean>
@@ -26,49 +27,41 @@ const PREF_ITEMS: Array<{
   key: NotificationPreferenceKey
   label: string
   detail: string
-  icon: string
 }> = [
   {
     key: 'streak_reminder',
     label: 'Streak reminders',
     detail: 'Daily email when an active streak is waiting.',
-    icon: 'local_fire_department',
   },
   {
     key: 'weekly_digest',
     label: 'Weekly digest',
     detail: 'Sunday summary with XP, progress, and the next drill.',
-    icon: 'summarize',
   },
   {
     key: 'completion_email',
     label: 'Completion emails',
     detail: 'Challenge results and feedback links after practice.',
-    icon: 'task_alt',
   },
   {
     key: 'lifecycle',
     label: 'Reminders and tips',
     detail: 'Nudges to pick up something you started and ways to get more out of HackProduct.',
-    icon: 'lightbulb',
   },
   {
     key: 'discussion_reply',
     label: 'Discussion replies',
     detail: 'Replies on threads you started or joined.',
-    icon: 'forum',
   },
   {
     key: 'billing_alerts',
     label: 'Billing alerts',
     detail: 'Receipts, failed payments, and subscription changes.',
-    icon: 'receipt_long',
   },
   {
     key: 'marketing',
     label: 'Product updates',
     detail: 'Launches, announcements, and occasional offers.',
-    icon: 'campaign',
   },
   // push_enabled intentionally omitted: browser push is not implemented yet.
   // The DB column and preference key stay so the toggle can return with the feature.
@@ -140,54 +133,44 @@ export default function NotificationSettingsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-[980px] px-4 py-7 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Link href="/settings" className="inline-flex items-center gap-1.5 text-xs font-label font-bold text-on-surface-variant transition-colors hover:text-on-surface">
-            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-            Settings
-          </Link>
-          <p className="mt-5 font-label text-[11px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant">
-            Notifications
-          </p>
-          <h1 className="mt-1 font-headline text-[32px] font-bold leading-none text-on-surface" style={{ letterSpacing: '-0.03em' }}>
-            Email preferences
-          </h1>
-        </div>
-
-        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-outline-variant/50 bg-surface-container-low px-3 py-1.5 text-xs font-label font-bold text-on-surface-variant">
-          <span className="material-symbols-outlined text-[15px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
-            tune
-          </span>
-          Saves automatically
-        </div>
+    <main className="mx-auto max-w-[880px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+      {/* ── Light page header ─────────────────────────────────────────────── */}
+      <div className="mb-5">
+        <Link href="/settings" className="inline-flex items-center gap-1.5 font-label text-xs font-bold text-ink-secondary transition-colors hover:text-ink-strong">
+          <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
+          Settings
+        </Link>
+        <p className="mt-4 font-label text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
+          Notifications
+        </p>
+        <h1 className="mt-1 font-headline text-[28px] font-semibold leading-[1.2] tracking-[-0.02em] text-ink-strong">
+          Email preferences
+        </h1>
+        <p className="mt-1 font-body text-[13.5px] text-ink-secondary">
+          Changes save automatically.
+        </p>
       </div>
 
-      <section className="rounded-[22px] border border-outline-variant/45 bg-surface-container-low p-5 shadow-[0_18px_50px_rgba(56,47,33,0.07)]">
-        <div className="divide-y divide-outline-variant/45 overflow-hidden rounded-2xl border border-outline-variant/45 bg-background/70">
+      <section className="rounded-2xl border border-hairline bg-card-bright">
+        <div className="divide-y divide-hairline">
           {PREF_ITEMS.map(item => {
             const checked = prefs[item.key]
             const saving = savingKey === item.key
             const saved = savedKey === item.key
 
             return (
-              <div key={item.key} className="flex items-center justify-between gap-4 px-4 py-4">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className="material-symbols-outlined flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-surface-container text-[20px] text-on-surface-variant">
-                    {item.icon}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-label font-bold text-on-surface">{item.label}</p>
-                    <p className="mt-0.5 text-sm font-body text-on-surface-variant">{item.detail}</p>
-                  </div>
+              <div key={item.key} className="flex items-center justify-between gap-4 px-5 py-3">
+                <div className="min-w-0">
+                  <p className="font-body text-[13.5px] font-bold text-ink-strong">{item.label}</p>
+                  <p className="mt-0.5 font-body text-[13px] text-ink-secondary">{item.detail}</p>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-3">
+                <div className="flex shrink-0 items-center gap-2.5">
                   {saving && (
-                    <span className="material-symbols-outlined animate-spin text-[17px] text-on-surface-variant">progress_activity</span>
+                    <Loader2 className="h-4 w-4 animate-spin text-ink-muted" strokeWidth={1.8} />
                   )}
                   {saved && !saving && (
-                    <span className="material-symbols-outlined text-[17px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                    <Check className="h-4 w-4 text-forest-600" strokeWidth={2.2} />
                   )}
                   <button
                     type="button"
@@ -195,11 +178,11 @@ export default function NotificationSettingsPage() {
                     aria-checked={checked}
                     disabled={loading || savingKey !== null}
                     onClick={() => updatePreference(item.key, !checked)}
-                    className={`relative h-7 w-12 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${checked ? 'bg-primary' : 'bg-outline-variant'}`}
+                    className={`relative h-6 w-11 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${checked ? 'bg-forest-800' : 'bg-hairline'}`}
                     aria-label={`${checked ? 'Disable' : 'Enable'} ${item.label}`}
                   >
                     <span
-                      className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`}
+                      className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`}
                     />
                   </button>
                 </div>
@@ -207,14 +190,14 @@ export default function NotificationSettingsPage() {
             )
           })}
         </div>
-
-        {loading && (
-          <p className="mt-4 text-sm font-body text-on-surface-variant">Loading notification preferences.</p>
-        )}
-        {error && (
-          <p className="mt-4 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{error}</p>
-        )}
       </section>
+
+      {loading && (
+        <p className="mt-4 font-body text-sm text-ink-secondary">Loading notification preferences.</p>
+      )}
+      {error && (
+        <p className="mt-4 rounded-[8px] bg-error/10 px-3 py-2 font-body text-sm text-error">{error}</p>
+      )}
     </main>
   )
 }

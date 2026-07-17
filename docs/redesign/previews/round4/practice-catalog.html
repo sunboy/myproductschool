@@ -1,0 +1,1213 @@
+<meta charset="UTF-8" />
+<title>Practice Catalog · Round 4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --forest-950: #052316;
+    --forest-900: #0b2d1c;
+    --forest-850: #103020;
+    --forest-800: #123b20;
+    --forest-700: #1d432b;
+    --forest-600: #266235;
+    --forest-500: #1c5a34;
+    --mint-glow: #a3ebb1;
+
+    --page: #faf8f4;
+    --card: #fffdfa;
+    --card-alt: #fcfcfc;
+    --sidebar: #ffffff;
+    --hairline: #ece7dd;
+    --ink: #20291f;
+    --ink-secondary: #5b685e;
+    --ink-muted: #a6a9a4;
+
+    --flame: #fe9817;
+    --gold: #fdb41f;
+    --amber-soft: #fef3e2;
+    --amber-deep: #fce2c2;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: 'Nunito Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .serif { font-family: 'Literata', serif; }
+  a { text-decoration: none; color: inherit; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .shell {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---------------- SIDEBAR ---------------- */
+  .sidebar {
+    width: 232px;
+    flex-shrink: 0;
+    background: var(--sidebar);
+    border-right: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .logo-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 0 8px;
+  }
+  .logo-word {
+    font-family: 'Literata', serif;
+    font-weight: 700;
+    font-size: 19px;
+    color: var(--ink);
+  }
+  .logo-spark { color: var(--forest-600); font-size: 14px; }
+  .tagline {
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    padding: 2px 8px 20px;
+  }
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-secondary);
+  }
+  .nav-item svg { flex-shrink: 0; opacity: 0.75; }
+  .nav-item.active {
+    background: var(--forest-800);
+    color: #fff;
+  }
+  .nav-item.active svg { opacity: 1; }
+  .nav-item .live-pill {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    background: var(--amber-soft);
+    color: var(--flame);
+    border: 1.5px solid var(--flame);
+    padding: 1.5px 6px;
+    border-radius: 999px;
+  }
+
+  .sidebar-spacer { flex: 1; }
+
+  .hatch-card {
+    background: var(--card-alt);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 12px;
+  }
+  .hatch-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hatch-card-top img {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--forest-900);
+    padding: 3px;
+  }
+  .hatch-card-name { font-size: 13.5px; font-weight: 800; color: var(--ink); }
+  .hatch-card-role { font-size: 11px; color: var(--ink-muted); }
+  .hatch-card-chevron { margin-left: auto; color: var(--ink-muted); }
+  .hatch-card-msg {
+    font-size: 12px;
+    color: var(--ink-secondary);
+    margin-top: 10px;
+    line-height: 1.45;
+  }
+
+  .pro-card {
+    background: linear-gradient(155deg, var(--forest-900), var(--forest-800));
+    border-radius: 12px;
+    padding: 16px 14px;
+    margin-top: 12px;
+    color: #fff;
+  }
+  .pro-title { font-family: 'Nunito Sans', sans-serif; font-weight: 700; font-size: 15px; margin: 0 0 4px; }
+  .pro-blurb { font-size: 11.5px; color: rgba(255,255,255,0.72); line-height: 1.4; margin-bottom: 12px; }
+  .pro-blurb .nums { font-variant-numeric: tabular-nums; }
+  .pro-btn {
+    width: 100%;
+    background: #fff;
+    color: var(--forest-900);
+    border: none;
+    border-radius: 8px;
+    padding: 9px 0;
+    font-size: 12.5px;
+    font-weight: 800;
+  }
+
+  .help-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 12px 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-secondary);
+    margin-top: 8px;
+  }
+  .help-row svg { opacity: 0.7; }
+  .help-row .chev { margin-left: auto; }
+
+  /* ---------------- MAIN ---------------- */
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 20px 28px 48px;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 16px;
+  }
+  .search-pill {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-alt);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 10px 16px;
+    color: var(--ink-muted);
+    font-size: 13.5px;
+  }
+  .search-pill svg { flex-shrink: 0; }
+  .search-pill .kbd {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    background: #fff;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 1px 6px;
+  }
+  .top-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+  .stat-cluster {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-cluster .num { font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .stat-cluster .lbl { font-size: 10.5px; color: var(--ink-muted); font-weight: 700; }
+  .stat-text { display: flex; flex-direction: column; line-height: 1.15; }
+  .bell {
+    color: var(--ink-secondary);
+    display: flex;
+  }
+  .avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .avatar-row img {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .avatar-name { font-size: 13.5px; font-weight: 700; }
+
+  /* ---------------- HERO ---------------- */
+  .hero {
+    position: relative;
+    background: linear-gradient(120deg, var(--forest-950) 0%, var(--forest-850) 55%, var(--forest-800) 100%);
+    border-radius: 16px;
+    padding: 20px 26px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    color: #fff;
+    min-height: 0;
+    max-height: 264px;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 60%;
+    height: 180%;
+    background: radial-gradient(circle, rgba(30,71,45,0.55) 0%, transparent 70%);
+    pointer-events: none;
+    border-radius: 16px;
+    clip-path: inset(0 round 16px);
+  }
+  .hero-left { position: relative; z-index: 1; flex: 1.15; min-width: 0; }
+  .hero-welcome {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.88);
+    margin-bottom: 8px;
+  }
+  .hero-title {
+    font-family: 'Literata', serif;
+    font-weight: 600;
+    font-size: 25px;
+    line-height: 1.22;
+    color: #f9faf5;
+    margin: 0 0 13px;
+    max-width: 460px;
+  }
+  .hl-word {
+    display: inline-block;
+    background: #ffe95c;
+    color: var(--forest-950);
+    transform: rotate(-1deg);
+    padding: 0 .14em;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .hero-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 7px 13px;
+  }
+  .hero-chip-text { line-height: 1.2; }
+  .hero-chip-label { font-size: 10.5px; color: rgba(255,255,255,0.65); font-weight: 700; }
+  .hero-chip-value { font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+  .hero-pose {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    align-self: flex-end;
+    margin-top: -34px;
+  }
+  .hero-pose img {
+    height: 148px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 14px 28px rgba(0,0,0,0.35));
+  }
+
+  .hatch-says {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 178px;
+    background: #dff3d0;
+    border: 1px solid #b9d9a6;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .hatch-says-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--forest-900);
+    margin-bottom: 5px;
+  }
+  .hatch-says-msg {
+    font-size: 11.5px;
+    line-height: 1.35;
+    color: var(--forest-800);
+    margin-bottom: 10px;
+  }
+  .hatch-says-btn {
+    width: 100%;
+    background: var(--forest-600);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 0;
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+  .hero-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    z-index: 2;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+
+  /* ---------------- DISCIPLINE TABS ---------------- */
+  .tabs-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    border-bottom: 1px solid var(--hairline);
+    margin-top: 20px;
+    padding: 0 2px;
+    overflow-x: auto;
+  }
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 2px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    border-bottom: 2.5px solid transparent;
+    white-space: nowrap;
+  }
+  .tab svg { opacity: 0.8; }
+  .tab.active {
+    color: var(--forest-700);
+    border-bottom-color: var(--forest-700);
+  }
+  .tab.active svg { opacity: 1; color: var(--forest-600); }
+  .tab .chev { opacity: 0.6; }
+
+  /* ---------------- FILTER ROW ---------------- */
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card-alt);
+    border: 1.5px solid var(--ink-secondary);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink-secondary);
+  }
+  .filter-chip svg { opacity: 0.6; }
+  .filter-chip.pill-level {
+    background: #fff;
+  }
+  .filter-spacer { flex: 1; }
+  .sort-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1.5px solid var(--ink-secondary);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink-secondary);
+  }
+
+  /* ---------------- SECTION HEADERS ---------------- */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 22px 0 4px;
+  }
+  .section-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .section-sub {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    margin-top: 3px;
+  }
+  .view-all {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--forest-700);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  /* ---------------- FEATURED CARDS ---------------- */
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-top: 12px;
+  }
+  .feat-card {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .feat-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .feat-bookmark {
+    color: var(--ink-muted);
+    display: flex;
+  }
+  .feat-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .feat-title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.32;
+    color: var(--ink);
+    margin-bottom: 10px;
+    min-height: 40px;
+  }
+  .feat-meta {
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-bottom: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .feat-reason {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--ink-secondary);
+    border-top: 1px solid var(--hairline);
+    padding-top: 10px;
+    margin-bottom: 14px;
+    min-height: 44px;
+  }
+  .feat-btn {
+    margin-top: auto;
+    background: var(--forest-950);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 0;
+    font-size: 13px;
+    font-weight: 700;
+    width: 100%;
+  }
+
+  /* ---------------- SHELVES ---------------- */
+  .shelves-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .shelf-card {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .shelf-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+  .shelf-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15.5px;
+  }
+  .shelf-viewall {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--forest-700);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+  }
+  .shelf-sub {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+  .shelf-sub--teal {
+    color: #2c5f58;
+    background: #d9efec;
+    border: 1px solid #a9d4cf;
+    border-radius: 8px;
+    padding: 6px 9px;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .shelf-list {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .shelf-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 2px 8px 2px;
+    min-height: 44px;
+  }
+  .shelf-row + .shelf-row {
+    border-top: 1px solid var(--hairline);
+  }
+  .shelf-row-brand {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--brand, var(--ink-secondary));
+    margin-bottom: 1px;
+  }
+  .shelf-row-text { min-width: 0; flex: 1; }
+  .shelf-row-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .shelf-row-meta {
+    font-size: 10.5px;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-top: 1px;
+  }
+  .shelf-row-right {
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .shelf-chip {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--forest-700);
+    background: #e8f4de;
+    border: 1.5px solid var(--forest-700);
+    border-radius: 999px;
+    padding: 2.5px 7px;
+    white-space: nowrap;
+  }
+  .shelf-num {
+    width: 18px;
+    color: var(--ink-muted);
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    font-family: 'Nunito Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+  }
+  .shelf-count {
+    font-size: 10.5px;
+    color: var(--ink-muted);
+    font-weight: 500;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .shelf-progress-track {
+    width: 44px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--hairline);
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .shelf-progress-fill {
+    height: 100%;
+    background: var(--forest-600);
+    border-radius: 999px;
+  }
+  .plan-state {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.4px solid #c8c2b6;
+    flex-shrink: 0;
+  }
+  .plan-state--current {
+    width: 12px;
+    height: 12px;
+    border: none;
+    background: var(--forest-600);
+    box-shadow: 0 0 0 3px #e8f4de;
+  }
+
+  /* ---------------- CONTEXTUAL FOOTER STRIP ---------------- */
+  .protip-strip {
+    margin-top: 22px;
+    background: var(--amber-soft);
+    border: 1px solid var(--amber-deep);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .protip-text { font-size: 13px; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
+  .protip-text b { color: var(--ink); font-weight: 800; }
+  .protip-spacer { flex: 1; }
+  .protip-btn {
+    background: var(--forest-950);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 12.5px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  /* ---------------- MINI PILL ---------------- */
+  .round-pill {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    background: var(--forest-950);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(5,35,22,0.3);
+    z-index: 50;
+  }
+
+  /* ---------------- RESPONSIVE ---------------- */
+  @media (max-width: 1180px) {
+    .featured-grid { grid-template-columns: repeat(2, 1fr); }
+    .shelves-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .hero { flex-direction: column; align-items: flex-start; }
+    .hero-pose { display: none; }
+    .hatch-says { width: 100%; }
+  }
+  @media (max-width: 640px) {
+    .main { padding: 14px 12px 40px; }
+    .topbar { flex-wrap: wrap; gap: 10px; }
+    .top-right { gap: 14px; }
+    .featured-grid { grid-template-columns: 1fr; }
+    .shelves-grid { grid-template-columns: 1fr; }
+    .hero-title { font-size: 24px; }
+    .filter-row { gap: 8px; }
+  }
+</style>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo-row">
+        <span class="logo-word">HackProduct</span>
+        <span class="logo-spark">✦</span>
+      </div>
+      <div class="tagline">A practice gym for product thinking</div>
+
+      <nav class="nav">
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+          Home
+        </a>
+        <a class="nav-item active" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v5h5"/></svg>
+          Explore / Practice
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c1-3.3 3.6-5 6.5-5s5.5 1.7 6.5 5"/></svg>
+          Interviews
+          <span class="live-pill">Live</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          Study Plans
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          Progress
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.8"/><circle cx="17" cy="9" r="2.3"/><path d="M3.5 19c.7-2.9 2.9-4.5 5.5-4.5s4.8 1.6 5.5 4.5"/><path d="M14.5 15c2.1.2 3.7 1.7 4.2 4"/></svg>
+          Community
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          Analytics
+        </a>
+      </nav>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="hatch-card">
+      <div class="hatch-card-top">
+        <img src="../../../../public/hatch/avatar.png" alt="Hatch" />
+        <div>
+          <div class="hatch-card-name">Hatch</div>
+          <div class="hatch-card-role">AI Coach</div>
+        </div>
+        <span class="hatch-card-chevron">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+      </div>
+      <div class="hatch-card-msg">You're on step 3 of 5 in Week 2 of the Product Sense Sprint.</div>
+    </div>
+
+    <div class="pro-card">
+      <div class="pro-title">Go Pro</div>
+      <div class="pro-blurb"><span class="nums">12 mock interviews and 80 challenges a month</span>, plus full analytics.</div>
+      <button class="pro-btn">Upgrade to Pro</button>
+    </div>
+
+    <div class="help-row">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.6 2.3c-.8.5-1.1.9-1.1 1.8" stroke-linecap="round"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>
+      Help &amp; Support
+      <span class="chev">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="search-pill">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        Search challenges, topics, companies...
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="top-right">
+        <div class="stat-cluster">
+          <div class="stat-text">
+            <span class="num">12-day streak</span>
+            <span class="lbl">Best 36</span>
+          </div>
+        </div>
+        <div class="stat-cluster">
+          <div class="stat-text">
+            <span class="num">9,860 XP</span>
+            <span class="lbl">Level 12</span>
+          </div>
+        </div>
+        <span class="bell">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
+        </span>
+        <div class="avatar-row">
+          <img src="../../../../public/hatch/avatar.png" alt="Sandeep" />
+          <span class="avatar-name">Sandeep</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero">
+      <span class="hero-close">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </span>
+      <div class="hero-left">
+        <div class="hero-welcome">Welcome back, Sandeep</div>
+        <h1 class="hero-title"><span class="hl-word">Frame</span> is your weakest move at 41%. The picks below work on it.</h1>
+        <div class="hero-stats">
+          <div class="hero-chip">
+            <div class="hero-chip-text">
+              <div class="hero-chip-label">Weekly goal</div>
+              <div class="hero-chip-value">3 of 5 sessions</div>
+            </div>
+          </div>
+          <div class="hero-chip">
+            <div class="hero-chip-text">
+              <div class="hero-chip-label">Weakest move</div>
+              <div class="hero-chip-value">Frame Lv2 · 41%</div>
+            </div>
+          </div>
+          <div class="hero-chip">
+            <div class="hero-chip-text">
+              <div class="hero-chip-label">Current plan</div>
+              <div class="hero-chip-value">Product Sense Sprint · Week 2</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-pose">
+        <img src="../../../../public/hatch/pose-thinking.png" alt="Hatch thinking" />
+      </div>
+
+      <div class="hatch-says">
+        <div class="hatch-says-label">Hatch says</div>
+        <div class="hatch-says-msg">You paused the AI-Native App rep mid-Frame. Twelve minutes finishes the step.</div>
+        <button class="hatch-says-btn">Resume Frame step</button>
+      </div>
+    </section>
+
+    <!-- DISCIPLINE TABS -->
+    <div class="tabs-row">
+      <div class="tab active">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        All
+      </div>
+      <div class="tab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="4" height="10" rx="1"/><rect x="10" y="5" width="4" height="15" rx="1"/><rect x="17" y="13" width="4" height="7" rx="1"/></svg>
+        System Design
+      </div>
+      <div class="tab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3Z"/></svg>
+        Product Sense
+      </div>
+      <div class="tab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5V12c0 1.7 3.6 3 8 3s8-1.3 8-3V5.5"/><path d="M4 12v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V12"/></svg>
+        SQL
+      </div>
+      <div class="tab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><path d="M13 16.5h7M16.5 13v7"/></svg>
+        Data Modeling
+      </div>
+      <div class="tab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
+        AI / ML
+      </div>
+      <div class="tab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c1-3.3 3.6-5 6.5-5s5.5 1.7 6.5 5"/></svg>
+        Behavioral
+      </div>
+      <div class="tab">
+        More
+        <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <!-- FILTER ROW -->
+    <div class="filter-row">
+      <div class="filter-chip">All Levels
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="filter-chip">All Durations
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="filter-chip">All Types
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="filter-chip">Companies
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="filter-chip pill-level">Beginner</div>
+      <div class="filter-chip pill-level">Intermediate</div>
+      <div class="filter-chip pill-level">Advanced</div>
+      <div class="filter-spacer"></div>
+      <div class="sort-chip">Sort: Recommended
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <!-- FEATURED PRACTICE -->
+    <div class="section-head">
+      <div>
+        <div class="section-title">Picked for you</div>
+        <div class="section-sub">Chosen from your Frame gap, your interview loop, and this week's attempts</div>
+      </div>
+      <a class="view-all" href="#">View all
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="featured-grid">
+      <!-- Card 1: System Design -->
+      <div class="feat-card">
+        <div class="feat-top">
+          <div class="feat-eyebrow" style="color:#266235;">SYSTEM DESIGN</div>
+          <span class="feat-bookmark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg>
+          </span>
+        </div>
+        <div class="feat-title">Design the Cart Backend for a Food Delivery Marketplace</div>
+        <div class="feat-meta">Medium · 60 min</div>
+        <div class="feat-reason">Asked in real Uber loops. Your mock interview is in 18 days.</div>
+        <button class="feat-btn">Start now</button>
+      </div>
+
+      <!-- Card 2: Product Sense -->
+      <div class="feat-card">
+        <div class="feat-top">
+          <div class="feat-eyebrow" style="color:#2778f2;">PRODUCT SENSE</div>
+          <span class="feat-bookmark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg>
+          </span>
+        </div>
+        <div class="feat-title">Your ML Model is 95% Accurate But Users Hate It</div>
+        <div class="feat-meta">Easy · 30 min</div>
+        <div class="feat-reason">A Frame-heavy scenario, and Frame is your weakest move at 41%.</div>
+        <button class="feat-btn">Start now</button>
+      </div>
+
+      <!-- Card 3: Data Modeling -->
+      <div class="feat-card">
+        <div class="feat-top">
+          <div class="feat-eyebrow" style="color:#9d61c8;">DATA MODELING</div>
+          <span class="feat-bookmark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg>
+          </span>
+        </div>
+        <div class="feat-title">Design an ML Platform Portal for Experiments &amp; Models</div>
+        <div class="feat-meta">Medium · 40 min</div>
+        <div class="feat-reason">Asked in real Netflix interviews. Round 2 of your loop is next.</div>
+        <button class="feat-btn">Start now</button>
+      </div>
+
+      <!-- Card 4: SQL -->
+      <div class="feat-card">
+        <div class="feat-top">
+          <div class="feat-eyebrow" style="color:#fe9817;">SQL</div>
+          <span class="feat-bookmark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg>
+          </span>
+        </div>
+        <div class="feat-title">Airbnb: Premium City Listings</div>
+        <div class="feat-meta">Intermediate · 35 min</div>
+        <div class="feat-reason">The most-attempted challenge this week, with 9 attempts.</div>
+        <button class="feat-btn">Start now</button>
+      </div>
+    </div>
+
+    <!-- FOUR SHELVES -->
+    <div class="shelves-grid">
+      <!-- Study Plans -->
+      <div class="shelf-card">
+        <div class="shelf-head">
+          <div class="shelf-title">Study Plans</div>
+          <a class="shelf-viewall" href="#">View all
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="shelf-sub">Your plan resumes at Week 2, step 3 of 5</div>
+        <div class="shelf-list">
+          <div class="shelf-row">
+            <span class="plan-state plan-state--current" aria-hidden="true"></span>
+            <div class="shelf-row-text">
+              <div class="shelf-row-title">Product Sense Sprint</div>
+              <div class="shelf-row-meta">Enrolled · Week 2</div>
+            </div>
+            <div class="shelf-row-right">
+              <span class="shelf-count">45%</span>
+              <div class="shelf-progress-track"><div class="shelf-progress-fill" style="width:45%;"></div></div>
+            </div>
+          </div>
+          <div class="shelf-row">
+            <span class="plan-state" aria-hidden="true"></span>
+            <div class="shelf-row-text">
+              <div class="shelf-row-title">DevOps → Product Impact</div>
+              <div class="shelf-row-meta">12 challenges</div>
+            </div>
+          </div>
+          <div class="shelf-row">
+            <span class="plan-state" aria-hidden="true"></span>
+            <div class="shelf-row-text">
+              <div class="shelf-row-title">Founding Engineer</div>
+              <div class="shelf-row-meta">12 challenges</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Autopsies -->
+      <div class="shelf-card">
+        <div class="shelf-head">
+          <div class="shelf-title">Product Autopsies</div>
+          <a class="shelf-viewall" href="#">View all
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="shelf-sub">Real products taken apart, stage by stage</div>
+        <div class="shelf-list">
+          <div class="shelf-row">
+            <div class="shelf-row-text">
+              <div class="shelf-row-brand" style="--brand:#e50914;">Netflix</div>
+              <div class="shelf-row-title">Decoded</div>
+              <div class="shelf-row-meta">9 stages · 20 min read</div>
+            </div>
+          </div>
+          <div class="shelf-row">
+            <div class="shelf-row-text">
+              <div class="shelf-row-brand" style="--brand:#611f69;">Slack</div>
+              <div class="shelf-row-title">Decoded</div>
+              <div class="shelf-row-meta">20 min read</div>
+            </div>
+          </div>
+          <div class="shelf-row">
+            <div class="shelf-row-text">
+              <div class="shelf-row-brand" style="--brand:#06c167;">Uber Eats</div>
+              <div class="shelf-row-title">Decoded</div>
+              <div class="shelf-row-meta">20 min read</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Interviews -->
+      <div class="shelf-card">
+        <div class="shelf-head">
+          <div class="shelf-title">Real Interviews</div>
+          <a class="shelf-viewall" href="#">View all
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="shelf-sub">Questions asked in real loops, grouped by company</div>
+        <div class="shelf-list">
+          <div class="shelf-row">
+            <div class="shelf-row-text">
+              <div class="shelf-row-brand" style="--brand:#10a37f;">OpenAI</div>
+              <div class="shelf-row-meta">System design</div>
+            </div>
+            <div class="shelf-row-right">
+              <span class="shelf-chip">3 Qs</span>
+            </div>
+          </div>
+          <div class="shelf-row">
+            <div class="shelf-row-text">
+              <div class="shelf-row-brand" style="--brand:#e50914;">Netflix</div>
+              <div class="shelf-row-meta">System design</div>
+            </div>
+            <div class="shelf-row-right">
+              <span class="shelf-chip">3 Qs</span>
+            </div>
+          </div>
+          <div class="shelf-row">
+            <div class="shelf-row-text">
+              <div class="shelf-row-brand" style="--brand:#1a1a1a;">Uber</div>
+              <div class="shelf-row-meta">System design</div>
+            </div>
+            <div class="shelf-row-right">
+              <span class="shelf-chip">1 Q</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trending This Week -->
+      <div class="shelf-card">
+        <div class="shelf-head">
+          <div class="shelf-title">Trending</div>
+          <a class="shelf-viewall" href="#">Leaderboard
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="shelf-sub shelf-sub--teal">Most attempts in the last 7 days</div>
+        <div class="shelf-list">
+          <div class="shelf-row">
+            <div class="shelf-num">1</div>
+            <div class="shelf-row-text">
+              <div class="shelf-row-title">Airbnb: Premium City Listings</div>
+              <div class="shelf-row-meta">SQL</div>
+            </div>
+            <div class="shelf-row-right"><span class="shelf-count">9 attempts</span></div>
+          </div>
+          <div class="shelf-row">
+            <div class="shelf-num">2</div>
+            <div class="shelf-row-text">
+              <div class="shelf-row-title">Binary Search</div>
+              <div class="shelf-row-meta">Algorithm</div>
+            </div>
+            <div class="shelf-row-right"><span class="shelf-count">9 attempts</span></div>
+          </div>
+          <div class="shelf-row">
+            <div class="shelf-num">3</div>
+            <div class="shelf-row-text">
+              <div class="shelf-row-title">Building a Podcast Product for Netflix</div>
+              <div class="shelf-row-meta">Product sense</div>
+            </div>
+            <div class="shelf-row-right"><span class="shelf-count">7 attempts</span></div>
+          </div>
+          <div class="shelf-row">
+            <div class="shelf-num">4</div>
+            <div class="shelf-row-text">
+              <div class="shelf-row-title">Design a Circuit Breaker</div>
+              <div class="shelf-row-meta">System design</div>
+            </div>
+            <div class="shelf-row-right"><span class="shelf-count">7 attempts</span></div>
+          </div>
+          <div class="shelf-row">
+            <div class="shelf-num">5</div>
+            <div class="shelf-row-text">
+              <div class="shelf-row-title">Template Gallery Launch</div>
+              <div class="shelf-row-meta">Product sense</div>
+            </div>
+            <div class="shelf-row-right"><span class="shelf-count">6 attempts</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTEXTUAL FOOTER STRIP -->
+    <div class="protip-strip">
+      <div class="protip-text"><b>Interview loop.</b> You're paused at round 2 of 3, and your interview is in 18 days.</div>
+      <div class="protip-spacer"></div>
+      <button class="protip-btn">Resume round 2</button>
+    </div>
+  </main>
+</div>
+
+<div class="round-pill">Round 4 · Practice Catalog</div>

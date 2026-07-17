@@ -45,21 +45,21 @@ export function WorkspacePanel({
   const hasHeader = Boolean(icon || title || actions || headerExtra)
   return (
     <div
-      className={`rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden flex flex-col min-h-0 ${className}`}
+      className={`rounded-xl border border-hairline bg-card-bright overflow-hidden flex flex-col min-h-0 ${className}`}
       style={style}
     >
       {hasHeader && (
-        <div className="h-9 shrink-0 px-3 flex items-center gap-2 border-b border-outline-variant bg-surface-container-low">
+        <div className="h-10 shrink-0 px-3.5 flex items-center gap-2 border-b border-hairline bg-card-bright">
           {icon && (
             <span
-              className="material-symbols-outlined text-[15px] text-on-surface-variant"
+              className="material-symbols-outlined text-[15px] text-ink-secondary"
               style={{ fontVariationSettings: "'FILL' 0, 'wght' 500" }}
             >
               {icon}
             </span>
           )}
           {title && (
-            <span className="font-label text-[11px] font-bold uppercase tracking-[0.07em] text-on-surface-variant whitespace-nowrap">
+            <span className="font-label text-[12.5px] font-bold text-ink-strong whitespace-nowrap">
               {title}
             </span>
           )}

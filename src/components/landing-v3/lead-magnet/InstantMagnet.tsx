@@ -21,7 +21,7 @@ import {
   EVENT_MAGNET_GATE_SUBMITTED,
   EVENT_MAGNET_CTA_CLICKED,
 } from '@/lib/posthog/events'
-import { HatchGlyph, type HatchState } from '@/components/shell/HatchGlyph'
+import { HatchImage, type HatchImageState } from '@/components/redesign/HatchImage'
 import { HatchLottie, type HatchLottieHandle } from '@/components/hatch/HatchLottie'
 import { failureModeQuizConfig } from '@/lib/lead-magnets/quizzes/failure-mode'
 import { aiPmReadinessConfig } from '@/lib/lead-magnets/quizzes/ai-pm-readiness'
@@ -32,11 +32,11 @@ import { teardownQuizConfig } from '@/lib/lead-magnets/quizzes/teardown'
 
 // ── Tier → Hatch state + default quips ────────────────────────────────────────
 
-const TIER_STATES: Record<QuizOptionTier, HatchState> = {
-  best:    'delighted',
-  good:    'intrigued',
-  surface: 'challenging',
-  wrong:   'challenging',
+const TIER_STATES: Record<QuizOptionTier, HatchImageState> = {
+  best:    'celebrating',
+  good:    'thinking',
+  surface: 'pointing',
+  wrong:   'pointing',
 }
 
 const TIER_QUIPS: Record<QuizOptionTier, string> = {
@@ -90,7 +90,7 @@ export function InstantMagnet({ slug }: { slug: string }) {
   const [outcome, setOutcome] = useState<QuizOutcome | null>(null)
 
   // Hatch reaction state
-  const [hatchState, setHatchState] = useState<HatchState>('idle')
+  const [hatchState, setHatchState] = useState<HatchImageState>('idle')
   const [quip, setQuip] = useState<QuipState>(null)
   const [quipSeq, setQuipSeq] = useState(0)
   const [eggHatching, setEggHatching] = useState(false)
@@ -349,7 +349,7 @@ export function InstantMagnet({ slug }: { slug: string }) {
         {/* Persistent Hatch glyph — state reacts to answer tier */}
         <div className="lmi-hatch-slot">
           <span key={quipSeq} className={quipSeq > 0 ? 'lmi-hatch-pop' : undefined}>
-            <HatchGlyph size={40} state={hatchState} />
+            <HatchImage size={40} state={hatchState} />
           </span>
         </div>
       </div>

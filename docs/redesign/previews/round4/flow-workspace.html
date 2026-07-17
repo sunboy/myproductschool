@@ -1,0 +1,984 @@
+<meta charset="UTF-8">
+<title>FLOW Challenge Workspace · Round 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest-950:#052316;
+    --forest-900:#0b2d1c;
+    --forest-850:#103020;
+    --forest-800:#123b20;
+    --forest-700:#1d432b;
+    --forest-600:#266235;
+    --forest-500:#1c5a34;
+    --mint-glow:#a3ebb1;
+    --page:#faf8f4;
+    --card:#fffdfa;
+    --hairline:#ece7dd;
+    --ink:#20291f;
+    --ink-secondary:#5b685e;
+    --ink-muted:#a6a9a4;
+    --flame:#fe9817;
+    --gold:#fdb41f;
+    --amber-soft:#fef3e2;
+    --mint-note:#dff3d0;
+    --mint-note-border:#b9d9a6;
+    --amber-note:#fdf0c2;
+    --amber-note-border:#ecd48a;
+    --teal-note:#d9efec;
+    --teal-note-border:#a9d4cf;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--page);
+    color:var(--ink);
+    font-family:'Nunito Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{font-family:'Literata', serif;}
+  .page{
+    max-width:1400px;
+    margin:0 auto;
+    padding:0 24px 96px;
+  }
+  svg{display:block;}
+
+  /* ===== Top bar ===== */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 24px;
+    max-width:1400px;
+    margin:0 auto;
+    border-bottom:1px solid var(--hairline);
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Literata', serif;
+    font-weight:700;
+    font-size:20px;
+    color:var(--forest-950);
+  }
+  .logo .spark{color:var(--gold);font-size:14px;}
+  .breadcrumb{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    color:var(--ink-secondary);
+    margin-left:20px;
+  }
+  .breadcrumb .sep{color:var(--ink-muted);}
+  .breadcrumb .current{color:var(--ink);font-weight:600;}
+  .topbar-left{display:flex;align-items:center;flex:1;}
+  .topbar-right{display:flex;align-items:center;gap:28px;}
+  .stat-cluster{display:flex;align-items:center;gap:8px;}
+  .stat-cluster .num{font-family:'Literata',serif;font-weight:700;font-size:15px;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums;}
+  .stat-cluster .label{font-size:10.5px;color:var(--ink-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.03em;line-height:1.2;}
+  .avatar-cluster{display:flex;align-items:center;gap:8px;cursor:default;}
+  .avatar-circle{
+    width:34px;height:34px;border-radius:50%;
+    background:linear-gradient(135deg,#eadfc8,#d9c7a0);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;color:var(--forest-800);font-size:13px;
+    border:1px solid var(--hairline);
+  }
+  .bell-btn{
+    width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-secondary);
+  }
+
+  /* ===== Second bar ===== */
+  .subbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 24px;
+    max-width:1400px;
+    margin:0 auto;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .exit-btn{
+    display:flex;align-items:center;gap:6px;
+    background:transparent;border:none;
+    color:var(--ink-secondary);
+    font-family:'Nunito Sans',sans-serif;
+    font-weight:600;font-size:14px;
+    cursor:default;
+    padding:6px 4px;
+  }
+  .subbar-title{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .subbar-title h1{
+    font-family:'Literata',serif;
+    font-size:19px;
+    font-weight:600;
+    margin:0;
+    color:var(--ink);
+    letter-spacing:-0.01em;
+  }
+  .diff-chip{
+    display:inline-flex;align-items:center;gap:5px;
+    background:var(--amber-soft);
+    color:#a16207;
+    font-size:12px;font-weight:700;
+    padding:4px 10px 4px 8px;
+    border-radius:999px;
+  }
+  .diff-chip .dot{width:6px;height:6px;border-radius:50%;background:#eab308;}
+  .subbar-controls{
+    display:flex;align-items:center;gap:14px;
+    flex-wrap:wrap;
+  }
+  .confidence-label{font-size:13px;color:var(--ink-secondary);font-weight:600;}
+  .confidence-select{
+    display:flex;align-items:center;gap:6px;
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:7px 12px;
+    font-size:13px;font-weight:700;
+    color:var(--ink);
+    cursor:default;
+  }
+  .confidence-select .dot{width:7px;height:7px;border-radius:50%;background:var(--flame);}
+  .notes-btn{
+    display:flex;align-items:center;gap:7px;
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:13px;font-weight:700;
+    color:var(--ink);
+    cursor:default;
+  }
+  .timer-block{
+    display:flex;align-items:center;gap:10px;
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:8px 16px;
+  }
+  .timer-block .time{font-family:'Literata',serif;font-size:16px;font-weight:700;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums;}
+  .timer-block .tlabel{font-size:10px;color:var(--ink-muted);font-weight:600;}
+  .pause-btn{
+    display:flex;align-items:center;gap:6px;
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:13px;font-weight:700;
+    color:var(--ink);
+    cursor:default;
+  }
+
+  /* ===== FLOW stepper ===== */
+  .stepper-card{
+    max-width:1400px;
+    margin:0 auto 16px;
+    padding:0 24px;
+  }
+  .stepper-inner{
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:16px;
+    padding:14px 20px;
+  }
+  .stepper-label{
+    display:flex;align-items:center;gap:6px;
+    font-size:12px;font-weight:700;
+    color:var(--ink-secondary);
+    text-transform:uppercase;letter-spacing:0.04em;
+    margin-bottom:10px;
+  }
+  .stepper-row{
+    display:flex;align-items:center;
+  }
+  .step-node{
+    display:flex;align-items:center;gap:12px;
+    flex-shrink:0;
+  }
+  .step-circle{
+    width:22px;height:22px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:11.5px;
+    flex-shrink:0;
+    background:transparent;
+  }
+  .step-circle.done{width:23px;height:23px;background:#266235;border:none;color:#fff;}
+  .step-circle.current{width:25px;height:25px;background:var(--forest-800);color:#fff;box-shadow:0 0 0 4px rgba(18,59,32,0.12);font-size:12.5px;}
+  .step-circle.upcoming{border:1.4px solid #c8c2b6;color:var(--ink-muted);}
+  .step-text{display:flex;flex-direction:column;gap:1px;}
+  .step-text .stitle{font-size:14.5px;font-weight:700;color:var(--ink);}
+  .step-text .ssub{font-size:12px;color:var(--ink-muted);}
+  .step-text.upcoming .stitle{color:var(--ink-muted);}
+  .step-connector{
+    flex:1;height:2px;
+    background:repeating-linear-gradient(to right, var(--forest-600) 0, var(--forest-600) 6px, transparent 6px, transparent 12px);
+    margin:0 16px;
+  }
+  .step-connector.faded{
+    background:repeating-linear-gradient(to right, #d8d3c8 0, #d8d3c8 6px, transparent 6px, transparent 12px);
+  }
+
+  /* ===== 3-column layout ===== */
+  .workspace-grid{
+    max-width:1400px;
+    margin:0 auto;
+    padding:0 24px;
+    display:grid;
+    grid-template-columns:290px 1fr 320px;
+    gap:16px;
+    align-items:start;
+  }
+  .panel{
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:16px;
+  }
+
+  /* ===== LEFT: Problem Brief ===== */
+  .brief-panel{padding:16px 16px 12px;}
+  .brief-header{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .brief-header h2{font-family:'Nunito Sans',sans-serif;font-size:16px;font-weight:700;margin:0;color:var(--ink);}
+  .brief-header .icons{display:flex;align-items:center;gap:10px;color:var(--ink-muted);}
+  .brief-section{margin-bottom:16px;}
+  .brief-section h3{
+    font-size:12.5px;font-weight:800;
+    text-transform:uppercase;letter-spacing:0.03em;
+    color:var(--ink-secondary);
+    margin:0 0 8px;
+  }
+  .brief-section p{
+    font-size:13.5px;line-height:1.55;
+    color:var(--ink);
+    margin:0;
+  }
+  .brief-section ul{
+    margin:0;padding:0;list-style:none;
+  }
+  .brief-section ul li{
+    font-size:13.5px;line-height:1.5;
+    color:var(--ink);
+    padding-left:16px;
+    position:relative;
+    margin-bottom:6px;
+  }
+  .brief-section ul li::before{
+    content:"";
+    position:absolute;left:0;top:8px;
+    width:5px;height:5px;border-radius:50%;
+    background:var(--forest-600);
+  }
+  .clarif-count{
+    display:inline-flex;align-items:center;justify-content:center;
+    background:var(--forest-800);color:#fff;
+    font-size:10.5px;font-weight:800;
+    width:17px;height:17px;border-radius:50%;
+    margin-left:6px;
+    vertical-align:middle;
+  }
+  .clarif-hint{
+    font-size:12px;color:var(--ink-muted);
+    margin:0 0 10px;
+  }
+  .clarif-chip{
+    display:block;
+    border-top:1px solid var(--hairline);
+    padding:9px 2px;
+    font-size:12.5px;
+    color:var(--ink);
+    line-height:1.4;
+  }
+  .brief-collapse{
+    display:flex;align-items:center;gap:6px;
+    border-top:1px solid var(--hairline);
+    margin-top:6px;
+    padding-top:14px;
+    font-size:13px;font-weight:700;
+    color:var(--ink-secondary);
+    cursor:default;
+  }
+
+  /* ===== CENTER: Step content ===== */
+  .center-col{display:flex;flex-direction:column;gap:16px;}
+  .step-panel{padding:18px 20px 16px;}
+  .step-panel-top{
+    display:flex;align-items:flex-start;justify-content:space-between;
+    margin-bottom:4px;
+  }
+  .step-of{
+    display:inline-block;
+    background:var(--forest-800);
+    color:#fff;
+    font-size:11px;font-weight:800;
+    text-transform:uppercase;letter-spacing:0.03em;
+    padding:3px 10px;
+    border-radius:999px;
+    margin-bottom:10px;
+  }
+  .step-panel h1{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:19px;font-weight:700;
+    margin:0 0 5px;
+    color:var(--ink);
+    letter-spacing:-0.005em;
+  }
+  .step-panel .step-desc{
+    font-size:14px;color:var(--ink-secondary);
+    margin:0 0 18px;
+    line-height:1.5;
+  }
+  .resources-btn{
+    display:flex;align-items:center;gap:6px;
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:13px;font-weight:700;
+    color:var(--ink);
+    cursor:default;
+    flex-shrink:0;
+  }
+
+  .subtask{margin-bottom:16px;}
+  .subtask-head{
+    display:flex;align-items:flex-start;gap:10px;
+    margin-bottom:8px;
+  }
+  .subtask-num{
+    width:22px;height:22px;border-radius:50%;
+    background:transparent;color:var(--forest-800);
+    border:1.5px solid var(--forest-800);
+    font-size:11.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;margin-top:1px;
+  }
+  .subtask-titles h4{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:15px;font-weight:700;
+    margin:0 0 2px;
+    color:var(--ink);
+  }
+  .subtask-titles p{
+    font-size:12.5px;color:var(--ink-muted);
+    margin:0;
+  }
+  .subtask-body{margin-left:34px;}
+
+  textarea.workspace-textarea{
+    width:100%;
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:14px 16px;
+    font-family:'Nunito Sans', sans-serif;
+    font-size:13.5px;
+    color:var(--ink);
+    background:#fdfcfa;
+    resize:vertical;
+    min-height:76px;
+    outline:none;
+  }
+  textarea.workspace-textarea::placeholder{color:var(--ink-muted);}
+  .char-count{
+    text-align:right;
+    font-size:11.5px;
+    color:var(--ink-muted);
+    margin-top:6px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .diagram-dropzone{
+    border:1.5px dashed #d3ccbb;
+    border-radius:12px;
+    padding:18px 20px 16px;
+    background:#fdfcf9;
+    text-align:center;
+  }
+  .add-diagram-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:9px 18px;
+    font-size:13.5px;font-weight:700;
+    color:var(--ink);
+    margin-bottom:8px;
+    cursor:default;
+  }
+  .dropzone-sub{font-size:12.5px;color:var(--ink-muted);margin:0 0 14px;}
+  .template-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;
+    max-width:460px;margin:0 auto;
+  }
+  .template-tile{
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .template-icon{
+    width:52px;height:52px;border-radius:8px;
+    background:transparent;
+    border:1px solid var(--hairline);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--forest-600);
+  }
+  .template-tile span{font-size:11.5px;font-weight:600;color:var(--ink-secondary);text-align:center;line-height:1.3;}
+
+  .center-footer{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 20px;
+    flex-wrap:wrap;gap:12px;
+  }
+  .autosave{
+    display:flex;align-items:center;gap:8px;
+  }
+  .autosave .check-circle{
+    width:18px;height:18px;border-radius:50%;
+    background:#dcefe0;color:var(--forest-600);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .autosave-text{display:flex;flex-direction:column;line-height:1.25;}
+  .autosave-text .a1{font-size:12.5px;font-weight:700;color:var(--ink);}
+  .autosave-text .a2{font-size:11px;color:var(--ink-muted);}
+  .footer-actions{display:flex;align-items:center;gap:10px;}
+  .save-draft-btn{
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:11px 20px;
+    font-size:13.5px;font-weight:700;
+    color:var(--ink);
+    cursor:default;
+  }
+  .submit-btn{
+    display:flex;align-items:center;gap:10px;
+    background:var(--forest-950);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:10px 20px;
+    cursor:default;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .submit-btn .stext{display:flex;flex-direction:column;align-items:flex-start;line-height:1.25;}
+  .submit-btn .s1{font-size:13.5px;font-weight:700;}
+  .submit-btn .s2{font-size:10.5px;color:rgba(255,255,255,0.65);font-weight:600;}
+  .kbd-hint{
+    font-size:12px;color:var(--ink-muted);font-weight:600;
+    background:#f5f1ea;
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:6px 10px;
+  }
+
+  /* ===== RIGHT: Hatch rail ===== */
+  .hatch-rail{display:flex;flex-direction:column;gap:12px;}
+  .hatch-header-panel{padding:16px;}
+  .hatch-header{
+    display:flex;align-items:center;gap:12px;
+  }
+  .hatch-avatar-img{
+    width:46px;height:46px;border-radius:8px;
+    object-fit:cover;
+    background:#eef4ec;
+    flex-shrink:0;
+  }
+  .hatch-name-block{flex:1;}
+  .hatch-name-block h3{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:16px;font-weight:700;
+    margin:0;color:var(--ink);
+  }
+  .hatch-name-block p{
+    font-size:12px;color:var(--ink-muted);
+    margin:1px 0 0;font-weight:600;
+  }
+  .hatch-header .chevron{color:var(--ink-muted);}
+
+  .live-guidance{
+    padding:16px;
+    background:var(--mint-note);
+    border:1px solid var(--mint-note-border);
+  }
+  .lg-title{
+    display:flex;align-items:center;gap:8px;
+    font-family:'Nunito Sans',sans-serif;
+    font-size:13.5px;font-weight:800;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .lg-title .dot{width:7px;height:7px;border-radius:50%;background:var(--forest-600);}
+  .live-guidance p{
+    font-size:12.8px;line-height:1.55;
+    color:var(--ink-secondary);
+    margin:0;
+  }
+  .hint-panel{
+    padding:16px;
+    background:var(--amber-note);
+    border:1px solid var(--amber-note-border);
+  }
+  .check-panel{
+    padding:16px;
+    background:var(--teal-note);
+    border:1px solid var(--teal-note-border);
+  }
+  .panel-title{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:13.5px;font-weight:800;
+    color:var(--ink);margin-bottom:5px;
+  }
+  .panel-sub{
+    font-size:12px;color:var(--ink-muted);
+    line-height:1.5;
+    margin:0 0 10px;
+  }
+  .hint-chip{
+    display:block;
+    border-top:1px solid rgba(30,27,20,0.1);
+    padding:9px 2px;
+    font-size:12.5px;
+    color:var(--ink);
+    line-height:1.4;
+  }
+  .ghost-btn{
+    width:100%;
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:9px;
+    font-size:13px;font-weight:700;
+    color:var(--ink);
+    margin-top:6px;
+    cursor:default;
+  }
+
+  .progress-panel{padding:16px;}
+  .progress-panel h3{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:13.5px;font-weight:800;
+    color:var(--ink);margin:0 0 4px;
+  }
+  .progress-panel .psub{
+    font-size:12px;color:var(--ink-muted);
+    margin:0 0 12px;
+  }
+  .progress-row{
+    display:flex;align-items:center;gap:16px;
+  }
+  .ring-wrap{position:relative;width:76px;height:76px;flex-shrink:0;}
+  .ring-wrap svg{transform:rotate(-90deg);}
+  .ring-center{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .ring-center .pct{font-family:'Nunito Sans',sans-serif;font-size:16px;font-weight:800;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;}
+  .ring-center .plabel{font-size:8.5px;color:var(--ink-muted);font-weight:700;text-transform:uppercase;margin-top:2px;}
+  .progress-stats{display:flex;flex-direction:column;gap:8px;flex:1;}
+  .progress-stat-item{display:flex;align-items:center;justify-content:space-between;}
+  .progress-stat-item .plabel2{font-size:12px;color:var(--ink-muted);}
+  .progress-stat-item .pval{font-size:13px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .view-details{
+    display:flex;align-items:center;gap:6px;
+    font-size:12.5px;font-weight:700;
+    color:var(--forest-700);
+    margin-top:14px;
+    cursor:default;
+  }
+
+  /* ===== Round pill ===== */
+  .round-pill{
+    position:fixed;
+    bottom:18px;right:18px;
+    background:var(--forest-950);
+    color:#fff;
+    font-size:11.5px;font-weight:700;
+    padding:8px 14px;
+    border-radius:999px;
+    box-shadow:0 8px 24px -8px rgba(5,35,22,0.5);
+    z-index:50;
+    font-family:'Nunito Sans',sans-serif;
+  }
+
+  @media (max-width: 1100px){
+    .workspace-grid{grid-template-columns:1fr;}
+    .brief-panel{order:2;}
+    .center-col{order:1;}
+    .hatch-rail{order:3;}
+  }
+  @media (max-width: 640px){
+    .topbar{flex-wrap:wrap;gap:12px;}
+    .breadcrumb{display:none;}
+    .subbar{flex-direction:column;align-items:flex-start;}
+    .stepper-row{flex-wrap:wrap;gap:12px;}
+    .step-connector{display:none;}
+    .template-grid{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+
+<!-- ===== TOP BAR ===== -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo"><span class="spark">✦</span> HackProduct</div>
+    <div class="breadcrumb">
+      <span>Practice</span>
+      <span class="sep">&rsaquo;</span>
+      <span class="current">Challenge Workspace</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="stat-cluster">
+      <div>
+        <div class="num">12</div>
+        <div class="label">Day streak</div>
+      </div>
+    </div>
+    <div class="stat-cluster">
+      <div>
+        <div class="num">9,860 <span style="font-size:11px;font-weight:700;color:var(--ink-muted);">XP</span></div>
+        <div class="label">Level 12</div>
+      </div>
+    </div>
+    <div class="bell-btn">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </div>
+    <div class="avatar-cluster">
+      <div class="avatar-circle">S</div>
+      <span style="font-size:13.5px;font-weight:700;color:var(--ink);">Sandeep</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="1.7"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECOND BAR ===== -->
+<div class="subbar">
+  <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap;">
+    <button class="exit-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m15 18-6-6 6-6"/></svg>
+      Exit
+    </button>
+    <div class="subbar-title">
+      <h1>Design the Cart Backend for a Food Delivery Marketplace</h1>
+      <span class="diff-chip"><span class="dot"></span>Medium</span>
+    </div>
+  </div>
+  <div class="subbar-controls">
+    <span class="confidence-label">Confidence</span>
+    <div class="confidence-select">
+      <span class="dot"></span> Medium
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    <button class="notes-btn">Notes</button>
+    <div class="timer-block">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-secondary)" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <div>
+        <div class="time">32:45</div>
+        <div class="tlabel">Time Elapsed</div>
+      </div>
+    </div>
+    <button class="pause-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+      Pause
+    </button>
+  </div>
+</div>
+
+<!-- ===== FLOW STEPPER ===== -->
+<div class="stepper-card">
+  <div class="stepper-inner">
+    <div class="stepper-label">FLOW Method</div>
+    <div class="stepper-row">
+      <div class="step-node">
+        <div class="step-circle done">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
+        </div>
+        <div class="step-text"><span class="stitle">Frame</span><span class="ssub">Problem framed</span></div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-node">
+        <div class="step-circle done">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
+        </div>
+        <div class="step-text"><span class="stitle">List</span><span class="ssub">Requirements listed</span></div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-node">
+        <div class="step-circle current">3</div>
+        <div class="step-text"><span class="stitle">Optimize</span><span class="ssub">Design solution</span></div>
+      </div>
+      <div class="step-connector faded"></div>
+      <div class="step-node">
+        <div class="step-circle upcoming">4</div>
+        <div class="step-text upcoming"><span class="stitle">Win</span><span class="ssub">Validate &amp; communicate</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 3-COLUMN WORKSPACE ===== -->
+<div class="workspace-grid">
+
+  <!-- LEFT: Problem Brief -->
+  <div class="panel brief-panel">
+    <div class="brief-header">
+      <h2>Problem Brief</h2>
+      <div class="icons">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m18 15-6-6-6 6"/></svg>
+      </div>
+    </div>
+
+    <div class="brief-section">
+      <h3>Scenario</h3>
+      <p>Design the cart backend for a food delivery marketplace connecting riders, restaurants, and drivers, where items can go out of stock mid-order and prices change in real time across thousands of concurrent carts.</p>
+    </div>
+
+    <div class="brief-section">
+      <h3>Primary Goal</h3>
+      <p>Keep every active cart consistent with live restaurant inventory and pricing while checkout stays fast under peak concurrent load.</p>
+    </div>
+
+    <div class="brief-section">
+      <h3>Key Requirements</h3>
+      <ul>
+        <li>Reflect live item availability per restaurant</li>
+        <li>Handle price and menu changes mid-cart</li>
+        <li>Support concurrent edits across devices</li>
+        <li>Low-latency checkout (&lt; 2s)</li>
+        <li>Scalable across peak dinner-hour load</li>
+      </ul>
+    </div>
+
+    <div class="brief-section">
+      <h3>Constraints</h3>
+      <ul>
+        <li>Cost effective at marketplace scale</li>
+        <li>Consistent across driver and rider apps</li>
+        <li>Data integrity during partial failures</li>
+      </ul>
+    </div>
+
+    <div class="brief-section" style="margin-bottom:8px;">
+      <h3>Clarifications<span class="clarif-count">3</span></h3>
+      <p class="clarif-hint">You asked these during Frame.</p>
+      <span class="clarif-chip">What happens when an item goes out of stock after it's added to cart?</span>
+      <span class="clarif-chip">Should prices lock at add-to-cart or at checkout?</span>
+      <span class="clarif-chip">How many concurrent carts per restaurant at peak?</span>
+    </div>
+
+    <div class="brief-collapse">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></svg>
+      Collapse
+    </div>
+  </div>
+
+  <!-- CENTER: Step content -->
+  <div class="center-col">
+    <div class="panel step-panel">
+      <div class="step-panel-top">
+        <div>
+          <span class="step-of">Step 3 of 4</span>
+          <h1>Optimize: Design the solution</h1>
+          <p class="step-desc">Pick what you are optimizing for, design the system around it, and name what you gave up to get it.</p>
+        </div>
+        <button class="resources-btn">Resources</button>
+      </div>
+
+      <!-- Subtask 1 -->
+      <div class="subtask">
+        <div class="subtask-head">
+          <div class="subtask-num">1</div>
+          <div class="subtask-titles">
+            <h4>High-level approach</h4>
+            <p>Name where cart state lives and how it stays consistent with restaurant inventory.</p>
+          </div>
+        </div>
+        <div class="subtask-body">
+          <textarea class="workspace-textarea" placeholder="Where cart state lives, what owns pricing, what you ruled out..."></textarea>
+          <div class="char-count">0 / 1000</div>
+        </div>
+      </div>
+
+      <!-- Subtask 2 -->
+      <div class="subtask">
+        <div class="subtask-head">
+          <div class="subtask-num">2</div>
+          <div class="subtask-titles">
+            <h4>System design</h4>
+            <p>Map the path from add-to-cart to order placed, including the inventory and pricing services.</p>
+          </div>
+        </div>
+        <div class="subtask-body">
+          <div class="diagram-dropzone">
+            <button class="add-diagram-btn">Add diagram</button>
+            <p class="dropzone-sub">Choose a template or draw your architecture</p>
+            <div class="template-grid">
+              <div class="template-tile">
+                <div class="template-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v5M12 13H6v3M12 13h6v3"/></svg>
+                </div>
+                <span>System<br>Architecture</span>
+              </div>
+              <div class="template-tile">
+                <div class="template-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 11 16M16 7.5 13 16"/></svg>
+                </div>
+                <span>Data Flow</span>
+              </div>
+              <div class="template-tile">
+                <div class="template-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4v16M12 4v16M20 4v16"/><path d="M4 9h8M12 15h8"/></svg>
+                </div>
+                <span>Sequence<br>Diagram</span>
+              </div>
+              <div class="template-tile">
+                <div class="template-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+                </div>
+                <span>C4 Context</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtask 3 -->
+      <div class="subtask">
+        <div class="subtask-head">
+          <div class="subtask-num">3</div>
+          <div class="subtask-titles">
+            <h4>Deep dive</h4>
+            <p>Take your hardest component, likely the price and stock sync, and explain how it behaves under load.</p>
+          </div>
+        </div>
+        <div class="subtask-body">
+          <textarea class="workspace-textarea" style="min-height:96px;" placeholder="How the cart learns an item just went out of stock..."></textarea>
+          <div class="char-count">0 / 1500</div>
+        </div>
+      </div>
+
+      <!-- Subtask 4 -->
+      <div class="subtask" style="margin-bottom:4px;">
+        <div class="subtask-head">
+          <div class="subtask-num">4</div>
+          <div class="subtask-titles">
+            <h4>Trade-offs</h4>
+            <p>Name what you gave up and why the gain is worth it.</p>
+          </div>
+        </div>
+        <div class="subtask-body">
+          <textarea class="workspace-textarea" placeholder="We get X. We give up Y. Y is acceptable because..."></textarea>
+          <div class="char-count">0 / 1000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="panel center-footer">
+      <div class="autosave">
+        <span class="check-circle">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 13 4 4L19 7"/></svg>
+        </span>
+        <div class="autosave-text">
+          <span class="a1">Auto-saved</span>
+          <span class="a2">Just now</span>
+        </div>
+      </div>
+      <div class="footer-actions">
+        <button class="save-draft-btn">Save draft</button>
+        <button class="submit-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7"><path d="m3 3 18 9-18 9 4-9z"/></svg>
+          <span class="stext">
+            <span class="s1">Submit for review</span>
+            <span class="s2">Hatch grades this step</span>
+          </span>
+        </button>
+        <span class="kbd-hint">⌘ + Enter</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Hatch rail -->
+  <div class="hatch-rail">
+    <div class="panel hatch-header-panel">
+      <div class="hatch-header">
+        <img class="hatch-avatar-img" src="../../../../public/hatch/avatar.png" alt="Hatch">
+        <div class="hatch-name-block">
+          <h3>Hatch</h3>
+          <p>AI Coach</p>
+        </div>
+        <svg class="chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div class="panel live-guidance">
+      <div class="lg-title"><span class="dot"></span>Hatch's read</div>
+      <p>You closed List with the price-lock question still open. Optimize turns on it: decide where prices lock, design checkout around that call, and name what it costs you.</p>
+    </div>
+
+    <div class="panel hint-panel">
+      <div class="panel-title">Hints for this step</div>
+      <p class="panel-sub">Each one is a question, not the answer.</p>
+      <div class="hint-chip">What breaks first at 10x checkout volume?</div>
+      <div class="hint-chip">If two devices edit the same cart at once, which write wins?</div>
+      <div class="hint-chip">Does an out-of-stock item block checkout or degrade it?</div>
+      <button class="ghost-btn">Reveal a hint</button>
+    </div>
+
+    <div class="panel check-panel">
+      <div class="panel-title">Check your thinking</div>
+      <p class="panel-sub">Run your design against these before you submit.</p>
+      <div class="hint-chip">Does checkout still clear in under 2 seconds at peak dinner load?</div>
+      <div class="hint-chip">Where does a partial failure leave the cart?</div>
+      <div class="hint-chip">What did your design give up, and why is that acceptable?</div>
+      <button class="ghost-btn">Run self-check</button>
+    </div>
+
+    <div class="panel progress-panel">
+      <h3>Session progress</h3>
+      <p class="psub">Frame and List submitted. Optimize in progress.</p>
+      <div class="progress-row">
+        <div class="ring-wrap">
+          <svg width="76" height="76" viewBox="0 0 76 76">
+            <circle cx="38" cy="38" r="32" fill="none" stroke="#eee9df" stroke-width="7"/>
+            <circle cx="38" cy="38" r="32" fill="none" stroke="#266235" stroke-width="7"
+              stroke-dasharray="201.06" stroke-dashoffset="64.3" stroke-linecap="round"/>
+          </svg>
+          <svg class="ink-mark" width="92" height="92" viewBox="0 0 92 92" style="position:absolute;top:-8px;left:-8px;pointer-events:none;opacity:0.28;">
+            <path d="M14 46c-1-19 13-33 32-33 20 0 33 15 32 34-1 18-15 31-33 31-17 0-30-13-31-30" fill="none" stroke="#123b20" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <div class="ring-center">
+            <span class="pct">68%</span>
+            <span class="plabel">Overall</span>
+          </div>
+        </div>
+        <div class="progress-stats">
+          <div class="progress-stat-item">
+            <span class="plabel2">Time spent</span>
+            <span class="pval">32m 45s</span>
+          </div>
+          <div class="progress-stat-item">
+            <span class="plabel2">Steps completed</span>
+            <span class="pval">2 / 4</span>
+          </div>
+        </div>
+      </div>
+      <div class="view-details">
+        View progress details
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="round-pill">Round 4 · FLOW Challenge Workspace</div>

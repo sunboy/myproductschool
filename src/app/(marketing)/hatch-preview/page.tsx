@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import type { HatchState } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import type { HatchImageState } from '@/components/redesign/HatchImage'
 import { buildMetadata } from '@/lib/seo/site'
 import { V3PageShell } from '@/components/landing-v3/V3PageShell'
 import { V3PageHero, V3Section } from '@/components/landing-v3/sections'
@@ -13,8 +13,8 @@ export const metadata: Metadata = buildMetadata({
   keywords: ['Hatch', 'HackProduct', 'animation states', 'product coaching UI'],
 })
 
-const states: { state: HatchState; label: string; description: string }[] = [
-  { state: 'none', label: 'Static', description: 'No animation. Reduced motion or static contexts.' },
+const states: { state: HatchImageState; label: string; description: string }[] = [
+  { state: 'avatar', label: 'Static', description: 'No animation. Reduced motion or static contexts.' },
   { state: 'idle', label: 'Idle / Standby', description: 'Gentle floating. Nav, badges, passive presence.' },
   { state: 'listening', label: 'Listening', description: 'Ears pulse, eyes widen. User is typing.' },
   { state: 'reviewing', label: 'Reviewing', description: 'Eyes scan, smile concentrates. Processing answer.' },
@@ -28,7 +28,7 @@ export default function HatchPreviewPage() {
       <V3PageHero
         eyebrow="Hatch"
         title="Hatch animation states."
-        subtitle="Every HatchGlyph animation state used across coaching, feedback, and practice surfaces, shown at three sizes."
+        subtitle="Every Hatch animation state used across coaching, feedback, and practice surfaces, shown at three sizes."
       />
 
       <V3Section title="States at a glance.">
@@ -36,9 +36,9 @@ export default function HatchPreviewPage() {
           {states.map(({ state, label, description }) => (
             <div key={state} className="v3-card flex flex-col items-center gap-5">
               <div className="flex items-end gap-6">
-                <HatchGlyph size={32} state={state} />
-                <HatchGlyph size={64} state={state} />
-                <HatchGlyph size={96} state={state} />
+                <HatchImage size={32} state={state} />
+                <HatchImage size={64} state={state} />
+                <HatchImage size={96} state={state} />
               </div>
               <div className="text-center">
                 <p className="font-label font-bold text-sm">{label}</p>
@@ -58,7 +58,7 @@ export default function HatchPreviewPage() {
           <div className="flex flex-wrap items-center gap-8">
             {states.map(({ state, label }) => (
               <div key={state} className="flex flex-col items-center gap-2">
-                <HatchGlyph size={64} state={state} />
+                <HatchImage size={64} state={state} />
                 <span className="text-xs font-label">{label}</span>
               </div>
             ))}

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { RecentAttempt } from '@/lib/types'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 
 interface Props {
@@ -20,7 +20,7 @@ export function RecentChallengesTable({ attempts }: Props) {
 
       {attempts.length === 0 ? (
         <div className="p-12 text-center flex flex-col items-center gap-4">
-          <HatchGlyph size={56} state="idle" className="text-primary" />
+          <HatchImage size={56} state="idle" />
           <div>
             <p className="font-bold text-on-surface mb-1">No challenges yet</p>
             <p className="text-on-surface-variant text-sm max-w-xs mx-auto">

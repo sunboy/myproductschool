@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { ShowcaseIndexExperience } from '@/components/showcase/index/ShowcaseIndexExperience';
 import { getReadableAppCompanies, getReadableAppStories } from '@/lib/autopsies/app-library';
 import { getAutopsyCompanies, getQueuedAutopsyStories } from '@/lib/autopsies/queries';
-import { getAllReadingPaths } from '@/lib/showcase/reading-paths';
 
 // This route lives under the authed (app) shell, which reads auth cookies during
 // render, so Next cannot statically prerender it — attempting to caused
@@ -20,10 +19,9 @@ export const metadata: Metadata = {
 };
 
 export default async function ShowcasePage() {
-  const [companies, stories, readingPaths] = await Promise.all([
+  const [companies, stories] = await Promise.all([
     getAutopsyCompanies(),
     getQueuedAutopsyStories(),
-    getAllReadingPaths().catch(() => []),
   ]);
 
   const readableCompanies = getReadableAppCompanies(companies);
@@ -33,7 +31,6 @@ export default async function ShowcasePage() {
     <ShowcaseIndexExperience
       companies={readableCompanies}
       stories={readableStories}
-      readingPaths={readingPaths}
     />
   );
 }

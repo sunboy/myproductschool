@@ -1,17 +1,18 @@
 import {
   getChallenges,
   getChallengePreviews,
-  getFeaturedChallenges,
   getChallengeCounts,
   getChallengeDescriptions,
+  getInProgressPractice,
+  getPracticeCoverage,
   isCountDiscipline,
   type ChallengeListFilters,
   type CountDiscipline,
 } from '@/lib/data/challenges'
-import { ChallengeCard } from './ChallengeCard'
 import { ChallengeSearch } from './ChallengeSearch'
 import { HatchPick } from './HatchPick'
 import { FilteredChallengesView } from './FilteredChallengesView'
+import { PracticeRightRail } from '@/components/redesign/practice/PracticeRightRail'
 import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
 import { challengeTaskSummary } from '@/lib/challenges/presentation'
 
@@ -29,8 +30,10 @@ export interface FreePracticeContentProps {
     paradigm?: string
     q?: string
     real_interview?: string
+    resume?: string
     role?: string
     scope?: string
+    sort?: string
     tab?: string
     tag?: string
     technique?: string
@@ -51,22 +54,19 @@ function getParadigmLabel(paradigm?: string | null): string {
   return (paradigm && PARADIGM_DISPLAY[paradigm]) ?? 'Traditional'
 }
 
+const DISCIPLINE_RAIL_LABELS: Record<CountDiscipline, string> = {
+  all: 'All practice',
+  algorithm: 'Coding / DSA',
+  sql: 'SQL',
+  system_design: 'System design',
+  data_modeling: 'Data modeling',
+  product_sense: 'Product sense',
+  analytics: 'AI Analytics',
+}
+
 export async function FreePracticeContent({ searchParams }: FreePracticeContentProps) {
   const resolvedSearchParams = await searchParams
   const { q } = resolvedSearchParams
-
-  // Featured row is suppressed when any non-discipline filter is active
-  const hasNonDisciplineFilter = Boolean(
-    q ||
-    resolvedSearchParams.paradigm ||
-    resolvedSearchParams.role ||
-    resolvedSearchParams.difficulty ||
-    resolvedSearchParams.company ||
-    resolvedSearchParams.topic ||
-    resolvedSearchParams.technique ||
-    resolvedSearchParams.real_interview ||
-    (resolvedSearchParams.type && resolvedSearchParams.type !== 'all')
-  )
 
   // Multi-select filters arrive comma-joined from the client URL writer.
   // For SSR we filter on the FIRST value only (the URL hash hydration on the
@@ -83,7 +83,6 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
     topic: firstOf(resolvedSearchParams.topic),
     technique: firstOf(resolvedSearchParams.technique),
     difficulty: resolvedSearchParams.difficulty,
-    paradigm: resolvedSearchParams.paradigm,
     role: resolvedSearchParams.role,
     company: resolvedSearchParams.company,
     // Client URL writer uses '1' (see writeFilterValues in FilteredChallengesView);
@@ -91,37 +90,36 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
     real_interview: resolvedSearchParams.real_interview === '1' || resolvedSearchParams.real_interview === 'true',
   }
 
-  // Discipline tab counts (cheap HEAD counts — no row payload) + featured row.
-  // The initial challenge slice is bounded: the "All practice" overview needs a
-  // small preview PER discipline (fetched independently so every section fills,
-  // not a global newest-N which skews to recently-authored types); a single
-  // discipline fetches its first page. The client lazy-loads the rest.
+  // Discipline chip counts (cheap HEAD counts — no row payload) + the right-rail
+  // inputs. The initial challenge slice is bounded: the "All practice" overview
+  // needs a small preview PER discipline (fetched independently so every section
+  // fills, not a global newest-N which skews to recently-authored types); a
+  // single discipline fetches its first page. The client lazy-loads the rest.
   const isAll = discipline === 'all'
 
-  const [counts, initialChallenges, featuredChallenges] = await Promise.all([
+  const [counts, initialChallenges, inProgress] = await Promise.all([
     getChallengeCounts(filters),
     isAll
       ? getChallengePreviews(filters, PREVIEW_PER_DISCIPLINE)
       : getChallenges({ ...filters, type: discipline }, { limit: DISCIPLINE_PAGE_SIZE, offset: 0 }),
-    getFeaturedChallenges(),
+    getInProgressPractice(3),
   ])
 
   const paradigmMap: Record<string, string> = {}
   initialChallenges.forEach((c) => {
     paradigmMap[c.id] = getParadigmLabel(c.paradigm ?? undefined)
   })
-  featuredChallenges.forEach((c) => {
-    paradigmMap[c.id] = getParadigmLabel(c.paradigm ?? undefined)
-  })
 
-  // Grid-view preview cards (and featured cards) show a 2-line blurb via
-  // challengeTaskSummary, which needs the description columns the lean list query
-  // omits. Fetch them only for the rows actually on screen, then precompute the
-  // summary so the client receives a plain string map (no heavy text in props).
-  const previewIds = Array.from(
-    new Set([...initialChallenges.map(c => c.id), ...featuredChallenges.map(c => c.id)]),
-  )
-  const descriptions = await getChallengeDescriptions(previewIds)
+  // Grid-view preview cards show a 2-line blurb via challengeTaskSummary, which
+  // needs the description columns the lean list query omits. Fetch them only for
+  // the rows actually on screen, then precompute the summary so the client
+  // receives a plain string map (no heavy text in props). Skill coverage rides
+  // this second stage because it divides by the discipline counts fetched above.
+  const previewIds = initialChallenges.map(c => c.id)
+  const [descriptions, coverage] = await Promise.all([
+    getChallengeDescriptions(previewIds),
+    getPracticeCoverage(discipline, counts),
+  ])
   const summaryMap: Record<string, string> = {}
   for (const [id, d] of Object.entries(descriptions)) {
     const summary = challengeTaskSummary(d)
@@ -129,53 +127,41 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
   }
 
   return (
-    <div>
-      {/* Top band: Hatch's Pick + search on one row, with the freemium usage
-          meter riding alongside on large screens so the question list sits
-          higher. Everything stacks on narrow screens. No page heading. */}
-      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-stretch">
-        <HatchPick className="flex-1 min-w-0" />
-        <BillingUsageFromProfile className="lg:w-72 lg:flex-shrink-0 lg:self-center" />
-        <ChallengeSearch
-          total={counts.all}
-          className="w-full lg:w-auto lg:min-w-[240px] lg:max-w-[300px] lg:self-center"
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+      {/* Results column */}
+      <div className="flex min-w-0 flex-col gap-4">
+        {/* Slim Hatch's Pick banner + search on one band. No page heading. */}
+        <HatchPick className="w-full" />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <ChallengeSearch total={counts.all} className="w-full sm:flex-1" />
+          {/* Freemium usage meter — compact strip here below lg; lives in the rail on lg+ */}
+          <BillingUsageFromProfile className="lg:hidden sm:w-64 sm:flex-shrink-0" />
+        </div>
+
+        {/* Discipline chips + filter row + challenge list */}
+        <FilteredChallengesView
+          initialChallenges={initialChallenges}
+          initialDiscipline={discipline}
+          counts={counts}
+          paradigms={paradigmMap}
+          summaries={summaryMap}
+          previewPerDiscipline={PREVIEW_PER_DISCIPLINE}
+          pageSize={DISCIPLINE_PAGE_SIZE}
         />
       </div>
 
-      {/* Featured Challenges - only when editorially pinned challenges exist and no search query */}
-      {featuredChallenges.length > 0 && !hasNonDisciplineFilter && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-3.5">
-            <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-[22px] text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-              <h2 className="font-headline text-[22px] font-[500] text-on-surface m-0">Featured</h2>
-            </div>
-            <span className="text-[12px] text-on-surface-variant font-label">Curated picks</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {featuredChallenges.map((challenge) => (
-              <ChallengeCard
-                key={`featured-${challenge.id}`}
-                challenge={challenge}
-                paradigm={getParadigmLabel(challenge.paradigm)}
-                summary={summaryMap[challenge.id]}
-              />
-            ))}
-          </div>
-          <div className="border-t border-outline-variant/20 mt-6 mb-6" />
+      {/* Insight rail — desktop only */}
+      <aside className="hidden lg:block">
+        <div className="sticky top-20">
+          <PracticeRightRail
+            inProgress={inProgress}
+            coverage={coverage}
+            disciplineLabel={DISCIPLINE_RAIL_LABELS[discipline]}
+          >
+            <BillingUsageFromProfile className="w-full" />
+          </PracticeRightRail>
         </div>
-      )}
-
-      {/* Discipline tabs + contextual filter dropdowns + challenge grid */}
-      <FilteredChallengesView
-        initialChallenges={initialChallenges}
-        initialDiscipline={discipline}
-        counts={counts}
-        paradigms={paradigmMap}
-        summaries={summaryMap}
-        previewPerDiscipline={PREVIEW_PER_DISCIPLINE}
-        pageSize={DISCIPLINE_PAGE_SIZE}
-      />
+      </aside>
     </div>
   )
 }

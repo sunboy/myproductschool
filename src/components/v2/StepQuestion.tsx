@@ -34,6 +34,8 @@ interface StepQuestionProps {
   onElaborationChange: (text: string) => void
   disabled: boolean
   elaborationRef?: RefObject<HTMLTextAreaElement | null>
+  /** 1-based question number for the round-4 numbered sub-task marker. Chrome only. */
+  questionNumber?: number
 }
 
 const ELABORATION_LABELS: Partial<Record<ResponseType, string>> = {
@@ -61,6 +63,7 @@ export function StepQuestion({
   onElaborationChange,
   disabled,
   elaborationRef,
+  questionNumber,
 }: StepQuestionProps) {
   const showOptions = responseType !== 'freeform'
   const showElaboration = responseType !== 'pure_mcq' && responseType !== 'multi_select_mcq'
@@ -69,9 +72,19 @@ export function StepQuestion({
 
   return (
     <div className="space-y-4">
-      <p className="font-label text-2xl text-on-surface leading-snug" style={{ letterSpacing: '-0.02em', fontWeight: 800 }}>{question.question_text}</p>
+      <div className="flex items-start gap-2.5">
+        {questionNumber != null && (
+          <span
+            className="mt-1 flex size-[22px] shrink-0 items-center justify-center rounded-full font-label text-[11.5px] font-bold"
+            style={{ border: '1.5px solid var(--color-forest-800)', color: 'var(--color-forest-800)' }}
+          >
+            {questionNumber}
+          </span>
+        )}
+        <p className="font-label text-[19px] font-bold text-ink-strong leading-snug" style={{ letterSpacing: '-0.005em' }}>{question.question_text}</p>
+      </div>
       {allowMultiple && !revealed && (
-        <p className="text-xs text-on-surface-variant font-label">Select all that apply</p>
+        <p className="text-xs text-ink-muted font-label">Select all that apply</p>
       )}
 
       {showOptions && (
@@ -105,7 +118,7 @@ export function StepQuestion({
             onChange={(e) => onElaborationChange(e.target.value)}
             disabled={disabled}
             placeholder={elaborationPlaceholder}
-            className="w-full rounded-xl border border-outline-variant/60 bg-white p-3 text-on-surface font-body text-sm resize-none min-h-[100px] shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:shadow-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full rounded-lg border border-hairline bg-card-bright px-4 py-3.5 text-ink-strong font-body text-[13.5px] leading-[1.55] resize-none min-h-[100px] placeholder:text-ink-muted focus:outline-none focus:border-forest-600 focus:ring-2 focus:ring-forest-600/15 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           />
         </div>
       )}

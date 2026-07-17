@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queue — build #1247</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#4a7c59;
+    --forest-dark:#1e3528;
+    --forest-darker:#14241c;
+    --forest-darkest:#0e1a14;
+    --cream:#faf6f0;
+    --cream-pane:#f5f1ea;
+    --cream-pane-2:#f0ece4;
+    --amber:#c9933a;
+    --amber-soft:#f3e2b9;
+    --taupe:#c4c8bc;
+    --taupe-dark:#74796e;
+    --ink:#2e3230;
+    --success:#2f7a4a;
+    --error:#b83230;
+    --mint:#9be7b0;
+    --mint-dim:#5f9d72;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{
+    background:var(--forest-darkest);
+    color:var(--cream);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--mint);color:var(--forest-darkest);}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  /* ============ SHELL ============ */
+  .shell{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---- top bar ---- */
+  .topbar{
+    height:56px;
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:28px;
+    padding:0 24px;
+    background:var(--forest-darker);
+    border-bottom:1px solid rgba(155,231,176,0.14);
+    position:sticky;
+    top:0;
+    z-index:50;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:-0.02em;
+    color:var(--cream);
+    flex:0 0 auto;
+  }
+  .brand .dot{
+    width:9px;height:9px;border-radius:2px;
+    background:var(--mint);
+    box-shadow:0 0 10px rgba(155,231,176,0.7);
+    animation:pulse-dot 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse-dot{
+    0%,100%{opacity:1;}
+    50%{opacity:0.35;}
+  }
+  .brand small{
+    color:var(--taupe-dark);
+    font-weight:500;
+    font-size:11px;
+  }
+
+  .switcher{
+    display:flex;
+    align-items:center;
+    gap:2px;
+    flex:1 1 auto;
+  }
+  .switcher a{
+    font-size:13px;
+    font-weight:600;
+    padding:7px 14px;
+    border-radius:6px;
+    color:var(--taupe);
+    display:flex;
+    align-items:center;
+    gap:7px;
+    transition:background .12s ease, color .12s ease;
+  }
+  .switcher a:hover{background:rgba(255,255,255,0.05);color:var(--cream);}
+  .switcher a.active{
+    background:rgba(155,231,176,0.12);
+    color:var(--mint);
+  }
+  .switcher a .count{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    background:rgba(255,255,255,0.08);
+    padding:1px 6px;
+    border-radius:9px;
+    color:var(--taupe);
+  }
+  .switcher a.active .count{background:rgba(155,231,176,0.22);color:var(--mint);}
+
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex:0 0 auto;
+  }
+  .kbar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    border-radius:6px;
+    border:1px solid rgba(255,255,255,0.1);
+    background:rgba(255,255,255,0.03);
+    color:var(--taupe-dark);
+    font-size:12px;
+    min-width:180px;
+  }
+  .kbar svg{flex:0 0 auto;opacity:0.6;}
+  .kbar .kbd{
+    margin-left:auto;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    background:rgba(255,255,255,0.07);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:2px 5px;
+    border-radius:4px;
+    color:var(--taupe);
+  }
+  .status-chip{
+    display:flex;align-items:center;gap:6px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--mint);
+    padding:5px 10px;
+    border-radius:99px;
+    background:rgba(155,231,176,0.1);
+    border:1px solid rgba(155,231,176,0.25);
+  }
+  .status-chip .blip{width:6px;height:6px;border-radius:50%;background:var(--mint);animation:pulse-dot 1.6s ease-in-out infinite;}
+  .avatar{
+    width:30px;height:30px;border-radius:7px;
+    background:linear-gradient(135deg,var(--forest),var(--forest-dark));
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;font-size:12px;
+    color:var(--mint);
+    border:1px solid rgba(155,231,176,0.3);
+  }
+
+  /* ---- breadcrumb strip ---- */
+  .runstrip{
+    background:var(--forest-dark);
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    padding:9px 24px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--taupe);
+  }
+  .runstrip .seg{display:flex;align-items:center;gap:6px;}
+  .runstrip .sep{color:rgba(255,255,255,0.18);}
+  .runstrip .highlight{color:var(--mint);}
+  .runstrip .branch-tag{
+    background:rgba(201,147,58,0.16);
+    color:var(--amber-soft);
+    border:1px solid rgba(201,147,58,0.3);
+    padding:1px 7px;
+    border-radius:4px;
+    font-size:11px;
+  }
+
+  /* ============ MAIN GRID ============ */
+  .main{
+    flex:1 1 auto;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 420px;
+    gap:0;
+    align-items:start;
+  }
+
+  .pipeline-col{
+    padding:28px 28px 60px;
+    background:var(--cream);
+    color:var(--ink);
+    min-height:calc(100vh - 96px);
+  }
+
+  .log-col{
+    background:var(--forest-darkest);
+    min-height:calc(100vh - 96px);
+    border-left:1px solid rgba(155,231,176,0.14);
+    display:flex;
+    flex-direction:column;
+    position:sticky;
+    top:96px;
+    align-self:flex-start;
+    height:calc(100vh - 96px);
+  }
+
+  /* ---- header row in pipeline col ---- */
+  .pipeline-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+    gap:16px;
+  }
+  .pipeline-head h1{
+    font-family:'JetBrains Mono',monospace;
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .pipeline-head h1 .hash{color:var(--taupe-dark);font-weight:500;}
+  .pipeline-head p.sub{
+    color:var(--taupe-dark);
+    font-size:13px;
+    margin-top:4px;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  .stability-card{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    background:var(--ink);
+    color:var(--cream);
+    padding:14px 20px;
+    border-radius:10px;
+    min-width:340px;
+  }
+  .stability-ring{
+    position:relative;
+    width:54px;height:54px;flex:0 0 auto;
+  }
+  .stability-ring svg{transform:rotate(-90deg);}
+  .stability-ring .pct{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:13px;
+    color:var(--mint);
+  }
+  .stability-meta{flex:1 1 auto;}
+  .stability-meta .label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:rgba(250,246,240,0.5);
+    margin-bottom:3px;
+  }
+  .stability-meta .value{
+    font-family:'JetBrains Mono',monospace;
+    font-size:15px;
+    font-weight:600;
+    color:var(--cream);
+  }
+  .stability-meta .value .warn{color:var(--amber-soft);}
+  .flow-badges{
+    display:flex;
+    gap:6px;
+    margin-left:auto;
+  }
+  .flow-badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    padding:4px 8px;
+    border-radius:5px;
+    text-transform:lowercase;
+    letter-spacing:0.02em;
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .flow-badge.pass{background:rgba(155,231,176,0.16);color:var(--mint);border:1px solid rgba(155,231,176,0.3);}
+  .flow-badge.warn{background:rgba(201,147,58,0.2);color:var(--amber-soft);border:1px solid rgba(201,147,58,0.4);}
+  .flow-badge .fdot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+
+  /* ---- section labels ---- */
+  .section-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--taupe-dark);
+    margin:30px 0 12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .section-label::after{
+    content:'';
+    flex:1 1 auto;
+    height:1px;
+    background:var(--taupe);
+    opacity:0.5;
+  }
+  .section-label:first-child{margin-top:0;}
+
+  /* ---- build pipeline (queue) ---- */
+  .pipeline{
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  .pipeline::before{
+    content:'';
+    position:absolute;
+    left:19px;
+    top:8px;
+    bottom:8px;
+    width:2px;
+    background:repeating-linear-gradient(to bottom, var(--taupe) 0 4px, transparent 4px 8px);
+    z-index:0;
+  }
+  .step{
+    display:flex;
+    gap:16px;
+    padding:16px 0;
+    position:relative;
+    z-index:1;
+  }
+  .step-glyph{
+    flex:0 0 auto;
+    width:40px;height:40px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--cream);
+    border:2px solid var(--taupe);
+  }
+  .step-glyph.pass{border-color:var(--success);background:#e7f3ea;}
+  .step-glyph.warn{border-color:var(--amber);background:var(--amber-soft);}
+  .step-glyph.running{
+    border-color:var(--forest);
+    background:var(--forest);
+    box-shadow:0 0 0 4px rgba(74,124,89,0.18);
+    animation:running-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes running-pulse{
+    0%,100%{box-shadow:0 0 0 4px rgba(74,124,89,0.18);}
+    50%{box-shadow:0 0 0 8px rgba(74,124,89,0.05);}
+  }
+  .step-glyph.queued{border-style:dashed;background:transparent;}
+
+  .step-body{
+    flex:1 1 auto;
+    background:var(--cream-pane);
+    border:1px solid var(--taupe);
+    border-radius:10px;
+    padding:14px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    transition:border-color .15s ease, transform .12s ease;
+  }
+  .step.is-running .step-body{
+    border-color:var(--forest);
+    background:#eef4ee;
+  }
+  .step-body:hover{transform:translateX(2px);border-color:var(--forest);}
+
+  .step-toprow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .step-title-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .step-title{
+    font-weight:700;
+    font-size:14.5px;
+    color:var(--ink);
+  }
+  .step-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    padding:2px 7px;
+    border-radius:4px;
+    background:var(--forest);
+    color:#fff;
+    letter-spacing:0.02em;
+  }
+  .step-tag.o1{background:#dbe8dd;color:var(--forest);}
+  .step-tag.o2{background:var(--forest);color:#fff;}
+  .step-tag.o3{background:var(--amber);color:#fff;}
+  .step-tag.o4{background:var(--ink);color:#fff;}
+  .step-status-text{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    font-weight:600;
+  }
+  .step-status-text.pass{color:var(--success);}
+  .step-status-text.warn{color:#8a6416;}
+  .step-status-text.running{color:var(--forest);}
+  .step-status-text.queued{color:var(--taupe-dark);}
+
+  .step-reason{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--taupe-dark);
+    display:flex;
+    gap:6px;
+    align-items:flex-start;
+  }
+  .step-reason .cmt{color:#8a9a83;flex:0 0 auto;}
+
+  .step-meta{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-size:12px;
+    color:var(--taupe-dark);
+    margin-top:2px;
+  }
+  .step-meta span{display:flex;align-items:center;gap:5px;}
+
+  .step-actions{
+    display:flex;
+    gap:8px;
+    margin-top:6px;
+  }
+  .btn-resume{
+    background:var(--forest);
+    color:#fff;
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:12.5px;
+    padding:9px 16px;
+    border-radius:7px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    box-shadow:0 2px 0 rgba(30,53,40,0.25);
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn-resume:hover{transform:translateY(-1px);box-shadow:0 3px 0 rgba(30,53,40,0.3);}
+  .btn-resume:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(30,53,40,0.3);}
+  .btn-ghost{
+    background:transparent;
+    border:1px solid var(--taupe);
+    color:var(--taupe-dark);
+    font-family:'JetBrains Mono',monospace;
+    font-weight:600;
+    font-size:12.5px;
+    padding:8px 14px;
+    border-radius:7px;
+  }
+  .btn-ghost:hover{border-color:var(--forest);color:var(--forest);}
+
+  /* ---- recent builds ---- */
+  .builds-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+  }
+  .build-card{
+    background:var(--cream-pane);
+    border:1px solid var(--taupe);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .build-card-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .build-id{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--taupe-dark);
+  }
+  .build-badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    padding:2px 7px;
+    border-radius:99px;
+  }
+  .build-badge.failing{background:rgba(184,50,48,0.12);color:var(--error);border:1px solid rgba(184,50,48,0.3);}
+  .build-badge.passing{background:rgba(47,122,74,0.12);color:var(--success);border:1px solid rgba(47,122,74,0.3);}
+  .build-title{font-weight:700;font-size:13.5px;color:var(--ink);margin-bottom:8px;}
+  .build-counts{
+    display:flex;
+    gap:12px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+  }
+  .build-counts .c-pass{color:var(--success);}
+  .build-counts .c-warn{color:#8a6416;}
+  .build-counts span{display:flex;align-items:center;gap:4px;}
+
+  /* ---- fixtures (autopsies) ---- */
+  .fixtures{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .fixture{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--cream-pane);
+    border:1px solid var(--taupe);
+    border-radius:10px;
+    padding:12px 16px;
+  }
+  .fixture-icon{
+    flex:0 0 auto;
+    width:34px;height:34px;
+    border-radius:7px;
+    background:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .fixture-body{flex:1 1 auto;min-width:0;}
+  .fixture-name{font-weight:700;font-size:13px;color:var(--ink);}
+  .fixture-path{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--taupe-dark);
+  }
+  .fixture-import{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    font-weight:700;
+    color:var(--forest);
+    border:1px solid var(--forest);
+    padding:6px 12px;
+    border-radius:6px;
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
+  .fixture-import:hover{background:var(--forest);color:#fff;}
+
+  /* ============ LOG PANEL ============ */
+  .log-head{
+    padding:16px 18px 12px;
+    border-bottom:1px solid rgba(155,231,176,0.1);
+    flex:0 0 auto;
+  }
+  .log-head-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:4px;
+  }
+  .log-title{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--cream);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .log-title .tf{color:var(--taupe-dark);font-weight:500;}
+  .log-filters{display:flex;gap:6px;}
+  .log-filter{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    padding:3px 8px;
+    border-radius:5px;
+    background:rgba(255,255,255,0.05);
+    color:var(--taupe-dark);
+    border:1px solid rgba(255,255,255,0.06);
+  }
+  .log-filter.active{background:rgba(155,231,176,0.14);color:var(--mint);border-color:rgba(155,231,176,0.3);}
+  .log-path{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--taupe-dark);
+  }
+
+  .log-body{
+    flex:1 1 auto;
+    overflow-y:auto;
+    padding:12px 0;
+  }
+  .log-body::-webkit-scrollbar{width:8px;}
+  .log-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+  .log-body::-webkit-scrollbar-track{background:transparent;}
+
+  .log-line{
+    display:grid;
+    grid-template-columns:64px 74px 1fr;
+    gap:10px;
+    padding:6px 18px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    line-height:1.55;
+    align-items:baseline;
+    border-left:2px solid transparent;
+  }
+  .log-line:hover{background:rgba(255,255,255,0.025);}
+  .log-time{color:rgba(250,246,240,0.32);white-space:nowrap;}
+  .log-sev{
+    font-weight:700;
+    white-space:nowrap;
+    text-transform:lowercase;
+  }
+  .log-sev.error{color:var(--error);}
+  .log-sev.warning{color:var(--amber-soft);}
+  .log-sev.fixit{color:var(--cream);text-decoration:underline;text-decoration-color:rgba(250,246,240,0.35);text-underline-offset:2px;}
+  .log-sev.pass{color:var(--mint);}
+  .log-sev.note{color:var(--taupe-dark);}
+  .log-msg{color:rgba(250,246,240,0.82);word-break:break-word;}
+  .log-msg .locus{color:var(--taupe);}
+  .log-msg .locus .ln{color:var(--mint-dim);}
+  .log-msg .hl{color:var(--cream);font-weight:600;}
+  .log-detail{
+    grid-column:2 / -1;
+    padding:2px 0 4px 0;
+    color:rgba(250,246,240,0.42);
+    font-size:11.5px;
+  }
+  .log-line.divider{
+    grid-template-columns:1fr;
+    color:rgba(250,246,240,0.28);
+    padding:10px 18px 6px;
+  }
+
+  .log-footer{
+    flex:0 0 auto;
+    padding:12px 18px 16px;
+    border-top:1px solid rgba(155,231,176,0.1);
+    background:rgba(255,255,255,0.015);
+  }
+  .log-prompt{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+  }
+  .log-prompt .arrow{color:var(--mint);font-weight:700;}
+  .log-prompt .cmdtext{color:rgba(250,246,240,0.55);}
+  .cursor-blink{
+    display:inline-block;
+    width:7px;height:14px;
+    background:var(--mint);
+    animation:blink 1s step-end infinite;
+    vertical-align:middle;
+    margin-left:2px;
+  }
+  @keyframes blink{
+    0%,49%{opacity:1;}
+    50%,100%{opacity:0;}
+  }
+
+  .log-summary{
+    display:flex;
+    gap:16px;
+    margin-top:10px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+  }
+  .log-summary span{display:flex;align-items:center;gap:5px;color:var(--taupe-dark);}
+  .log-summary .n-error{color:var(--error);}
+  .log-summary .n-warn{color:var(--amber-soft);}
+  .log-summary .n-pass{color:var(--mint);}
+
+  /* ============ PILL ============ */
+  .direction-pill{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--forest-darker);
+    color:var(--mint);
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:12px;
+    padding:9px 16px 9px 12px;
+    border-radius:99px;
+    border:1px solid rgba(155,231,176,0.35);
+    box-shadow:0 8px 24px rgba(0,0,0,0.35);
+  }
+  .direction-pill .pdot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--mint);
+    box-shadow:0 0 8px rgba(155,231,176,0.8);
+    animation:pulse-dot 2s ease-in-out infinite;
+  }
+  .direction-pill .pnum{color:var(--taupe-dark);font-weight:500;}
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1180px){
+    .main{grid-template-columns:1fr;}
+    .log-col{
+      position:relative;
+      top:0;
+      height:auto;
+      min-height:520px;
+      border-left:none;
+      border-top:1px solid rgba(155,231,176,0.14);
+    }
+    .builds-grid{grid-template-columns:1fr;}
+  }
+
+  @media (max-width: 860px){
+    .topbar{padding:0 16px;gap:16px;}
+    .switcher{overflow-x:auto;scrollbar-width:none;}
+    .switcher::-webkit-scrollbar{display:none;}
+    .kbar{min-width:0;width:120px;}
+    .kbar span.placeholder-text{display:none;}
+    .pipeline-col{padding:20px 16px 48px;}
+    .pipeline-head{flex-direction:column;align-items:flex-start;}
+    .stability-card{min-width:0;width:100%;flex-wrap:wrap;}
+    .flow-badges{margin-left:0;}
+    .runstrip{padding:8px 16px;overflow-x:auto;white-space:nowrap;}
+  }
+
+  @media (max-width: 480px){
+    .topbar{height:auto;flex-wrap:wrap;padding:10px 14px;gap:10px;}
+    .switcher{order:3;width:100%;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);}
+    .topbar-right{margin-left:auto;}
+    .kbar{display:none;}
+    .pipeline{padding-left:0;}
+    .pipeline::before{left:15px;}
+    .step-glyph{width:32px;height:32px;}
+    .step{gap:12px;}
+    .step-body{padding:12px 14px;}
+    .step-toprow{flex-direction:column;align-items:flex-start;gap:6px;}
+    .log-line{grid-template-columns:1fr;gap:2px;padding:8px 14px;}
+    .log-time{display:none;}
+    .log-detail{grid-column:1;padding-left:0;}
+    .fixture{flex-wrap:wrap;}
+    .fixture-import{width:100%;text-align:center;}
+    .direction-pill{bottom:12px;right:12px;font-size:11px;padding:8px 12px 8px 10px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ============ TOP BAR ============ -->
+  <div class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      HACKPRODUCT<small>/ci</small>
+    </div>
+    <nav class="switcher">
+      <a class="active" href="#">Queue <span class="count">6</span></a>
+      <a href="#">Builds <span class="count">47</span></a>
+      <a href="#">Cases <span class="count">3</span></a>
+      <a href="#">Interviews <span class="count">1</span></a>
+      <a href="#">Lab</a>
+      <a href="#">Hatch</a>
+    </nav>
+    <div class="topbar-right">
+      <div class="kbar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <span class="placeholder-text">jump to build, case, rep&hellip;</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="status-chip"><span class="blip"></span>build passing</div>
+      <div class="avatar">ST</div>
+    </div>
+  </div>
+
+  <!-- ============ RUN STRIP ============ -->
+  <div class="runstrip">
+    <div class="seg">main <span class="sep">→</span> <span class="highlight">sandeep/practice</span></div>
+    <div class="sep">/</div>
+    <div class="seg">build <span class="highlight">#1247</span></div>
+    <div class="sep">/</div>
+    <div class="seg">day 12 <span class="branch-tag">streak intact</span></div>
+    <div class="sep">/</div>
+    <div class="seg">interview window <span class="highlight">T&minus;18d</span></div>
+  </div>
+
+  <!-- ============ MAIN GRID ============ -->
+  <div class="main">
+
+    <!-- ============ LEFT: PIPELINE ============ -->
+    <div class="pipeline-col">
+
+      <div class="pipeline-head">
+        <div>
+          <h1><span class="hash">#</span>1247 &nbsp;today&rsquo;s build</h1>
+          <p class="sub">6 steps queued &middot; triggered on wake &middot; target: interview-ready by round 2</p>
+        </div>
+
+        <div class="stability-card">
+          <div class="stability-ring">
+            <svg width="54" height="54" viewBox="0 0 54 54">
+              <circle cx="27" cy="27" r="23" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="6"/>
+              <circle cx="27" cy="27" r="23" fill="none" stroke="#9be7b0" stroke-width="6"
+                stroke-dasharray="144.5" stroke-dashoffset="41.9" stroke-linecap="round"/>
+            </svg>
+            <div class="pct">71%</div>
+          </div>
+          <div class="stability-meta">
+            <div class="label">build stability</div>
+            <div class="value">coverage 71% <span class="warn">&middot; frame amber</span></div>
+          </div>
+          <div class="flow-badges">
+            <span class="flow-badge warn"><span class="fdot"></span>frame</span>
+            <span class="flow-badge pass"><span class="fdot"></span>list</span>
+            <span class="flow-badge pass"><span class="fdot"></span>optimize</span>
+            <span class="flow-badge pass"><span class="fdot"></span>win</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: pipeline -->
+      <div class="section-label">build pipeline &middot; today</div>
+
+      <div class="pipeline">
+
+        <!-- STEP 1: running -->
+        <div class="step is-running">
+          <div class="step-glyph running">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0e1a14" stroke-width="3"><circle cx="12" cy="12" r="4" fill="#0e1a14"/></svg>
+          </div>
+          <div class="step-body">
+            <div class="step-toprow">
+              <div class="step-title-wrap">
+                <span class="step-title">Frame the buyer, the user, and the payer for Airbnb Experiences</span>
+                <span class="step-tag o2">O2</span>
+              </div>
+              <span class="step-status-text running">running &middot; step 3/4</span>
+            </div>
+            <div class="step-reason"><span class="cmt">//</span> because Frame is your weakest pass &mdash; 41% on last attempt, three-way stakeholder split still unresolved</div>
+            <div class="step-meta">
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>14 min est.</span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>intermediate</span>
+              <span class="mono">frame.step[3]</span>
+            </div>
+            <div class="step-actions">
+              <button class="btn-resume">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Resume build
+              </button>
+              <button class="btn-ghost">View diagnostics</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: warn -->
+        <div class="step">
+          <div class="step-glyph warn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6416" stroke-width="2.5"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>
+          </div>
+          <div class="step-body">
+            <div class="step-toprow">
+              <div class="step-title-wrap">
+                <span class="step-title">Product Sense Sprint &middot; Week 2</span>
+                <span class="step-tag o2">O2</span>
+              </div>
+              <span class="step-status-text warn">warn &middot; step 3/5 stalled</span>
+            </div>
+            <div class="step-reason"><span class="cmt">//</span> because you paused mid-List for 4 days &mdash; the stakeholder table is half-built</div>
+            <div class="step-meta">
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>18 min est.</span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>intermediate</span>
+              <span class="mono">list.step[3]</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: queued -->
+        <div class="step">
+          <div class="step-glyph queued">
+            <span class="mono" style="font-size:10px;color:var(--taupe-dark);">&middot;</span>
+          </div>
+          <div class="step-body">
+            <div class="step-toprow">
+              <div class="step-title-wrap">
+                <span class="step-title">Rebuild Playlist from Shuffle Logs</span>
+                <span class="step-tag o3">O3</span>
+              </div>
+              <span class="step-status-text queued">queued</span>
+            </div>
+            <div class="step-reason"><span class="cmt">//</span> because Optimize is passing but untested against a reconstruction problem</div>
+            <div class="step-meta">
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>22 min est.</span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>advanced</span>
+              <span class="mono">optimize.step[1]</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: queued -->
+        <div class="step">
+          <div class="step-glyph queued"></div>
+          <div class="step-body">
+            <div class="step-toprow">
+              <div class="step-title-wrap">
+                <span class="step-title">Reconstruct Delivery Routes from Checkpoint Logs</span>
+                <span class="step-tag o4">O4</span>
+              </div>
+              <span class="step-status-text queued">queued</span>
+            </div>
+            <div class="step-reason"><span class="cmt">//</span> because interview round 2 is scoped as a system-tracing round, this is the closest rep</div>
+            <div class="step-meta">
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>28 min est.</span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>advanced</span>
+              <span class="mono">win.step[1]</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: pass -->
+        <div class="step">
+          <div class="step-glyph pass">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f7a4a" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div class="step-body" style="opacity:0.75;">
+            <div class="step-toprow">
+              <div class="step-title-wrap">
+                <span class="step-title">Interview round 1 &middot; Debrief</span>
+                <span class="step-tag o1">O1</span>
+              </div>
+              <span class="step-status-text pass">passed &middot; 0 warnings</span>
+            </div>
+            <div class="step-reason"><span class="cmt">//</span> cleared 2026-06-27, tradeoff-naming and criterion-setting both landed</div>
+            <div class="step-meta">
+              <span class="mono">win.step[4] &middot; committed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 6: pass -->
+        <div class="step">
+          <div class="step-glyph pass">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f7a4a" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div class="step-body" style="opacity:0.75;">
+            <div class="step-toprow">
+              <div class="step-title-wrap">
+                <span class="step-title">Calibration &middot; baseline sweep</span>
+                <span class="step-tag o1">O1</span>
+              </div>
+              <span class="step-status-text pass">passed &middot; 0 warnings</span>
+            </div>
+            <div class="step-reason"><span class="cmt">//</span> established baseline across all four passes on day 1</div>
+            <div class="step-meta">
+              <span class="mono">calibration.baseline &middot; committed</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECTION: recent builds -->
+      <div class="section-label">recent builds &middot; grouped by failing pass</div>
+      <div class="builds-grid">
+        <div class="build-card">
+          <div class="build-card-top">
+            <span class="build-id mono">#1244</span>
+            <span class="build-badge failing">frame failing</span>
+          </div>
+          <div class="build-title">Frame the pricing complaint for Arc Browser Invite</div>
+          <div class="build-counts">
+            <span class="c-pass"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>2 pass</span>
+            <span class="c-warn"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4l9 16H3z"/></svg>2 warn</span>
+          </div>
+        </div>
+        <div class="build-card">
+          <div class="build-card-top">
+            <span class="build-id mono">#1241</span>
+            <span class="build-badge passing">list passing</span>
+          </div>
+          <div class="build-title">Frame the buyer, the user, and the payer for Airbnb Experiences</div>
+          <div class="build-counts">
+            <span class="c-pass"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>3 pass</span>
+            <span class="c-warn"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4l9 16H3z"/></svg>1 warn</span>
+          </div>
+        </div>
+        <div class="build-card">
+          <div class="build-card-top">
+            <span class="build-id mono">#1236</span>
+            <span class="build-badge failing">optimize failing</span>
+          </div>
+          <div class="build-title">Optimize the tradeoff for Dropbox Referral incentive cut</div>
+          <div class="build-counts">
+            <span class="c-pass"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>1 pass</span>
+            <span class="c-warn"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4l9 16H3z"/></svg>3 warn</span>
+          </div>
+        </div>
+        <div class="build-card">
+          <div class="build-card-top">
+            <span class="build-id mono">#1229</span>
+            <span class="build-badge passing">win passing</span>
+          </div>
+          <div class="build-title">Win the room on Duolingo Streak freeze redesign</div>
+          <div class="build-counts">
+            <span class="c-pass"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>4 pass</span>
+            <span class="c-warn"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4l9 16H3z"/></svg>0 warn</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: fixtures -->
+      <div class="section-label">test fixtures you can import</div>
+      <div class="fixtures">
+        <div class="fixture">
+          <div class="fixture-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9be7b0" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg>
+          </div>
+          <div class="fixture-body">
+            <div class="fixture-name">Figma Multiplayer &middot; autopsy fixture</div>
+            <div class="fixture-path mono">fixtures/figma-multiplayer.frame.json</div>
+          </div>
+          <button class="fixture-import">import to Frame</button>
+        </div>
+        <div class="fixture">
+          <div class="fixture-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9be7b0" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+          </div>
+          <div class="fixture-body">
+            <div class="fixture-name">Duolingo Streak &middot; autopsy fixture</div>
+            <div class="fixture-path mono">fixtures/duolingo-streak.optimize.json</div>
+          </div>
+          <button class="fixture-import">import to Optimize</button>
+        </div>
+        <div class="fixture">
+          <div class="fixture-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9be7b0" stroke-width="2"><path d="M4 12h16M12 4v16"/></svg>
+          </div>
+          <div class="fixture-body">
+            <div class="fixture-name">Dropbox Referral &middot; autopsy fixture</div>
+            <div class="fixture-path mono">fixtures/dropbox-referral.list.json</div>
+          </div>
+          <button class="fixture-import">import to List</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ RIGHT: DIAGNOSTIC LOG ============ -->
+    <div class="log-col">
+      <div class="log-head">
+        <div class="log-head-top">
+          <div class="log-title">diagnostics <span class="tf">&middot; live tail</span></div>
+          <div class="log-filters">
+            <span class="log-filter active">all</span>
+            <span class="log-filter">errors</span>
+            <span class="log-filter">warnings</span>
+          </div>
+        </div>
+        <div class="log-path">watching frame.step[3] on sandeep/practice</div>
+      </div>
+
+      <div class="log-body">
+
+        <div class="log-line divider">&mdash;&mdash; build #1247 started 08:14:02 &mdash;&mdash;</div>
+
+        <div class="log-line">
+          <span class="log-time">08:14:02</span>
+          <span class="log-sev note">note</span>
+          <span class="log-msg">loading fixture <span class="hl">airbnb-experiences.frame</span></span>
+        </div>
+
+        <div class="log-line">
+          <span class="log-time">08:14:03</span>
+          <span class="log-sev pass">pass</span>
+          <span class="log-msg">baseline loaded, prior attempt score <span class="hl">41%</span></span>
+        </div>
+
+        <div class="log-line">
+          <span class="log-time">08:14:41</span>
+          <span class="log-sev warning">warning</span>
+          <span class="log-msg">segment underspecified <span class="locus">airbnb-experiences.frame<span class="ln">:3</span></span></span>
+        </div>
+        <div class="log-detail">payer segment named but not distinguished from user &mdash; host and guest both called "the customer"</div>
+
+        <div class="log-line">
+          <span class="log-time">08:14:42</span>
+          <span class="log-sev fixit">fix-it</span>
+          <span class="log-msg">add constraint <span class="locus">airbnb-experiences.frame<span class="ln">:3</span></span></span>
+        </div>
+        <div class="log-detail">name who books, who hosts, and who takes the cut on cancellation &mdash; three distinct incentives</div>
+
+        <div class="log-line">
+          <span class="log-time">08:15:09</span>
+          <span class="log-sev pass">pass</span>
+          <span class="log-msg">tradeoff named <span class="locus">airbnb-experiences.frame<span class="ln">:4</span></span></span>
+        </div>
+        <div class="log-detail">host protection vs. guest flexibility surfaced as competing incentives</div>
+
+        <div class="log-line">
+          <span class="log-time">08:15:38</span>
+          <span class="log-sev error">error</span>
+          <span class="log-msg">friction not distinguished from symptom <span class="locus">airbnb-experiences.frame<span class="ln">:5</span></span></span>
+        </div>
+        <div class="log-detail">"guests complain about cancellations" is the symptom. name the blocked job underneath it</div>
+
+        <div class="log-line">
+          <span class="log-time">08:15:40</span>
+          <span class="log-sev fixit">fix-it</span>
+          <span class="log-msg">rewrite problem statement <span class="locus">airbnb-experiences.frame<span class="ln">:5</span></span></span>
+        </div>
+        <div class="log-detail">host is trying to protect earnings. late cancellation policy blocks that. unresolved: hosts churn off the platform</div>
+
+        <div class="log-line">
+          <span class="log-time">08:16:12</span>
+          <span class="log-sev pass">pass</span>
+          <span class="log-msg">scope boundary set <span class="locus">airbnb-experiences.frame<span class="ln">:6</span></span></span>
+        </div>
+
+        <div class="log-line divider">&mdash;&mdash; step[3] in progress, 2 diagnostics open &mdash;&mdash;</div>
+
+        <div class="log-line">
+          <span class="log-time">08:16:44</span>
+          <span class="log-sev note">note</span>
+          <span class="log-msg">loading fixture <span class="hl">product-sense-sprint.w2</span></span>
+        </div>
+
+        <div class="log-line">
+          <span class="log-time">08:16:45</span>
+          <span class="log-sev warning">warning</span>
+          <span class="log-msg">stall detected <span class="locus">product-sense-sprint.list<span class="ln">:3</span></span></span>
+        </div>
+        <div class="log-detail">no commits in 4 days &mdash; stakeholder table has 2 of 5 rows filled</div>
+
+        <div class="log-line">
+          <span class="log-time">08:16:46</span>
+          <span class="log-sev fixit">fix-it</span>
+          <span class="log-msg">resume from checkpoint <span class="locus">product-sense-sprint.list<span class="ln">:3</span></span></span>
+        </div>
+        <div class="log-detail">host and guest are filled. still missing: platform trust &amp; safety, payment processor, local regulator</div>
+
+        <div class="log-line">
+          <span class="log-time">08:17:03</span>
+          <span class="log-sev pass">pass</span>
+          <span class="log-msg">solution space width cleared <span class="locus">product-sense-sprint.list<span class="ln">:4</span></span></span>
+        </div>
+
+      </div>
+
+      <div class="log-footer">
+        <div class="log-prompt">
+          <span class="arrow">&gt;</span>
+          <span class="cmdtext">waiting on frame.step[3] input</span>
+          <span class="cursor-blink"></span>
+        </div>
+        <div class="log-summary">
+          <span class="n-error"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 6l12 12M18 6L6 18"/></svg>1 error</span>
+          <span class="n-warn"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4l9 16H3z"/></svg>2 warnings</span>
+          <span class="n-pass"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>4 pass</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ============ FIXED PILL ============ -->
+<div class="direction-pill">
+  <span class="pdot"></span>
+  The Compiler <span class="pnum">&middot; direction 01</span>
+</div>
+
+</body>
+</html>

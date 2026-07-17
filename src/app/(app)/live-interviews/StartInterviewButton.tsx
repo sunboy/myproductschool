@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import { useIsAtLimit, useUsage } from '@/context/UsageContext'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { DISCIPLINE_META, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
 
 export type StartInterviewButtonVariant = 'chip' | 'hero'
@@ -160,7 +160,7 @@ export default function StartInterviewButton({
           <span className="material-symbols-outlined text-[18px]" style={{ color: 'rgba(255,255,255,0.5)' }}>close</span>
         </button>
 
-        <HatchGlyph size={64} state="idle" className="text-primary" />
+        <HatchImage size={64} state="idle" />
 
         <div className="flex items-center gap-2 flex-wrap justify-center">
           {modalCompany && (
@@ -212,21 +212,21 @@ export default function StartInterviewButton({
         >
           <span className="material-symbols-outlined text-[16px]" style={{ color: 'rgba(255,255,255,0.3)' }}>mic</span>
           <span className="font-body text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-            Voice starts when available. Chat stays ready as the fallback.
+            Voice or chat, your pick. The mic is optional; typing runs the same interview.
           </span>
         </div>
 
         <div className="flex flex-col gap-2 w-full pt-1">
           <button
             onClick={handleStartInterview}
-            className="w-full rounded-full py-3 font-label font-semibold text-base transition-opacity hover:opacity-90"
+            className="w-full rounded-xl py-3 font-label font-semibold text-base transition-opacity hover:opacity-90"
             style={{ background: '#4a7c59', color: '#ffffff' }}
           >
             Start Interview
           </button>
           <button
             onClick={() => { play('close'); setShowReadyModal(false) }}
-            className="w-full rounded-full py-2.5 font-label text-sm font-semibold transition-colors"
+            className="w-full rounded-xl py-2.5 font-label text-sm font-semibold transition-colors"
             style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
@@ -252,7 +252,7 @@ export default function StartInterviewButton({
           onClick={handleClick}
           disabled={loading}
           className={cn(
-            'group w-full inline-flex items-center justify-center gap-3 rounded-full px-6 py-3.5 font-label font-semibold text-base transition-opacity',
+            'group w-full inline-flex items-center justify-center gap-3 rounded-xl px-6 py-3.5 font-label font-semibold text-base transition-opacity',
             'bg-primary text-on-primary hover:opacity-95',
             loading && 'opacity-70 cursor-not-allowed',
             isAtLimit && 'bg-surface-container-high text-on-surface-variant'
@@ -265,7 +265,7 @@ export default function StartInterviewButton({
             </>
           ) : (
             <>
-              <HatchGlyph size={28} state="idle" className="text-on-primary" />
+              <HatchImage size={28} state="avatar" />
               <span>{loading ? 'Starting…' : heroLabel}</span>
               {!loading && (
                 <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
@@ -278,7 +278,7 @@ export default function StartInterviewButton({
           onClick={handleClick}
           disabled={loading}
           className={cn(
-            'inline-flex items-center gap-1 bg-primary text-on-primary rounded-full px-3 py-1 text-xs font-label font-semibold transition-opacity',
+            'inline-flex items-center gap-1 bg-primary text-on-primary rounded-lg px-3 py-1 text-xs font-label font-semibold transition-opacity',
             loading && 'opacity-60 cursor-not-allowed',
             isAtLimit && 'bg-surface-container-high text-on-surface-variant'
           )}

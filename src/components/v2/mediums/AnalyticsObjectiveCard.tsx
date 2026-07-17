@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import type { AnalyticsSubProblem, MarkVerdict } from './types'
 
 interface AnalyticsObjectiveCardProps {
@@ -149,7 +149,7 @@ export function AnalyticsObjectiveCard({
           background: 'var(--color-primary-fixed)',
           borderRadius: 10, padding: '8px 10px',
         }}>
-          <HatchGlyph size={20} state="speaking" />
+          <HatchImage size={20} state="speaking" />
           <p style={{
             flex: 1, margin: 0,
             fontSize: 11.5, lineHeight: 1.55,

@@ -34,6 +34,9 @@ export function labIdForChallengeType(challengeType: string | null | undefined):
 export interface LabDetectors {
   /** MCP server name fragment the terminal watches for; null = lab has no MCP. */
   mcpName: string | null
+  /** Session status-bar chip label for the MCP connection (e.g. 'BigQuery');
+   *  null = no MCP chip is rendered (labs where the repo/tests are the tools). */
+  mcpChipLabel: string | null
   /** RegExp source for the written-report path signal. */
   reportPathPattern: string
 }
@@ -67,6 +70,8 @@ export interface LabClientDefinition {
     subtitle: string
     promises: Array<{ icon: string; text: string; accent?: boolean }>
     fallbackFirstPrompt: string
+    /** Readiness pill text once the sandbox is live, e.g. 'Sandbox live · BigQuery connected'. */
+    readyLabel: string
   }
   startup: {
     /** Step labels for the determinate startup progress, in order. */

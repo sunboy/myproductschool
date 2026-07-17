@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { difficultyLabel } from '@/lib/utils'
 
 interface NextChallengeCardProps {
@@ -19,7 +19,7 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, hatc
   return (
     <div className="flex h-full flex-col gap-3 rounded-2xl border border-outline-variant/40 bg-surface-container-low p-4 shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]" data-hatch-target="dashboard-next-challenge">
       <div className="flex items-center gap-2">
-        <HatchGlyph size={20} state="idle" />
+        <HatchImage size={20} state="idle" />
         <span className="text-[10px] font-bold text-primary uppercase tracking-widest font-label">For you</span>
       </div>
 

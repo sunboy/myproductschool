@@ -14,7 +14,7 @@ export interface MockPrompt {
   context: string
 }
 
-export const MOCK_PROMPTS: MockPrompt[] = [
+export const MOCK_INTERVIEW_PROMPTS: MockPrompt[] = [
   {
     id: 'metric-drop',
     context:

@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { ArrowLeft, Check, X } from 'lucide-react'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import {
   BILLING_PLANS,
   ANALYTICS_PLANS,
@@ -24,6 +25,10 @@ import { EVENT_CHECKOUT_STARTED, EVENT_PAYWALL_SHOWN, EVENT_PAYWALL_DISMISSED, E
 // the proactive "Upgrade to Pro" entry points (settings, nav, dashboard nudge).
 // It shows plan selection (monthly/annual toggle + the right tier's features),
 // then an embedded Stripe checkout inline so the user never leaves the page.
+//
+// Chrome follows the Codex ref-10 pricing language: deep-forest band header,
+// serif display headline, rounded-rectangle forest CTA, check-list features.
+// Plan limits are threaded live via usePlanLimits — never hardcoded.
 
 const stripePublishableKey =
   process.env.NEXT_PUBLIC_STRIPE_MODE === 'test'
@@ -37,20 +42,20 @@ const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : 
 const ANALYTICS_FEATURE_KEYS = new Set(['claude_code_analytics', 'claude_code_sessions'])
 
 const ANALYTICS_FEATURES = [
-  { icon: 'verified',     text: 'Everything in Pro' },
-  { icon: 'terminal',     text: 'Live Claude Code sessions on real data' },
-  { icon: 'database',     text: 'BigQuery analysis with Hatch coaching' },
-  { icon: 'construction', text: 'Reusable skills and shareable reports' },
+  'Everything in Pro',
+  'Live Claude Code sessions on real data',
+  'BigQuery analysis with Hatch coaching',
+  'Reusable skills and shareable reports',
 ]
 
 function proFeatures(pro: { challenges: number; interviews: number }) {
   return [
-    { icon: 'fitness_center',    text: `${pro.challenges} challenge starts/month` },
-    { icon: 'psychology',        text: 'Fair-use Hatch AI budget' },
-    { icon: 'analytics',         text: 'Learner DNA, competency radar' },
-    { icon: 'school',            text: 'Study plans and autopsies' },
-    { icon: 'mic',               text: `${pro.interviews} AI interview starts/month` },
-    { icon: 'workspace_premium', text: 'Early access to new features' },
+    `${pro.challenges} challenge starts/month`,
+    `${pro.interviews} AI interview starts/month`,
+    'Fair-use Hatch AI budget',
+    'Learner DNA, competency radar',
+    'Study plans and autopsies',
+    'Early access to new features',
   ]
 }
 
@@ -103,7 +108,7 @@ const FEATURE_COPY: Record<string, { eyebrow: string; headline?: string; detail:
   claude_code_analytics: {
     eyebrow: 'HackProduct Analytics',
     headline: 'Claude Code Analytics is a special tier.',
-    detail: 'Unlock live analyst sessions on real datasets, on top of everything in Pro.',
+    detail: 'Live analyst sessions on real datasets, on top of everything in Pro.',
   },
   claude_code_sessions: {
     eyebrow: 'Analytics session limit',
@@ -168,12 +173,12 @@ export function PaywallModal({
   const hasUsage = typeof used === 'number' && typeof limit === 'number' && limit > 0
   const headline =
     featureCopy?.headline ??
-    (hasUsage ? `You've used ${used} of ${limit}.` : 'Unlock everything in Pro.')
+    (hasUsage ? `You've used ${used} of ${limit}.` : 'Everything in Pro, one plan.')
   const detail = featureCopy?.detail ?? 'Practice without monthly limits.'
   const progressPct = hasUsage ? Math.min((used! / limit!) * 100, 100) : 0
   const remaining = hasUsage ? Math.max(limit! - used!, 0) : 0
 
-  const ctaLabel = isAnalytics ? 'Get Analytics' : 'Unlock Pro'
+  const ctaLabel = isAnalytics ? 'Get Analytics' : 'Get Pro'
 
   // Tracks whether the user has clicked the upgrade CTA at least once during this
   // open session, so closeAll can tell a genuine dismissal apart from closing the
@@ -270,41 +275,35 @@ export function PaywallModal({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-inverse-surface/60"
+        className="fixed inset-0 bg-forest-950/60"
         style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
         onClick={dismissible ? closeAll : undefined}
       />
 
       {/* Modal panel */}
-      <div
-        className="relative w-full max-w-md rounded-2xl animate-step-enter"
-        style={{
-          background: '#ffffff',
-          boxShadow: '0 32px 80px rgba(46,50,48,0.22), 0 0 0 1px rgba(196,200,188,0.3)',
-        }}
-      >
-        {/* Header */}
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-hairline bg-card-bright shadow-[0_32px_80px_rgba(5,35,22,0.35)] animate-step-enter">
+        {/* Header — deep-forest pricing band (ref 10) */}
         <div
-          className="px-5 pt-4 pb-4 rounded-t-2xl"
-          style={{ background: 'linear-gradient(145deg, #2d5a3d 0%, #4a7c59 60%, #3a6b4a 100%)' }}
+          className="px-5 pt-4 pb-4"
+          style={{ background: 'linear-gradient(120deg, #052316 0%, #123b20 78%, #1e472d 100%)' }}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
               {checkoutOpen && (
                 <button
                   onClick={() => { setCheckoutClientSecret(null); setCheckoutPlan(null) }}
-                  className="w-7 h-7 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors mr-1 shrink-0"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                   aria-label="Back"
                 >
-                  <span className="material-symbols-outlined text-[17px]">arrow_back</span>
+                  <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
                 </button>
               )}
-              <HatchGlyph size={32} state="idle" className="text-white shrink-0" />
+              <HatchImage state="avatar" size={34} className="shrink-0" alt="Hatch" />
               <div className="min-w-0">
-                <p className="font-label text-[10px] uppercase tracking-[0.18em] font-bold text-white/60 truncate">
+                <p className="truncate font-label text-[10px] font-bold uppercase tracking-[0.14em] text-white/55">
                   {eyebrow}
                 </p>
-                <p className="font-headline font-bold text-white text-base leading-tight truncate" style={{ letterSpacing: '-0.02em' }}>
+                <p className="truncate font-headline text-[17px] font-semibold leading-tight tracking-[-0.01em] text-white">
                   {checkoutOpen ? `HackProduct ${isAnalytics ? 'Analytics' : 'Pro'}` : headline}
                 </p>
               </div>
@@ -312,10 +311,10 @@ export function PaywallModal({
             {dismissible && (
               <button
                 onClick={closeAll}
-                className="w-7 h-7 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                 aria-label="Close"
               >
-                <span className="material-symbols-outlined text-[17px]">close</span>
+                <X className="h-4 w-4" strokeWidth={1.8} />
               </button>
             )}
           </div>
@@ -323,16 +322,16 @@ export function PaywallModal({
           {/* Usage progress (only for usage-cap gates) */}
           {!checkoutOpen && hasUsage && (
             <div className="mt-3">
-              <div className="w-full h-1.5 rounded-full bg-white/20 overflow-hidden">
-                <div className="h-full rounded-full bg-white transition-all" style={{ width: `${progressPct}%` }} />
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/15">
+                <div className="h-full rounded-full bg-gold transition-all" style={{ width: `${progressPct}%` }} />
               </div>
-              <p className="font-body text-xs text-white/60 mt-2">
+              <p className="mt-2 font-body text-xs tabular-nums text-white/60">
                 {remaining <= 0 ? detail : `${remaining} remaining this month`}
               </p>
             </div>
           )}
           {!checkoutOpen && !hasUsage && (
-            <p className="font-body text-xs text-white/70 mt-2 leading-relaxed">{detail}</p>
+            <p className="mt-2 font-body text-xs leading-relaxed text-white/65">{detail}</p>
           )}
         </div>
 
@@ -348,46 +347,44 @@ export function PaywallModal({
           <>
             {/* Billing toggle + price */}
             <div className="px-5 pt-4">
-              <div className="flex rounded-xl p-1 gap-1" style={{ background: '#f0ece4' }}>
-                {(['monthly', 'annual'] as BillingCycle[]).map((cycle) => (
-                  <button
-                    key={cycle}
-                    onClick={() => setBilling(cycle)}
-                    className="relative flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-label font-semibold transition-all duration-200"
-                    style={{
-                      background: billing === cycle ? '#ffffff' : 'transparent',
-                      color: billing === cycle ? '#2e3230' : '#74796e',
-                      boxShadow: billing === cycle
-                        ? '0 1px 4px rgba(46,50,48,0.10), 0 0 0 1px rgba(196,200,188,0.25)'
-                        : 'none',
-                    }}
-                  >
-                    {cycle === 'annual' ? 'Annual' : 'Monthly'}
-                    {cycle === 'annual' && (
-                      <span
-                        className="font-label text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                        style={{ background: 'rgba(74,124,89,0.12)', color: '#4a7c59' }}
-                      >
-                        Save {annualSavings}%
-                      </span>
-                    )}
-                  </button>
-                ))}
+              <div className="flex gap-1 rounded-xl border border-hairline bg-page-field p-1">
+                {(['monthly', 'annual'] as BillingCycle[]).map((cycle) => {
+                  const active = billing === cycle
+                  return (
+                    <button
+                      key={cycle}
+                      onClick={() => setBilling(cycle)}
+                      className={[
+                        'relative flex flex-1 items-center justify-center gap-2 rounded-lg py-1.5 font-label text-xs font-bold transition-all duration-200',
+                        active ? 'bg-forest-950 text-white' : 'text-ink-secondary hover:text-ink-strong',
+                      ].join(' ')}
+                    >
+                      {cycle === 'annual' ? 'Annual' : 'Monthly'}
+                      {cycle === 'annual' && (
+                        <span
+                          className={[
+                            'rounded-full px-1.5 py-0.5 font-label text-[10px] font-bold tabular-nums',
+                            active ? 'bg-gold text-forest-950' : 'bg-note-amber text-forest-800',
+                          ].join(' ')}
+                        >
+                          Save {annualSavings}%
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
 
-              <div className="flex items-end gap-2 mt-2">
-                <span
-                  className="font-headline font-bold text-on-surface tabular-nums"
-                  style={{ fontSize: '1.9rem', letterSpacing: '-0.03em', lineHeight: 1 }}
-                >
+              <div className="mt-3 flex items-end gap-2">
+                <span className="font-headline text-[30px] font-bold leading-none tracking-[-0.02em] tabular-nums text-ink-strong">
                   {formatPlanPrice(selectedPlan)}
                 </span>
-                <div className="pb-0.5 space-y-0.5">
-                  <p className="font-label text-xs text-on-surface-variant font-semibold">
+                <div className="space-y-0.5 pb-0.5">
+                  <p className="font-label text-xs font-semibold text-ink-secondary">
                     {billing === 'annual' ? 'per year' : 'per month'}
                   </p>
                   {billing === 'annual' && (
-                    <p className="font-label text-[10px] text-primary font-semibold">
+                    <p className="font-label text-[10px] font-bold tabular-nums text-forest-600">
                       ~{monthlyEquivalent}/mo, billed annually
                     </p>
                   )}
@@ -396,52 +393,41 @@ export function PaywallModal({
             </div>
 
             {/* Feature list */}
-            <ul className="px-5 pt-3 pb-3 grid grid-cols-2 gap-x-3 gap-y-1.5">
-              {featureList.map(({ icon, text }) => (
+            <ul className="grid grid-cols-1 gap-y-1.5 px-5 pb-3 pt-3">
+              {featureList.map((text) => (
                 <li key={text} className="flex items-center gap-2">
-                  <span
-                    className="material-symbols-outlined text-primary text-[14px] shrink-0"
-                    style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}
-                  >
-                    {icon}
+                  <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-sd-bg">
+                    <Check className="h-3 w-3 text-forest-600" strokeWidth={2.4} />
                   </span>
-                  <span className="font-body text-[11px] text-on-surface">{text}</span>
+                  <span className="font-body text-[12px] tabular-nums text-ink-strong">{text}</span>
                 </li>
               ))}
             </ul>
 
             {/* CTA */}
-            <div className="px-5 pb-5 space-y-2">
+            <div className="space-y-2 px-5 pb-5">
               <button
                 onClick={handleUpgrade}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 rounded-full py-3 font-label font-bold text-sm text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-70"
-                style={{
-                  background: 'linear-gradient(135deg, #4a7c59 0%, #3a6b4a 100%)',
-                  boxShadow: '0 4px 16px rgba(74,124,89,0.30)',
-                }}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-forest-950 py-3 font-label text-sm font-bold text-white transition-all duration-200 hover:bg-forest-900 active:scale-[0.98] disabled:opacity-70"
               >
-                {loading ? (
-                  <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                    workspace_premium
-                  </span>
+                {loading && (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                 )}
                 {loading
                   ? 'Loading checkout...'
-                  : `${ctaLabel} - ${formatPlanPrice(selectedPlan)}/${selectedPlan.interval === 'year' ? 'yr' : 'mo'}`}
+                  : `${ctaLabel} · ${formatPlanPrice(selectedPlan)}/${selectedPlan.interval === 'year' ? 'yr' : 'mo'}`}
               </button>
               {error && (
                 <p className="text-center font-body text-[11px] text-error">{error}</p>
               )}
-              <p className="text-center font-body text-[11px] text-on-surface-variant">
+              <p className="text-center font-body text-[11px] text-ink-secondary">
                 7-day free trial. Secure checkout via Stripe. Cancel anytime.
               </p>
               {secondaryAction && (
                 <button
                   onClick={secondaryAction.onClick}
-                  className="w-full text-center font-body text-xs text-on-surface-variant hover:text-on-surface transition-colors pt-1"
+                  className="w-full pt-1 text-center font-body text-xs text-ink-secondary transition-colors hover:text-ink-strong"
                 >
                   {secondaryAction.label}
                 </button>

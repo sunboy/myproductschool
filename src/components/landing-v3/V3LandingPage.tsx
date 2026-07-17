@@ -5,6 +5,7 @@ import { organizationJsonLd, websiteJsonLd } from '@/lib/seo/directory-content'
 import { V3Nav } from '@/components/landing-v3/V3Nav'
 import { V3Hero } from '@/components/landing-v3/V3Hero'
 import { V3ContextSection } from '@/components/landing-v3/V3ContextSection'
+import { V3HowItWorks } from '@/components/landing-v3/V3HowItWorks'
 import { V3HatchReveal } from '@/components/landing-v3/V3HatchReveal'
 import { V3FeatureGrid } from '@/components/landing-v3/V3FeatureGrid'
 import { V3LiveInterviewSection } from '@/components/landing-v3/V3LiveInterviewSection'
@@ -77,6 +78,7 @@ export function V3LandingPage() {
       <main>
         <V3Hero />
         <V3ContextSection />
+        <V3HowItWorks />
         <V3HatchReveal />
         <V3FeatureGrid />
         <V3LiveInterviewSection />

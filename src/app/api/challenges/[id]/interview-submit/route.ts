@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { gradeInterviewSession } from '@/lib/v2/skills/interview-grading'
+import { gradeInterviewSession, neutralInterviewGradeFallback } from '@/lib/v2/skills/interview-grading'
 import type { ChallengeType } from '@/lib/types'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
@@ -10,11 +10,23 @@ import { withRoute } from '@/lib/api/withRoute'
 import { calculateChallengeXp } from '@/lib/scoring/xp-calculator'
 import { captureServerImmediate } from '@/lib/posthog/server'
 
+// {stepId: {sectionId: text}} — the structured write-up from the SD/DM
+// workspace. Per-section text is capped client-side (max 1500 chars); the
+// server cap is generous but bounded so a hostile payload cannot bloat the row.
+const StepAnswersSchema = z.record(
+  z.string().max(50),
+  z.record(z.string().max(100), z.string().max(5000))
+)
+
 const RequestSchema = z.object({
   attemptId: z.string().uuid(),
   canvasFinalSnapshot: z.record(z.string(), z.unknown()).nullable().optional(),
   contextPack: z.string().max(50000).nullable().optional(),
   canvasPngUrl: z.string().url().nullable().optional(),
+  // Accept both spellings: FlowWorkspace state is camelCase, the autosave
+  // draft key is snake_case. Persisted as step_answers either way.
+  stepAnswers: StepAnswersSchema.nullable().optional(),
+  step_answers: StepAnswersSchema.nullable().optional(),
 })
 
 function validationIssues(error: ZodError) {
@@ -29,30 +41,6 @@ function gradeLabelForScore(score: number): string {
   if (score >= 4.5) return 'best'
   if (score >= 3) return 'good'
   return 'surface'
-}
-
-function aiLimitResponse(error: unknown) {
-  if (error instanceof PlanLimitExceeded) {
-    return NextResponse.json({
-      error: 'limit_reached',
-      feature: error.feature,
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    }, { status: 402 })
-  }
-
-  if (error instanceof AiBudgetExceededError) {
-    return NextResponse.json({
-      error: 'limit_reached',
-      feature: 'hatch_ai_cents',
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    }, { status: 402 })
-  }
-
-  return null
 }
 
 export const POST = withRoute(async (
@@ -78,6 +66,7 @@ export const POST = withRoute(async (
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
   const { attemptId, canvasFinalSnapshot, contextPack, canvasPngUrl } = body
+  const stepAnswers = body.stepAnswers ?? body.step_answers ?? null
 
   // Verify ownership
   const { data: attempt } = await supabase
@@ -120,10 +109,13 @@ export const POST = withRoute(async (
   // Store the final snapshot first so the grader has data to read, but DO NOT
   // flip status to 'completed' yet - if grading fails we want the user to be
   // able to retry without hitting the "Already submitted" 409.
-  const snapshotWithContext = canvasFinalSnapshot || contextPack
+  const snapshotWithContext = canvasFinalSnapshot || contextPack || stepAnswers
     ? {
         ...(canvasFinalSnapshot ?? {}),
         ...(contextPack ? { context_pack: contextPack } : {}),
+        // Structured write-up persists inside the same jsonb column the grader
+        // already reads (canvas_final_snapshot) — no new column needed.
+        ...(stepAnswers && Object.keys(stepAnswers).length > 0 ? { step_answers: stepAnswers } : {}),
       }
     : null
 
@@ -135,7 +127,14 @@ export const POST = withRoute(async (
     })
     .eq('id', attemptId)
 
-  // Grade
+  // Grade.
+  //
+  // Grading a session the user already finished is the payoff, not a metered
+  // feature. When the AI grading-runs limit (or the observe-only budget) is hit,
+  // we do NOT 402 and strand the attempt in_progress — we fall open to a neutral
+  // fallback grade (mid score, honest headline) so the user still completes and
+  // can re-submit later for a detailed grade. The rep-count limit stays enforced
+  // on *starting* a rep.
   const userPlan = await getUserPlanForBudget(user.id)
   let grade
   try {
@@ -146,10 +145,12 @@ export const POST = withRoute(async (
       route: 'interview_challenge_grade',
     })
   } catch (err) {
-    const response = aiLimitResponse(err)
-    if (response) return response
-    console.error('Interview grading failed:', err)
-    return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
+    if (err instanceof PlanLimitExceeded || err instanceof AiBudgetExceededError) {
+      grade = neutralInterviewGradeFallback(challengeType)
+    } else {
+      console.error('Interview grading failed:', err)
+      return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
+    }
   }
 
   const admin = createAdminClient()

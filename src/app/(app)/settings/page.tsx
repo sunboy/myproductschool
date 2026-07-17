@@ -3,6 +3,18 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import {
+  AlertTriangle,
+  Check,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  LogOut,
+  Pencil,
+  X,
+} from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { FreemiumUsageSummary } from '@/components/billing/FreemiumUsageSummary'
 import { ReauthModal } from '@/components/auth/ReauthModal'
@@ -83,6 +95,7 @@ export default function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [plan, setPlan] = useState<string>('free')
+  const [planLoading, setPlanLoading] = useState(true)
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
   const [billingAction, setBillingAction] = useState<string | null>(null)
   const [billingError, setBillingError] = useState<string | null>(null)
@@ -148,7 +161,7 @@ export default function SettingsPage() {
   }
 
   useEffect(() => {
-    refreshProfile().catch(() => {})
+    refreshProfile().catch(() => {}).finally(() => setPlanLoading(false))
     refreshIdentities().catch(() => {})
     fetch('/api/billing/prices')
       .then(r => r.ok ? r.json() : null)
@@ -433,7 +446,9 @@ export default function SettingsPage() {
     ? googleIdentity.identity_data.email
     : null
   const canUnlinkGoogle = !!googleIdentity && linkedIdentities.length > 1
-  const passwordInputClass = 'w-full rounded-xl border border-outline-variant bg-background px-3 py-2 text-sm font-body text-on-surface placeholder:text-on-surface-variant/55 focus:outline-none focus:ring-2 focus:ring-primary/30'
+  const inputClass = 'w-full rounded-[8px] border border-hairline bg-card-bright px-3 py-2 font-body text-sm text-ink-strong placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-forest-600/25 focus:border-forest-600/50'
+  const quietButtonClass = 'inline-flex items-center gap-1.5 rounded-[10px] border border-hairline bg-card-bright px-3.5 py-2 font-label text-xs font-bold text-ink-secondary transition-colors hover:border-forest-600/40 hover:text-ink-strong disabled:cursor-not-allowed disabled:opacity-50'
+  const primaryButtonClass = 'inline-flex items-center justify-center gap-2 rounded-[10px] bg-forest-950 px-4 py-2.5 font-label text-sm font-bold text-white transition-colors hover:bg-forest-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60'
   const passwordFields: Array<{
     field: PasswordField
     label: string
@@ -455,30 +470,34 @@ export default function SettingsPage() {
   ]
 
   return (
-    <main className="mx-auto max-w-[1060px] px-4 py-7 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <main className="mx-auto max-w-[1060px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+      {/* ── Light page header (spec §1: not a hub, no dark hero) ─────────── */}
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-label text-[11px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant">
+          <p className="font-label text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
             Account
           </p>
-          <h1 className="mt-1 font-headline text-[32px] font-bold leading-none text-on-surface" style={{ letterSpacing: '-0.03em' }}>
+          <h1 className="mt-1 font-headline text-[28px] font-semibold leading-[1.2] tracking-[-0.02em] text-ink-strong">
             Settings
           </h1>
+          <p className="mt-1 font-body text-[13.5px] text-ink-secondary">
+            Profile, sign-in, plan, and billing.
+          </p>
         </div>
-        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-outline-variant/50 bg-surface-container-low px-3 py-1.5 text-xs font-label font-bold text-on-surface-variant">
-          <span className="material-symbols-outlined text-[15px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
-            verified_user
+        {isPro && (
+          <span className="inline-flex w-fit items-center rounded-full border-[1.5px] border-gold bg-note-amber px-3 py-1 font-label text-xs font-bold text-forest-800">
+            Pro
           </span>
-          {isPro ? 'Pro workspace' : 'Free workspace'}
-        </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[360px_1fr]">
-        <section className="rounded-[22px] border border-outline-variant/45 bg-surface-container-low p-5 shadow-[0_18px_50px_rgba(56,47,33,0.07)]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[360px_1fr]">
+        {/* ── Profile & security card ─────────────────────────────────────── */}
+        <section className="h-fit rounded-2xl border border-hairline bg-card-bright p-5">
           <div className="flex items-start gap-4">
             <button
               type="button"
-              className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-primary text-xl font-bold text-on-primary transition-transform active:scale-[0.98]"
+              className="group relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-forest-800 text-lg font-bold text-white transition-transform active:scale-[0.98]"
               onClick={() => fileInputRef.current?.click()}
               aria-label="Update avatar"
             >
@@ -487,11 +506,11 @@ export default function SettingsPage() {
                 : <span className="font-label" suppressHydrationWarning>{profileInitial}</span>
               }
               <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white transition-colors group-hover:bg-black/25">
-                <span className="material-symbols-outlined text-[18px] opacity-0 transition-opacity group-hover:opacity-100">photo_camera</span>
+                <Pencil className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" strokeWidth={1.8} />
               </span>
               {avatarUploading && (
                 <span className="absolute inset-0 flex items-center justify-center bg-black/45">
-                  <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                  <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
                 </span>
               )}
             </button>
@@ -504,40 +523,40 @@ export default function SettingsPage() {
                     value={displayName}
                     onChange={e => setDisplayName(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingName(false) }}
-                    className="min-w-0 flex-1 rounded-xl border border-outline-variant bg-background px-3 py-2 text-sm font-body text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className={`min-w-0 flex-1 ${inputClass}`}
                   />
                   <button
                     onClick={saveDisplayName}
                     disabled={profileSaving}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-white transition-opacity disabled:opacity-50"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-forest-950 text-white transition-opacity disabled:opacity-50"
                     aria-label="Save display name"
                   >
-                    <span className="material-symbols-outlined text-[17px]">check</span>
+                    <Check className="h-4 w-4" strokeWidth={2} />
                   </button>
                   <button
                     onClick={() => setEditingName(false)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-on-surface-variant transition-colors hover:bg-surface-container"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] text-ink-secondary transition-colors hover:bg-page-field"
                     aria-label="Cancel display name edit"
                   >
-                    <span className="material-symbols-outlined text-[17px]">close</span>
+                    <X className="h-4 w-4" strokeWidth={2} />
                   </button>
                 </div>
               ) : (
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate font-headline text-xl font-bold leading-tight text-on-surface" style={{ letterSpacing: '-0.02em' }}>
+                    <p className="truncate font-body text-[16px] font-extrabold leading-tight text-ink-strong">
                       {displayName || 'Add your name'}
                     </p>
-                    <p className="mt-1 truncate text-sm font-body text-on-surface-variant" suppressHydrationWarning>
+                    <p className="mt-0.5 truncate font-body text-[13px] text-ink-secondary" suppressHydrationWarning>
                       {email ?? 'Signed in email'}
                     </p>
                   </div>
                   <button
                     onClick={() => setEditingName(true)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-ink-secondary transition-colors hover:bg-page-field hover:text-ink-strong"
                     aria-label="Edit display name"
                   >
-                    <span className="material-symbols-outlined text-[17px]">edit</span>
+                    <Pencil className="h-3.5 w-3.5" strokeWidth={1.8} />
                   </button>
                 </div>
               )}
@@ -545,117 +564,96 @@ export default function SettingsPage() {
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           </div>
 
-          <div className="mt-5 rounded-2xl bg-background/70 px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
+          {/* Hairline-separated rows (spec §4: de-carded list content) */}
+          <div className="mt-4 divide-y divide-hairline border-y border-hairline">
+            <div className="flex items-center justify-between gap-3 py-3">
               <div className="min-w-0">
-                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Email</p>
-                <p className="mt-1 truncate text-sm font-body font-semibold text-on-surface">{email ?? 'Signed in email'}</p>
+                <p className="font-body text-[13px] font-bold text-ink-strong">Email</p>
+                <p className="mt-0.5 truncate font-body text-xs text-ink-secondary">{email ?? 'Signed in email'}</p>
               </div>
-              <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">lock</span>
+              <Lock className="h-4 w-4 shrink-0 text-ink-muted" strokeWidth={1.8} />
             </div>
-          </div>
 
-          <Link
-            href="/settings/notifications"
-            className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-background/70 px-4 py-3 transition-colors hover:bg-background"
-          >
-            <div className="min-w-0">
-              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Notifications</p>
-              <p className="mt-1 text-sm font-body font-semibold text-on-surface">Email preferences</p>
-            </div>
-            <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">chevron_right</span>
-          </Link>
-
-          <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-background/70 px-4 py-3">
-            <div className="min-w-0">
-              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Calibration</p>
-              <p className="mt-1 text-sm font-body font-semibold text-on-surface">Reset your FLOW baseline</p>
-              <p className="mt-0.5 text-xs font-body text-on-surface-variant">Takes ~5 minutes. Hatch will re-route your challenges.</p>
-            </div>
-            <button
-              type="button"
-              onClick={handleRedoCalibration}
-              disabled={redoingCalibration}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-outline-variant/70 px-3 py-2 text-xs font-label font-bold text-on-surface-variant transition-colors hover:bg-background hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-50"
+            <Link
+              href="/settings/notifications"
+              className="group flex items-center justify-between gap-3 py-3 transition-colors"
             >
-              <span className="material-symbols-outlined text-[15px]">refresh</span>
-              {redoingCalibration ? 'Opening' : 'Redo calibration'}
-            </button>
-          </div>
-
-          <div className="mt-4 rounded-2xl bg-background/70 px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Linked accounts</p>
-                <p className="mt-1 truncate text-sm font-body font-semibold text-on-surface">
-                  {googleIdentity ? 'Google connected' : 'No Google account connected'}
+                <p className="font-body text-[13px] font-bold text-ink-strong">Notifications</p>
+                <p className="mt-0.5 font-body text-xs text-ink-secondary">Email preferences</p>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-ink-muted transition-colors group-hover:text-ink-strong" strokeWidth={1.8} />
+            </Link>
+
+            <div className="flex items-center justify-between gap-3 py-3">
+              <div className="min-w-0">
+                <p className="font-body text-[13px] font-bold text-ink-strong">Calibration</p>
+                <p className="mt-0.5 font-body text-xs text-ink-secondary">
+                  Reset your FLOW baseline. Takes about 5 minutes.
                 </p>
               </div>
-              {identitiesLoading ? (
-                <span className="material-symbols-outlined shrink-0 animate-spin text-[17px] text-on-surface-variant">progress_activity</span>
-              ) : (
-                <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">hub</span>
-              )}
+              <button
+                type="button"
+                onClick={handleRedoCalibration}
+                disabled={redoingCalibration}
+                className={quietButtonClass}
+              >
+                {redoingCalibration ? 'Opening' : 'Redo'}
+              </button>
             </div>
 
-            <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-outline-variant/45 bg-surface-container-lowest px-3 py-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="material-symbols-outlined flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-container text-[19px] text-on-surface-variant">
-                  account_circle
-                </span>
+            <div className="py-3">
+              <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-label font-bold text-on-surface">Google</p>
-                  <p className="mt-0.5 truncate text-xs font-body text-on-surface-variant">
-                    {googleEmail ?? (googleIdentity ? 'Connected' : 'Use Google sign-in')}
+                  <p className="font-body text-[13px] font-bold text-ink-strong">Google sign-in</p>
+                  <p className="mt-0.5 truncate font-body text-xs text-ink-secondary">
+                    {identitiesLoading
+                      ? 'Checking linked accounts'
+                      : googleEmail ?? (googleIdentity ? 'Connected' : 'Not connected')}
                   </p>
                 </div>
+                {identitiesLoading ? (
+                  <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ink-muted" strokeWidth={1.8} />
+                ) : googleIdentity ? (
+                  <button
+                    type="button"
+                    onClick={handleUnlinkGoogle}
+                    disabled={identityAction !== null || !canUnlinkGoogle}
+                    className={quietButtonClass}
+                    title={canUnlinkGoogle ? 'Remove Google sign-in' : 'Add another sign-in method before removing Google'}
+                  >
+                    {identityAction === 'unlink-google' ? 'Removing' : 'Remove'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleLinkGoogle}
+                    disabled={identityAction !== null}
+                    className={quietButtonClass}
+                  >
+                    {identityAction === 'link-google' ? 'Connecting' : 'Connect'}
+                  </button>
+                )}
               </div>
-
-              {googleIdentity ? (
-                <button
-                  type="button"
-                  onClick={handleUnlinkGoogle}
-                  disabled={identityAction !== null || identitiesLoading || !canUnlinkGoogle}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-outline-variant/70 px-3 py-2 text-xs font-label font-bold text-on-surface-variant transition-colors hover:bg-background hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-50"
-                  title={canUnlinkGoogle ? 'Remove Google sign-in' : 'Add another sign-in method before removing Google'}
-                >
-                  {identityAction === 'unlink-google' ? 'Removing' : 'Remove'}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleLinkGoogle}
-                  disabled={identityAction !== null || identitiesLoading}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-label font-bold text-on-primary transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {identityAction === 'link-google' ? 'Connecting' : 'Connect'}
-                </button>
+              {identityError && (
+                <p className="mt-2 rounded-[8px] bg-error/10 px-3 py-2 font-body text-xs text-error">{identityError}</p>
               )}
             </div>
-
-            {identityError && (
-              <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{identityError}</p>
-            )}
           </div>
 
-          <form onSubmit={handlePasswordChange} className="mt-4 rounded-2xl bg-background/70 px-4 py-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Password</p>
-                <p className="mt-1 text-sm font-body font-semibold text-on-surface">Change your password</p>
-                <p className="mt-1 text-xs font-body text-on-surface-variant">
-                  Use at least 10 characters with a number or symbol.
-                </p>
-              </div>
-              <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">password</span>
-            </div>
+          {/* Password */}
+          <form onSubmit={handlePasswordChange} className="mt-4">
+            <p className="font-body text-[13px] font-bold text-ink-strong">Change password</p>
+            <p className="mt-0.5 font-body text-xs text-ink-secondary">
+              Use at least 10 characters with a number or symbol.
+            </p>
 
             <div className="mt-3 space-y-3">
               {passwordFields.map(({ field, label, placeholder, autoComplete }) => {
                 const visible = Boolean(visiblePasswordFields[field])
                 return (
                   <div key={field} className="space-y-1.5">
-                    <label htmlFor={`settings-${field}`} className="block text-xs font-label font-bold text-on-surface-variant">
+                    <label htmlFor={`settings-${field}`} className="block font-label text-xs font-bold text-ink-secondary">
                       {label}
                     </label>
                     <div className="relative">
@@ -664,23 +662,23 @@ export default function SettingsPage() {
                         type={visible ? 'text' : 'password'}
                         value={passwordForm[field]}
                         onChange={e => updatePasswordField(field, e.target.value)}
-                        className={`${passwordInputClass} pr-10`}
+                        className={`${inputClass} pr-10`}
                         placeholder={placeholder}
                         autoComplete={autoComplete}
                       />
                       <button
                         type="button"
                         onClick={() => togglePasswordVisibility(field)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors hover:text-on-surface"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted transition-colors hover:text-ink-strong"
                         aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
                       >
-                        <span className="material-symbols-outlined text-[18px]">
-                          {visible ? 'visibility_off' : 'visibility'}
-                        </span>
+                        {visible
+                          ? <EyeOff className="h-4 w-4" strokeWidth={1.8} />
+                          : <Eye className="h-4 w-4" strokeWidth={1.8} />}
                       </button>
                     </div>
                     {passwordFieldErrors[field] && (
-                      <p className="text-xs font-body text-error">{passwordFieldErrors[field]}</p>
+                      <p className="font-body text-xs text-error">{passwordFieldErrors[field]}</p>
                     )}
                   </div>
                 )
@@ -688,42 +686,62 @@ export default function SettingsPage() {
             </div>
 
             {passwordError && (
-              <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{passwordError}</p>
+              <p className="mt-3 rounded-[8px] bg-error/10 px-3 py-2 font-body text-xs text-error">{passwordError}</p>
             )}
             {passwordSuccess && (
-              <p className="mt-3 rounded-xl bg-primary-fixed px-3 py-2 text-sm font-body font-semibold text-primary">{passwordSuccess}</p>
+              <p className="mt-3 note-mint px-3 py-2 font-body text-xs font-bold text-forest-800">{passwordSuccess}</p>
             )}
 
             <button
               type="submit"
               disabled={passwordSaving || reauthRequest !== null}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-label font-bold text-on-primary transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
+              className={`mt-3 w-full ${primaryButtonClass}`}
             >
-              <span className="material-symbols-outlined text-[17px]">key</span>
               {passwordSaving ? 'Updating' : 'Update password'}
             </button>
           </form>
 
           <button
             onClick={handleLogout}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-outline-variant/60 bg-transparent px-4 py-3 text-sm font-label font-bold text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface active:scale-[0.99]"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-[10px] border border-hairline bg-transparent px-4 py-2.5 font-label text-sm font-bold text-ink-secondary transition-colors hover:border-forest-600/40 hover:text-ink-strong active:scale-[0.99]"
           >
-            <span className="material-symbols-outlined text-[17px]">logout</span>
+            <LogOut className="h-4 w-4" strokeWidth={1.8} />
             Sign out
           </button>
         </section>
 
-        <section className="rounded-[22px] border border-outline-variant/45 bg-surface-container-low p-5 shadow-[0_18px_50px_rgba(56,47,33,0.07)]">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary-fixed px-3 py-1 text-xs font-label font-bold text-primary">
-                <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
-                {isPro ? 'Active subscription' : 'Free plan'}
+        {/* ── Plan & billing card ─────────────────────────────────────────── */}
+        <section className="h-fit overflow-hidden rounded-2xl border border-hairline bg-card-bright">
+          {planLoading ? (
+            /* Neutral skeleton while the plan/billing query resolves — never
+               default to the free/upsell state during loading */
+            <div className="animate-pulse" aria-hidden="true">
+              <div className="px-5 py-4">
+                <div className="h-3 w-16 rounded bg-page-field" />
+                <div className="mt-2 h-7 w-48 rounded bg-page-field" />
+                <div className="mt-2 h-4 w-36 rounded bg-page-field" />
               </div>
-              <h2 className="mt-3 font-headline text-2xl font-bold leading-tight text-on-surface" style={{ letterSpacing: '-0.025em' }}>
-                {isPro ? 'HackProduct Pro' : 'Free workspace'}
+              <div className="p-5">
+                <div className="h-[74px] rounded-[12px] bg-page-field" />
+                <div className="mt-4 h-10 rounded-[10px] bg-page-field" />
+                <div className="mt-4 h-10 w-40 rounded-[10px] bg-page-field" />
+              </div>
+            </div>
+          ) : (
+          <>
+          {/* Dark pricing band (Codex ref 10 language) — the page's one dark surface */}
+          <div
+            className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+            style={{ background: 'linear-gradient(120deg, #052316 0%, #123b20 78%, #1e472d 100%)' }}
+          >
+            <div>
+              <p className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-white/55">
+                Your plan
+              </p>
+              <h2 className="mt-1 font-headline text-[22px] font-semibold leading-tight tracking-[-0.01em] text-white">
+                {isPro ? 'HackProduct Pro' : 'Free plan'}
               </h2>
-              <p className="mt-1 text-sm font-body capitalize text-on-surface-variant">
+              <p className="mt-0.5 font-body text-[12.5px] capitalize text-white/65">
                 {isPro ? `${interval} · ${statusLabel}` : 'Monthly free practice limits'}
               </p>
             </div>
@@ -731,132 +749,129 @@ export default function SettingsPage() {
             {!isPro && (
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade-modal'))}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-label font-bold text-on-primary transition-opacity hover:opacity-95 active:scale-[0.98]"
+                className="inline-flex w-fit items-center justify-center gap-2 rounded-[10px] bg-white px-4 py-2.5 font-label text-sm font-bold text-forest-950 transition-opacity hover:opacity-90 active:scale-[0.98]"
               >
-                Upgrade
-                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                {upgradePrice ? `Get Pro · ${upgradePrice}/mo` : 'Get Pro'}
               </button>
             )}
           </div>
 
-          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl bg-background/75 px-4 py-3">
-              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Current</p>
-              <p className="mt-2 text-sm font-body font-semibold text-on-surface">
-                {isPro ? `${interval}${currentPrice ? ` · ${currentPrice}/${subscription?.billing_interval === 'year' ? 'yr' : 'mo'}` : ''}` : 'Free · $0'}
-              </p>
-            </div>
-            <div className="rounded-2xl bg-background/75 px-4 py-3">
-              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Next billing</p>
-              <p className="mt-2 text-sm font-body font-semibold text-on-surface">{isPro ? periodEndLabel : 'None'}</p>
-            </div>
-            <div className="rounded-2xl bg-background/75 px-4 py-3">
-              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Switch price</p>
-              <p className="mt-2 text-sm font-body font-semibold text-on-surface">
-                {isPro && switchPrice ? `${switchPrice}/${switchInterval === 'year' ? 'yr' : 'mo'}` : upgradePrice ? `${upgradePrice}/mo` : 'Loading'}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5">
-            <FreemiumUsageSummary plan={plan} />
-          </div>
-
-          {cancelScheduled && (
-            <div className="mt-4 rounded-2xl border border-amber-200 bg-[#f3e2b9]/55 px-4 py-3 text-sm font-body text-on-surface">
-              Pro remains active until {periodEndLabel}, then your account moves to Free.
-            </div>
-          )}
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            {isPro ? (
-              <>
-                <button
-                  onClick={openBillingPortal}
-                  disabled={!!billingAction}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-label font-bold text-on-primary transition-opacity hover:opacity-95 disabled:opacity-60 active:scale-[0.98]"
-                >
-                  <span className="material-symbols-outlined text-[17px]">account_balance_wallet</span>
-                  {billingAction === 'portal' ? 'Opening billing' : 'Manage billing'}
-                </button>
-                <button
-                  onClick={() => runBillingAction('change-plan', { plan: switchPlan })}
-                  disabled={!!billingAction || reauthRequest !== null}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface transition-colors hover:bg-background disabled:opacity-60 active:scale-[0.98]"
-                >
-                  <span className="material-symbols-outlined text-[17px]">sync_alt</span>
-                  Switch to {switchPlan} {switchPrice ? `(${switchPrice}/${switchInterval === 'year' ? 'yr' : 'mo'})` : ''}
-                </button>
-                {cancelScheduled ? (
-                  <button
-                    onClick={() => runBillingAction('reactivate')}
-                    disabled={!!billingAction || reauthRequest !== null}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface transition-colors hover:bg-background disabled:opacity-60 active:scale-[0.98]"
-                  >
-                    <span className="material-symbols-outlined text-[17px]">restart_alt</span>
-                    Keep Pro
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => runBillingAction('cancel')}
-                    disabled={!!billingAction || reauthRequest !== null}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface-variant transition-colors hover:bg-background hover:text-on-surface disabled:opacity-60 active:scale-[0.98]"
-                  >
-                    <span className="material-symbols-outlined text-[17px]">event_busy</span>
-                    Cancel at renewal
-                  </button>
-                )}
-              </>
-            ) : (
-              upgradePrice && (
-                <p className="text-sm font-body text-on-surface-variant">
-                  Pro starts at {upgradePrice}/mo. Prices are fetched from Stripe when this page loads.
+          <div className="p-5">
+            {/* Stat cells: label + number, hairline separators, no boxes (spec §4) */}
+            <div className="grid grid-cols-1 divide-y divide-hairline rounded-[12px] border border-hairline sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+              <div className="px-4 py-3">
+                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">Current</p>
+                <p className="mt-1.5 font-body text-sm font-bold tabular-nums text-ink-strong">
+                  {isPro ? `${interval}${currentPrice ? ` · ${currentPrice}/${subscription?.billing_interval === 'year' ? 'yr' : 'mo'}` : ''}` : 'Free · $0'}
                 </p>
-              )
-            )}
-          </div>
-
-          {billingError && (
-            <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{billingError}</p>
-          )}
-
-          <div className="mt-6 border-t border-outline-variant/45 pt-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-error">Danger zone</p>
-                <p className="mt-1 text-sm font-body font-semibold text-on-surface">Delete your account</p>
               </div>
-              <button
-                type="button"
-                onClick={() => setDeleteDialogOpen(true)}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-error/45 px-4 py-3 text-sm font-label font-bold text-error transition-colors hover:bg-error/10 active:scale-[0.98]"
-              >
-                <span className="material-symbols-outlined text-[17px]">delete_forever</span>
-                Delete my account
-              </button>
+              <div className="px-4 py-3">
+                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">Next billing</p>
+                <p className="mt-1.5 font-body text-sm font-bold tabular-nums text-ink-strong">{isPro ? periodEndLabel : 'None'}</p>
+              </div>
+              <div className="px-4 py-3">
+                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">Switch price</p>
+                <p className="mt-1.5 font-body text-sm font-bold tabular-nums text-ink-strong">
+                  {isPro && switchPrice ? `${switchPrice}/${switchInterval === 'year' ? 'yr' : 'mo'}` : upgradePrice ? `${upgradePrice}/mo` : 'Loading'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <FreemiumUsageSummary plan={plan} />
+            </div>
+
+            {cancelScheduled && (
+              <div className="note-amber mt-4 px-4 py-3 font-body text-sm text-ink-strong">
+                Pro remains active until {periodEndLabel}, then your account moves to Free.
+              </div>
+            )}
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {isPro ? (
+                <>
+                  <button
+                    onClick={openBillingPortal}
+                    disabled={!!billingAction}
+                    className={primaryButtonClass}
+                  >
+                    {billingAction === 'portal' ? 'Opening billing' : 'Manage billing'}
+                  </button>
+                  <button
+                    onClick={() => runBillingAction('change-plan', { plan: switchPlan })}
+                    disabled={!!billingAction || reauthRequest !== null}
+                    className={`${quietButtonClass} px-4 py-2.5 text-sm`}
+                  >
+                    Switch to {switchPlan} {switchPrice ? `(${switchPrice}/${switchInterval === 'year' ? 'yr' : 'mo'})` : ''}
+                  </button>
+                  {cancelScheduled ? (
+                    <button
+                      onClick={() => runBillingAction('reactivate')}
+                      disabled={!!billingAction || reauthRequest !== null}
+                      className={`${quietButtonClass} px-4 py-2.5 text-sm`}
+                    >
+                      Keep Pro
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => runBillingAction('cancel')}
+                      disabled={!!billingAction || reauthRequest !== null}
+                      className={`${quietButtonClass} px-4 py-2.5 text-sm`}
+                    >
+                      Cancel at renewal
+                    </button>
+                  )}
+                </>
+              ) : (
+                upgradePrice && (
+                  <p className="font-body text-[13px] text-ink-secondary">
+                    Pro is {upgradePrice}/mo. Prices come from Stripe when this page loads.
+                  </p>
+                )
+              )}
+            </div>
+
+            {billingError && (
+              <p className="mt-3 rounded-[8px] bg-error/10 px-3 py-2 font-body text-sm text-error">{billingError}</p>
+            )}
+
+            <div className="mt-5 border-t border-hairline pt-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-error">Danger zone</p>
+                  <p className="mt-1 font-body text-sm font-bold text-ink-strong">Delete your account</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDeleteDialogOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-error/45 px-4 py-2.5 font-label text-sm font-bold text-error transition-colors hover:bg-error/10 active:scale-[0.98]"
+                >
+                  Delete my account
+                </button>
+              </div>
             </div>
           </div>
+          </>
+          )}
         </section>
       </div>
 
       {deleteDialogOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/45 px-4">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-forest-950/50 px-4">
           <form
             onSubmit={handleDeleteAccount}
-            className="w-full max-w-[460px] rounded-[22px] border border-error/35 bg-background p-5 shadow-[0_24px_70px_rgba(20,18,14,0.28)]"
+            className="w-full max-w-[460px] rounded-2xl border border-hairline bg-card-bright p-5 shadow-[0_24px_70px_rgba(5,35,22,0.30)]"
             role="dialog"
             aria-modal="true"
             aria-labelledby="delete-account-title"
           >
             <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-error/10 text-[20px] text-error" style={{ fontVariationSettings: "'FILL' 1" }}>
-                warning
-              </span>
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-error" strokeWidth={1.8} />
               <div>
-                <h2 id="delete-account-title" className="font-headline text-xl font-bold leading-tight text-on-surface">
+                <h2 id="delete-account-title" className="font-body text-[17px] font-extrabold leading-tight text-ink-strong">
                   Delete account
                 </h2>
-                <p className="mt-1 text-sm font-body leading-relaxed text-on-surface-variant">
+                <p className="mt-1 font-body text-sm leading-relaxed text-ink-secondary">
                   This permanently removes your account and connected profile data.
                 </p>
               </div>
@@ -864,7 +879,7 @@ export default function SettingsPage() {
 
             <div className="mt-5 space-y-3">
               <div className="space-y-1.5">
-                <label htmlFor="delete-email" className="block text-xs font-label font-bold text-on-surface-variant">
+                <label htmlFor="delete-email" className="block font-label text-xs font-bold text-ink-secondary">
                   Account email
                 </label>
                 <input
@@ -875,14 +890,14 @@ export default function SettingsPage() {
                     setDeleteEmail(e.target.value)
                     setDeleteError(null)
                   }}
-                  className={passwordInputClass}
+                  className={inputClass}
                   placeholder={email ?? 'name@example.com'}
                   autoComplete="email"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="delete-confirmation" className="block text-xs font-label font-bold text-on-surface-variant">
+                <label htmlFor="delete-confirmation" className="block font-label text-xs font-bold text-ink-secondary">
                   Type DELETE
                 </label>
                 <input
@@ -892,14 +907,14 @@ export default function SettingsPage() {
                     setDeleteConfirmation(e.target.value)
                     setDeleteError(null)
                   }}
-                  className={passwordInputClass}
+                  className={inputClass}
                   placeholder="DELETE"
                 />
               </div>
             </div>
 
             {deleteError && (
-              <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{deleteError}</p>
+              <p className="mt-3 rounded-[8px] bg-error/10 px-3 py-2 font-body text-sm text-error">{deleteError}</p>
             )}
 
             <div className="mt-5 flex justify-end gap-2">
@@ -907,14 +922,14 @@ export default function SettingsPage() {
                 type="button"
                 onClick={closeDeleteDialog}
                 disabled={deleteSaving}
-                className="rounded-2xl border border-outline-variant/70 px-4 py-2.5 text-sm font-label font-bold text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-60"
+                className={`${quietButtonClass} px-4 py-2.5 text-sm`}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={deleteSaving}
-                className="rounded-2xl bg-error px-4 py-2.5 text-sm font-label font-bold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-[10px] bg-error px-4 py-2.5 font-label text-sm font-bold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {deleteSaving ? 'Deleting' : 'Continue'}
               </button>
@@ -933,10 +948,10 @@ export default function SettingsPage() {
       />
 
       <footer className="mt-8 flex items-center justify-between pb-8">
-        <p className="text-[10px] text-on-surface-variant/45 font-label uppercase tracking-widest">HackProduct</p>
+        <p className="font-label text-[10px] uppercase tracking-widest text-ink-muted">HackProduct</p>
         <div className="flex gap-4">
-          <Link href="/privacy" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Privacy</Link>
-          <Link href="/terms" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Terms</Link>
+          <Link href="/privacy" className="font-label text-[10px] text-ink-muted transition-colors hover:text-ink-secondary">Privacy</Link>
+          <Link href="/terms" className="font-label text-[10px] text-ink-muted transition-colors hover:text-ink-secondary">Terms</Link>
         </div>
       </footer>
     </main>

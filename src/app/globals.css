@@ -133,11 +133,81 @@
   --radius-md:  1.125rem;
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
+
+  /* ── Stage B (round4-codex-direction) — deep forest scale ──────
+     Structural: heroes, CTAs, active states. Spec §Palette. */
+  --color-forest-950: #052316;
+  --color-forest-900: #0b2d1c;
+  --color-forest-850: #103020;
+  --color-forest-800: #123b20;
+  --color-forest-700: #1d432b;
+  --color-forest-600: #266235;
+  --color-forest-500: #1c5a34;
+  --color-mint-glow:  #a3ebb1;
+
+  /* Stage B — text on dark forest heroes. Named on-hero-* (not hero-ink-*)
+     because --color-hero-ink above is already a dark surface color. */
+  --color-on-hero-strong: #f9faf5;
+  --color-on-hero-soft:   #dff0e2;
+  --color-on-hero-muted:  #c6d9c9;
+  --color-on-hero-faint:  #93ac97;
+
+  /* Stage B — misc extracted from raw hex in className */
+  --color-secondary-deep:   #3f3a32; /* dark end of the avatar gradient (pairs with --color-secondary) */
+  --color-hairline-strong:  #c8c2b6; /* pending-step ring; darker than --color-hairline */
+
+  /* Stage B — redesign page surfaces (light screens) */
+  --color-page-field:     #faf8f4;
+  --color-card-bright:    #fffdfa;
+  --color-hairline:       #ece7dd;
+  --color-ink-strong:     #20291f;
+  --color-ink-secondary:  #5b685e;
+  --color-ink-muted:      #a6a9a4;
+
+  /* Stage B — accents: streak, XP, Pro, highlighter */
+  --color-flame:       #fe9817;
+  --color-gold:        #fdb41f;
+  --color-highlighter: #ffe95c;
+
+  /* Stage B — sticky notes (flat fill + 1px border, §7 "Say Briefly mode") */
+  --color-note-mint:          #dff3d0;
+  --color-note-mint-border:   #b9d9a6;
+  --color-note-amber:         #fdf0c2;
+  --color-note-amber-border:  #ecd48a;
+  --color-note-teal:          #d9efec;
+  --color-note-teal-border:   #a9d4cf;
+  --color-note-blush:         #f6e3f3;
+  --color-note-blush-border:  #dcbcd6;
+
+  /* Stage B — discipline accents (tile bg + icon/fg pairs, §9) */
+  --color-sd-bg:   #e8f4de;
+  --color-sd-fg:   #266235;
+  --color-ps-bg:   #ebeef8;
+  --color-ps-fg:   #2778f2;
+  --color-dm-bg:   #f4e9f6;
+  --color-dm-fg:   #9d61c8;
+  --color-sql-bg:  #feefdc;
+  --color-sql-fg:  #fe9817;
+  --color-aiml-bg: #e0f2ec;
+  --color-aiml-fg: #1c8a5f;
 }
 
 /* Shared gradients (referenced from style={{}} where Tailwind utilities can't) */
 :root {
   --gradient-hero-forest: linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%);
+
+  /* ── Motion tokens ─────────────────────────────────────────────
+     Single easing/duration vocabulary for all CSS motion. Mirrors the
+     framer-motion tokens in src/components/motion/tokens.ts
+     (motionDurations fast/base, motionEasing standard/exit) so JS- and
+     CSS-driven transitions read as one system. All animations that use
+     these are neutralised by the global prefers-reduced-motion guard. */
+  --motion-fast:        140ms; /* press feedback, color/check state flips */
+  --motion-base:        180ms; /* small element enter, hover transforms */
+  --motion-overlay:     260ms; /* overlay/panel enter (mirrors motionDurations.base) */
+  --motion-ease-out:    cubic-bezier(0.16, 1, 0.3, 1);  /* = motionEasing.standard */
+  --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --motion-ease-exit:   cubic-bezier(0.7, 0, 0.84, 0);  /* = motionEasing.exit */
 }
 
 /* ── Base ─────────────────────────────────────────────────────── */
@@ -358,14 +428,14 @@ body::before {
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in-up {
-  animation: fade-in-up 0.4s ease both;
+  animation: fade-in-up var(--motion-overlay) var(--motion-ease-out) both;
 }
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 .animate-fade-in {
-  animation: fade-in 0.3s ease both;
+  animation: fade-in var(--motion-overlay) var(--motion-ease-out) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
@@ -378,10 +448,69 @@ body::before {
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-step-enter {
-  animation: step-enter 0.35s ease-out both;
+  animation: step-enter var(--motion-overlay) var(--motion-ease-out) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-step-enter { animation: none; }
+}
+
+/* ── Canvas overlay (SD/DM full-screen canvas) ─────────────────────
+   The overlay element stays mounted across the toggle (display swap), so
+   entry is a one-shot class-triggered animation: the scrim fades, the
+   panel scales up from the DiagramSlot's position (transform-origin is
+   set inline from the trigger's viewport coords). Close is intentionally
+   instant (asymmetric exit) — the returning snapshot settles into the
+   slot via .animate-thumb-settle instead. */
+@keyframes overlay-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes overlay-panel-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.canvas-overlay-scrim {
+  animation: overlay-scrim-in var(--motion-overlay) var(--motion-ease-out) both;
+}
+.canvas-overlay-panel {
+  animation: overlay-panel-in var(--motion-overlay) var(--motion-ease-out) both;
+}
+
+/* Diagram snapshot settling into the write-up slot after the overlay
+   closes (or refreshes in the background). Subtle: it confirms "the
+   snapshot updated", nothing more. */
+@keyframes thumb-settle {
+  from { opacity: 0.4; transform: scale(1.015); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-thumb-settle {
+  animation: thumb-settle var(--motion-overlay) var(--motion-ease-out) both;
+}
+
+/* Stepper check appearing on step completion. Quick, eased, no bounce. */
+@keyframes check-in {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-check-in {
+  animation: check-in var(--motion-fast) var(--motion-ease-out) both;
+}
+
+/* Progress ring fills once on load (spec §5.7). One-shot, not looping.
+   --ring-circ is set inline by ProgressRing. */
+@keyframes ring-fill {
+  from { stroke-dashoffset: var(--ring-circ); }
+}
+.animate-ring-fill {
+  animation: ring-fill 600ms var(--motion-ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-overlay-scrim,
+  .canvas-overlay-panel,
+  .animate-thumb-settle,
+  .animate-check-in,
+  .animate-ring-fill { animation: none; }
 }
 
 /* ── Hatch state: thinking eye scan ───────────────────────────── */
@@ -528,7 +657,7 @@ body::before {
   0%, 100% { box-shadow: 0 0 0 0 rgba(243, 237, 224, 0.55); }
   50%      { box-shadow: 0 0 0 10px rgba(243, 237, 224, 0); }
 }
-.animate-fade-up    { animation: fade-up 420ms cubic-bezier(.2,.8,.2,1) both; }
+.animate-fade-up    { animation: fade-up var(--motion-overlay) var(--motion-ease-out) both; }
 .animate-hatch-float { animation: hatch-float 4.5s ease-in-out infinite; }
 .animate-pulse-dot  { animation: pulse-dot 2s ease-in-out infinite; }
 .animate-cta-pulse  { animation: cta-pulse 2.4s ease-in-out infinite; }
@@ -708,4 +837,49 @@ body::before {
 }
 @media (prefers-reduced-motion: reduce) {
   .fb-burst-dot { animation: none; opacity: 0; }
+}
+
+/* ── Stage B: sticky notes (§7 "Say Briefly mode") ───────────────
+   Flat tinted fill + 1px ink-toned border, never a shadow. Reserved
+   for the "aside" content class: HatchSays/coach notes, callouts,
+   tips, "why" cards, evidence quotes, current-day/current-step cards.
+   Max 2-3 tinted surfaces per page; one may add `.note-tilt` for the
+   pinned-note rotation (spec §7). */
+.note-mint {
+  background: var(--color-note-mint);
+  border: 1px solid var(--color-note-mint-border);
+  border-radius: 12px;
+}
+.note-amber {
+  background: var(--color-note-amber);
+  border: 1px solid var(--color-note-amber-border);
+  border-radius: 12px;
+}
+.note-teal {
+  background: var(--color-note-teal);
+  border: 1px solid var(--color-note-teal-border);
+  border-radius: 12px;
+}
+.note-blush {
+  background: var(--color-note-blush);
+  border: 1px solid var(--color-note-blush-border);
+  border-radius: 12px;
+}
+/* Optional pinned-note rotation — apply to at most one note per page. */
+.note-tilt {
+  transform: rotate(-0.8deg);
+}
+
+/* ── Stage B: highlighter word (§7, upgraded from §5.1) ──────────
+   Exactly ONE serif-headline word per page. Vivid solid wash, not a
+   timid tint. Never in body text. */
+.hl-word {
+  display: inline-block;
+  background: var(--color-highlighter);
+  color: var(--color-forest-950);
+  transform: rotate(-1deg);
+  padding: 0 .14em;
+  /* Pull the wash overhang back so trailing punctuation hugs the word
+     instead of reading as a stray space before the period. */
+  margin: 0 -0.09em;
 }

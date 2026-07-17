@@ -1,4 +1,3 @@
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import Link from 'next/link'
 
 const steps = [

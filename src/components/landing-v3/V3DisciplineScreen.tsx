@@ -1,4 +1,4 @@
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import type { DisciplineId } from './disciplines'
 
 type RubricRow = { name: string; w: number; s: string }
@@ -53,7 +53,7 @@ function ScreenSQL() {
       </div>
       <div className="ds-right">
         <div className="ds-coach">
-          <div className="ds-coach-av"><HatchGlyph state="reviewing" size={32} /></div>
+          <div className="ds-coach-av"><HatchImage state="reviewing" size={32} /></div>
           <div>
             <div className="ds-coach-name">▸ Hatch · SQL Coach</div>
             <div className="ds-coach-text">Window function: <b>nailed it</b>. Watch ties. Two orders on the same day will both rank 3, so pick <b>row_number</b> vs <b>rank</b> deliberately.</div>
@@ -97,7 +97,7 @@ function ScreenCoding() {
       </div>
       <div className="ds-right">
         <div className="ds-coach">
-          <div className="ds-coach-av"><HatchGlyph state="speaking" size={32} /></div>
+          <div className="ds-coach-av"><HatchImage state="speaking" size={32} /></div>
           <div>
             <div className="ds-coach-name">▸ Hatch · Coding Coach</div>
             <div className="ds-coach-text">Sliding window with hashmap, <b>clean</b>. Now walk me through your dry-run with <b>&quot;abba&quot;</b>. That&apos;s where most candidates trip.</div>
@@ -170,7 +170,7 @@ function ScreenSysDes() {
       </div>
       <div className="ds-right">
         <div className="ds-coach">
-          <div className="ds-coach-av"><HatchGlyph state="reviewing" size={32} /></div>
+          <div className="ds-coach-av"><HatchImage state="reviewing" size={32} /></div>
           <div>
             <div className="ds-coach-name">▸ Hatch · Systems Coach</div>
             <div className="ds-coach-text">Redis ZSET, <b>good pick</b>. But you skipped the replication step. What happens if your primary dies mid-tournament?</div>
@@ -248,7 +248,7 @@ function ScreenDataMod() {
       </div>
       <div className="ds-right">
         <div className="ds-coach">
-          <div className="ds-coach-av"><HatchGlyph state="speaking" size={32} /></div>
+          <div className="ds-coach-av"><HatchImage state="speaking" size={32} /></div>
           <div>
             <div className="ds-coach-name">▸ Hatch · Modeling Coach</div>
             <div className="ds-coach-text">Schema reads cleanly. But your line_items has <b>price</b>. Is that snapshot or live? Spell out the temporal contract.</div>
@@ -302,7 +302,7 @@ function ScreenProduct() {
       </div>
       <div className="ds-right">
         <div className="ds-coach">
-          <div className="ds-coach-av"><HatchGlyph state="speaking" size={32} /></div>
+          <div className="ds-coach-av"><HatchImage state="speaking" size={32} /></div>
           <div>
             <div className="ds-coach-name">▸ Hatch · PM Coach</div>
             <div className="ds-coach-text">Strong frame. You separated symptom from cause. Skipped one move: <b>anchor on the timeline first</b>. Deploys narrow the surface area fast.</div>
@@ -347,7 +347,7 @@ function ScreenML() {
       </div>
       <div className="ds-right">
         <div className="ds-coach">
-          <div className="ds-coach-av"><HatchGlyph state="reviewing" size={32} /></div>
+          <div className="ds-coach-av"><HatchImage state="reviewing" size={32} /></div>
           <div>
             <div className="ds-coach-name">▸ Hatch · ML Coach</div>
             <div className="ds-coach-text">Right instinct: <b>separate retrieval from generation</b>. Now is it the embeddings, the chunking, or the reranker? Run k=1,3,5,10.</div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { useOnboardingModal } from '@/context/OnboardingModalContext'
 
 // Deferred-calibration entry point for the value-first onboarding variant
@@ -15,7 +15,7 @@ export function CalibrationCtaCard() {
   return (
     <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-low p-4 shadow-[0_16px_34px_-34px_rgba(30,27,20,0.45)]">
       <div className="flex items-start gap-3">
-        <HatchGlyph size={36} state="listening" className="text-primary flex-shrink-0" />
+        <HatchImage size={36} state="listening" className="flex-shrink-0" />
         <div className="min-w-0 flex-1">
           <h3 className="font-headline text-[15px] font-semibold leading-snug text-on-surface">
             Calibrate for a personalized plan

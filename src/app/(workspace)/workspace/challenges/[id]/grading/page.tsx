@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams, useParams } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import { AnimatedProgress, MotionCard, PresencePanel, motion } from '@/components/motion'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import { AnimatedProgress, MotionCard, PresencePanel } from '@/components/motion'
 
 const POLL_INTERVAL_MS = 2000
 const MAX_POLLS = 30 // 60s timeout
@@ -30,34 +30,6 @@ const GRADING_STAGES: Record<GradingStage, { title: string; body: string; progre
     body: 'Opening your feedback now.',
     progress: 100,
   },
-}
-
-function GradingSnow() {
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      {Array.from({ length: 18 }).map((_, i) => (
-        <motion.span
-          key={i}
-          className="absolute h-1 w-1 rounded-full bg-primary/25"
-          style={{
-            left: `${(i * 37) % 100}%`,
-            top: `${(i * 19) % 80}%`,
-          }}
-          animate={{
-            y: [0, 24, 0],
-            opacity: [0.12, 0.38, 0.12],
-            scale: [0.8, 1.15, 0.8],
-          }}
-          transition={{
-            duration: 2.2 + (i % 4) * 0.35,
-            repeat: Infinity,
-            delay: i * 0.08,
-            ease: 'easeInOut',
-          }}
-        />
-      ))}
-    </div>
-  )
 }
 
 export default function GradingPage() {
@@ -139,26 +111,25 @@ export default function GradingPage() {
   const stageCopy = GRADING_STAGES[stage]
 
   return (
-    <div className="relative min-h-screen bg-background flex items-center justify-center overflow-hidden">
-      <GradingSnow />
+    <div className="relative min-h-screen bg-page-field flex items-center justify-center overflow-hidden">
       <MotionCard className="relative mx-auto w-full max-w-sm px-6">
-        <div className="rounded-[24px] border border-outline-variant/50 bg-surface/90 px-6 py-7 text-center shadow-[0_18px_60px_-42px_rgba(30,27,20,0.7)]">
-          <motion.div
-            animate={{ y: [0, -4, 0], rotate: stage === 'complete' ? [0, -4, 4, 0] : 0 }}
-            transition={{ duration: stage === 'complete' ? 0.5 : 2.8, repeat: stage === 'complete' ? 0 : Infinity, ease: 'easeInOut' }}
-          >
-            <HatchGlyph size={80} state={stage === 'complete' ? 'celebrating' : 'reviewing'} className="text-primary mx-auto" />
-          </motion.div>
-          <PresencePanel isOpen className="mt-6 space-y-2" key={stage}>
-            <h1 className="font-headline text-2xl font-bold text-on-surface">{stageCopy.title}</h1>
-            <p className="text-sm text-on-surface-variant">{stageCopy.body}</p>
+        <div className="rounded-2xl border border-hairline bg-card-bright px-6 py-7 text-center">
+          <HatchImage
+            state={stage === 'complete' ? 'celebrating' : 'reviewing'}
+            size={96}
+            className="mx-auto"
+            priority
+          />
+          <PresencePanel isOpen className="mt-5 space-y-2" key={stage}>
+            <h1 className="font-headline text-[22px] leading-snug font-semibold text-forest-950">{stageCopy.title}</h1>
+            <p className="text-sm leading-relaxed text-ink-secondary">{stageCopy.body}</p>
           </PresencePanel>
           <AnimatedProgress
             value={stageCopy.progress}
             state={stage === 'complete' ? 'complete' : 'active'}
-            className="mt-6 text-on-surface-variant"
-            trackClassName="bg-surface-container-high"
-            barClassName="bg-primary"
+            className="mt-6 text-ink-secondary"
+            trackClassName="bg-hairline"
+            barClassName="bg-forest-600"
             showValue
           />
         </div>

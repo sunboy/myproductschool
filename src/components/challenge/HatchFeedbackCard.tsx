@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 interface Props {
   challengeId: string
@@ -28,7 +28,7 @@ export function HatchFeedbackCard({ challengeId, feedbackExcerpt, attemptId }: P
 
       {/* Middle */}
       <div className="mt-4 flex items-start gap-3">
-        <HatchGlyph size={24} className="text-primary flex-shrink-0 mt-0.5" />
+        <HatchImage size={24} state="idle" className="flex-shrink-0 mt-0.5" />
         <div>
           <span className="font-headline font-bold text-on-surface text-sm">Hatch</span>
           {hasExcerpt ? (

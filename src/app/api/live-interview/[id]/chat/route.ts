@@ -7,6 +7,7 @@ import {
 import { IS_MOCK } from '@/lib/mock'
 import { LiveInterviewArtifactSnapshotSchema } from '@/lib/live-interview/snapshot-schema'
 import { normalizeDiscipline } from '@/lib/live-interview/disciplines'
+import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import { buildLiveInterviewContextPack } from '@/lib/live-interview/context-pack'
 import { buildDeterministicWorkspaceReply } from '@/lib/live-interview/workspace-adapters'
 import { liveInterviewModel } from '@/lib/live-interview/model-policy'
@@ -171,8 +172,11 @@ export async function POST(
 
   if (mode === 'opening' && (turnsData?.length ?? 0) > 0) {
     const firstHatchTurn = turnsData?.find((turn) => turn.role === 'hatch')
+    // Legacy rows may have been saved with the trailing grading-signal JSON
+    // block still attached. Never let it reach the client.
+    const storedContent = firstHatchTurn?.content
     return Response.json({
-      reply: firstHatchTurn?.content ?? null,
+      reply: storedContent ? parseGradingSignal(storedContent).cleanContent : null,
       alreadyStarted: true,
     })
   }
@@ -247,7 +251,9 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
       return apiError(503, 'hatch_unavailable', 'Hatch ran into a problem. Try again.')
     }
 
-    // Generate Hatch's response - no grading signals, pure conversation
+    // Generate Hatch's response. The session system prompt (hackproduct-interviewer)
+    // instructs the model to append a grading-signal JSON block to every turn, so
+    // the raw reply is parsed below and only clean conversation text is kept.
     const model = liveInterviewModel('chat')
     const maxTokens = 600
     const userPlan = await getUserPlanForBudget(user.id)
@@ -308,7 +314,17 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
     }
   }
 
+  // Strip the appended grading-signal JSON block before the reply is persisted
+  // or returned. Internal signals must never be user-visible (Hatch opacity);
+  // FLOW coverage for chat mode is credited by the async grade-turn pass below.
+  const { cleanContent: cleanReply, signal } = parseGradingSignal(reply)
+  reply = cleanReply
+
   // Save turns to DB. Opening/feeler modes only create Hatch turns.
+  const hatchTurnSignalFields = {
+    flow_move_detected: signal?.flowMove || null,
+    competency_signals: signal ? { competency: signal.competency, signal: signal.signal } : null,
+  }
   const turnsToInsert = mode === 'opening' || mode === 'feeler'
     ? [
         {
@@ -316,6 +332,7 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
           turn_index: nextIndex,
           role: 'hatch',
           content: reply,
+          ...hatchTurnSignalFields,
         },
       ]
     : [
@@ -330,6 +347,7 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
           turn_index: nextIndex + 1,
           role: 'hatch',
           content: reply,
+          ...hatchTurnSignalFields,
         },
       ]
 

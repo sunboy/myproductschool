@@ -3,7 +3,7 @@
 import { useRef, useEffect } from 'react'
 import type { ChallengeMode } from '@/lib/types'
 import { PMCanvas } from './PMCanvas'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { getWordCount } from '@/lib/utils'
 
 /* ── Types ───────────────────────────────────────────────── */
@@ -285,7 +285,7 @@ function LiveChatView({
         >
           {submitting ? (
             <>
-              <HatchGlyph size={18} className="animate-hatch-glow text-white" />
+              <HatchImage size={18} state="idle" className="animate-hatch-glow" />
               Hatch is thinking...
             </>
           ) : (
@@ -398,7 +398,7 @@ export function AnswerPane({
                 >
                   {submitting ? (
                     <>
-                      <HatchGlyph size={18} className="animate-hatch-glow text-white" />
+                      <HatchImage size={18} state="idle" className="animate-hatch-glow" />
                       Hatch is thinking...
                     </>
                   ) : (

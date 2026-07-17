@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Decision DAG — HackProduct</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --forest:#4a7c59;
+    --forest-dark:#1e3528;
+    --forest-darker:#14241c;
+    --forest-darkest:#0e1a14;
+    --cream:#faf6f0;
+    --pane-1:#f5f1ea;
+    --pane-2:#f0ece4;
+    --amber:#c9933a;
+    --amber-soft:#f3e2b9;
+    --taupe:#c4c8bc;
+    --taupe-dark:#74796e;
+    --ink:#2e3230;
+    --success:#2f7a4a;
+    --error:#b83230;
+    --verdigris:#5fd3a5;
+    --verdigris-dim:rgba(95,211,165,0.16);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html,body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  .mono{ font-family:'JetBrains Mono', monospace; }
+  .serif{ font-family:'Newsreader', serif; }
+
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+
+  /* ===================== TOP BAR ===================== */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    height:60px;
+    display:flex; align-items:center;
+    gap:28px;
+    padding:0 24px;
+    background:var(--cream);
+    border-bottom:1px solid var(--taupe);
+  }
+  .brand{
+    display:flex; align-items:center; gap:9px;
+    font-weight:800; font-size:16px; letter-spacing:-0.01em;
+    white-space:nowrap;
+  }
+  .brand-mark{
+    width:26px; height:26px; border-radius:7px;
+    background:var(--forest-dark);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .branch-switcher{
+    display:flex; align-items:center; gap:2px;
+    background:var(--pane-1);
+    border:1px solid var(--taupe);
+    border-radius:9px;
+    padding:3px;
+  }
+  .branch-switcher button{
+    padding:7px 14px;
+    font-size:13px; font-weight:600;
+    border-radius:6px;
+    color:var(--taupe-dark);
+    display:flex; align-items:center; gap:6px;
+    white-space:nowrap;
+  }
+  .branch-switcher button.active{
+    background:var(--forest-dark);
+    color:var(--cream);
+  }
+  .branch-switcher button .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:currentColor;
+    opacity:0.5;
+  }
+  .branch-switcher button.active .dot{ background:var(--verdigris); opacity:1; }
+
+  .topbar-spacer{ flex:1; }
+
+  .cmdk{
+    display:flex; align-items:center; gap:10px;
+    padding:8px 12px;
+    background:var(--pane-1);
+    border:1px solid var(--taupe);
+    border-radius:8px;
+    font-size:13px;
+    color:var(--taupe-dark);
+    min-width:220px;
+  }
+  .cmdk svg{ flex-shrink:0; opacity:0.6; }
+  .cmdk .kbd{
+    margin-left:auto;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    background:var(--pane-2);
+    border:1px solid var(--taupe);
+    border-radius:4px;
+    padding:2px 6px;
+    color:var(--taupe-dark);
+  }
+
+  .hatch-pill{
+    display:flex; align-items:center; gap:8px;
+    padding:6px 12px 6px 6px;
+    background:var(--pane-1);
+    border:1px solid var(--taupe);
+    border-radius:100px;
+  }
+  .hatch-pill .avatar{
+    width:26px; height:26px; border-radius:50%;
+    background:var(--forest);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hatch-pill .streak{
+    font-size:13px; font-weight:700;
+    font-family:'JetBrains Mono', monospace;
+    color:var(--amber);
+  }
+
+  /* ===================== LAYOUT ===================== */
+  .app{
+    display:grid;
+    grid-template-columns: 220px 1fr 340px;
+    min-height:calc(100vh - 60px);
+  }
+
+  /* ---------- LEFT RAIL: branches ---------- */
+  .rail{
+    border-right:1px solid var(--taupe);
+    padding:20px 14px;
+    background:var(--pane-1);
+  }
+  .rail-label{
+    font-size:11px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--taupe-dark);
+    padding:0 8px 10px;
+  }
+  .branch-item{
+    display:flex; flex-direction:column; gap:4px;
+    padding:10px 10px;
+    border-radius:8px;
+    margin-bottom:4px;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:background 0.15s;
+  }
+  .branch-item:hover{ background:var(--pane-2); }
+  .branch-item.current{
+    background:var(--forest-dark);
+    border-color:var(--forest-dark);
+  }
+  .branch-item.current .branch-name,
+  .branch-item.current .branch-meta{ color:var(--cream); }
+  .branch-item.current .branch-meta{ color:rgba(250,246,240,0.65); }
+  .branch-top{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
+  .branch-name{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px; font-weight:600;
+    display:flex; align-items:center; gap:7px;
+  }
+  .branch-name .bicon{ flex-shrink:0; }
+  .branch-meta{
+    font-size:11px;
+    color:var(--taupe-dark);
+    font-family:'JetBrains Mono', monospace;
+    padding-left:19px;
+  }
+  .protection{
+    font-size:9.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.05em;
+    padding:2px 6px;
+    border-radius:4px;
+    background:var(--amber-soft);
+    color:#7a5a1f;
+    white-space:nowrap;
+  }
+  .branch-item.current .protection{
+    background:rgba(95,211,165,0.22);
+    color:var(--verdigris);
+  }
+
+  .rail-divider{
+    height:1px; background:var(--taupe);
+    margin:16px 4px;
+    opacity:0.6;
+  }
+
+  .rail-stat{
+    padding:12px 10px;
+    background:var(--pane-2);
+    border-radius:8px;
+    margin-bottom:8px;
+  }
+  .rail-stat-num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:22px; font-weight:700;
+    line-height:1.2;
+    color:var(--forest-dark);
+    word-break:break-word;
+  }
+  .rail-stat-num.small{ font-size:14px; font-weight:700; }
+  .rail-stat-num .of{
+    font-size:14px; font-weight:500;
+    color:var(--taupe-dark);
+  }
+  .rail-stat-label{
+    font-size:11px; color:var(--taupe-dark);
+    margin-top:4px;
+    line-height:1.4;
+  }
+
+  /* ---------- CENTER: graph canvas ---------- */
+  .canvas-wrap{
+    padding:24px 20px 0;
+    display:flex; flex-direction:column;
+  }
+  .canvas-header{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .canvas-title{
+    font-size:20px; font-weight:800;
+    letter-spacing:-0.01em;
+  }
+  .canvas-title .mono-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px; font-weight:600;
+    color:var(--verdigris);
+    background:var(--verdigris-dim);
+    padding:3px 8px;
+    border-radius:5px;
+    margin-left:10px;
+    vertical-align:middle;
+  }
+  .canvas-legend{
+    display:flex; gap:16px; align-items:center;
+    font-size:11.5px; color:var(--taupe-dark);
+  }
+  .legend-item{ display:flex; align-items:center; gap:6px; }
+  .legend-swatch{ width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+
+  .graph-frame{
+    background:var(--pane-1);
+    border:1px solid var(--taupe);
+    border-radius:14px;
+    padding:10px 4px 4px;
+    position:relative;
+    overflow:hidden;
+  }
+  .graph-frame svg{ display:block; width:100%; height:auto; }
+
+  .lane-labels{
+    position:absolute;
+    left:20px; top:26px;
+    display:flex; flex-direction:column;
+    pointer-events:none;
+  }
+
+  /* node hover interactivity feel (static but styled) */
+  .node-group{ cursor:pointer; }
+  .node-group:hover .node-halo{ opacity:0.35; }
+
+  /* ---------- Today fallback strip ---------- */
+  .today-strip{
+    margin:18px 0 24px;
+    background:var(--pane-1);
+    border:1px solid var(--taupe);
+    border-radius:14px;
+    padding:18px 20px;
+  }
+  .today-strip-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .today-strip-title{
+    font-size:13px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.07em;
+    color:var(--taupe-dark);
+    display:flex; align-items:center; gap:8px;
+  }
+  .today-strip-title .rail-icon{ color:var(--forest); }
+  .today-badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; font-weight:600;
+    color:var(--taupe-dark);
+  }
+
+  .today-row{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    align-items:center;
+    gap:20px;
+    padding:14px 16px;
+    background:var(--cream);
+    border:1px solid var(--taupe);
+    border-radius:11px;
+  }
+  .today-main{ min-width:0; }
+  .today-title{
+    font-size:15.5px; font-weight:700;
+    margin-bottom:5px;
+    display:flex; align-items:center; gap:8px;
+    flex-wrap:wrap;
+  }
+  .today-flow-chip{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px; font-weight:700;
+    text-transform:uppercase;
+    padding:2px 7px;
+    border-radius:4px;
+    background:var(--forest-dark);
+    color:var(--cream);
+    letter-spacing:0.04em;
+  }
+  .today-reason{
+    font-size:12.5px;
+    color:var(--taupe-dark);
+    font-family:'JetBrains Mono', monospace;
+  }
+  .today-reason .arrow{ color:var(--verdigris); }
+  .today-cta{
+    display:flex; align-items:center; gap:14px;
+    flex-shrink:0;
+  }
+  .btn-continue{
+    display:flex; align-items:center; gap:8px;
+    background:var(--forest-dark);
+    color:var(--cream);
+    padding:11px 20px;
+    border-radius:9px;
+    font-size:14px; font-weight:700;
+    white-space:nowrap;
+    transition:background 0.15s;
+  }
+  .btn-continue:hover{ background:#152a1f; }
+  .btn-continue svg{ flex-shrink:0; }
+
+  /* ---------- RIGHT: side sheet ---------- */
+  .sheet{
+    border-left:1px solid var(--taupe);
+    background:var(--forest-darker);
+    color:var(--cream);
+    padding:20px 18px 76px;
+    display:flex; flex-direction:column;
+    min-height:100%;
+  }
+  .sheet-head{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:10px;
+    margin-bottom:4px;
+  }
+  .sheet-eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; font-weight:600;
+    color:var(--verdigris);
+    text-transform:uppercase; letter-spacing:0.08em;
+    display:flex; align-items:center; gap:7px;
+  }
+  .sheet-eyebrow .ring{
+    width:8px; height:8px; border-radius:50%;
+    border:2px solid var(--verdigris);
+    background:transparent;
+  }
+  .sheet-close{
+    color:rgba(250,246,240,0.4);
+    font-size:18px;
+    line-height:1;
+    padding:2px;
+  }
+  .sheet-title{
+    font-size:16.5px; font-weight:700;
+    margin:8px 0 2px;
+    line-height:1.35;
+  }
+  .sheet-sub{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:rgba(250,246,240,0.5);
+    margin-bottom:16px;
+  }
+
+  .sheet-meta-row{
+    display:flex; gap:8px; flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  .meta-chip{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px; font-weight:600;
+    padding:4px 8px;
+    border-radius:5px;
+    background:rgba(250,246,240,0.08);
+    border:1px solid rgba(250,246,240,0.12);
+    color:rgba(250,246,240,0.75);
+  }
+  .meta-chip.node-pass{ color:var(--verdigris); border-color:rgba(95,211,165,0.3); background:rgba(95,211,165,0.1); }
+
+  .sheet-section-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.06em;
+    color:rgba(250,246,240,0.45);
+    margin:0 0 8px;
+  }
+
+  .diff-block{
+    background:var(--forest-darkest);
+    border:1px solid rgba(250,246,240,0.1);
+    border-radius:10px;
+    padding:12px 0;
+    margin-bottom:18px;
+    overflow:hidden;
+  }
+  .diff-file-line{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:rgba(250,246,240,0.4);
+    padding:0 14px 8px;
+    border-bottom:1px solid rgba(250,246,240,0.08);
+    margin-bottom:8px;
+  }
+  .diff-line{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    line-height:1.65;
+    padding:1px 14px 1px 10px;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .diff-line.add{
+    background:rgba(95,211,165,0.09);
+    color:#a9ecc7;
+    border-left:2px solid var(--verdigris);
+  }
+  .diff-line.del{
+    background:rgba(184,50,48,0.1);
+    color:#e6a09e;
+    border-left:2px solid #d1615f;
+  }
+  .diff-line.ctx{
+    color:rgba(250,246,240,0.4);
+    border-left:2px solid transparent;
+  }
+  .diff-line .sign{ opacity:0.7; margin-right:2px; }
+
+  .sheet-note{
+    font-size:12.5px;
+    line-height:1.6;
+    color:rgba(250,246,240,0.72);
+    margin-bottom:18px;
+  }
+  .sheet-note b{ color:var(--cream); font-weight:600; }
+
+  .sheet-footer{
+    margin-top:auto;
+    padding-top:16px;
+    border-top:1px solid rgba(250,246,240,0.1);
+  }
+  .btn-reopen{
+    width:100%;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--verdigris);
+    color:var(--forest-darkest);
+    padding:12px 16px;
+    border-radius:9px;
+    font-size:13.5px; font-weight:700;
+    margin-bottom:10px;
+  }
+  .btn-cite{
+    width:100%;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:transparent;
+    color:rgba(250,246,240,0.7);
+    border:1px solid rgba(250,246,240,0.18);
+    padding:10px 16px;
+    border-radius:9px;
+    font-size:13px; font-weight:600;
+  }
+
+  /* ===================== FIXED PILL ===================== */
+  .direction-pill{
+    position:fixed;
+    bottom:20px; right:20px;
+    z-index:100;
+    display:flex; align-items:center; gap:8px;
+    background:var(--forest-darkest);
+    color:var(--cream);
+    padding:9px 16px 9px 12px;
+    border-radius:100px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px; font-weight:600;
+    box-shadow:0 6px 20px rgba(14,26,20,0.35);
+    letter-spacing:0.01em;
+  }
+  .direction-pill .pdot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--verdigris);
+    box-shadow:0 0 0 3px rgba(95,211,165,0.25);
+  }
+
+  /* ===================== RESPONSIVE ===================== */
+  @media (max-width: 1180px){
+    .app{ grid-template-columns: 190px 1fr 300px; }
+  }
+
+  @media (max-width: 980px){
+    .app{ grid-template-columns: 1fr; }
+    .rail{
+      border-right:none; border-bottom:1px solid var(--taupe);
+      display:flex; flex-wrap:wrap; gap:8px;
+      padding:16px 20px;
+    }
+    .rail-label{ width:100%; padding-bottom:2px; }
+    .branch-item{ flex:1 1 200px; margin-bottom:0; }
+    .rail-divider{ display:none; }
+    .rail-stat{ flex:1 1 140px; margin-bottom:0; }
+    .sheet{
+      border-left:none; border-top:1px solid rgba(250,246,240,0.1);
+    }
+    .canvas-wrap{ padding:20px 16px 0; }
+  }
+
+  @media (max-width: 640px){
+    .topbar{ gap:14px; padding:0 14px; }
+    .cmdk{ display:none; }
+    .branch-switcher{ overflow-x:auto; }
+    .branch-switcher::-webkit-scrollbar{ display:none; }
+    .canvas-title{ font-size:17px; }
+    .canvas-legend{ display:none; }
+    .today-row{ grid-template-columns:1fr; }
+    .today-cta{ justify-content:flex-end; }
+    .rail{ padding:14px; }
+    .branch-item{ flex:1 1 100%; }
+    .rail-stat{ flex:1 1 100%; }
+    .graph-frame{ overflow-x:auto; }
+    .graph-frame svg{ min-width:640px; }
+    .hatch-pill .streak{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="18" r="2.6" stroke="#faf6f0" stroke-width="1.8"/>
+          <circle cx="18" cy="6" r="2.6" stroke="#faf6f0" stroke-width="1.8"/>
+          <circle cx="18" cy="18" r="2.6" stroke="#faf6f0" stroke-width="1.8"/>
+          <path d="M8.3 16.8L15.7 9.4" stroke="#faf6f0" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M18 8.6V15.4" stroke="#faf6f0" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      HackProduct
+    </div>
+
+    <nav class="branch-switcher">
+      <button class="active"><span class="dot"></span>graph</button>
+      <button>autopsies</button>
+      <button>interviews</button>
+      <button>lab</button>
+      <button>hatch</button>
+    </nav>
+
+    <div class="topbar-spacer"></div>
+
+    <div class="cmdk">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+      <span>jump to branch or node…</span>
+      <span class="kbd">⌘K</span>
+    </div>
+
+    <div class="hatch-pill">
+      <span class="avatar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="6" y="9" width="12" height="10" rx="3" stroke="#faf6f0" stroke-width="1.6"/>
+          <path d="M12 9V6" stroke="#faf6f0" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="12" cy="5" r="1.3" fill="#faf6f0"/>
+          <circle cx="9.5" cy="14" r="1.1" fill="#faf6f0"/>
+          <circle cx="14.5" cy="14" r="1.1" fill="#faf6f0"/>
+        </svg>
+      </span>
+      <span class="streak">12d streak</span>
+    </div>
+  </header>
+
+  <!-- ===================== APP GRID ===================== -->
+  <div class="app">
+
+    <!-- ============ LEFT RAIL: branches ============ -->
+    <aside class="rail">
+      <div class="rail-label">Branches</div>
+
+      <div class="branch-item current">
+        <div class="branch-top">
+          <span class="branch-name">
+            <svg class="bicon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3v12" stroke-linecap="round"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9a9 9 0 0 1-9 9" stroke-linecap="round"/></svg>
+            frame
+          </span>
+          <span class="protection">O2 · weak</span>
+        </div>
+        <div class="branch-meta">41% merge-ready · Lv2</div>
+      </div>
+
+      <div class="branch-item">
+        <div class="branch-top">
+          <span class="branch-name">
+            <svg class="bicon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3v12" stroke-linecap="round"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9a9 9 0 0 1-9 9" stroke-linecap="round"/></svg>
+            list
+          </span>
+          <span class="protection">O1</span>
+        </div>
+        <div class="branch-meta">68% merge-ready · Lv3</div>
+      </div>
+
+      <div class="branch-item">
+        <div class="branch-top">
+          <span class="branch-name">
+            <svg class="bicon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3v12" stroke-linecap="round"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9a9 9 0 0 1-9 9" stroke-linecap="round"/></svg>
+            optimize
+          </span>
+          <span class="protection">O3</span>
+        </div>
+        <div class="branch-meta">55% merge-ready · Lv2</div>
+      </div>
+
+      <div class="branch-item">
+        <div class="branch-top">
+          <span class="branch-name">
+            <svg class="bicon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3v12" stroke-linecap="round"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9a9 9 0 0 1-9 9" stroke-linecap="round"/></svg>
+            win
+          </span>
+          <span class="protection">O4</span>
+        </div>
+        <div class="branch-meta">72% merge-ready · Lv3</div>
+      </div>
+
+      <div class="rail-divider"></div>
+
+      <div class="rail-stat">
+        <div class="rail-stat-num">9<span class="of">/14</span></div>
+        <div class="rail-stat-label">branches merge-ready</div>
+      </div>
+      <div class="rail-stat">
+        <div class="rail-stat-num" style="color:var(--amber);">5</div>
+        <div class="rail-stat-label">need a hotfix</div>
+      </div>
+      <div class="rail-stat">
+        <div class="rail-stat-num small">strategic thinking <span style="color:var(--success);">&#8593;</span></div>
+        <div class="rail-stat-label" style="margin-top:2px;">rising · taste flat</div>
+      </div>
+    </aside>
+
+    <!-- ============ CENTER: graph canvas ============ -->
+    <main class="canvas-wrap">
+
+      <div class="canvas-header">
+        <div class="canvas-title">
+          Your judgment, as commit history
+          <span class="mono-tag">HEAD → frame/airbnb-experiences</span>
+        </div>
+        <div class="canvas-legend">
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--forest-dark);"></span>merged strength</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:transparent; border:2px solid var(--amber);"></span>dangling / weak</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:transparent; border:2px solid var(--verdigris); box-shadow:0 0 0 3px rgba(95,211,165,0.18);"></span>HEAD — you are here</div>
+        </div>
+      </div>
+
+      <div class="graph-frame">
+        <!-- ================= DAG SVG ================= -->
+        <svg viewBox="0 0 980 430" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Commit graph of practice history across practice, autopsies, and interview lanes">
+          <defs>
+            <marker id="arrowFor" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6" fill="none" stroke="#8b8f84" stroke-width="1.3"/>
+            </marker>
+          </defs>
+
+          <!-- lane guides -->
+          <line x1="60" y1="70" x2="940" y2="70" stroke="#c4c8bc" stroke-width="1" stroke-dasharray="2 5" opacity="0.7"/>
+          <line x1="60" y1="190" x2="940" y2="190" stroke="#c4c8bc" stroke-width="1" stroke-dasharray="2 5" opacity="0.7"/>
+          <line x1="60" y1="310" x2="940" y2="310" stroke="#c4c8bc" stroke-width="1" stroke-dasharray="2 5" opacity="0.7"/>
+
+          <!-- lane labels -->
+          <text x="20" y="66" class="mono" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#74796e" letter-spacing="0.03em">practice</text>
+          <text x="20" y="186" class="mono" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#74796e" letter-spacing="0.03em">autopsies</text>
+          <text x="20" y="306" class="mono" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#74796e" letter-spacing="0.03em">interviews</text>
+
+          <!-- ============ EDGES ============ -->
+          <g stroke="#8b8f84" stroke-width="1.6" fill="none" opacity="0.8">
+            <!-- practice lane chain -->
+            <path d="M105 70 L185 70" marker-end="url(#arrowFor)"/>
+            <path d="M225 70 L305 70" marker-end="url(#arrowFor)"/>
+            <path d="M345 70 L425 70" marker-end="url(#arrowFor)"/>
+            <path d="M465 70 C 510 70, 510 70, 555 70" marker-end="url(#arrowFor)"/>
+            <path d="M595 70 L675 70" marker-end="url(#arrowFor)"/>
+            <path d="M715 70 L795 70" marker-end="url(#arrowFor)"/>
+
+            <!-- practice branch off to dangling node (F2 weak) -->
+            <path d="M345 78 C 380 110, 400 130, 415 148" stroke-dasharray="3 4" opacity="0.6"/>
+
+            <!-- autopsy lane chain -->
+            <path d="M145 190 L225 190" marker-end="url(#arrowFor)"/>
+            <path d="M265 190 L345 190" marker-end="url(#arrowFor)"/>
+            <path d="M385 190 L465 190" marker-end="url(#arrowFor)"/>
+            <path d="M505 190 L585 190" marker-end="url(#arrowFor)"/>
+            <path d="M625 190 L705 190" marker-end="url(#arrowFor)"/>
+
+            <!-- interview lane chain -->
+            <path d="M185 310 L305 310" marker-end="url(#arrowFor)"/>
+            <path d="M345 310 C 400 310, 420 310, 465 310" marker-end="url(#arrowFor)" stroke-dasharray="3 4" opacity="0.6"/>
+            <path d="M465 318 C 500 340, 520 350, 545 358" stroke-dasharray="3 4" opacity="0.5"/>
+
+            <!-- cross-lane merges (autopsy informs practice, practice feeds interview) -->
+            <path d="M225 182 C 225 140, 300 90, 345 78" opacity="0.45"/>
+            <path d="M625 182 C 660 140, 700 100, 715 78" opacity="0.45"/>
+            <path d="M595 78 C 610 150, 600 260, 585 302" opacity="0.4"/>
+          </g>
+
+          <!-- ============ NODES ============ -->
+
+          <!-- PRACTICE LANE -->
+          <!-- node p1: merged -->
+          <g class="node-group">
+            <circle cx="85" cy="70" r="15" fill="#1e3528"/>
+            <path d="M79 70l4 4 8-9" stroke="#faf6f0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="85" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#4a4e4a">frame·L1</text>
+          </g>
+
+          <!-- node p2: merged -->
+          <g class="node-group">
+            <circle cx="205" cy="70" r="15" fill="#1e3528"/>
+            <path d="M199 70l4 4 8-9" stroke="#faf6f0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="205" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#4a4e4a">list·L2</text>
+          </g>
+
+          <!-- node p3: merged -->
+          <g class="node-group">
+            <circle cx="325" cy="70" r="15" fill="#1e3528"/>
+            <path d="M319 70l4 4 8-9" stroke="#faf6f0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="325" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#4a4e4a">optimize·O1</text>
+          </g>
+
+          <!-- node p3b: dangling weak, off-branch -->
+          <g class="node-group">
+            <circle cx="425" cy="155" r="12" fill="#faf6f0" stroke="#c9933a" stroke-width="2.4"/>
+            <text x="425" y="159" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#c9933a" font-weight="700">!</text>
+            <text x="425" y="182" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a17a2e">frame·O2 stale</text>
+          </g>
+
+          <!-- node p4: HEAD, ringed verdigris -->
+          <g class="node-group">
+            <circle class="node-halo" cx="445" cy="70" r="24" fill="rgba(95,211,165,0.18)" opacity="0.7"/>
+            <circle cx="445" cy="70" r="16" fill="#faf6f0" stroke="#5fd3a5" stroke-width="3"/>
+            <circle cx="445" cy="70" r="5" fill="#5fd3a5"/>
+            <text x="445" y="50" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#2f9d75" font-weight="700">HEAD</text>
+            <text x="445" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#2e3230" font-weight="600">frame·airbnb-exp</text>
+          </g>
+
+          <!-- node p5: merged, after head (queued next) -->
+          <g class="node-group">
+            <circle cx="575" cy="70" r="15" fill="#faf6f0" stroke="#74796e" stroke-width="2" stroke-dasharray="2 3"/>
+            <circle cx="575" cy="70" r="4" fill="#c4c8bc"/>
+            <text x="575" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#74796e">optimize·O3</text>
+          </g>
+
+          <!-- node p6: merged -->
+          <g class="node-group">
+            <circle cx="695" cy="70" r="15" fill="#1e3528"/>
+            <path d="M689 70l4 4 8-9" stroke="#faf6f0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="695" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#4a4e4a">win·O2</text>
+          </g>
+
+          <!-- node p7: dangling weak (rebuild playlist) -->
+          <g class="node-group">
+            <circle cx="815" cy="70" r="13" fill="#faf6f0" stroke="#c9933a" stroke-width="2.4"/>
+            <text x="815" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#c9933a" font-weight="700">!</text>
+            <text x="815" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a17a2e">list·O3 conflict</text>
+          </g>
+
+          <!-- AUTOPSY LANE -->
+          <g class="node-group">
+            <circle cx="125" cy="190" r="14" fill="#1e3528"/>
+            <path d="M119 190l4 4 8-9" stroke="#faf6f0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="125" y="216" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#4a4e4a">figma-multiplayer</text>
+          </g>
+          <g class="node-group">
+            <circle cx="245" cy="190" r="14" fill="#1e3528"/>
+            <path d="M239 190l4 4 8-9" stroke="#faf6f0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="245" y="216" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#4a4e4a">duolingo-streak</text>
+          </g>
+          <g class="node-group">
+            <circle cx="365" cy="190" r="13" fill="#faf6f0" stroke="#c9933a" stroke-width="2.4"/>
+            <text x="365" y="194" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#c9933a" font-weight="700">!</text>
+            <text x="365" y="216" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a17a2e">dropbox-referral</text>
+          </g>
+          <g class="node-group">
+            <circle cx="485" cy="190" r="14" fill="#1e3528"/>
+            <path d="M479 190l4 4 8-9" stroke="#faf6f0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="485" y="216" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#4a4e4a">arc-browser-invite</text>
+          </g>
+          <g class="node-group">
+            <circle cx="605" cy="190" r="14" fill="#faf6f0" stroke="#74796e" stroke-width="2" stroke-dasharray="2 3"/>
+            <circle cx="605" cy="190" r="4" fill="#c4c8bc"/>
+            <text x="605" y="216" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#74796e">queued fixture</text>
+          </g>
+          <g class="node-group">
+            <circle cx="725" cy="190" r="14" fill="#1e3528"/>
+            <path d="M719 190l4 4 8-9" stroke="#faf6f0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="725" y="216" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#4a4e4a">delivery-routes</text>
+          </g>
+
+          <!-- INTERVIEW LANE -->
+          <g class="node-group">
+            <circle cx="165" cy="310" r="14" fill="#1e3528"/>
+            <path d="M159 310l4 4 8-9" stroke="#faf6f0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="165" y="336" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#4a4e4a">round 1/3</text>
+          </g>
+          <g class="node-group">
+            <circle cx="325" cy="310" r="14" fill="#1e3528"/>
+            <path d="M319 310l4 4 8-9" stroke="#faf6f0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="325" y="336" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#4a4e4a">round 2 · frame</text>
+          </g>
+          <g class="node-group">
+            <circle cx="465" cy="310" r="13" fill="#faf6f0" stroke="#c9933a" stroke-width="2.4" stroke-dasharray="1 0"/>
+            <text x="465" y="314" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#c9933a" font-weight="700">⏸</text>
+            <text x="465" y="336" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a17a2e">round 2/3 paused</text>
+          </g>
+          <g class="node-group">
+            <circle cx="585" cy="360" r="14" fill="#faf6f0" stroke="#74796e" stroke-width="2" stroke-dasharray="2 3"/>
+            <circle cx="585" cy="360" r="4" fill="#c4c8bc"/>
+            <text x="585" y="386" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#74796e">round 3 · scheduled</text>
+          </g>
+
+          <!-- interview countdown annotation -->
+          <text x="820" y="360" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#b83230" font-weight="700">interview in 18 days</text>
+          <path d="M 700 355 L 770 358" stroke="#b83230" stroke-width="1.3" stroke-dasharray="2 3" fill="none" marker-end="url(#arrowFor)" opacity="0.7"/>
+        </svg>
+      </div>
+
+      <!-- ============ TODAY FALLBACK STRIP ============ -->
+      <div class="today-strip">
+        <div class="today-strip-head">
+          <div class="today-strip-title">
+            <svg class="rail-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18" stroke-linecap="round"/><path d="M8 2v4M16 2v4" stroke-linecap="round"/></svg>
+            Today — the guardrail
+          </div>
+          <span class="today-badge">1 open rep</span>
+        </div>
+
+        <div class="today-row">
+          <div class="today-main">
+            <div class="today-title">
+              Frame the buyer, the user, and the payer for Airbnb Experiences
+              <span class="today-flow-chip">frame</span>
+            </div>
+            <div class="today-reason"><span class="arrow">→</span> because frame is 41% merge-ready and this HEAD commit is still open</div>
+          </div>
+          <div class="today-cta">
+            <button class="btn-continue">
+              Continue commit
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ============ RIGHT: side sheet (model diff) ============ -->
+    <aside class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-eyebrow"><span class="ring"></span>selected node</div>
+        <button class="sheet-close">&times;</button>
+      </div>
+
+      <div class="sheet-title">frame/airbnb-experiences</div>
+      <div class="sheet-sub">HEAD · commit 4 of 4 in this branch · Lv2</div>
+
+      <div class="sheet-meta-row">
+        <span class="meta-chip node-pass">frame</span>
+        <span class="meta-chip">O2</span>
+        <span class="meta-chip">41% merge-ready</span>
+        <span class="meta-chip">3/5 steps run</span>
+      </div>
+
+      <div class="sheet-section-label">model diff — this rep vs. last frame commit</div>
+
+      <div class="diff-block">
+        <div class="diff-file-line">frame/airbnb-experiences.assumptions</div>
+        <div class="diff-line ctx">  Host onboarding friction is the reported symptom.</div>
+        <div class="diff-line del"><span class="sign">-</span>  Assumed hosts want fewer steps in signup.</div>
+        <div class="diff-line add"><span class="sign">+</span>  Hosts want confidence their experience will get</div>
+        <div class="diff-line add"><span class="sign">+</span>  booked, not a shorter form. Reduced steps was</div>
+        <div class="diff-line add"><span class="sign">+</span>  never the real blocker.</div>
+      </div>
+
+      <div class="diff-block">
+        <div class="diff-file-line">frame/airbnb-experiences.claims</div>
+        <div class="diff-line del"><span class="sign">-</span>  Guests are the only user in this flow.</div>
+        <div class="diff-line add"><span class="sign">+</span>  Three parties: the guest booking, the host</div>
+        <div class="diff-line add"><span class="sign">+</span>  running the experience, and Airbnb as payer</div>
+        <div class="diff-line add"><span class="sign">+</span>  taking the cut. Payer incentive still unnamed.</div>
+        <div class="diff-line ctx">  Scope boundary not yet stated. (open)</div>
+      </div>
+
+      <div class="diff-block">
+        <div class="diff-file-line">frame/airbnb-experiences.tradeoffs</div>
+        <div class="diff-line del"><span class="sign">-</span>  "Cleaner onboarding" cited as the win condition.</div>
+        <div class="diff-line add"><span class="sign">+</span>  Rewritten toward booking-conversion confidence,</div>
+        <div class="diff-line add"><span class="sign">+</span>  but no because-Z stated yet. Merge blocked on F3.</div>
+      </div>
+
+      <div class="sheet-note">
+        <b>Why this branch is weak:</b> F1 (symptom → root cause) and F2 (why before how) both landed. F3, the problem statement, is still open, so this branch can't merge. That is the 41% you see on the rail.
+      </div>
+
+      <div class="sheet-footer">
+        <button class="btn-reopen">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Reopen HEAD commit
+        </button>
+        <button class="btn-cite">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 12h6M9 16h6M9 8h6" stroke-linecap="round"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>
+          View full node history
+        </button>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- ===================== FIXED DIRECTION PILL ===================== -->
+  <div class="direction-pill">
+    <span class="pdot"></span>
+    Direction 2 — Decision DAG
+  </div>
+
+</body>
+</html>

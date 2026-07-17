@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 export const metadata = { title: 'Submission History | HackProduct' }
 
@@ -97,7 +97,7 @@ export default async function HistoryPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Page header */}
       <div className="flex items-center gap-3 mb-8">
-        <HatchGlyph size={32} state="idle" className="text-primary flex-shrink-0" />
+        <HatchImage size={32} state="idle" className="flex-shrink-0" />
         <div>
           <h1 className="font-headline text-2xl text-on-surface">Submission History</h1>
           <p className="text-sm text-on-surface-variant font-body">

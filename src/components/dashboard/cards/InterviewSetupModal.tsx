@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { addInterview } from '@/app/actions/dashboard'
 
 interface InterviewSetupModalProps {
@@ -65,7 +65,7 @@ export function InterviewSetupModal({ onClose, onSave }: InterviewSetupModalProp
       <div className="bg-surface rounded-2xl p-6 max-w-sm w-full mx-4 shadow-lg">
         {/* Header */}
         <div className="flex items-center gap-3 mb-5">
-          <HatchGlyph size={28} state="listening" />
+          <HatchImage size={28} state="listening" />
           <p className="font-headline font-bold text-base text-on-surface flex-1">Set your interview</p>
           <button
             onClick={onClose}

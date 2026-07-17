@@ -1,0 +1,1034 @@
+<meta charset="UTF-8" />
+<title>Study Plan Detail · Round 4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --forest-950: #052316;
+    --forest-900: #0b2d1c;
+    --forest-850: #103020;
+    --forest-800: #123b20;
+    --forest-700: #1d432b;
+    --forest-600: #266235;
+    --forest-500: #1c5a34;
+    --mint-glow: #a3ebb1;
+
+    --page: #faf8f4;
+    --card: #fffdfa;
+    --card-alt: #fcfcfc;
+    --sidebar: #ffffff;
+    --hairline: #ece7dd;
+    --ink: #20291f;
+    --ink-secondary: #5b685e;
+    --ink-muted: #a6a9a4;
+
+    --flame: #fe9817;
+    --gold: #fdb41f;
+    --amber-soft: #fef3e2;
+    --amber-deep: #fce2c2;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: 'Nunito Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .serif { font-family: 'Literata', serif; }
+  a { text-decoration: none; color: inherit; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .shell {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---------------- SIDEBAR (copied verbatim from practice-catalog.html) ---------------- */
+  .sidebar {
+    width: 232px;
+    flex-shrink: 0;
+    background: var(--sidebar);
+    border-right: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .logo-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 0 8px;
+  }
+  .logo-word {
+    font-family: 'Literata', serif;
+    font-weight: 700;
+    font-size: 19px;
+    color: var(--ink);
+  }
+  .logo-spark { color: var(--forest-600); font-size: 14px; }
+  .tagline {
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    padding: 2px 8px 20px;
+  }
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-secondary);
+  }
+  .nav-item svg { flex-shrink: 0; opacity: 0.75; }
+  .nav-item.active {
+    background: var(--forest-800);
+    color: #fff;
+  }
+  .nav-item.active svg { opacity: 1; }
+  .nav-item .live-pill {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    background: var(--amber-soft);
+    color: var(--flame);
+    padding: 2px 7px;
+    border-radius: 999px;
+  }
+
+  .sidebar-spacer { flex: 1; }
+
+  .hatch-card {
+    background: var(--card-alt);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 12px;
+  }
+  .hatch-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hatch-card-top img {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--forest-900);
+    padding: 3px;
+  }
+  .hatch-card-name { font-size: 13.5px; font-weight: 800; color: var(--ink); }
+  .hatch-card-role { font-size: 11px; color: var(--ink-muted); }
+  .hatch-card-chevron { margin-left: auto; color: var(--ink-muted); }
+  .hatch-card-msg {
+    font-size: 12px;
+    color: var(--ink-secondary);
+    margin-top: 10px;
+    line-height: 1.45;
+  }
+
+  .pro-card {
+    background: linear-gradient(155deg, var(--forest-900), var(--forest-800));
+    border-radius: 12px;
+    padding: 16px 14px;
+    margin-top: 12px;
+    color: #fff;
+  }
+  .pro-title { font-family: 'Literata', serif; font-weight: 700; font-size: 15px; margin: 0 0 4px; }
+  .pro-blurb { font-size: 11.5px; color: rgba(255,255,255,0.72); line-height: 1.4; margin-bottom: 12px; }
+  .pro-blurb .nums { font-variant-numeric: tabular-nums; }
+  .pro-btn {
+    width: 100%;
+    background: #fff;
+    color: var(--forest-900);
+    border: none;
+    border-radius: 8px;
+    padding: 9px 0;
+    font-size: 12.5px;
+    font-weight: 800;
+  }
+
+  .help-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 12px 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-secondary);
+    margin-top: 8px;
+  }
+  .help-row svg { opacity: 0.7; }
+  .help-row .chev { margin-left: auto; }
+
+  /* ---------------- MAIN ---------------- */
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 20px 24px 48px;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 16px;
+  }
+  .search-pill {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-alt);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 10px 16px;
+    color: var(--ink-muted);
+    font-size: 13.5px;
+  }
+  .search-pill svg { flex-shrink: 0; }
+  .search-pill .kbd {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    background: #fff;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 1px 6px;
+  }
+  .top-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+  .stat-cluster {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-cluster .num { font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .stat-cluster .lbl { font-size: 10.5px; color: var(--ink-muted); font-weight: 700; }
+  .stat-text { display: flex; flex-direction: column; line-height: 1.15; }
+  .bell {
+    color: var(--ink-secondary);
+    display: flex;
+  }
+  .avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .avatar-row img {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .avatar-name { font-size: 13.5px; font-weight: 700; }
+
+  /* ---------------- BREADCRUMB ---------------- */
+  .crumb-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+  .crumb-row a { color: var(--ink-muted); }
+  .crumb-row a:hover { color: var(--forest-700); }
+  .crumb-row .crumb-current { color: var(--ink); }
+  .crumb-row svg { opacity: 0.55; flex-shrink: 0; }
+
+  /* ---------------- PLAN HEADER CARD ---------------- */
+  .plan-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 2px rgba(30,27,20,.04);
+  }
+  .plan-header-mid { flex: 1; min-width: 0; }
+  .plan-eyebrow {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #2778f2;
+    margin-bottom: 6px;
+  }
+  .plan-title {
+    font-family: 'Literata', serif;
+    font-weight: 600;
+    font-size: 27px;
+    color: var(--ink);
+    margin: 0 0 10px;
+    line-height: 1.2;
+  }
+  .plan-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .plan-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--card-alt);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .plan-chip.level {
+    background: #e8f4de;
+    border-color: transparent;
+    color: var(--forest-700);
+  }
+
+  .plan-header-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-shrink: 0;
+  }
+  .progress-ring-wrap {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+  }
+  .progress-ring-wrap svg { transform: rotate(-90deg); }
+  .progress-ring-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    line-height: 1;
+  }
+  .progress-ring-num { position: relative; display: inline-block; font-family: 'Literata', serif; font-weight: 700; font-size: 15px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .progress-ring-num svg.pen-mark { position: absolute; left: -5px; top: 13px; width: 34px; height: 8px; overflow: visible; pointer-events: none; z-index: 1; transform: none; }
+  .progress-ring-den { position: relative; font-size: 9.5px; color: var(--ink-muted); font-weight: 700; margin-top: 4px; }
+
+  .plan-header-cta { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  .continue-btn {
+    background: var(--forest-950);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 13.5px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .bookmark-btn {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--hairline);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-secondary);
+    flex-shrink: 0;
+  }
+  .header-actions-row { display: flex; align-items: center; gap: 10px; }
+
+  /* ---------------- TWO-COLUMN LAYOUT ---------------- */
+  .plan-body {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    margin-top: 20px;
+    align-items: start;
+  }
+
+  /* ---------------- DAY LIST · one container, hairline rows ---------------- */
+  .day-list {
+    display: flex;
+    flex-direction: column;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(30,27,20,.04);
+  }
+  .day-card { background: transparent; }
+  .day-card + .day-card { border-top: 1px solid var(--hairline); }
+  .day-list .day-card:first-child { border-radius: 16px 16px 0 0; overflow: hidden; }
+  .day-list .day-card:last-child { border-radius: 0 0 16px 16px; overflow: hidden; }
+
+  /* current-day card = amber sticky-note surface, slight pinned rotation */
+  .day-card.current {
+    background: #fdf0c2;
+    border: 1px solid #ecd48a;
+    border-radius: 10px;
+    transform: rotate(-0.6deg);
+    margin: 3px 6px;
+    position: relative;
+    z-index: 1;
+  }
+  .day-card.current + .day-card { border-top: none; }
+  .day-card.current .day-body { border-top-color: #ecd48a; }
+  .day-card.current .chal-row + .chal-row { border-top-color: #ecd48a; }
+
+  .day-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    min-height: 48px;
+  }
+  .day-marker {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 10.5px;
+    font-weight: 800;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
+  }
+  .day-marker.done { width: 22px; height: 22px; border: none; color: #fff; background: var(--forest-600); }
+  .day-marker.current { width: 22px; height: 22px; border: 2px solid var(--forest-700); color: var(--forest-700); background: #e8f4de; font-size: 11.5px; }
+  .day-marker.upcoming { border: 1.4px solid #c8c2b6; color: var(--ink-muted); background: transparent; }
+
+  .day-head-text { flex: 1; min-width: 0; }
+  .day-label {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 1px;
+  }
+  .day-card.current .day-label { color: var(--forest-700); }
+  .day-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+  .day-card.upcoming .day-title { color: var(--ink-secondary); }
+  .day-sub {
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    font-weight: 600;
+    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .day-head-right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .review-link {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--forest-700);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .current-badge {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: #e8f4de;
+    border: 1.5px solid var(--forest-700);
+    color: var(--forest-700);
+    padding: 3.5px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  /* expanded day body */
+  .day-body {
+    padding: 0 16px 12px;
+    border-top: 1px solid var(--hairline);
+    margin-top: 2px;
+  }
+  .chal-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    min-height: 44px;
+  }
+  .chal-row + .chal-row { border-top: 1px solid var(--hairline); }
+  .chal-row-text { flex: 1; min-width: 0; }
+  .chal-row-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .chal-row-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .chal-row-meta {
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    font-weight: 600;
+    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .chal-row-meta .dot { margin: 0 5px; }
+  .chal-start-btn {
+    flex-shrink: 0;
+    background: var(--forest-950);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .hatch-tip-inline {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 8px;
+  }
+  .hatch-tip-inline img {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--forest-900);
+    padding: 2px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .hatch-tip-inline-text { font-size: 12.5px; line-height: 1.5; color: var(--ink-secondary); }
+  .hatch-tip-inline-text b { color: var(--ink); font-weight: 800; }
+
+  /* ---------------- RIGHT RAIL ---------------- */
+  .rail { display: flex; flex-direction: column; gap: 12px; }
+  .rail-card {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(30,27,20,.04);
+  }
+
+  /* Hatch coach note = mint sticky surface */
+  .rail-card.hatch-says-card {
+    background: #dff3d0;
+    border-color: #b9d9a6;
+  }
+
+  .hatch-says-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .hatch-says-top img {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--forest-900);
+    padding: 3px;
+  }
+  .hatch-says-name { font-family: 'Nunito Sans', sans-serif; font-size: 13px; font-weight: 800; color: var(--ink); }
+  .hatch-says-card-msg {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-secondary);
+  }
+
+  .rail-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14.5px;
+    margin-bottom: 10px;
+  }
+  .plan-stats-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .plan-stat-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .plan-stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .plan-stat-label { font-size: 12.5px; color: var(--ink-secondary); font-weight: 600; }
+  .plan-stat-num { font-family: 'Literata', serif; font-weight: 700; font-size: 16px; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  .pairs-why {
+    font-size: 12px;
+    color: var(--ink-secondary);
+    line-height: 1.5;
+    margin: -4px 0 8px;
+  }
+  .pairs-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--hairline);
+  }
+  .pairs-text { flex: 1; min-width: 0; }
+  .pairs-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .pairs-meta {
+    font-size: 11px;
+    color: var(--ink-muted);
+    font-weight: 600;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .pairs-arrow { flex-shrink: 0; color: var(--ink-muted); }
+
+  /* ---------------- PAUSED REP STRIP ---------------- */
+  .protip-strip {
+    margin-top: 20px;
+    background: #fdf0c2;
+    border: 1px solid #ecd48a;
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .protip-text { font-size: 13px; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
+  .protip-text b { color: var(--ink); font-weight: 800; }
+  .protip-spacer { flex: 1; }
+  .protip-btn {
+    background: var(--forest-950);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 12.5px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  /* ---------------- MINI PILL ---------------- */
+  .round-pill {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    background: var(--forest-950);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(5,35,22,0.3);
+    z-index: 50;
+  }
+
+  /* ---------------- RESPONSIVE ---------------- */
+  @media (max-width: 1180px) {
+    .plan-body { grid-template-columns: 1fr; }
+    .rail { flex-direction: row; flex-wrap: wrap; }
+    .rail-card { flex: 1; min-width: 260px; }
+  }
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .plan-header { flex-wrap: wrap; }
+    .plan-header-right { width: 100%; justify-content: space-between; }
+  }
+  @media (max-width: 640px) {
+    .main { padding: 16px 14px 40px; }
+    .topbar { flex-wrap: wrap; gap: 10px; }
+    .top-right { gap: 14px; }
+    .plan-header { padding: 16px; }
+    .plan-title { font-size: 22px; }
+    .rail { flex-direction: column; }
+    .day-head { flex-wrap: wrap; }
+    .chal-row { flex-wrap: wrap; }
+    .chal-start-btn { width: 100%; }
+  }
+</style>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo-row">
+        <span class="logo-word">HackProduct</span>
+        <span class="logo-spark">✦</span>
+      </div>
+      <div class="tagline">A practice gym for product thinking</div>
+
+      <nav class="nav">
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+          Home
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v5h5"/></svg>
+          Explore / Practice
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c1-3.3 3.6-5 6.5-5s5.5 1.7 6.5 5"/></svg>
+          Interviews
+          <span class="live-pill">Live</span>
+        </a>
+        <a class="nav-item active" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          Study Plans
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          Progress
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.8"/><circle cx="17" cy="9" r="2.3"/><path d="M3.5 19c.7-2.9 2.9-4.5 5.5-4.5s4.8 1.6 5.5 4.5"/><path d="M14.5 15c2.1.2 3.7 1.7 4.2 4"/></svg>
+          Community
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          Analytics
+        </a>
+      </nav>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="hatch-card">
+      <div class="hatch-card-top">
+        <img src="../../../../public/hatch/avatar.png" alt="Hatch" />
+        <div>
+          <div class="hatch-card-name">Hatch</div>
+          <div class="hatch-card-role">AI Coach</div>
+        </div>
+        <span class="hatch-card-chevron">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+      </div>
+      <div class="hatch-card-msg">You're on step 3 of 5 in Week 2 of the Product Sense Sprint.</div>
+    </div>
+
+    <div class="pro-card">
+      <div class="pro-title">Go Pro</div>
+      <div class="pro-blurb"><span class="nums">Free plan: 20 challenges, 5 interviews, and 30 gradings a month.</span> Pro removes the caps.</div>
+      <button class="pro-btn">Upgrade to Pro</button>
+    </div>
+
+    <div class="help-row">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.6 2.3c-.8.5-1.1.9-1.1 1.8" stroke-linecap="round"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>
+      Help &amp; Support
+      <span class="chev">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="search-pill">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        Search challenges, topics, companies...
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="top-right">
+        <div class="stat-cluster">
+          <div class="stat-text">
+            <span class="num">12-day streak</span>
+            <span class="lbl">Best 36</span>
+          </div>
+        </div>
+        <div class="stat-cluster">
+          <div class="stat-text">
+            <span class="num">9,860 XP</span>
+            <span class="lbl">Level 12</span>
+          </div>
+        </div>
+        <span class="bell">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
+        </span>
+        <div class="avatar-row">
+          <img src="../../../../public/hatch/avatar.png" alt="Sandeep" />
+          <span class="avatar-name">Sandeep</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- BREADCRUMB -->
+    <div class="crumb-row">
+      <a href="#">Study Plans</a>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      <span class="crumb-current">7-Day Interview Prep</span>
+    </div>
+
+    <!-- PLAN HEADER CARD -->
+    <section class="plan-header">
+      <div class="plan-header-mid">
+        <div class="plan-eyebrow">Study Plan</div>
+        <h1 class="plan-title">7-Day Interview Prep</h1>
+        <div class="plan-meta-row">
+          <span class="plan-chip">7 days</span>
+          <span class="plan-chip">14 challenges</span>
+          <span class="plan-chip level">Beginner-friendly</span>
+        </div>
+      </div>
+      <div class="plan-header-right">
+        <div class="progress-ring-wrap">
+          <svg width="64" height="64" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="27" fill="none" stroke="#ece7dd" stroke-width="6" />
+            <circle cx="32" cy="32" r="27" fill="none" stroke="#266235" stroke-width="6" stroke-linecap="round" stroke-dasharray="169.6" stroke-dashoffset="121.1" />
+          </svg>
+          <div class="progress-ring-label">
+            <span class="progress-ring-num">2/7
+              <svg class="pen-mark" viewBox="0 0 40 8" preserveAspectRatio="none">
+                <path d="M1.5 3.2C7 5.6 14 1.4 20 3.6c6 2.2 12.5-1.6 18-.4" stroke="#1d432b" stroke-opacity="0.28" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="progress-ring-den">days</span>
+          </div>
+        </div>
+        <div class="plan-header-cta">
+          <button class="continue-btn">Continue Day 2</button>
+        </div>
+        <button class="bookmark-btn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- TWO COLUMN BODY -->
+    <div class="plan-body">
+      <!-- MAIN: DAY LIST -->
+      <div class="day-list">
+
+        <!-- Day 1 · done, collapsed -->
+        <div class="day-card done">
+          <div class="day-head">
+            <div class="day-marker done">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div class="day-head-text">
+              <div class="day-label">Day 1</div>
+              <div class="day-title">Diagnose Like a PM</div>
+              <div class="day-sub">2 challenges · completed</div>
+            </div>
+            <div class="day-head-right">
+              <a class="review-link" href="#">
+                Review
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Day 2 · current, expanded -->
+        <div class="day-card current">
+          <div class="day-head">
+            <div class="day-marker current">2</div>
+            <div class="day-head-text">
+              <div class="day-label">Day 2 · In progress</div>
+              <div class="day-title">Metrics Fluency</div>
+              <div class="day-sub">2 challenges · ~45 min</div>
+            </div>
+            <div class="day-head-right">
+              <span class="current-badge">Current</span>
+            </div>
+          </div>
+          <div class="day-body">
+            <div class="chal-row">
+              <div class="chal-row-text">
+                <div class="chal-row-eyebrow" style="color:#2778f2;">Product Sense</div>
+                <div class="chal-row-title">YouTube Watch Time Down 10%</div>
+                <div class="chal-row-meta">Easy</div>
+              </div>
+              <button class="chal-start-btn">Start</button>
+            </div>
+            <div class="chal-row">
+              <div class="chal-row-text">
+                <div class="chal-row-eyebrow" style="color:#fe9817;">SQL</div>
+                <div class="chal-row-title">Airbnb: Premium City Listings</div>
+                <div class="chal-row-meta">Easy</div>
+              </div>
+              <button class="chal-start-btn">Start</button>
+            </div>
+
+            <div class="hatch-tip-inline">
+              <img src="../../../../public/hatch/avatar.png" alt="Hatch" />
+              <div class="hatch-tip-inline-text"><b>Hatch:</b> The YouTube rep gives you a 10% drop and no product change to blame. Name which watch-time number actually moved before you touch solutions.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Day 3 · upcoming -->
+        <div class="day-card upcoming">
+          <div class="day-head">
+            <div class="day-marker upcoming">3</div>
+            <div class="day-head-text">
+              <div class="day-label">Day 3</div>
+              <div class="day-title">Product Sense</div>
+              <div class="day-sub">2 challenges · ~50 min</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Day 4 · upcoming -->
+        <div class="day-card upcoming">
+          <div class="day-head">
+            <div class="day-marker upcoming">4</div>
+            <div class="day-head-text">
+              <div class="day-label">Day 4</div>
+              <div class="day-title">Tradeoffs</div>
+              <div class="day-sub">2 challenges · ~50 min</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Day 5 · upcoming -->
+        <div class="day-card upcoming">
+          <div class="day-head">
+            <div class="day-marker upcoming">5</div>
+            <div class="day-head-text">
+              <div class="day-label">Day 5</div>
+              <div class="day-title">Improve a Product</div>
+              <div class="day-sub">2 challenges · ~50 min</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Day 6 · upcoming -->
+        <div class="day-card upcoming">
+          <div class="day-head">
+            <div class="day-marker upcoming">6</div>
+            <div class="day-head-text">
+              <div class="day-label">Day 6</div>
+              <div class="day-title">Advanced Cases</div>
+              <div class="day-sub">2 challenges · ~50 min</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Day 7 · upcoming -->
+        <div class="day-card upcoming">
+          <div class="day-head">
+            <div class="day-marker upcoming">7</div>
+            <div class="day-head-text">
+              <div class="day-label">Day 7</div>
+              <div class="day-title">Final Stretch</div>
+              <div class="day-sub">2 challenges · ~50 min</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT RAIL -->
+      <div class="rail">
+        <div class="rail-card hatch-says-card">
+          <div class="hatch-says-top">
+            <img src="../../../../public/hatch/avatar.png" alt="Hatch" />
+            <span class="hatch-says-name">Hatch says</span>
+          </div>
+          <div class="hatch-says-card-msg">Frame is your weakest move at 41%, and Day 2's YouTube rep drills exactly that. Start there, then take the SQL rep.</div>
+        </div>
+
+        <div class="rail-card">
+          <div class="rail-title">Plan stats</div>
+          <div class="plan-stats-list">
+            <div class="plan-stat-row">
+              <span class="plan-stat-label">Challenges</span>
+              <span class="plan-stat-num">14</span>
+            </div>
+            <div class="plan-stat-row">
+              <span class="plan-stat-label">Total time</span>
+              <span class="plan-stat-num">~6h</span>
+            </div>
+            <div class="plan-stat-row">
+              <span class="plan-stat-label">Days done</span>
+              <span class="plan-stat-num">2 of 7</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rail-card pairs-well-card">
+          <div class="rail-title">Pairs well with</div>
+          <div class="pairs-why">Day 4's tradeoffs lean on FLOW's Optimize chapter.</div>
+          <a class="pairs-row" href="#">
+            <div class="pairs-text">
+              <div class="pairs-title">FLOW: The Four-Move Framework</div>
+              <div class="pairs-meta">6 chapters · 50 min</div>
+            </div>
+            <span class="pairs-arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAUSED REP -->
+    <div class="protip-strip">
+      <div class="protip-text"><b>Still paused:</b> Designing the First Screen of an AI-Native App, at the Frame step. Finishing it counts toward this week's goal, 3 of 5 sessions done.</div>
+      <div class="protip-spacer"></div>
+      <button class="protip-btn">Resume Frame step</button>
+    </div>
+  </main>
+</div>
+
+<div class="round-pill">Round 4 · Study Plan Detail</div>

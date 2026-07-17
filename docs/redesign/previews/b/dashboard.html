@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Today's Session — HackProduct</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;0,7..72,700;1,7..72,400;1,7..72,500&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-primary:#4a7c59; --color-on-primary:#ffffff; --color-primary-container:#78a886; --color-on-primary-container:#d8f0de; --color-primary-fixed:#c8e8d0; --color-primary-fixed-dim:#8ecf9e;
+  --color-secondary:#6b6358; --color-secondary-container:#f0e8db; --color-on-secondary-container:#5e5548;
+  --color-tertiary:#705c30; --color-tertiary-container:#c4a66a;
+  --color-background:#faf6f0; --color-on-background:#2e3230;
+  --color-surface:#faf6f0; --color-surface-taupe:#e8e2d8; --color-surface-dim:#dbd7cf;
+  --color-surface-container-lowest:#ffffff; --color-surface-container-low:#f5f1ea; --color-surface-container:#f0ece4; --color-surface-container-high:#eae6de; --color-surface-container-highest:#e4e0d8;
+  --color-on-surface:#2e3230; --color-on-surface-variant:#4a4e4a;
+  --color-outline:#74796e; --color-outline-variant:#c4c8bc;
+  --color-error:#b83230; --color-amber:#c9933a; --color-amber-soft:#f3e2b9; --color-success:#2f7a4a;
+  --color-hero-forest:#1e3528; --color-hero-forest-deep:#14241c; --color-hero-forest-deepest:#0e1a14;
+  --serif:'Literata',Georgia,'Times New Roman',serif;
+  --sans:'Nunito Sans',-apple-system,'Segoe UI',sans-serif;
+  --radius:12px;
+  --rule:1px solid var(--color-outline-variant);
+  --rule-dark:1px solid rgba(245,240,232,.14);
+  --cream:#f5f0e8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--color-background);color:var(--color-on-surface);font:400 15px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;background:none;border:none;color:inherit}
+svg{display:block;flex:none}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;border-radius:3px}
+
+/* ===== primitives ===== */
+.eyebrow{font:700 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.eyebrow.on-dark{color:#9fc9a8}
+.flow-chip{display:inline-flex;align-items:center;font:700 10px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--color-on-surface-variant);border:1px solid var(--color-outline-variant);border-radius:3px;padding:3px 7px;background:transparent}
+.flow-chip.is-active{background:var(--color-primary);border-color:var(--color-primary);color:#fff}
+.flow-chip.is-weak{border-color:var(--color-amber);color:var(--color-tertiary)}
+.byline{font:600 11.5px/1 var(--sans);color:var(--color-on-surface-variant);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.byline .dot{width:3px;height:3px;border-radius:50%;background:var(--color-outline)}
+.btn-primary{display:inline-flex;align-items:center;gap:9px;background:var(--color-hero-forest);color:var(--cream);border-radius:999px;padding:13px 24px;font:700 13.5px/1 var(--sans);letter-spacing:.01em;transition:background .18s ease,transform .18s ease}
+.btn-primary:hover{background:var(--color-primary);transform:translateY(-1px)}
+.btn-ghost{display:inline-flex;align-items:center;gap:7px;background:transparent;color:var(--color-on-surface);border:1.5px solid var(--color-on-surface);border-radius:999px;padding:11px 20px;font:700 12.5px/1 var(--sans)}
+.btn-ghost:hover{background:var(--color-on-surface);color:var(--color-background)}
+.quiet-link{font:700 12.5px/1 var(--sans);color:var(--color-primary);border-bottom:1px solid transparent}
+.quiet-link:hover{border-bottom-color:var(--color-primary)}
+.why{display:flex;gap:8px;font:italic 400 13px/1.5 var(--serif);color:var(--color-on-surface-variant)}
+.why b{font-style:normal;font-weight:600;color:var(--color-on-surface)}
+.why::before{content:"";flex:none;width:2px;background:var(--color-primary);border-radius:1px;margin-top:1px}
+
+/* ===== NAV: top editorial + slim secondary rail ===== */
+.topnav{position:sticky;top:0;z-index:60;background:var(--color-hero-forest);color:var(--cream)}
+.topnav-inner{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:28px;padding:0 32px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font:600 19px/1 var(--serif);letter-spacing:-.01em;color:var(--cream)}
+.brand em{font-style:italic;color:var(--color-primary-fixed-dim)}
+.brand-mark{width:24px;height:24px;flex:none}
+.topnav-search{margin-left:8px;flex:1;max-width:340px;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:999px}
+.topnav-search svg{width:14px;height:14px;stroke:#c8d4cb;fill:none;stroke-width:1.8}
+.topnav-search input{flex:1;border:none;background:none;outline:none;font:600 12.5px var(--sans);color:var(--cream)}
+.topnav-search input::placeholder{color:#9fb1a4}
+.topnav-right{margin-left:auto;display:flex;align-items:center;gap:18px}
+.streak-pill{display:flex;align-items:center;gap:6px;font:700 12.5px/1 var(--sans);color:#e9dfc8}
+.streak-pill svg{width:13px;height:13px;fill:var(--color-amber);stroke:none}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--color-primary-fixed);color:var(--color-hero-forest);display:flex;align-items:center;justify-content:center;font:800 12.5px var(--serif);border:1px solid rgba(255,255,255,.2)}
+
+.subrail{background:var(--color-background);border-bottom:2px solid var(--color-on-surface)}
+.subrail-inner{max-width:1320px;margin:0 auto;display:flex;gap:2px;padding:0 32px}
+.subrail a{position:relative;padding:14px 4px;margin-right:26px;font:700 13px/1 var(--sans);letter-spacing:.02em;color:var(--color-on-surface-variant)}
+.subrail a:hover{color:var(--color-on-surface)}
+.subrail a.is-active{color:var(--color-on-surface)}
+.subrail a.is-active::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--color-primary)}
+
+/* mobile nav */
+.mobilenav{display:none;background:var(--color-hero-forest);border-bottom:2px solid var(--color-on-surface);overflow-x:auto;scrollbar-width:none}
+.mobilenav::-webkit-scrollbar{display:none}
+.mobilenav-inner{display:flex;gap:22px;padding:12px 20px;white-space:nowrap}
+.mobilenav a{font:700 12.5px/1 var(--sans);color:#c8d4cb}
+.mobilenav a.is-active{color:var(--cream);border-bottom:2px solid var(--color-primary-fixed-dim);padding-bottom:8px}
+
+/* ===== layout ===== */
+.main{max-width:1320px;margin:0 auto;padding:40px 32px 80px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 356px;gap:44px;align-items:start}
+.col-main{display:flex;flex-direction:column;gap:40px;min-width:0}
+.side-stack{display:flex;flex-direction:column;gap:28px;position:sticky;top:96px}
+
+/* ===== masthead greeting ===== */
+.masthead{padding-bottom:8px}
+.masthead .date{font:700 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.masthead h1{font:500 40px/1.12 var(--serif);letter-spacing:-.01em;margin-top:10px;color:var(--color-on-surface)}
+.masthead h1 em{font-style:italic;color:var(--color-primary)}
+.masthead .sub{font:italic 400 15px/1.5 var(--serif);color:var(--color-on-surface-variant);margin-top:8px;max-width:56ch}
+.week-strip{display:flex;align-items:center;gap:16px;margin-top:20px}
+.week-dots{display:flex;gap:7px}
+.week-dots i{width:9px;height:9px;border-radius:50%;background:var(--color-surface-container-high);display:block}
+.week-dots i.on{background:var(--color-primary)}
+.week-dots i.today{background:var(--color-amber);box-shadow:0 0 0 2px var(--color-amber-soft)}
+
+/* ===== READINESS BAND (dark forest editorial masthead strip) ===== */
+.readband{background:var(--color-hero-forest);border-radius:var(--radius);color:var(--cream);padding:26px 30px;display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:0;position:relative;overflow:hidden}
+.readband::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 140% at 0% 0%,rgba(142,207,158,.10),transparent 55%)}
+.rb-cell{position:relative;padding:0 22px;border-right:var(--rule-dark)}
+.rb-cell:first-child{padding-left:0}
+.rb-cell:last-child{border-right:none}
+.rb-lab{font:700 10.5px/1 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:#9fc9a8}
+.rb-val{font:500 34px/1 var(--serif);margin-top:10px;color:#fff}
+.rb-val small{font-size:15px;font-family:var(--sans);font-weight:700;color:#c8d4cb;margin-left:2px}
+.rb-val.amber{color:var(--color-amber-soft);font-size:22px;letter-spacing:.01em}
+.rb-sub{font:600 11.5px/1.4 var(--sans);color:#a9c4b0;margin-top:8px}
+.rb-meter{height:3px;border-radius:2px;background:rgba(255,255,255,.14);overflow:hidden;margin-top:12px}
+.rb-meter i{display:block;height:100%;background:var(--color-primary-fixed-dim);border-radius:2px}
+.rb-trend{display:inline-flex;align-items:center;gap:4px;color:#9fc9a8;font:700 10.5px/1 var(--sans)}
+.rb-trend.down{color:var(--color-amber-soft)}
+
+/* ===== SESSION (editorial "front page" spine) ===== */
+.session{background:var(--color-surface-container-lowest);border:var(--rule);border-radius:var(--radius);overflow:hidden}
+.session-head{padding:28px 32px 22px;border-bottom:2px solid var(--color-on-surface)}
+.session-head-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.session-kicker{display:flex;align-items:center;gap:10px}
+.hatch-mark{width:30px;height:30px;border-radius:50%;background:var(--color-primary-fixed);border:1px solid var(--color-primary-fixed-dim);display:flex;align-items:center;justify-content:center;flex:none}
+.hatch-mark svg{width:17px;height:17px}
+.session-head h1{font:500 30px/1.15 var(--serif);letter-spacing:-.01em;margin-top:10px}
+.session-arc{display:flex;align-items:center;gap:0;margin-top:18px}
+.arc-node{display:flex;align-items:center}
+.arc-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--color-outline-variant);display:flex;align-items:center;justify-content:center;font:700 10px var(--sans);color:var(--color-on-surface-variant);background:var(--color-surface-container-lowest)}
+.arc-dot.done{background:var(--color-success);border-color:var(--color-success);color:#fff}
+.arc-dot.active{border-color:var(--color-amber);background:var(--color-amber-soft);color:var(--color-tertiary)}
+.arc-line{width:26px;height:1px;background:var(--color-outline-variant)}
+.arc-line.done{background:var(--color-success)}
+.session-progress{font:600 12px/1 var(--sans);color:var(--color-on-surface-variant);margin-top:12px}
+.session-progress b{color:var(--color-on-surface);font-weight:800}
+
+.block{display:grid;grid-template-columns:52px 1fr;gap:20px;padding:26px 32px;border-bottom:var(--rule);position:relative}
+.block:last-child{border-bottom:none}
+.block-num{font:500 26px/1 var(--serif);color:var(--color-surface-dim);font-style:italic}
+.block.is-active .block-num{color:var(--color-amber)}
+.block.is-done .block-num{color:var(--color-success)}
+.block-body{min-width:0}
+.block-kicker{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.block-kicker .step{font:700 10.5px/1 var(--sans);letter-spacing:.11em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.block-kicker .est{font:600 11px/1 var(--sans);color:var(--color-outline);margin-left:auto}
+.block h3{font:500 20px/1.32 var(--serif);letter-spacing:-.005em;color:var(--color-on-surface)}
+.block-meta{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.block-why{margin-top:12px}
+.block-cta{display:flex;align-items:center;margin-top:16px;gap:16px}
+.block-done-state{display:flex;align-items:center;gap:7px;font:700 12px/1 var(--sans);color:var(--color-success)}
+.block-done-state svg{width:14px;height:14px;stroke:var(--color-success);fill:none;stroke-width:2}
+.session-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 32px;background:var(--color-surface-container-low)}
+.session-foot .swap{font:700 12.5px/1 var(--sans);color:var(--color-on-surface-variant);display:inline-flex;align-items:center;gap:7px}
+.session-foot .swap svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+/* ===== FEED ===== */
+.feed-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;border-bottom:2px solid var(--color-on-surface);padding-bottom:14px}
+.feed-head h2{font:500 24px/1 var(--serif)}
+.feed-tabs{display:flex;gap:22px}
+.feed-tabs button{font:700 12px/1 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--color-on-surface-variant);padding-bottom:14px;margin-bottom:-16px;border-bottom:2px solid transparent}
+.feed-tabs button.on{color:var(--color-on-surface);border-bottom-color:var(--color-primary)}
+.feed{display:flex;flex-direction:column;margin-top:6px}
+.fcard{display:grid;grid-template-columns:1fr 128px;gap:22px;padding:26px 0;border-bottom:var(--rule)}
+.fcard:last-child{border-bottom:none}
+.fcard-body{min-width:0}
+.fcard-type{font:700 10px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--color-primary);display:block;margin-bottom:9px}
+.fcard-body h4{font:500 21px/1.3 var(--serif);color:var(--color-on-surface)}
+.fcard-body p{font:400 14px/1.6 var(--sans);color:var(--color-on-surface-variant);margin-top:8px;max-width:60ch}
+.fcard-foot{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap}
+.fcard-cover{border-radius:8px;overflow:hidden;position:relative;background:linear-gradient(160deg,#1e3528,#0e1a14);display:flex;align-items:flex-end}
+.fcard-cover .co-title{padding:12px}
+.fcard-cover .co-title small{display:block;font:700 8px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:#9fc9a8;margin-bottom:5px}
+.fcard-cover .co-title span{font:500 italic 15px/1.2 var(--serif);color:#f0e8db}
+.meta-tag{font:600 11px/1 var(--sans);color:var(--color-outline)}
+.spark{display:flex;align-items:flex-end;gap:3px;height:26px}
+.spark i{width:6px;background:var(--color-amber);opacity:.85;border-radius:1px 1px 0 0}
+
+/* ===== SIDE RAIL ===== */
+.side-card{background:var(--color-surface-container-lowest);border:var(--rule);border-radius:var(--radius);padding:22px}
+.side-card h3{font:500 15px/1 var(--serif);color:var(--color-on-surface);display:flex;align-items:baseline;justify-content:space-between}
+.side-card h3 .quiet-link{font-size:11px}
+.flow-rows{display:flex;flex-direction:column;gap:14px;margin-top:18px}
+.flow-row{display:grid;grid-template-columns:70px 1fr 32px;align-items:center;gap:10px}
+.flow-row .fname{font:700 11px/1 var(--sans);color:var(--color-on-surface);display:flex;align-items:center;gap:5px}
+.flow-row .flv{font:600 9px/1 var(--sans);color:var(--color-on-surface-variant)}
+.fbar{height:2px;background:var(--color-surface-container-high);position:relative}
+.fbar i{display:block;height:100%;background:var(--color-primary);position:relative}
+.fbar.weak i{background:var(--color-amber)}
+.fbar i::after{content:"";position:absolute;right:-3px;top:50%;translate:0 -50%;width:6px;height:6px;border-radius:50%;background:inherit}
+.flow-row .fpct{font:700 11px/1 var(--sans);color:var(--color-on-surface-variant);text-align:right}
+.side-note{margin-top:16px;padding-top:16px;border-top:var(--rule);font:italic 400 13px/1.55 var(--serif);color:var(--color-on-surface-variant)}
+.side-note b{font-weight:600;font-style:normal;color:var(--color-tertiary)}
+
+/* editorial infographic bar (activity, replaces heatmap) */
+.month-rows{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.month-row{display:grid;grid-template-columns:34px 1fr 26px;align-items:center;gap:10px}
+.month-row .mname{font:700 10px/1 var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.mbar{height:14px;background:var(--color-surface-container-high);border-radius:2px;overflow:hidden;position:relative;display:flex}
+.mbar i{display:block;height:100%;background:var(--color-primary);opacity:.28}
+.mbar i:nth-child(1){opacity:.35}
+.mbar i:nth-child(2){opacity:.55}
+.mbar i:nth-child(3){opacity:.8}
+.mbar i:nth-child(4){opacity:1}
+.month-row .mcount{font:700 11px/1 var(--sans);color:var(--color-on-surface-variant);text-align:right}
+.heat-legend{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:var(--rule);font:700 11px/1 var(--sans);color:var(--color-on-surface-variant)}
+.heat-legend b{color:var(--color-on-surface)}
+
+/* plan progress — numbered editorial list */
+.plan-steps{display:flex;flex-direction:column;margin-top:16px}
+.pstep{display:flex;align-items:baseline;gap:11px;padding:9px 0;border-bottom:1px dotted var(--color-outline-variant)}
+.pstep:last-child{border-bottom:none}
+.pstep .pn{font:500 italic 14px/1 var(--serif);color:var(--color-surface-dim);flex:none;width:16px}
+.pstep.done .pn{color:var(--color-success)}
+.pstep.now .pn{color:var(--color-amber)}
+.pstep span{font:600 12.5px/1.3 var(--sans);color:var(--color-on-surface-variant)}
+.pstep.done span{color:var(--color-outline);text-decoration:line-through;text-decoration-color:var(--color-outline-variant)}
+.pstep.now span{color:var(--color-on-surface);font-weight:700}
+
+.iv-row{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 0;border-top:var(--rule)}
+.iv-row:first-of-type{border-top:none;margin-top:16px}
+.iv-row .ivn{width:34px;height:34px;border-radius:8px;background:var(--color-hero-forest);color:#8ecf9e;display:flex;align-items:center;justify-content:center;flex:none;font:600 13px var(--serif)}
+.iv-row .ivt{flex:1;min-width:0}
+.iv-row .ivt b{font:600 13.5px/1.3 var(--serif);color:var(--color-on-surface);display:block}
+.iv-row .ivt small{font:600 11px/1.3 var(--sans);color:var(--color-on-surface-variant)}
+
+.dbadge{position:fixed;right:18px;bottom:18px;z-index:80;display:flex;align-items:center;gap:9px;background:var(--color-hero-forest);color:var(--cream);border-radius:999px;padding:10px 16px;font:700 11px/1 var(--sans);letter-spacing:.02em;box-shadow:0 10px 26px -10px rgba(14,26,20,.55)}
+.dbadge em{font-style:italic;color:var(--color-primary-fixed-dim);font-family:var(--serif)}
+
+@media(max-width:1080px){
+  .grid{grid-template-columns:1fr}
+  .side-stack{position:static}
+  .topnav-search{display:none}
+  .readband{grid-template-columns:1fr 1fr}
+  .rb-cell{padding:14px 18px;border-right:none;border-bottom:var(--rule-dark)}
+  .rb-cell:nth-child(odd){border-right:var(--rule-dark)}
+}
+@media(max-width:768px){
+  .subrail{display:none}
+  .mobilenav{display:block}
+  .main{padding:26px 20px 60px}
+  .masthead h1{font-size:30px}
+  .block{grid-template-columns:32px 1fr;padding:20px 20px}
+  .block-num{font-size:20px}
+  .session-head{padding:22px 20px 18px}
+  .session-foot{flex-direction:column;align-items:flex-start;padding:16px 20px}
+  .fcard{grid-template-columns:1fr;gap:14px}
+  .fcard-cover{display:none}
+  .readband{grid-template-columns:1fr;padding:22px 20px}
+  .rb-cell{border-right:none!important;border-bottom:var(--rule-dark);padding:14px 0}
+  .rb-cell:last-child{border-bottom:none}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<header class="topnav">
+  <div class="topnav-inner">
+    <a class="brand" href="#"><svg class="brand-mark" viewBox="0 0 26 26" fill="none"><rect x="1" y="1" width="24" height="24" rx="5" fill="#4a7c59"/><path d="M8 17V9l5 4 5-4v8" stroke="#d8f0de" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Hack<em>Product</em></a>
+    <div class="topnav-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="Search challenges, autopsies, companies"></div>
+    <div class="topnav-right">
+      <span class="streak-pill"><svg viewBox="0 0 24 24"><path d="M12 2c2 4 5 5 5 9a5 5 0 01-10 0c0-1 .5-2 1-3 .5 2 2 2 2 2-1-3 1-5 2-8z"/></svg>12-day streak</span>
+      <div class="avatar">S</div>
+    </div>
+  </div>
+</header>
+
+<!-- SECONDARY RAIL -->
+<nav class="subrail">
+  <div class="subrail-inner">
+    <a class="is-active" href="#">Home</a>
+    <a href="#">Practice</a>
+    <a href="#">Interviews</a>
+    <a href="library.html">Library</a>
+    <a href="#">Progress</a>
+  </div>
+</nav>
+
+<!-- MOBILE NAV -->
+<nav class="mobilenav"><div class="mobilenav-inner">
+  <a class="is-active" href="#">Home</a><a href="#">Practice</a><a href="#">Interviews</a><a href="library.html">Library</a><a href="#">Progress</a>
+</div></nav>
+
+<main class="main">
+
+  <!-- MASTHEAD GREETING -->
+  <div class="masthead">
+    <span class="date">Thursday, July 9</span>
+    <h1>Good evening, Sandeep. <em>Today, sharpen Frame.</em></h1>
+    <p class="sub">Your readiness held flat this week because Frame keeps stalling at the constraint. One rep below is aimed straight at it.</p>
+    <div class="week-strip">
+      <div class="week-dots">
+        <i class="on" title="Mon"></i><i class="on" title="Tue"></i><i class="on" title="Wed"></i><i class="today" title="Thu"></i><i title="Fri"></i><i title="Sat"></i><i title="Sun"></i>
+      </div>
+      <span class="meta-tag" style="color:var(--color-on-surface-variant)">12-day streak</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- ============ MAIN COLUMN ============ -->
+    <div class="col-main">
+
+      <!-- READINESS BAND -->
+      <div class="readband">
+        <div class="rb-cell">
+          <span class="rb-lab">Interview readiness</span>
+          <div class="rb-val">68<small>%</small></div>
+          <div class="rb-meter"><i style="width:68%"></i></div>
+          <div class="rb-sub">18 days out, held back by Frame</div>
+        </div>
+        <div class="rb-cell">
+          <span class="rb-lab">Weakest move</span>
+          <div class="rb-val amber">Frame</div>
+          <div class="rb-sub">Level 2, 41% to Level 3</div>
+        </div>
+        <div class="rb-cell">
+          <span class="rb-lab">Strategic thinking</span>
+          <div class="rb-val" style="font-size:22px">72</div>
+          <div class="rb-sub"><span class="rb-trend">▲ rising, 3 weeks</span></div>
+        </div>
+        <div class="rb-cell">
+          <span class="rb-lab">Taste</span>
+          <div class="rb-val" style="font-size:22px">54</div>
+          <div class="rb-sub"><span class="rb-trend down">flat, 3 weeks</span></div>
+        </div>
+      </div>
+
+      <!-- TODAY'S SESSION -->
+      <section class="session">
+        <div class="session-head">
+          <div class="session-head-top">
+            <div>
+              <div class="session-kicker">
+                <div class="hatch-mark"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="8" width="14" height="11" rx="3.5" fill="#4a7c59"/><path d="M8 4l4 3 4-3" stroke="#1e3528" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="13" r="1.4" fill="#fff"/><circle cx="14" cy="13" r="1.4" fill="#fff"/></svg></div>
+                <span class="eyebrow">Today's session</span>
+              </div>
+              <h1>The daily rep, composed by Hatch</h1>
+              <div class="session-arc">
+                <div class="arc-node"><div class="arc-dot done">✓</div><div class="arc-line done"></div></div>
+                <div class="arc-node"><div class="arc-dot active">2</div><div class="arc-line"></div></div>
+                <div class="arc-node"><div class="arc-dot">3</div><div class="arc-line"></div></div>
+                <div class="arc-node"><div class="arc-dot">4</div></div>
+              </div>
+              <div class="session-progress"><b>1 of 4 done</b>, about 22 min left</div>
+            </div>
+            <button class="btn-primary"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z" fill="currentColor" stroke="none"/></svg>Resume session</button>
+          </div>
+        </div>
+
+        <!-- block 1: done warm-up -->
+        <div class="block is-done">
+          <div class="block-num">01</div>
+          <div class="block-body">
+            <div class="block-kicker"><span class="step">Warm-up · Quick Take</span><span class="est">done 8:41a</span></div>
+            <h3>Should Spotify ship an AI DJ built for team workspaces?</h3>
+            <div class="block-done-state" style="margin-top:12px"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Graded Sharp, +18 XP</div>
+          </div>
+        </div>
+
+        <!-- block 2: active main rep -->
+        <div class="block is-active">
+          <div class="block-num">02</div>
+          <div class="block-body">
+            <div class="block-kicker"><span class="step">Main rep · Product Sense</span><span class="est">~14 min</span></div>
+            <h3>Frame the buyer, the user, and the payer for Airbnb Experiences</h3>
+            <div class="block-meta">
+              <span class="flow-chip is-weak">Frame</span>
+              <span class="meta-tag">Product Sense Sprint · W2 · Step 3/5</span>
+            </div>
+            <div class="block-why why">Because <b>Frame is your weakest move</b> and it is holding your interview readiness down.</div>
+            <div class="block-cta"><button class="btn-primary" style="padding:11px 20px">Start rep</button><a class="quiet-link" href="#">Preview →</a></div>
+          </div>
+        </div>
+
+        <!-- block 3: cooldown autopsy -->
+        <div class="block">
+          <div class="block-num">03</div>
+          <div class="block-body">
+            <div class="block-kicker"><span class="step">Cooldown · Autopsy read</span><span class="est">~6 min</span></div>
+            <h3>Figma's multiplayer wedge: how a feature became the moat</h3>
+            <div class="block-why why">Because it <b>reinforces today's framing rep</b> with a real market story.</div>
+          </div>
+        </div>
+
+        <!-- block 4: streak saver resume -->
+        <div class="block">
+          <div class="block-num">04</div>
+          <div class="block-body">
+            <div class="block-kicker"><span class="step">Optional · Resume mock loop</span><span class="est">~12 min left</span></div>
+            <h3>Marketplace pricing round, paused at round 2 of 3</h3>
+            <div class="block-why why">Because your <b>interview is in 18 days</b> and this loop is going cold.</div>
+          </div>
+        </div>
+
+        <div class="session-foot">
+          <button class="swap"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0115-6l3 3M21 12a9 9 0 01-15 6l-3-3"/></svg>Not feeling it today? Swap the main rep</button>
+          <a class="quiet-link" href="#">How sessions are built →</a>
+        </div>
+      </section>
+
+      <!-- FEED -->
+      <div>
+        <div class="feed-head">
+          <div><span class="eyebrow">Curated for you</span><h2 style="margin-top:6px">Since you were last here</h2></div>
+          <div class="feed-tabs"><button class="on">For you</button><button>Interview</button><button>Learn</button><button>Community</button></div>
+        </div>
+        <div class="feed">
+
+          <div class="fcard">
+            <div class="fcard-body">
+              <span class="fcard-type">Insight</span>
+              <h4>Your Frame answers start broad but keep missing the constraint</h4>
+              <p>Across your last 5 reps, you name the user and the goal, then stop before the blocker. That is the gap between Level 2 and Level 3.</p>
+              <div class="fcard-foot">
+                <span class="why">Because your <b>latest debrief flagged weak problem framing</b>.</span>
+                <a class="quiet-link" href="#">Turn into a drill →</a>
+              </div>
+            </div>
+            <div class="spark"><i style="height:40%"></i><i style="height:55%"></i><i style="height:45%"></i><i style="height:62%"></i><i style="height:50%"></i></div>
+          </div>
+
+          <div class="fcard">
+            <div class="fcard-body">
+              <span class="fcard-type">Case file · Marketplaces</span>
+              <h4>How Airbnb bootstrapped supply off another platform</h4>
+              <p>A growth move that only worked because the team framed the cold-start problem correctly. Pairs with today's rep.</p>
+              <div class="fcard-foot">
+                <span class="why">Because you're on <b>Product Sense Sprint week 2</b>.</span>
+                <span class="meta-tag">7 min read</span>
+              </div>
+            </div>
+            <div class="fcard-cover"><div class="co-title"><small>Autopsy</small><span>Airbnb's Craigslist hack</span></div></div>
+          </div>
+
+          <div class="fcard">
+            <div class="fcard-body">
+              <span class="fcard-type">Community</span>
+              <h4>Someone pushed back on your DoorDash tradeoff answer</h4>
+              <p>"You optimized for driver supply but never named what you'd sacrifice on the customer side." Two others upvoted the thread.</p>
+              <div class="fcard-foot">
+                <span class="why">Because it's a <b>reply to a rep you submitted</b>.</span>
+                <a class="quiet-link" href="#">Read the thread →</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="fcard">
+            <div class="fcard-body">
+              <span class="fcard-type">Guide</span>
+              <h4>Resume: The List Move, chapter 3, second-order effects</h4>
+              <p>You left off halfway. This chapter is exactly the reasoning your Frame reps keep skipping.</p>
+              <div class="fcard-foot">
+                <span class="why">Because you <b>started it 6 days ago</b> and it maps to your weak move.</span>
+                <span class="meta-tag">chapter 3 of 5</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SIDE RAIL ============ -->
+    <aside class="side-stack">
+
+      <!-- FLOW levels compact -->
+      <div class="side-card">
+        <h3>Your FLOW moves <a class="quiet-link" href="#">Details</a></h3>
+        <div class="flow-rows">
+          <div class="flow-row"><span class="fname">Frame <span class="flv">L2</span></span><div class="fbar weak"><i style="width:41%"></i></div><span class="fpct">41%</span></div>
+          <div class="flow-row"><span class="fname">List <span class="flv">L4</span></span><div class="fbar"><i style="width:78%"></i></div><span class="fpct">78%</span></div>
+          <div class="flow-row"><span class="fname">Optimize <span class="flv">L3</span></span><div class="fbar"><i style="width:64%"></i></div><span class="fpct">64%</span></div>
+          <div class="flow-row"><span class="fname">Win <span class="flv">L2</span></span><div class="fbar"><i style="width:38%"></i></div><span class="fpct">38%</span></div>
+        </div>
+        <div class="side-note">Today's session targets <b>Frame</b>, your lowest move. Close it and readiness jumps roughly 6 points.</div>
+      </div>
+
+      <!-- study plan progress -->
+      <div class="side-card">
+        <h3>Product Sense Sprint <a class="quiet-link" href="#">Open</a></h3>
+        <div class="plan-steps">
+          <div class="pstep done"><span class="pn">01</span><span>Spot the real job</span></div>
+          <div class="pstep done"><span class="pn">02</span><span>Map the stakeholders</span></div>
+          <div class="pstep now"><span class="pn">03</span><span>Frame buyer/user/payer</span></div>
+          <div class="pstep"><span class="pn">04</span><span>Name the constraint</span></div>
+          <div class="pstep"><span class="pn">05</span><span>Checkpoint rep</span></div>
+        </div>
+      </div>
+
+      <!-- activity, editorial infographic -->
+      <div class="side-card">
+        <h3>Last 8 weeks</h3>
+        <div class="month-rows">
+          <div class="month-row"><span class="mname">W1</span><div class="mbar"><i style="width:16%"></i><i style="width:22%"></i><i style="width:14%"></i><i style="width:0%"></i></div><span class="mcount">3</span></div>
+          <div class="month-row"><span class="mname">W2</span><div class="mbar"><i style="width:22%"></i><i style="width:18%"></i><i style="width:20%"></i><i style="width:10%"></i></div><span class="mcount">6</span></div>
+          <div class="month-row"><span class="mname">W3</span><div class="mbar"><i style="width:20%"></i><i style="width:24%"></i><i style="width:22%"></i><i style="width:14%"></i></div><span class="mcount">7</span></div>
+          <div class="month-row"><span class="mname">W4</span><div class="mbar"><i style="width:14%"></i><i style="width:10%"></i><i style="width:8%"></i><i style="width:0%"></i></div><span class="mcount">2</span></div>
+          <div class="month-row"><span class="mname">W5</span><div class="mbar"><i style="width:24%"></i><i style="width:26%"></i><i style="width:24%"></i><i style="width:16%"></i></div><span class="mcount">8</span></div>
+          <div class="month-row"><span class="mname">W6</span><div class="mbar"><i style="width:26%"></i><i style="width:24%"></i><i style="width:20%"></i><i style="width:20%"></i></div><span class="mcount">8</span></div>
+          <div class="month-row"><span class="mname">W7</span><div class="mbar"><i style="width:20%"></i><i style="width:22%"></i><i style="width:18%"></i><i style="width:12%"></i></div><span class="mcount">6</span></div>
+          <div class="month-row"><span class="mname">W8</span><div class="mbar"><i style="width:26%"></i><i style="width:28%"></i><i style="width:24%"></i><i style="width:22%"></i></div><span class="mcount">9</span></div>
+        </div>
+        <div class="heat-legend"><span><b>12-day</b> streak</span><span>best week: <b>W8</b></span></div>
+      </div>
+
+      <!-- interviews merged mini -->
+      <div class="side-card">
+        <h3>Interviews</h3>
+        <div class="iv-row"><div class="ivn">18</div><div class="ivt"><b>Mock interview in 18 days</b><small>Product sense, target: senior PM loop</small></div></div>
+        <div class="iv-row"><div class="ivn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z" fill="currentColor" stroke="none"/></svg></div><div class="ivt"><b>Paused loop, round 2 of 3</b><small>Marketplace pricing, 12 min left</small></div></div>
+      </div>
+
+    </aside>
+  </div>
+</main>
+
+<div class="dbadge">Direction <em>B</em> — Editorial Academy</div>
+
+</body>
+</html>

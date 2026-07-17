@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — The Daily Flight Plan · HackProduct</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-primary:#4a7c59; --color-on-primary:#ffffff; --color-primary-container:#78a886; --color-on-primary-container:#d8f0de; --color-primary-fixed:#c8e8d0; --color-primary-fixed-dim:#8ecf9e;
+  --color-secondary:#6b6358; --color-secondary-container:#f0e8db; --color-on-secondary-container:#5e5548;
+  --color-tertiary:#705c30; --color-tertiary-container:#c4a66a;
+  --color-background:#faf6f0; --color-on-background:#2e3230;
+  --color-surface:#faf6f0; --color-surface-taupe:#e8e2d8; --color-surface-dim:#dbd7cf;
+  --color-surface-container-lowest:#ffffff; --color-surface-container-low:#f5f1ea; --color-surface-container:#f0ece4; --color-surface-container-high:#eae6de; --color-surface-container-highest:#e4e0d8;
+  --color-on-surface:#2e3230; --color-on-surface-variant:#4a4e4a;
+  --color-outline:#74796e; --color-outline-variant:#c4c8bc;
+  --color-error:#b83230; --color-amber:#c9933a; --color-amber-soft:#f3e2b9; --color-success:#2f7a4a;
+  --color-hero-forest:#1e3528; --color-hero-forest-deep:#14241c; --color-hero-forest-deepest:#0e1a14;
+  --font-ui:'Nunito Sans',system-ui,-apple-system,sans-serif;
+  --font-display:'Literata',Georgia,serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+  --radius:6px;
+  --line:1px solid var(--color-outline-variant);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--color-background);color:var(--color-on-surface);font:400 13.5px/1.6 var(--font-ui);-webkit-font-smoothing:antialiased;display:flex;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;background:none;border:none;color:inherit}
+svg{display:block;flex:none}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;border-radius:4px}
+
+/* primitives */
+.num{font-family:var(--font-mono);font-weight:600;letter-spacing:-.01em}
+.microlabel{font:700 10px/1.2 var(--font-ui);letter-spacing:.11em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.panel{position:relative;background:var(--color-surface-container-lowest);border:var(--line);border-radius:var(--radius);transition:border-color .15s ease}
+.panel:hover{border-color:var(--color-outline)}
+.flow-chip{display:inline-flex;align-items:center;font:800 9.5px/1 var(--font-ui);letter-spacing:.09em;text-transform:uppercase;color:var(--color-on-surface-variant);border:1px solid var(--color-outline-variant);border-radius:3px;padding:3px 6px;background:transparent}
+.flow-chip.is-active{background:var(--color-primary);border-color:var(--color-primary);color:var(--color-on-primary)}
+.flow-chip.is-weak{border-color:var(--color-amber);color:var(--color-tertiary)}
+.meta-tag{font:600 10.5px/1 var(--font-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--color-primary);color:var(--color-on-primary);border:1px solid var(--color-primary);border-radius:var(--radius);padding:9px 16px;font:700 13px/1 var(--font-ui);transition:background .15s ease,border-color .15s ease}
+.btn-primary:hover{background:var(--color-hero-forest);border-color:var(--color-hero-forest)}
+.btn-ghost{display:inline-flex;align-items:center;gap:6px;background:var(--color-surface-container-lowest);color:var(--color-on-surface);border:var(--line);border-radius:var(--radius);padding:7px 12px;font:700 12px/1 var(--font-ui);transition:border-color .15s ease,background .15s ease}
+.btn-ghost:hover{border-color:var(--color-outline);background:var(--color-surface-container-low)}
+.quiet-link{font:700 12px/1 var(--font-ui);color:var(--color-primary);display:inline-flex;align-items:center;gap:5px}
+.quiet-link:hover{text-decoration:underline;text-underline-offset:3px}
+.why{display:flex;align-items:center;gap:6px;font:600 11.5px/1.3 var(--font-ui);color:var(--color-on-surface-variant)}
+.why svg{width:12px;height:12px;stroke:var(--color-primary);fill:none;stroke-width:1.8}
+.why b{color:var(--color-on-surface);font-weight:700}
+
+/* sidebar */
+.sidebar{position:sticky;top:0;height:100vh;width:216px;flex:none;background:var(--color-surface-container-low);border-right:var(--line);display:flex;flex-direction:column;padding:16px 12px;z-index:60}
+.brand{display:flex;align-items:center;gap:9px;padding:4px 8px 18px}
+.brand-mark{width:26px;height:26px;flex:none}
+.brand-name{font:800 15px/1 var(--font-ui);letter-spacing:-.01em;color:var(--color-on-surface)}
+.brand-name em{font-style:normal;color:var(--color-primary)}
+.navlist{display:flex;flex-direction:column;gap:2px}
+.navitem{position:relative;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);font:700 13px/1 var(--font-ui);color:var(--color-on-surface-variant);transition:background .15s ease,color .15s ease}
+.navitem svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.navitem:hover{background:var(--color-surface-container);color:var(--color-on-surface)}
+.navitem.is-active{background:var(--color-surface-container-lowest);color:var(--color-primary);border:var(--line)}
+.navitem.is-active::before{content:"";position:absolute;left:-13px;top:6px;bottom:6px;width:3px;border-radius:0 2px 2px 0;background:var(--color-primary)}
+.nav-sec{margin-top:auto;padding-top:12px;border-top:var(--line)}
+
+/* topbar */
+.shell{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:50;height:56px;background:var(--color-background);border-bottom:var(--line);display:flex;align-items:center;gap:16px;padding:0 24px}
+.search{display:flex;align-items:center;gap:8px;width:300px;height:34px;padding:0 10px;background:var(--color-surface-container-lowest);border:var(--line);border-radius:var(--radius);color:var(--color-on-surface-variant)}
+.search svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
+.search input{flex:1;border:none;background:none;outline:none;font:600 12.5px var(--font-ui);color:var(--color-on-surface)}
+.search input::placeholder{color:var(--color-on-surface-variant);opacity:.75}
+.search kbd{font:600 10px var(--font-mono);border:var(--line);border-radius:3px;padding:2px 5px;color:var(--color-on-surface-variant);background:var(--color-surface-container-low)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.streak-chip{display:flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:var(--line);border-radius:var(--radius);background:var(--color-surface-container-lowest)}
+.streak-chip svg{width:13px;height:13px;fill:var(--color-amber);stroke:none}
+.streak-chip .num{font-size:13px;color:var(--color-on-surface)}
+.streak-chip span:last-child{font:700 10px/1 var(--font-ui);letter-spacing:.07em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--color-primary-fixed);color:var(--color-hero-forest);display:flex;align-items:center;justify-content:center;font:800 12px var(--font-ui);border:1px solid var(--color-primary-fixed-dim)}
+
+/* mobile nav */
+.mobilenav{display:none;border-bottom:var(--line);background:var(--color-surface-container-low);overflow-x:auto;scrollbar-width:none}
+.mobilenav::-webkit-scrollbar{display:none}
+.mobilenav-inner{display:flex;gap:2px;padding:6px 12px}
+.mobilenav .navitem{white-space:nowrap;padding:7px 12px}
+
+/* main */
+.main{flex:1;padding:24px;max-width:1320px;width:100%;margin:0 auto}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+.col-main{display:flex;flex-direction:column;gap:22px;min-width:0}
+.side-stack{display:flex;flex-direction:column;gap:16px;position:sticky;top:80px}
+
+/* ===== READINESS BAR (cockpit signal, thin) ===== */
+.readbar{display:flex;align-items:stretch;gap:0;background:var(--color-hero-forest);border-radius:var(--radius);overflow:hidden;color:#e9f0ea}
+.readbar .rb-cell{padding:14px 18px;display:flex;flex-direction:column;gap:4px;border-right:1px solid rgba(255,255,255,.08);flex:1}
+.readbar .rb-cell:last-child{border-right:none}
+.readbar .rb-lab{font:700 9.5px/1 var(--font-ui);letter-spacing:.1em;text-transform:uppercase;color:#8ecf9e}
+.readbar .rb-val{font:600 22px/1 var(--font-mono);color:#fff}
+.readbar .rb-val small{font-size:11px;color:#a9c4b0;letter-spacing:0}
+.readbar .rb-sub{font:600 10.5px/1.2 var(--font-ui);color:#a9c4b0}
+.readbar .rb-readiness{flex:1.4;background:var(--color-hero-forest-deep)}
+.rb-meter{height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:4px}
+.rb-meter i{display:block;height:100%;background:var(--color-primary-fixed-dim);border-radius:3px}
+.rb-trend{display:inline-flex;align-items:center;gap:3px;color:#8ecf9e;font:700 10px/1 var(--font-ui)}
+.rb-trend.down{color:var(--color-amber)}
+
+/* ===== SESSION (spine hero) ===== */
+.session{padding:0;overflow:hidden}
+.session-head{padding:18px 22px;border-bottom:var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.session-title{display:flex;align-items:center;gap:12px}
+.session-title h1{font:600 21px/1.2 var(--font-display);letter-spacing:-.01em}
+.session-title .day{font:700 10px/1 var(--font-ui);letter-spacing:.09em;text-transform:uppercase;color:var(--color-on-surface-variant);margin-bottom:5px;display:block}
+.hatch-orb{width:34px;height:34px;border-radius:50%;background:var(--color-primary-fixed);border:1px solid var(--color-primary-fixed-dim);display:flex;align-items:center;justify-content:center;flex:none}
+.hatch-orb svg{width:20px;height:20px}
+.session-arc{display:flex;align-items:center;gap:0;margin-top:2px}
+.arc-node{display:flex;align-items:center;gap:0}
+.arc-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--color-outline-variant);display:flex;align-items:center;justify-content:center;font:700 9px var(--font-mono);color:var(--color-on-surface-variant);background:var(--color-surface-container-lowest)}
+.arc-dot.done{background:var(--color-success);border-color:var(--color-success);color:#fff}
+.arc-dot.active{border-color:var(--color-amber);background:var(--color-amber-soft);color:var(--color-tertiary)}
+.arc-line{width:22px;height:2px;background:var(--color-outline-variant)}
+.arc-line.done{background:var(--color-success)}
+.session-progress{font:700 11px/1 var(--font-ui);color:var(--color-on-surface-variant);margin-top:7px}
+.session-progress b{color:var(--color-on-surface)}
+
+.block{display:flex;gap:14px;padding:15px 22px;border-bottom:var(--line);position:relative;transition:background .12s ease}
+.block:last-child{border-bottom:none}
+.block:hover{background:var(--color-surface-container-low)}
+.block-rail{position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 2px 2px 0;background:var(--color-outline-variant)}
+.block.is-active .block-rail{background:var(--color-amber)}
+.block.is-done .block-rail{background:var(--color-success)}
+.block-icon{width:38px;height:38px;flex:none;border-radius:var(--radius);border:var(--line);background:var(--color-surface-container-low);display:flex;align-items:center;justify-content:center}
+.block.is-done .block-icon{background:var(--color-primary-fixed);border-color:var(--color-primary-fixed-dim)}
+.block-icon svg{width:18px;height:18px;stroke:var(--color-on-surface-variant);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.block.is-done .block-icon svg{stroke:var(--color-hero-forest)}
+.block-body{flex:1;min-width:0}
+.block-kicker{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.block-kicker .step{font:700 9.5px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.block-kicker .est{font:600 10px/1 var(--font-mono);color:var(--color-on-surface-variant);margin-left:auto}
+.block h3{font:700 14.5px/1.3 var(--font-ui);color:var(--color-on-surface)}
+.block-meta{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.block-why{margin-top:8px}
+.block-cta{display:flex;align-items:center;margin-top:10px;gap:10px}
+.block-done-state{display:flex;align-items:center;gap:6px;font:700 11.5px/1 var(--font-ui);color:var(--color-success)}
+.block-done-state svg{width:13px;height:13px;stroke:var(--color-success);fill:none;stroke-width:2}
+.session-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 22px;background:var(--color-surface-container-low);border-top:var(--line)}
+.session-foot .swap{font:700 12px/1 var(--font-ui);color:var(--color-on-surface-variant);display:inline-flex;align-items:center;gap:6px}
+.session-foot .swap svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+/* ===== FEED (below fold) ===== */
+.feed-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px}
+.feed-head h2{font:600 16px/1 var(--font-display)}
+.feed-head .microlabel{margin-top:3px}
+.feed-tabs{display:flex;gap:2px;background:var(--color-surface-container);border:var(--line);border-radius:var(--radius);padding:2px}
+.feed-tabs button{font:700 11px/1 var(--font-ui);padding:6px 11px;border-radius:4px;color:var(--color-on-surface-variant)}
+.feed-tabs button.on{background:var(--color-surface-container-lowest);color:var(--color-on-surface);box-shadow:0 1px 2px rgba(30,27,20,.06)}
+.feed{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.fcard{display:flex;gap:14px;padding:15px 16px}
+.fcard-type{font:800 9px/1 var(--font-ui);letter-spacing:.1em;text-transform:uppercase;padding:4px 7px;border-radius:3px;align-self:flex-start;white-space:nowrap}
+.t-autopsy{background:var(--color-hero-forest);color:#d8f0de}
+.t-insight{background:var(--color-amber-soft);color:var(--color-tertiary);border:1px solid var(--color-tertiary-container)}
+.t-guide{background:var(--color-secondary-container);color:var(--color-on-secondary-container)}
+.t-community{background:var(--color-primary-fixed);color:var(--color-hero-forest)}
+.t-milestone{background:var(--color-primary);color:#fff}
+.fcard-body{flex:1;min-width:0}
+.fcard-body h4{font:700 14px/1.35 var(--font-ui);color:var(--color-on-surface)}
+.fcard-body p{font:400 12.5px/1.5 var(--font-ui);color:var(--color-on-surface-variant);margin-top:3px}
+.fcard-foot{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.fcard-cover{width:96px;height:64px;flex:none;border-radius:5px;border:var(--line);background:var(--color-hero-forest-deep) linear-gradient(135deg,#1e3528,#14241c);position:relative;overflow:hidden}
+.fcard-cover .co-title{position:absolute;inset:0;padding:8px;display:flex;flex-direction:column;justify-content:flex-end}
+.fcard-cover .co-title span{font:700 11px/1.1 var(--font-display);color:#f0e8db}
+.fcard-cover .co-title small{font:600 7.5px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:#8ecf9e;margin-bottom:3px}
+.spark{display:flex;align-items:flex-end;gap:2px;height:22px}
+.spark i{width:5px;background:var(--color-amber);border-radius:1px;opacity:.85}
+
+/* ===== SIDE RAIL ===== */
+.side-card{padding:16px}
+.side-card h3{font:700 12px/1 var(--font-ui);letter-spacing:.03em;color:var(--color-on-surface);display:flex;align-items:center;justify-content:space-between}
+.side-card h3 .quiet-link{font-size:11px}
+/* FLOW radar-ish bars */
+.flow-rows{display:flex;flex-direction:column;gap:11px;margin-top:14px}
+.flow-row{display:grid;grid-template-columns:64px 1fr 34px;align-items:center;gap:10px}
+.flow-row .fname{font:700 11px/1 var(--font-ui);color:var(--color-on-surface);display:flex;align-items:center;gap:5px}
+.flow-row .flv{font:600 9px/1 var(--font-mono);color:var(--color-on-surface-variant)}
+.fbar{height:7px;border-radius:4px;background:var(--color-surface-container-high);overflow:hidden}
+.fbar i{display:block;height:100%;border-radius:4px;background:var(--color-primary)}
+.fbar.weak i{background:var(--color-amber)}
+.flow-row .fpct{font:600 11px/1 var(--font-mono);color:var(--color-on-surface-variant);text-align:right}
+.side-note{margin-top:12px;padding-top:12px;border-top:var(--line);font:600 11.5px/1.5 var(--font-ui);color:var(--color-on-surface-variant)}
+.side-note b{color:var(--color-tertiary)}
+/* heatmap */
+.heat{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;margin-top:14px}
+.heat i{aspect-ratio:1;border-radius:2px;background:var(--color-surface-container-high)}
+.heat i.l1{background:#cfe4d3}.heat i.l2{background:#9fcbaa}.heat i.l3{background:#6ba578}.heat i.l4{background:var(--color-primary)}
+.heat-legend{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font:600 10px/1 var(--font-mono);color:var(--color-on-surface-variant)}
+/* plan progress */
+.plan-steps{display:flex;flex-direction:column;gap:0;margin-top:12px}
+.pstep{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--color-outline-variant)}
+.pstep:last-child{border-bottom:none}
+.pstep .pdot{width:16px;height:16px;border-radius:50%;border:2px solid var(--color-outline-variant);flex:none}
+.pstep.done .pdot{background:var(--color-success);border-color:var(--color-success)}
+.pstep.now .pdot{border-color:var(--color-amber);background:var(--color-amber-soft)}
+.pstep span{font:600 12px/1.2 var(--font-ui);color:var(--color-on-surface-variant)}
+.pstep.done span{color:var(--color-on-surface);text-decoration:line-through;text-decoration-color:var(--color-outline-variant)}
+.pstep.now span{color:var(--color-on-surface);font-weight:700}
+/* interview mini */
+.iv-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px;border:var(--line);border-radius:var(--radius);background:var(--color-surface-container-low)}
+.iv-row .ivn{width:32px;height:32px;border-radius:var(--radius);background:var(--color-hero-forest);color:#8ecf9e;display:flex;align-items:center;justify-content:center;flex:none;font:700 12px var(--font-mono)}
+.iv-row .ivt{flex:1;min-width:0}
+.iv-row .ivt b{font:700 12.5px/1.2 var(--font-ui);color:var(--color-on-surface);display:block}
+.iv-row .ivt small{font:600 11px/1.2 var(--font-ui);color:var(--color-on-surface-variant)}
+
+/* badge */
+.dbadge{position:fixed;right:16px;bottom:16px;z-index:80;display:flex;align-items:center;gap:8px;background:var(--color-hero-forest);color:#e9f0ea;border-radius:999px;padding:8px 14px;font:700 11px/1 var(--font-ui);box-shadow:0 6px 20px -8px rgba(14,26,20,.5)}
+.dbadge .num{color:var(--color-amber);font-size:11px}
+
+@media(max-width:1080px){
+  .sidebar{display:none}
+  .mobilenav{display:block}
+  .grid{grid-template-columns:1fr}
+  .side-stack{position:static}
+  .readbar{flex-wrap:wrap}
+  .readbar .rb-cell{flex:1 1 40%}
+}
+@media(max-width:560px){
+  .main{padding:14px}
+  .search{display:none}
+  .session-head{flex-direction:column}
+  .readbar .rb-cell{flex:1 1 100%}
+  .heat{grid-template-columns:repeat(14,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 26 26" fill="none"><rect x="1" y="1" width="24" height="24" rx="6" fill="#4a7c59"/><path d="M8 17V9l5 4 5-4v8" stroke="#d8f0de" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="brand-name">Hack<em>Product</em></span>
+  </div>
+  <nav class="navlist">
+    <a class="navitem is-active" href="#"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Home</a>
+    <a class="navitem" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>Practice</a>
+    <a class="navitem" href="#"><svg viewBox="0 0 24 24"><path d="M4 18V8m4 10V5m4 13v-7m4 7V9m4 9V6"/></svg>Interviews</a>
+    <a class="navitem" href="#"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 5v14M4 12h16M20 5v14"/><rect x="4" y="5" width="16" height="14" rx="1"/></svg>Library</a>
+    <a class="navitem" href="#"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 16V9m4 7V6m4 10v-4"/></svg>Progress</a>
+  </nav>
+  <div class="nav-sec">
+    <a class="navitem" href="#"><svg viewBox="0 0 24 24"><path d="M4 4h12l4 4v12H4z"/><path d="M8 12h8M8 16h5"/></svg>Review tools</a>
+    <a class="navitem" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0114 0"/></svg>Settings</a>
+  </div>
+</aside>
+
+<div class="shell">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="Search challenges, autopsies, companies"><kbd>⌘K</kbd></div>
+    <div class="topbar-right">
+      <div class="streak-chip"><svg viewBox="0 0 24 24"><path d="M12 2c2 4 5 5 5 9a5 5 0 01-10 0c0-1 .5-2 1-3 .5 2 2 2 2 2-1-3 1-5 2-8z"/></svg><span class="num">12</span><span>day streak</span></div>
+      <div class="avatar">S</div>
+    </div>
+  </header>
+
+  <!-- MOBILE NAV -->
+  <nav class="mobilenav"><div class="mobilenav-inner">
+    <a class="navitem is-active" href="#">Home</a><a class="navitem" href="#">Practice</a><a class="navitem" href="#">Interviews</a><a class="navitem" href="#">Library</a><a class="navitem" href="#">Progress</a>
+  </div></nav>
+
+  <main class="main">
+    <div class="grid">
+      <!-- ============ MAIN COLUMN ============ -->
+      <div class="col-main">
+
+        <!-- READINESS BAR (thin cockpit signal) -->
+        <div class="readbar">
+          <div class="rb-cell rb-readiness">
+            <span class="rb-lab">Interview readiness</span>
+            <span class="rb-val">68<small>%</small></span>
+            <div class="rb-meter"><i style="width:68%"></i></div>
+            <span class="rb-sub">18 days out · held back by Frame</span>
+          </div>
+          <div class="rb-cell">
+            <span class="rb-lab">Weakest move</span>
+            <span class="rb-val" style="font-size:16px;color:var(--color-amber)">FRAME</span>
+            <span class="rb-sub">Lv2 · 41% to Lv3</span>
+          </div>
+          <div class="rb-cell">
+            <span class="rb-lab">Strategic thinking</span>
+            <span class="rb-val" style="font-size:18px">72</span>
+            <span class="rb-sub"><span class="rb-trend">▲ rising 3 wks</span></span>
+          </div>
+          <div class="rb-cell">
+            <span class="rb-lab">Taste</span>
+            <span class="rb-val" style="font-size:18px">54</span>
+            <span class="rb-sub"><span class="rb-trend down">– flat 3 wks</span></span>
+          </div>
+        </div>
+
+        <!-- TODAY'S SESSION (spine) -->
+        <section class="panel session">
+          <div class="session-head">
+            <div class="session-title">
+              <div class="hatch-orb">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="8" width="14" height="11" rx="3.5" fill="#4a7c59"/><path d="M8 4l4 3 4-3" stroke="#1e3528" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="13" r="1.4" fill="#fff"/><circle cx="14" cy="13" r="1.4" fill="#fff"/></svg>
+              </div>
+              <div>
+                <span class="day">Thursday · July 9</span>
+                <h1>Today's session</h1>
+                <div class="session-arc" style="margin-top:10px">
+                  <div class="arc-node"><div class="arc-dot done">✓</div><div class="arc-line done"></div></div>
+                  <div class="arc-node"><div class="arc-dot active">2</div><div class="arc-line"></div></div>
+                  <div class="arc-node"><div class="arc-dot">3</div><div class="arc-line"></div></div>
+                  <div class="arc-node"><div class="arc-dot">4</div></div>
+                </div>
+                <div class="session-progress"><b>1 of 4 done</b> · about 22 min left</div>
+              </div>
+            </div>
+            <button class="btn-primary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z" fill="currentColor" stroke="none"/></svg>Resume session</button>
+          </div>
+
+          <!-- block 1: done warm-up -->
+          <div class="block is-done">
+            <div class="block-rail"></div>
+            <div class="block-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg></div>
+            <div class="block-body">
+              <div class="block-kicker"><span class="step">Warm-up · Quick Take</span><span class="est">done 8:41a</span></div>
+              <h3>Should Spotify ship an AI DJ built for team workspaces?</h3>
+              <div class="block-done-state" style="margin-top:8px"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Graded Sharp · +18 XP</div>
+            </div>
+          </div>
+
+          <!-- block 2: active main rep -->
+          <div class="block is-active">
+            <div class="block-rail"></div>
+            <div class="block-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <div class="block-body">
+              <div class="block-kicker"><span class="step">Main rep · Product Sense</span><span class="est">~14 min</span></div>
+              <h3>Frame the buyer, the user, and the payer for Airbnb Experiences</h3>
+              <div class="block-meta">
+                <span class="flow-chip is-weak">Frame</span>
+                <span class="meta-tag">Product Sense Sprint · W2 · Step 3/5</span>
+              </div>
+              <div class="block-why why" style="margin-top:8px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Because <b>Frame is your weakest move</b> and it is holding your interview readiness down.</div>
+              <div class="block-cta"><button class="btn-primary">Start rep</button><a class="quiet-link" href="#">Preview →</a></div>
+            </div>
+          </div>
+
+          <!-- block 3: cooldown autopsy -->
+          <div class="block">
+            <div class="block-rail"></div>
+            <div class="block-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h6"/></svg></div>
+            <div class="block-body">
+              <div class="block-kicker"><span class="step">Cooldown · Autopsy read</span><span class="est">~6 min</span></div>
+              <h3>Figma's multiplayer wedge: how a feature became the moat</h3>
+              <div class="block-why why" style="margin-top:7px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Because it <b>reinforces today's framing rep</b> with a real market story.</div>
+            </div>
+          </div>
+
+          <!-- block 4: streak saver resume -->
+          <div class="block">
+            <div class="block-rail"></div>
+            <div class="block-icon"><svg viewBox="0 0 24 24"><path d="M4 18V8m4 10V5m4 13v-7m4 7V9m4 9V6"/></svg></div>
+            <div class="block-body">
+              <div class="block-kicker"><span class="step">Optional · Resume mock loop</span><span class="est">~12 min left</span></div>
+              <h3>Marketplace pricing round, paused at round 2 of 3</h3>
+              <div class="block-why why" style="margin-top:7px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Because your <b>interview is in 18 days</b> and this loop is going cold.</div>
+            </div>
+          </div>
+
+          <div class="session-foot">
+            <button class="swap"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0115-6l3 3M21 12a9 9 0 01-15 6l-3-3"/></svg>Not feeling it today? Swap the main rep</button>
+            <a class="quiet-link" href="#">How sessions are built →</a>
+          </div>
+        </section>
+
+        <!-- FEED (below fold) -->
+        <div>
+          <div class="feed-head">
+            <div><span class="microlabel">Curated for you</span><h2 style="margin-top:4px">Since you were last here</h2></div>
+            <div class="feed-tabs"><button class="on">For you</button><button>Interview</button><button>Learn</button><button>Community</button></div>
+          </div>
+          <div class="feed">
+
+            <div class="panel fcard">
+              <span class="fcard-type t-insight">Insight</span>
+              <div class="fcard-body">
+                <h4>Your Frame answers start broad but keep missing the constraint</h4>
+                <p>Across your last 5 reps, you name the user and the goal, then stop before the blocker. That is the gap between Lv2 and Lv3.</p>
+                <div class="fcard-foot">
+                  <span class="why"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Because your <b>latest debrief flagged weak problem framing</b>.</span>
+                  <a class="quiet-link" href="#">Turn into a drill →</a>
+                </div>
+              </div>
+              <div class="spark"><i style="height:40%"></i><i style="height:55%"></i><i style="height:45%"></i><i style="height:62%"></i><i style="height:50%"></i></div>
+            </div>
+
+            <div class="panel fcard">
+              <div class="fcard-cover"><div class="co-title"><small>Case file · marketplaces</small><span>Airbnb's Craigslist hack</span></div></div>
+              <div class="fcard-body">
+                <h4>How Airbnb bootstrapped supply off another platform</h4>
+                <p>A growth move that only worked because the team framed the cold-start problem correctly. Pairs with today's rep.</p>
+                <div class="fcard-foot">
+                  <span class="why"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Because you're on <b>Product Sense Sprint week 2</b>.</span>
+                  <span class="meta-tag">7 min read</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel fcard">
+              <span class="fcard-type t-community">Community</span>
+              <div class="fcard-body">
+                <h4>Someone pushed back on your DoorDash tradeoff answer</h4>
+                <p>"You optimized for driver supply but never named what you'd sacrifice on the customer side." Two others upvoted the thread.</p>
+                <div class="fcard-foot">
+                  <span class="why"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Because it's a <b>reply to a rep you submitted</b>.</span>
+                  <a class="quiet-link" href="#">Read the thread →</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel fcard">
+              <span class="fcard-type t-guide">Guide</span>
+              <div class="fcard-body">
+                <h4>Resume: The List Move, chapter 3 — second-order effects</h4>
+                <p>You left off halfway. This chapter is exactly the reasoning your Frame reps keep skipping.</p>
+                <div class="fcard-foot">
+                  <span class="why"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Because you <b>started it 6 days ago</b> and it maps to your weak move.</span>
+                  <span class="meta-tag">chapter 3 of 5</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SIDE RAIL (identity + cockpit) ============ -->
+      <aside class="side-stack">
+
+        <!-- FLOW levels compact -->
+        <div class="panel side-card">
+          <h3>Your FLOW moves <a class="quiet-link" href="#">Details</a></h3>
+          <div class="flow-rows">
+            <div class="flow-row"><span class="fname">Frame <span class="flv">L2</span></span><div class="fbar weak"><i style="width:41%"></i></div><span class="fpct">41%</span></div>
+            <div class="flow-row"><span class="fname">List <span class="flv">L4</span></span><div class="fbar"><i style="width:78%"></i></div><span class="fpct">78%</span></div>
+            <div class="flow-row"><span class="fname">Optimize <span class="flv">L3</span></span><div class="fbar"><i style="width:64%"></i></div><span class="fpct">64%</span></div>
+            <div class="flow-row"><span class="fname">Win <span class="flv">L2</span></span><div class="fbar"><i style="width:38%"></i></div><span class="fpct">38%</span></div>
+          </div>
+          <div class="side-note">Today's session targets <b>Frame</b>, your lowest move. Close it and readiness jumps ~6 points.</div>
+        </div>
+
+        <!-- study plan progress -->
+        <div class="panel side-card">
+          <h3>Product Sense Sprint <a class="quiet-link" href="#">Open</a></h3>
+          <div class="plan-steps">
+            <div class="pstep done"><span class="pdot"></span><span>W2·1 · Spot the real job</span></div>
+            <div class="pstep done"><span class="pdot"></span><span>W2·2 · Map the stakeholders</span></div>
+            <div class="pstep now"><span class="pdot"></span><span>W2·3 · Frame buyer/user/payer</span></div>
+            <div class="pstep"><span class="pdot"></span><span>W2·4 · Name the constraint</span></div>
+            <div class="pstep"><span class="pdot"></span><span>W2·5 · Checkpoint rep</span></div>
+          </div>
+        </div>
+
+        <!-- activity heatmap -->
+        <div class="panel side-card">
+          <h3>Last 60 days</h3>
+          <div class="heat" id="heat"></div>
+          <div class="heat-legend"><span>12-day streak</span><span>best month: June</span></div>
+        </div>
+
+        <!-- interviews merged mini -->
+        <div class="panel side-card">
+          <h3>Interviews</h3>
+          <div class="iv-row"><div class="ivn">18</div><div class="ivt"><b>Mock interview in 18 days</b><small>Product sense · target: senior PM loop</small></div></div>
+          <div class="iv-row"><div class="ivn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z" fill="currentColor" stroke="none"/></svg></div><div class="ivt"><b>Paused loop · round 2 of 3</b><small>Marketplace pricing · 12 min left</small></div></div>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+</div>
+
+<div class="dbadge">Rich concept · Daily Flight Plan + Cockpit · Direction <span class="num">A</span> chrome</div>
+
+<script>
+// seed a plausible heatmap (deterministic pattern, last cell = today)
+const heat=document.getElementById('heat');const cells=100;const lv=['','l1','l2','l3','l4'];
+const seed=[2,0,1,3,4,2,1,0,0,2,3,4,4,2,1,0,1,2,3,2,0,0,3,4,2,1,0,2,3,1,4,4,3,2,1,0,0,1,2,3,4,2,1,0,3,2,1,0,2,4,3,2,1,0,1,2,3,4,2,1,0,0,2,3,4,3,2,1,0,1,2,3,4,4,3,2,1,2,3,4,3,2,1,0,1,2,3,4,3,4,3,4,2,3,4,3,4,4,4,4];
+for(let i=0;i<cells;i++){const el=document.createElement('i');if(seed[i])el.className=lv[seed[i]];heat.appendChild(el);}
+</script>
+</body>
+</html>

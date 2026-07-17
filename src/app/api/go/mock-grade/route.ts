@@ -3,7 +3,7 @@ import { z, ZodError } from 'zod'
 import { IS_MOCK } from '@/lib/mock'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
 import { rateLimit } from '@/lib/security/rate-limit'
-import { MOCK_PROMPTS } from '@/lib/lead-magnets/quizzes/mock'
+import { MOCK_INTERVIEW_PROMPTS } from '@/lib/lead-magnets/quizzes/mock'
 
 // 3 free anonymous grades per IP per day
 const RATE_LIMIT_KEY_PREFIX = 'go-mock'
@@ -160,7 +160,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   // ── Validate promptId against the authored prompt list ────────────────────
-  const prompt = MOCK_PROMPTS.find((p) => p.id === promptId)
+  const prompt = MOCK_INTERVIEW_PROMPTS.find((p) => p.id === promptId)
   if (!prompt) {
     return NextResponse.json({ error: 'invalid_prompt' }, { status: 400 })
   }

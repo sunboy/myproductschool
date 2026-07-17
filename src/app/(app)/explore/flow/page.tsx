@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 // ── Types ──────────────────────────────────────────────────────
 type FlowMove = 'frame' | 'list' | 'optimize' | 'win'
@@ -841,7 +841,7 @@ export default function LearnFlowPage() {
                   <p style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>{move.hatchMessage}</p>
                 </div>
                 <div style={{ animation: 'hatchFloat 3.5s ease-in-out infinite' }}>
-                  <HatchGlyph size={72} state="speaking" className="text-primary" />
+                  <HatchImage size={72} state="speaking" />
                 </div>
               </div>
             </div>

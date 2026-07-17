@@ -68,7 +68,14 @@ export interface CodeRunEvent {
   runId: string
 }
 
-export type SessionEvent = CodeRunEvent | Record<string, unknown>
+export interface ChatTurnEvent {
+  type: 'chat_turn'
+  timestamp?: string  // ISO
+  user?: string
+  hatch?: string
+}
+
+export type SessionEvent = CodeRunEvent | ChatTurnEvent | Record<string, unknown>
 
 export interface CodingPart {
   id: string
@@ -112,8 +119,60 @@ function formatTimestamp(ms: number): string {
   return `t=${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
+// ---------------------------------------------------------------------------
+// Chat evidence — merge client-sent chatHistory with the chat_turn events the
+// interpret route persists onto challenge_attempts.conversation_summary. The
+// client rarely sends chatHistory (finalize never does), so without the
+// persisted events a real Hatch exchange graded as "chat log is empty".
+// ---------------------------------------------------------------------------
+
+const CHAT_TURN_MAX = 25          // cap turns so the prompt stays sane
+const CHAT_TURN_SIDE_CHARS = 800  // per-side clip within a turn
+
+function clipChatSide(text: string): string {
+  return text.length > CHAT_TURN_SIDE_CHARS ? `${text.slice(0, CHAT_TURN_SIDE_CHARS)}…` : text
+}
+
+function chatMessagesFromEvents(input: GradingInput): ChatMessage[] {
+  const startMs = input.sessionStartedAt ? new Date(input.sessionStartedAt).getTime() : NaN
+  const turns = input.sessionEvents
+    .filter((e): e is ChatTurnEvent => (e as Record<string, unknown>).type === 'chat_turn')
+    .slice(-CHAT_TURN_MAX)
+
+  const messages: ChatMessage[] = []
+  for (const turn of turns) {
+    let timestamp: number | undefined
+    if (typeof turn.timestamp === 'string' && Number.isFinite(startMs)) {
+      const delta = new Date(turn.timestamp).getTime() - startMs
+      if (Number.isFinite(delta) && delta >= 0) timestamp = delta
+    }
+    if (typeof turn.user === 'string' && turn.user.trim()) {
+      messages.push({ role: 'user', content: clipChatSide(turn.user.trim()), timestamp })
+    }
+    if (typeof turn.hatch === 'string' && turn.hatch.trim()) {
+      messages.push({ role: 'hatch', content: clipChatSide(turn.hatch.trim()), timestamp })
+    }
+  }
+  return messages
+}
+
+function effectiveChatHistory(input: GradingInput): ChatMessage[] {
+  const fromEvents = chatMessagesFromEvents(input)
+  if (fromEvents.length === 0) return input.chatHistory
+  if (input.chatHistory.length === 0) return fromEvents
+  // Both present: the persisted event log is authoritative. Append only
+  // client-sent messages the event log does not already carry, so a client
+  // that echoes the same exchange never double-counts collaboration.
+  const seen = new Set(fromEvents.map((m) => `${m.role}:${m.content}`))
+  return [
+    ...fromEvents,
+    ...input.chatHistory.filter((m) => !seen.has(`${m.role}:${clipChatSide(m.content.trim())}`)),
+  ]
+}
+
 function buildUserPrompt(input: GradingInput): string {
-  const { challenge, finalCode, language, correctness, chatHistory, sessionEvents } = input
+  const { challenge, finalCode, language, correctness, sessionEvents } = input
+  const chatHistory = effectiveChatHistory(input)
 
   const parts: string[] = []
 
@@ -244,11 +303,12 @@ function buildCorrectnessSummary(input: GradingInput): string {
 
 function buildProcessSummary(input: GradingInput, processScore: number): string {
   const runEvents = input.sessionEvents.filter((event) => (event as Record<string, unknown>).type === 'code_run')
+  const chatHistory = effectiveChatHistory(input)
   if (processScore >= 4.2) return 'The approach, verification, and Hatch collaboration are easy to follow.'
-  if (input.chatHistory.length === 0 && runEvents.length === 0) {
+  if (chatHistory.length === 0 && runEvents.length === 0) {
     return 'Process signal is thin. Hatch did not see a question, run history, or explanation.'
   }
-  if (input.chatHistory.length === 0) return 'The solution has code signal, but Hatch collaboration is not visible.'
+  if (chatHistory.length === 0) return 'The solution has code signal, but Hatch collaboration is not visible.'
   if (runEvents.length === 0) return 'The reasoning is visible, but there is not enough run history to judge verification.'
   return 'The process is partly visible. Make the reasoning and verification trail easier to inspect.'
 }
@@ -329,7 +389,7 @@ function deterministicCodingGrade(input: GradingInput): GradingFeedback {
 // signal IS available. Anchors the score to the objective test pass rate so the
 // user gets a usable grade (and the success UI) instead of a hard error. The
 // "Retry grading" button lets them request a real AI re-grade.
-function gradeFromCorrectnessFallback(input: GradingInput): GradingFeedback {
+export function gradeFromCorrectnessFallback(input: GradingInput): GradingFeedback {
   const { testsPassed, testsTotal } = input.correctness
   // No runnable signal either — defer to the existing empty-state grade.
   if (testsTotal <= 0) return deterministicCodingGrade(input)

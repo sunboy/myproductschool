@@ -3,37 +3,45 @@
 /**
  * First-run flow. New users land here straight from signup (see auth/callback +
  * signup redirect) instead of the heavy bento dashboard, which is where ~68% of
- * signups were last seen before abandoning (never reaching the one feature that
- * works: the live interview). This is deliberately ONE screen with ONE action.
+ * signups were last seen before abandoning. This is deliberately ONE screen with
+ * ONE action.
  *
- * Tapping a role does three things at once:
- *  1. Creates the interview session server-side (POST /api/live-interview/start) —
- *     this IS the pre-warm; the personalized system prompt is built now, so by the
- *     time we land on the interview page only the opening turn is left to fetch.
- *  2. Persists the role + marks onboarding complete (fire-and-forget) so the
- *     dashboard's onboarding modal never fires later.
- *  3. Navigates straight into the interview with ?autostart=1, which skips the
- *     "Ready to begin?" breathe modal entirely.
+ * Tapping a role does two things in one server round-trip
+ * (POST /api/onboarding/quick-start):
+ *  1. Persists the role AND marks onboarding complete in a single atomic update
+ *     (profiles.preferred_role + onboarding_completed_at), and clears any partial
+ *     calibration draft. This is AWAITED — navigation only happens on success, so
+ *     a returning not-yet-onboarded user is never stranded on a "calibrated"
+ *     dashboard having done nothing.
+ *  2. Returns the curated first-rep challenge URL for that role — a written,
+ *     graded FLOW rep that grades in place with no microphone and no Run
+ *     round-trip. First value must never depend on hardware.
  *
- * Everything else the old 12-screen calibration collected is deferred. Calibration
- * can happen after the first rep, not as a wall before it.
+ * The live voice interview is not the first thing anymore; it is a celebrated
+ * step 2 offered on the rep's completion screen, where the mic gate meets an
+ * already-activated user. Full calibration is likewise deferred: it stays
+ * available afterward as a dashboard CTA, never as a wall before first value.
  */
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { Check, Loader2 } from 'lucide-react'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import { trackEvent } from '@/lib/posthog/client'
+import { EVENT_ONBOARDING_STEP, EVENT_FIRST_REP_ROUTED } from '@/lib/posthog/events'
+import { FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
 
 const ROLES = [
-  { id: 'swe', label: 'Software Engineer', icon: 'terminal' },
-  { id: 'data_eng', label: 'Data Engineer', icon: 'storage' },
-  { id: 'ml_eng', label: 'ML Engineer', icon: 'model_training' },
-  { id: 'devops', label: 'DevOps / Platform', icon: 'settings_suggest' },
-  { id: 'em', label: 'Eng Manager', icon: 'groups' },
-  { id: 'founding_eng', label: 'Founding Engineer', icon: 'rocket_launch' },
-  { id: 'tech_lead', label: 'Tech Lead', icon: 'account_tree' },
-  { id: 'pm', label: 'Product Manager', icon: 'track_changes' },
-  { id: 'designer', label: 'Designer', icon: 'palette' },
-  { id: 'data_scientist', label: 'Data Scientist', icon: 'query_stats' },
+  { id: 'swe', label: 'Software Engineer' },
+  { id: 'data_eng', label: 'Data Engineer' },
+  { id: 'ml_eng', label: 'ML Engineer' },
+  { id: 'devops', label: 'DevOps / Platform' },
+  { id: 'em', label: 'Eng Manager' },
+  { id: 'founding_eng', label: 'Founding Engineer' },
+  { id: 'tech_lead', label: 'Tech Lead' },
+  { id: 'pm', label: 'Product Manager' },
+  { id: 'designer', label: 'Designer' },
+  { id: 'data_scientist', label: 'Data Scientist' },
 ] as const
 
 export default function FirstRunPage() {
@@ -46,121 +54,115 @@ export default function FirstRunPage() {
     setBusyRole(roleId)
     setError(null)
 
-    // Persist the role eagerly — it's harmless on its own and useful even if the user
-    // never finishes. We do NOT mark onboarding complete yet: that's irreversible and
-    // gates the dashboard's calibrated state + the onboarding modal, so it must only
-    // happen once we know the interview actually starts (below). Marking it here and
-    // then failing to start (e.g. a 402 at the limit) would strand a returning user on
-    // a "calibrated" dashboard having done nothing, with no path back into onboarding.
-    void fetch('/api/onboarding/role', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: roleId }),
-    }).catch(() => {})
+    trackEvent(EVENT_ONBOARDING_STEP, { step: 'role_quick', step_index: 0 })
 
     try {
-      const res = await fetch('/api/live-interview/start', {
+      // One round-trip: sets preferred_role + onboarding_completed_at atomically
+      // and returns the curated first-rep URL. Awaited on purpose — we only
+      // navigate once onboarding is genuinely closed out server-side, so the
+      // dashboard's onboarding modal can never re-wall this user later.
+      const res = await fetch('/api/onboarding/quick-start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roleId }),
+        body: JSON.stringify({ role: roleId }),
       })
 
-      // A brand-new free user has interview quota, but a returning not-yet-onboarded
-      // user could be at the limit. Don't strand them here — send them to the
-      // dashboard, where the usual paywall/limit surface lives. Onboarding is left
-      // incomplete on purpose so they can still be onboarded properly later.
-      if (res.status === 402) {
-        router.push('/dashboard')
-        return
-      }
+      if (!res.ok) throw new Error('quick_start_failed')
 
-      if (!res.ok) throw new Error('start_failed')
       const data = await res.json()
-      if (!data.sessionId) throw new Error('no_session')
+      const challengeHref = typeof data?.challenge_href === 'string' && data.challenge_href
+        ? data.challenge_href
+        : FIRST_REP_FALLBACK_HREF
 
-      // The interview is starting — now it's safe to close out onboarding. Fire-and-
-      // forget: the redirect shouldn't wait on it, and a straggler is harmless since
-      // the user is already in the interview.
-      void fetch('/api/onboarding/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      }).catch(() => {})
-
-      const params = new URLSearchParams({ autostart: '1', role: data.role ?? roleId })
-      if (data.scenarioTitle) params.set('scenario_title', data.scenarioTitle)
-      if (data.discipline) params.set('discipline', data.discipline)
-      router.push(`/live-interviews/${data.sessionId}?${params.toString()}`)
+      trackEvent(EVENT_FIRST_REP_ROUTED, { role: roleId, challenge_href: challengeHref })
+      router.push(challengeHref)
     } catch {
       setBusyRole(null)
-      setError('Could not start your session. Try that again.')
+      setError('Could not set up your first rep. Try that again.')
     }
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 bg-background">
-      <div className="w-full max-w-xl">
-        <div className="flex flex-col items-center text-center gap-4">
-          <HatchGlyph size={64} state="idle" className="text-primary" />
-          <div className="space-y-2">
-            <h1 className="font-headline text-3xl font-bold text-on-background">
-              Let&apos;s do a real rep first.
-            </h1>
-            <p className="font-body text-base text-on-surface-variant max-w-md mx-auto leading-relaxed">
-              Hatch runs a live mock interview and reacts to how you actually think.
-              Pick where you work today and it will pull a scenario that fits.
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-page-field px-4 py-10">
+      <div className="w-full max-w-3xl overflow-hidden rounded-2xl border border-hairline bg-card-bright shadow-[0_1px_2px_rgba(30,27,20,.04),0_12px_32px_-24px_rgba(30,27,20,.18)]">
+        <div className="sm:grid sm:grid-cols-[minmax(0,4fr)_minmax(0,6fr)]">
+
+          {/* ── Welcome panel (Codex ref 2 split layout) ─────────────────── */}
+          <div className="flex flex-col justify-between bg-page-field p-6">
+            <div>
+              <h1 className="font-headline text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink-strong">
+                Let&apos;s do a real <span className="hl-word">rep</span> first
+              </h1>
+              <p className="mt-3 font-body text-[13.5px] leading-relaxed text-ink-secondary">
+                A short product scenario you work through in writing.
+                {' '}<span className="font-bold text-forest-800">Hatch</span> reads
+                how you reason and grades it.
+              </p>
+            </div>
+            <div className="flex justify-center py-3">
+              <HatchImage state="wave" size={140} priority alt="Hatch" />
+            </div>
+            <div className="note-mint px-3.5 py-2.5 font-body text-[12px] font-bold text-forest-800">
+              About 5 minutes. No setup, no microphone.
+            </div>
+          </div>
+
+          {/* ── Role chip-select ─────────────────────────────────────────── */}
+          <div className="flex flex-col justify-center p-6 sm:p-7">
+            <p className="font-label text-[11px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
+              Pick your role
             </p>
+            <h2 className="mt-1.5 font-body text-[18px] font-extrabold leading-tight text-ink-strong">
+              Where do you work today?
+            </h2>
+            <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-secondary">
+              Hatch pulls a scenario that fits. Goals and calibration stay
+              optional, you can set them after this rep.
+            </p>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {ROLES.map((role) => {
+                const isBusy = busyRole === role.id
+                const isDimmed = busyRole !== null && !isBusy
+                return (
+                  <button
+                    key={role.id}
+                    type="button"
+                    onClick={() => pickRole(role.id)}
+                    disabled={busyRole !== null}
+                    aria-label={`Start a ${role.label} rep`}
+                    className={[
+                      'flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left transition-all duration-150 active:scale-[0.98]',
+                      isBusy
+                        ? 'border-forest-600 bg-note-mint'
+                        : 'border-hairline bg-card-bright hover:border-forest-600/40',
+                      isDimmed ? 'opacity-45' : '',
+                      busyRole !== null ? 'cursor-default' : 'cursor-pointer',
+                    ].join(' ')}
+                  >
+                    <span className="font-body text-[13px] font-bold leading-tight text-ink-strong">
+                      {role.label}
+                    </span>
+                    {isBusy && (
+                      <Loader2 className="h-4 w-4 shrink-0 animate-spin text-forest-600" strokeWidth={2.2} />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {busyRole && (
+              <p className="mt-4 flex items-center gap-1.5 font-body text-[12.5px] text-ink-secondary">
+                <Check className="h-3.5 w-3.5 text-forest-600" strokeWidth={2.2} />
+                Pulling your first rep
+              </p>
+            )}
+
+            {error && (
+              <p className="mt-4 font-body text-[12.5px] text-error">{error}</p>
+            )}
           </div>
         </div>
-
-        <div className="mt-8 grid grid-cols-2 sm:grid-cols-2 gap-3">
-          {ROLES.map((role) => {
-            const isBusy = busyRole === role.id
-            const isDimmed = busyRole !== null && !isBusy
-            return (
-              <button
-                key={role.id}
-                type="button"
-                onClick={() => pickRole(role.id)}
-                disabled={busyRole !== null}
-                aria-label={`Start a ${role.label} interview`}
-                className={[
-                  'group flex items-center gap-3 rounded-xl px-4 py-3.5 text-left transition-all',
-                  'bg-surface-container hover:bg-surface-container-high',
-                  'border border-transparent hover:border-outline-variant',
-                  isBusy ? 'ring-2 ring-primary bg-surface-container-high' : '',
-                  isDimmed ? 'opacity-40' : '',
-                  busyRole !== null ? 'cursor-default' : 'cursor-pointer',
-                ].join(' ')}
-              >
-                <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container"
-                >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {isBusy ? 'progress_activity' : role.icon}
-                  </span>
-                </span>
-                <span className="font-label text-sm font-semibold text-on-surface">
-                  {role.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        {busyRole && (
-          <p className="mt-6 text-center font-body text-sm text-on-surface-variant">
-            Setting up your interview…
-          </p>
-        )}
-
-        {error && (
-          <p className="mt-6 text-center font-body text-sm text-error">{error}</p>
-        )}
-
-        <p className="mt-8 text-center font-label text-xs text-on-surface-variant/70">
-          No setup, no calibration. You can explore everything else after this rep.
-        </p>
       </div>
     </div>
   )

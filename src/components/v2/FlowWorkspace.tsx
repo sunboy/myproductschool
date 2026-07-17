@@ -19,14 +19,24 @@ import { StepQuestion } from './StepQuestion'
 import { StepReveal } from './StepReveal'
 import { PostSessionMirror, type StepResult as MirrorStepResult, type CompetencyDelta as MirrorCompetencyDelta } from './PostSessionMirror'
 import type { StepCalibration } from './CalibrationPreview'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
+import { ProgressRing } from '@/components/redesign/ProgressRing'
 import { useHatchContext } from '@/context/HatchContext'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
-import { CanvasCoachCard } from '@/components/challenge/CanvasCoachCard'
 import { CanvasEmptyState } from '@/components/challenge/CanvasEmptyState'
-import { canvasStarterTemplate } from '@/lib/hatch/canvasSeeds'
-import { CanvasReadinessMeter } from '@/components/challenge/CanvasReadinessMeter'
-import { CanvasThinkingDock } from '@/components/challenge/CanvasThinkingDock'
+import { canvasStarterTemplate, canvasTemplatesFor, type CanvasTemplate } from '@/lib/hatch/canvasSeeds'
+import { DesignStepForm } from '@/components/challenge/design/DesignStepForm'
+import { DesignRail } from '@/components/challenge/design/DesignRail'
+import { CompactStepPips } from '@/components/challenge/design/CompactStepPips'
+import {
+  designStepsFor,
+  allDesignSections,
+  isDesignStepId,
+  type DesignStepId,
+  type DesignSection,
+} from '@/components/challenge/design/designSteps'
+import { Lightbulb, ListChecks } from 'lucide-react'
 import { TourRunner } from '@/components/shell/TourRunner'
 import { CANVAS_TOUR, canvasTourSeen } from '@/lib/tours/canvasTour'
 import { setCursor } from '@/lib/tours/shepherdEngine'
@@ -38,18 +48,25 @@ import { executeActions } from '@/components/challenge/canvasActionExecutor'
 import type { CanvasAction } from '@/lib/types'
 import { InterviewFeedback } from '@/components/v2/InterviewFeedback'
 import { MonacoCodeEditor } from '@/components/challenge/MonacoCodeEditor'
-import { CodeOutputPanel } from '@/components/challenge/CodeOutputPanel'
 import { LanguageSelector } from '@/components/challenge/LanguageSelector'
+import { CodingStepper } from '@/components/challenge/coding/CodingStepper'
+import { advanceCodingStep, isCodingStep, type CodingStep } from '@/components/challenge/coding/codingSteps'
+import { splitProblemSections } from '@/components/challenge/coding/descriptionTabs'
+import { TestCasePanel } from '@/components/challenge/coding/TestCasePanel'
+import { GuidanceTab, type CodingRailSelfCheck } from '@/components/challenge/coding/GuidanceTab'
+import { HintsTab } from '@/components/challenge/coding/HintsTab'
+import { AdaptiveTabStrip } from '@/components/challenge/coding/AdaptiveTabStrip'
+import { CodingStatusBar } from '@/components/challenge/coding/StatusBar'
 import { SchemaDiagram } from '@/components/challenge/SchemaDiagram'
 import { SampleDataPreview } from '@/components/challenge/SampleDataPreview'
 import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challenge/ExpectedOutput'
 import { CodingFeedback } from '@/components/challenge/CodingFeedback'
-import { useCodeRunner } from '@/hooks/useCodeRunner'
+import { useCodeRunner, getTestCases } from '@/hooks/useCodeRunner'
 import { workspaceExitHref } from '@/lib/workspace/breadcrumbs'
 import { WorkspacePanel } from '@/components/v2/WorkspacePanel'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { useIsMobile } from '@/hooks/useIsMobile'
-import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
+import type { SupportedLanguage, RunResult, GradingFeedback, TestCase } from '@/lib/coding/types'
 import type { SchemaDiagramData } from '@/components/challenge/SchemaDiagram'
 import { formatCompany } from '@/lib/format/company'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
@@ -99,7 +116,54 @@ export interface ContextPackField {
 
 type ContextPackState = ContextPackField[]
 
+/** Structured SD/DM write-up: {stepId: {sectionId: text}}. Autosaved as
+ *  step_answers, submitted into canvas_final_snapshot, and sent to Hatch's
+ *  interpret/nudge endpoints on every turn. */
+type StepAnswers = Partial<Record<DesignStepId, Record<string, string>>>
+
 function buildDefaultContextPackFields(challengeType?: string): ContextPackField[] {
+  // Coding (algorithm / sql) — the Notes tab: plan the approach before typing,
+  // list the edge cases the tests will probe, and commit to a complexity claim.
+  if (challengeType === 'algorithm' || challengeType === 'sql') {
+    const isSql = challengeType === 'sql'
+    return [
+      {
+        id: 'plan',
+        label: 'Plan',
+        helper: isSql
+          ? 'The shape of the query before you write it: joins, filters, grouping.'
+          : 'The approach in plain words before you write code.',
+        icon: 'route',
+        placeholder: isSql
+          ? 'e.g. join orders to users, filter to last 30 days, group by user, keep counts > 3'
+          : 'e.g. two pointers from both ends, move the smaller side inward',
+        value: '',
+        removable: false,
+      },
+      {
+        id: 'edge_cases',
+        label: 'Edge cases',
+        helper: 'Inputs that would break a naive version.',
+        icon: 'warning',
+        placeholder: isSql
+          ? 'ties, NULLs, users with no orders, duplicate rows'
+          : 'empty input, single element, duplicates, overflow',
+        value: '',
+        removable: false,
+      },
+      {
+        id: 'complexity',
+        label: 'Complexity',
+        helper: 'Your time and space claim, checked against the constraints.',
+        icon: 'speed',
+        placeholder: isSql
+          ? 'which index makes this fast? what does the join multiply?'
+          : 'O(n log n) time, O(1) extra space',
+        value: '',
+        removable: false,
+      },
+    ]
+  }
   const isDataModeling = challengeType === 'data_modeling'
   return [
     {
@@ -351,32 +415,23 @@ function BriefSectionCard({ section }: { section: ChallengeBriefSection }) {
       <ol {...props} style={{ fontFamily: 'var(--font-body)', fontSize: isTask ? 14.75 : 14.25, lineHeight: 1.68, fontWeight: bodyWeight, color: 'var(--color-on-surface)', margin: '0 0 10px', paddingLeft: 22 }} />
     ),
   }
-  const background = isTask
-    ? 'var(--color-primary-container)'
-    : isSupport
-      ? 'var(--color-surface-container-high)'
-      : 'var(--color-surface-container-low)'
-  const border = isTask
-    ? '1px solid rgba(74,124,89,0.28)'
-    : '1px solid var(--color-outline-variant)'
-
+  // Round-4 Problem Brief skin (spec 4 "Boxes: fewer, in a hierarchy"):
+  // sections are de-carded — uppercase ink-secondary headings over plain body,
+  // no nested tinted boxes. The task tone keeps a forest heading so the ask
+  // still reads as the anchor.
   return (
     <section
       style={{
-        marginBottom: 14,
-        background,
-        border,
-        borderRadius: 14,
-        padding: '14px 16px',
+        marginBottom: 18,
       }}
     >
       <div
         style={{
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 800,
-          letterSpacing: '0.065em',
+          letterSpacing: '0.04em',
           textTransform: 'uppercase',
-          color: isTask ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+          color: isTask ? 'var(--color-forest-700)' : 'var(--color-ink-secondary)',
           marginBottom: 7,
           fontFamily: 'var(--font-label)',
         }}
@@ -493,10 +548,11 @@ function CanvasTourMount({ active: canvasActive }: { active: boolean }) {
   return <TourRunner config={CANVAS_TOUR} active={run} onFinish={() => setRun(false)} />
 }
 
-// Shared workspace action button treatments — one visual system for every
-// Run/Submit pill in the workspace chrome (visual-clarity overhaul, inc. 1).
-const WORKSPACE_BTN_PRIMARY = 'inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-primary text-on-primary font-label text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity'
-const WORKSPACE_BTN_TONAL = 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface font-label text-xs font-semibold hover:bg-surface-container-highest disabled:opacity-50 transition-colors'
+// Shared workspace action button treatments — round-4 chrome (spec §5):
+// buttons are rounded rectangles, not pills. Primary = forest-950 fill with a
+// subtle inner light; secondary = card surface + hairline border.
+const WORKSPACE_BTN_PRIMARY = 'inline-flex items-center gap-1.5 px-5 py-2 rounded-[10px] bg-forest-950 text-white font-label text-xs font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:opacity-90 disabled:opacity-50 transition-opacity'
+const WORKSPACE_BTN_TONAL = 'inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-card-bright border border-hairline text-ink-strong font-label text-xs font-bold hover:bg-page-field disabled:opacity-50 transition-colors'
 
 export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isApiMode = props.mode === 'api'
@@ -565,14 +621,38 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Canvas / interview challenge state
   const [canvasMaximised, setCanvasMaximised] = useState(false)
-  const [canvasLoopExpanded, setCanvasLoopExpanded] = useState(false)
+  // transform-origin for the overlay's scale-in, as viewport percentages of
+  // the trigger's center (DiagramSlot / "Open canvas" button) — the overlay
+  // grows out of the slot instead of hard-swapping (Stage B motion pass).
+  const [canvasOverlayOrigin, setCanvasOverlayOrigin] = useState<string>('50% 50%')
+  const openCanvasOverlay = useCallback((origin?: { x: number; y: number }) => {
+    if (origin && typeof window !== 'undefined' && window.innerWidth > 0 && window.innerHeight > 0) {
+      const ox = Math.round((origin.x / window.innerWidth) * 100)
+      const oy = Math.round((origin.y / window.innerHeight) * 100)
+      setCanvasOverlayOrigin(`${ox}% ${oy}%`)
+    } else {
+      setCanvasOverlayOrigin('50% 50%')
+    }
+    setCanvasMaximised(true)
+  }, [])
+  // Structured SD/DM workspace: per-step write-up answers + which step/section
+  // the user is on. Free navigation between design steps (unlike MCQ FLOW).
+  const [stepAnswers, setStepAnswers] = useState<StepAnswers>({})
+  const [activeDesignStep, setActiveDesignStep] = useState<DesignStepId>('frame')
+  const [activeDesignSection, setActiveDesignSection] = useState<string | null>(null)
+  // Object URL of the latest diagram snapshot embedded in the write-up.
+  const [diagramThumbUrl, setDiagramThumbUrl] = useState<string | null>(null)
+  const diagramThumbUrlRef = useRef<string | null>(null)
+  useEffect(() => { diagramThumbUrlRef.current = diagramThumbUrl }, [diagramThumbUrl])
+  useEffect(() => () => { if (diagramThumbUrlRef.current) URL.revokeObjectURL(diagramThumbUrlRef.current) }, [])
+  const diagramThumbBusyRef = useRef(false)
+  const didHydrateCanvasRef = useRef<string | null>(null)
   const [codingMaximised, setCodingMaximised] = useState(false)
   // Console collapse (visual-clarity inc. 4): header-only console, editor takes the space.
   const [consoleCollapsed, setConsoleCollapsed] = useState(false)
   const [editorHeightPct, setEditorHeightPct] = useState(60)
   const [chatPanelOpen, setChatPanelOpen] = useState(false)
   const [queuedHatchPrompt, setQueuedHatchPrompt] = useState<QueuedHatchPrompt | null>(null)
-  const [hintForceOpen, setHintForceOpen] = useState(false)
   const [interviewGrade, setInterviewGrade] = useState<InterviewGrade | null>(null)
   const [submittedCanvasPngUrl, setSubmittedCanvasPngUrl] = useState<string | null>(null)
   const [historyInterviewGrade, setHistoryInterviewGrade] = useState<InterviewGrade | null>(null)
@@ -708,13 +788,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const dragCleanupRef = useRef<(() => void) | null>(null)
 
-  // Load leftWidth + leftCollapsed from localStorage on challenge load
+  // Load leftWidth + leftCollapsed from localStorage on challenge load. Record
+  // what was stored so the coding default-width effect below can tell a fresh
+  // user (no record) or a stale pre-v2 default apart from a dragged width.
+  const storedLayoutRef = useRef<{ had: boolean; v?: number; leftWidth?: number }>({ had: false })
   useEffect(() => {
     if (!challengeId) return
     try {
       const stored = localStorage.getItem(`flowworkspace:${challengeId}`)
       if (stored) {
-        const parsed = JSON.parse(stored) as { leftWidth?: number; leftCollapsed?: boolean }
+        const parsed = JSON.parse(stored) as { leftWidth?: number; leftCollapsed?: boolean; v?: number }
+        storedLayoutRef.current = { had: true, v: parsed.v, leftWidth: parsed.leftWidth }
         if (typeof parsed.leftWidth === 'number') setLeftWidth(parsed.leftWidth)
         if (typeof parsed.leftCollapsed === 'boolean') setLeftCollapsed(parsed.leftCollapsed)
       }
@@ -722,16 +806,36 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [challengeId])
 
-  // Persist leftWidth + leftCollapsed to localStorage on change
-  useEffect(() => {
-    if (!challengeId) return
-    try {
-      localStorage.setItem(`flowworkspace:${challengeId}`, JSON.stringify({ leftWidth, leftCollapsed }))
-    } catch { /* ignore */ }
-  }, [challengeId, leftWidth, leftCollapsed])
+  // (The persist effect for leftWidth/leftCollapsed lives below, after the
+  // challenge type derivation — it must not write before the type is known.)
 
-  // Left description tab state
-  const [leftTab, setLeftTab] = useState<'Description' | 'Discussions' | 'Submissions' | 'Solutions'>('Description')
+  // Left description tab state. Coding challenges add doc tabs (Examples /
+  // Constraints, present only when the description carries those sections) and
+  // Notes; Solutions/Discussions/Submissions move behind a trailing More menu.
+  const [leftTab, setLeftTab] = useState<
+    'Description' | 'Examples' | 'Constraints' | 'Notes' | 'Discussions' | 'Submissions' | 'Solutions'
+  >('Description')
+
+  // ── Coding workspace state (round-4 rebuild) ─────────────────────────────
+  // Advisory solving path (Understand → Plan → Code → Test → Optimize).
+  // Auto-signals only ever move it forward; a click can move it anywhere.
+  const [codingStep, setCodingStep] = useState<CodingStep>('understand')
+  const advanceStep = useCallback((next: CodingStep) => {
+    setCodingStep((prev) => advanceCodingStep(prev, next))
+  }, [])
+  // Baseline editor text captured at hydration/starter init, so the first REAL
+  // edit (differs from baseline) advances the path to Code.
+  const initialCodeRef = useRef<string | null>(null)
+  // Hints Hatch has delivered this session (rail list), oldest first.
+  const [codingHints, setCodingHints] = useState<string[]>([])
+  const [codingHintPending, setCodingHintPending] = useState(false)
+  // Check-your-approach verdict flow (interpret self-check).
+  const [codingSelfCheck, setCodingSelfCheck] = useState<CodingRailSelfCheck>({ status: 'idle' })
+  // Learner-declared confidence before submitting (persisted with the draft).
+  const [codingConfidence, setCodingConfidence] = useState<'low' | 'medium' | 'high' | null>(null)
+  // Status bar autosave cell: real save lifecycle of the draft autosave below.
+  const [codingSaveState, setCodingSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [codingSavedAt, setCodingSavedAt] = useState<Date | null>(null)
 
   // Helper: true for interview challenge types that use canvas/coding instead of MCQ
   // Canvas and coding challenges are only supported in API mode; adapter mode always returns false
@@ -749,14 +853,52 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // are gated to a "best on desktop" notice instead (see Fork C below).
   const mobileStacked = isMobile && !isInterviewChallenge
 
-  const openContextPack = useCallback(() => {
-    setLeftTab('Description')
-    setLeftCollapsed(false)
-    setContextPackOpen(true)
-    window.setTimeout(() => {
-      contextPackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    }, 0)
-  }, [])
+  // Coding left pane: floor the width so all four content tabs (Description /
+  // Examples / Constraints / Notes) stay inline at >=1280 instead of clipping
+  // behind the trailing More menu. The 38vw term keeps narrow desktops from
+  // starving the editor; the strip's overflow scroll remains the fallback.
+  const leftPaneMinWidth = isCodingChallenge && !leftCollapsed ? 'min(400px, 38vw)' : undefined
+
+  // Coding + canvas default split moved 30 → 35 (description/work area 35-65).
+  // Runs here, not in the load effect, because the challenge type is only known
+  // once detail loads. Only two cases migrate: no stored record (fresh user)
+  // and a pre-v2 record still sitting on the old 30 default (never dragged).
+  // Anything else is a deliberate user width and is left alone.
+  useEffect(() => {
+    if (!isInterviewChallenge) return
+    const stored = storedLayoutRef.current
+    if (!stored.had) { setLeftWidth(35); return }
+    if (stored.v === undefined && stored.leftWidth === 30) setLeftWidth(35)
+  }, [isInterviewChallenge])
+
+  // Persist leftWidth + leftCollapsed to localStorage on change. v:2 marks the
+  // record as post-coding-default-change so the migration effect never touches
+  // it. Held back until the challenge type is known: detail loads async, and an
+  // early write would stamp the pre-migration default (30) with v:2, which the
+  // coding 35% migration above would then respect as a user choice.
+  const challengeTypeKnown = !isApiMode || Boolean(apiChallengeType)
+  useEffect(() => {
+    if (!challengeId || !challengeTypeKnown) return
+    try {
+      localStorage.setItem(`flowworkspace:${challengeId}`, JSON.stringify({ leftWidth, leftCollapsed, v: 2 }))
+    } catch { /* ignore */ }
+  }, [challengeId, challengeTypeKnown, leftWidth, leftCollapsed])
+
+  // Coding challenges use the Notes tab fields (Plan / Edge cases / Complexity),
+  // not the canvas Context Pack defaults the state initializes with. Swap them
+  // in as soon as the type is known; the draft-hydration effect below merges any
+  // persisted values on top, and typed values are never clobbered.
+  useEffect(() => {
+    if (!isCodingChallenge) return
+    setContextPack((prev) => {
+      if (prev.some((f) => f.id === 'plan')) return prev
+      if (prev.some((f) => f.value.trim().length > 0)) return prev
+      return buildDefaultContextPackFields(apiChallengeType)
+    })
+  }, [isCodingChallenge, apiChallengeType])
+
+  // (The old openContextPack jump helper died with the thinking dock — the
+  // Context Pack drawer still lives in the Description pane and opens inline.)
 
   // Discussions tab state
   const [discussions, setDiscussions] = useState<ChallengeDiscussion[]>([])
@@ -1174,14 +1316,85 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const contextPackText = useMemo(() => formatContextPack(contextPack), [contextPack])
   const contextPackFieldCount = contextPack.filter((field) => field.value.trim().length > 0).length
 
+  // ── Structured SD/DM workspace derivations ────────────────────────────────
+  const canvasType: CanvasChallengeType =
+    apiChallengeType === 'data_modeling' ? 'data_modeling' : 'system_design'
+  const designSteps = useMemo(
+    () => (isCanvasChallenge ? designStepsFor(canvasType) : []),
+    [isCanvasChallenge, canvasType]
+  )
+  const activeDesignStepDef =
+    designSteps.find((s) => s.id === activeDesignStep) ?? designSteps[0] ?? null
+
+  // The write-up sections feed the guidance phase machine alongside the
+  // context pack — the `tradeoffs` section id advances it to ready unchanged.
+  const designGuidanceFields = useMemo(() => {
+    if (!isCanvasChallenge) return contextPack
+    const sectionFields = allDesignSections(canvasType)
+      .filter((s) => s.kind === 'textarea')
+      .map((s) => ({ id: s.id, value: stepAnswers[s.stepId]?.[s.id] ?? '' }))
+    return [...contextPack, ...sectionFields]
+  }, [isCanvasChallenge, canvasType, contextPack, stepAnswers])
+
   // Single source of truth for the draw → notes → ask → submit phase. Consumed
-  // by the coach card, readiness meter, and Hatch opener (later tasks).
+  // by the design rail's live guidance panel and Hatch's chat opener.
   const guidance = useCanvasGuidance({
-    challengeType: apiChallengeType === 'data_modeling' ? 'data_modeling' : 'system_design',
+    challengeType: canvasType,
     scene,
-    fields: contextPack,
+    fields: designGuidanceFields,
     register: coachRegister,
   })
+
+  const isDesignSectionDone = useCallback(
+    (stepId: DesignStepId, section: DesignSection) => {
+      if (section.kind === 'diagram') return scene.entities.length > 0
+      const text = stepAnswers[stepId]?.[section.id] ?? ''
+      return text.trim().length >= (section.minCharsDone ?? 80)
+    },
+    [scene.entities.length, stepAnswers]
+  )
+  const completedDesignSteps = useMemo(
+    () =>
+      designSteps
+        .filter((s) => s.sections.every((sec) => isDesignSectionDone(s.id, sec)))
+        .map((s) => s.id),
+    [designSteps, isDesignSectionDone]
+  )
+  const designSectionTotals = useMemo(() => {
+    const all = designSteps.flatMap((s) => s.sections.map((sec) => ({ stepId: s.id, sec })))
+    return {
+      done: all.filter((x) => isDesignSectionDone(x.stepId, x.sec)).length,
+      total: all.length,
+    }
+  }, [designSteps, isDesignSectionDone])
+
+  // The sub-section Hatch should treat as active: the focused textarea, else
+  // the first section of the active step.
+  const effectiveActiveSectionId = useMemo(() => {
+    if (!activeDesignStepDef) return null
+    if (
+      activeDesignSection &&
+      activeDesignStepDef.sections.some((s) => s.id === activeDesignSection)
+    ) {
+      return activeDesignSection
+    }
+    return activeDesignStepDef.sections[0]?.id ?? null
+  }, [activeDesignStepDef, activeDesignSection])
+
+  const selectDesignStep = useCallback((id: DesignStepId) => {
+    setActiveDesignStep(id)
+    setActiveDesignSection(null)
+  }, [])
+
+  const handleDesignAnswerChange = useCallback(
+    (sectionId: string, value: string) => {
+      setStepAnswers((prev) => ({
+        ...prev,
+        [activeDesignStep]: { ...(prev[activeDesignStep] ?? {}), [sectionId]: value },
+      }))
+    },
+    [activeDesignStep]
+  )
 
   // Excalidraw API + library refs (for canvas action execution)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1250,6 +1463,55 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       actions: canvasStarterTemplate(apiChallengeType),
     })
   }, [apiChallengeType, handleCanvasActions])
+
+  // Overlay template chips — same executeActions path as Hatch and the
+  // empty-state starter. Blank is an intentional no-op (empty actions list).
+  const applyCanvasTemplate = useCallback(
+    (template: CanvasTemplate) => {
+      if (template.actions.length === 0) return
+      setEmptyStateDismissed(true)
+      void handleCanvasActions({ message: template.label, actions: template.actions })
+    },
+    [handleCanvasActions]
+  )
+
+  // Export the current drawing to a PNG object URL for the DiagramSlot inset.
+  // One in flight at a time; the previous URL is revoked on replace.
+  const refreshDiagramThumb = useCallback(async () => {
+    const exportFn = canvasExportRef.current
+    if (!exportFn || diagramThumbBusyRef.current) return
+    diagramThumbBusyRef.current = true
+    try {
+      const blob = await exportFn()
+      if (blob) {
+        const url = URL.createObjectURL(blob)
+        setDiagramThumbUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev)
+          return url
+        })
+      }
+    } catch {
+      /* the thumbnail is cosmetic — the counts fallback renders instead */
+    } finally {
+      diagramThumbBusyRef.current = false
+    }
+  }, [])
+
+  // "Done, back to write-up": snapshot the drawing into the write-up inset,
+  // then close the overlay. Excalidraw and the chat stay mounted throughout.
+  const closeCanvasOverlay = useCallback(() => {
+    void refreshDiagramThumb()
+    setCanvasMaximised(false)
+  }, [refreshDiagramThumb])
+
+  // Keep the write-up's embedded snapshot in sync while the overlay is closed
+  // (covers resume hydration and Hatch drawing from the docked chat).
+  useEffect(() => {
+    if (!isCanvasChallenge || canvasMaximised) return
+    if (scene.entities.length === 0) return
+    const t = window.setTimeout(() => { void refreshDiagramThumb() }, 800)
+    return () => window.clearTimeout(t)
+  }, [isCanvasChallenge, canvasMaximised, scene, refreshDiagramThumb])
 
   // Seed type-specific default field labels when challenge type is known
   useEffect(() => {
@@ -1337,6 +1599,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     codeTail: string | null
     testsPassed: number | null
     testsTotal: number | null
+    designStep: DesignStepId | null
+    designSection: string | null
+    designSectionText: string | null
   }>({
     flowStep: null,
     flowQuestion: null,
@@ -1345,6 +1610,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     codeTail: null,
     testsPassed: null,
     testsTotal: null,
+    designStep: null,
+    designSection: null,
+    designSectionText: null,
   })
 
   useEffect(() => {
@@ -1371,6 +1639,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             attemptId,
             lastNudgeAt: lastNudgeAtRef.current || undefined,
             nudgeCount: nudgeCountRef.current,
+            active_step: nudgeGroundingRef.current.designStep,
+            active_section: nudgeGroundingRef.current.designSection,
+            active_section_text: nudgeGroundingRef.current.designSectionText?.slice(0, 5000) ?? null,
           }),
         })
         if (!res.ok) return
@@ -1389,6 +1660,60 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // chatPanelOpen intentionally excluded - we only want the snapshot at fire time, not retriggers
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCanvasChallenge, attemptId, scene, apiChallengeType, isApiMode, props])
+
+  // "Show me a hint" (design rail): on-demand nudge grounded in the diagram and
+  // the active write-up sub-section. Lands in the rail's guidance panel and the
+  // chat thread via proactiveNudge.
+  const [hintLoading, setHintLoading] = useState(false)
+  const requestManualHint = useCallback(async () => {
+    if (!isCanvasChallenge || !attemptId || hintLoading) return
+    setHintLoading(true)
+    const ground = nudgeGroundingRef.current
+    try {
+      const res = await fetch('/api/hatch/canvas/nudge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scene,
+          recentDelta: { added: 1 },
+          challengeId: isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : '',
+          challengeType: apiChallengeType,
+          attemptId,
+          nudgeCount: nudgeCountRef.current,
+          active_step: ground.designStep,
+          active_section: ground.designSection,
+          active_section_text: ground.designSectionText?.slice(0, 5000) ?? null,
+        }),
+      })
+      if (!res.ok) return
+      const data = (await res.json()) as { nudge: string | null }
+      lastNudgeAtRef.current = Date.now()
+      if (data.nudge) nudgeCountRef.current += 1
+      setProactiveNudge({
+        id: `hint-${Date.now()}`,
+        text: data.nudge ?? 'Nothing urgent from me. Keep building the section you are on.',
+      })
+    } catch {
+      /* a missed hint is non-critical */
+    } finally {
+      setHintLoading(false)
+    }
+  }, [isCanvasChallenge, attemptId, hintLoading, scene, apiChallengeType, isApiMode, props])
+
+  // "Run self-check" (design rail): asks Hatch for a verdict on the active step
+  // through the interpret endpoint. The chat panel sends step_answers +
+  // active_section with the turn, so the verdict reads the real write-up.
+  const runSelfCheck = useCallback(() => {
+    if (!activeDesignStepDef) return
+    const section = effectiveActiveSectionId
+      ? activeDesignStepDef.sections.find((s) => s.id === effectiveActiveSectionId)
+      : undefined
+    const focus = section && section.kind === 'textarea' ? `, weighing my "${section.label}" section first` : ''
+    queueHatchPrompt(
+      `Run a self-check on my ${activeDesignStepDef.label} step${focus}. Start with a one-word verdict: pass, partial, or retry. Then name the single most important fix.`,
+      true
+    )
+  }, [activeDesignStepDef, effectiveActiveSectionId, queueHatchPrompt])
 
   useEffect(() => {
     lastWorkspaceProgressRef.current = Date.now()
@@ -1441,9 +1766,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         body.tests_passed = ground.testsPassed
         body.tests_total = ground.testsTotal
       } else if (isCanvasChallenge) {
-        if (!scene || scene.elementCount < 2) return
+        const sectionDraft = ground.designSectionText?.trim() ?? ''
+        if ((!scene || scene.elementCount < 2) && sectionDraft.length < 40) return
         body.scene = scene
         body.recentDelta = { added: 1 }
+        body.active_step = ground.designStep
+        body.active_section = ground.designSection
+        body.active_section_text = ground.designSectionText?.slice(0, 5000) ?? null
       } else {
         return
       }
@@ -1468,6 +1797,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         if (isInterviewChallenge) {
           setProactiveNudge({ id: `idle-${Date.now()}`, text: data.nudge })
         } else {
+          // FLOW (MCQ): feed the wide-desktop right rail's "Hatch's read" note
+          // with the live nudge, and keep the floating cue for narrow viewports
+          // where the rail is hidden.
+          if (isFlowChallenge) {
+            setProactiveNudge({ id: `idle-${Date.now()}`, text: data.nudge })
+          }
           emitHatchCue?.({
             surface: 'workspace',
             message: data.nudge,
@@ -1507,37 +1842,110 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     scene,
   ])
 
-  // Autosave canvas snapshot and Context Pack every 10s when changed
-  useEffect(() => {
-    if (!isCanvasChallenge || !attemptId || (!canvasScene && !contextPackText)) return
-    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current)
-    autosaveTimerRef.current = setTimeout(async () => {
-      try {
-        await fetch('/api/hatch/session/autosave', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            attemptId,
-            draftSnapshot: {
-              type: 'canvas',
-              ...(canvasScene ?? { elements: [], appState: {} }),
-              context_pack: contextPackText || null,
-              context_pack_fields: contextPack,
-            },
-            updatedAt: new Date().toISOString(),
-          }),
-        })
-      } catch { /* fire and forget */ }
-    }, 10000)
-    return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current) }
-  }, [canvasScene, contextPack, contextPackText, isCanvasChallenge, attemptId])
+  // ── Canvas draft autosave ─────────────────────────────────────────────────
+  // The freshest draft payload lives in a ref; every change marks it dirty and
+  // schedules a save. Scheduling is a debounce WITH a max wait: quiet for 2.5s
+  // → save, but while changes keep arriving a save still lands at least every
+  // 10s (a pure debounce starved forever during continuous drawing). Flushes
+  // also fire on tab hide/close (keepalive) and when the canvas overlay closes,
+  // so resuming later always finds the drawing.
+  const canvasDraftPayloadRef = useRef<{ attemptId: string; draftSnapshot: Record<string, unknown>; updatedAt: string } | null>(null)
+  const canvasDraftDirtyRef = useRef(false)
+  const canvasLastSaveAtRef = useRef(0)
+  const [canvasSaveState, setCanvasSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
 
-  // Autosave coding drafts every 10s when currentCode changes
+  const flushCanvasDraft = useCallback(async (opts?: { keepalive?: boolean; force?: boolean }) => {
+    const payload = canvasDraftPayloadRef.current
+    if (!payload) return
+    if (!canvasDraftDirtyRef.current && !opts?.force) return
+    // The inner ExcalidrawCanvas snapshot is itself debounced (~2s), so strokes
+    // made just before a flush may not have reached React state yet. Read the
+    // live elements straight from the Excalidraw API when available.
+    const api = excalidrawApiRef.current
+    if (api) {
+      try {
+        payload.draftSnapshot = { ...payload.draftSnapshot, elements: api.getSceneElements() }
+      } catch { /* keep the last snapshot's elements */ }
+    }
+    canvasDraftDirtyRef.current = false
+    canvasLastSaveAtRef.current = Date.now()
+    setCanvasSaveState('saving')
+    try {
+      await fetch('/api/hatch/session/autosave', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, updatedAt: new Date().toISOString() }),
+        // keepalive lets the request outlive a closing tab (64KB payload cap;
+        // an oversized scene falls back to the last periodic save).
+        keepalive: opts?.keepalive,
+      })
+      setCanvasSaveState('saved')
+    } catch {
+      // A failed save re-arms: the next change tick (or flush) retries.
+      canvasDraftDirtyRef.current = true
+      setCanvasSaveState('idle')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
-    if (!isCodingChallenge || !attemptId || !currentCode) return
+    if (
+      !isCanvasChallenge ||
+      !attemptId ||
+      (!canvasScene && !contextPackText && Object.keys(stepAnswers).length === 0)
+    ) return
+    canvasDraftPayloadRef.current = {
+      attemptId,
+      draftSnapshot: {
+        type: 'canvas',
+        ...(canvasScene ?? { elements: [], appState: {} }),
+        context_pack: contextPackText || null,
+        context_pack_fields: contextPack,
+        step_answers: stepAnswers,
+        active_design_step: activeDesignStep,
+      },
+      updatedAt: new Date().toISOString(),
+    }
+    canvasDraftDirtyRef.current = true
+    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current)
+    const sinceLastSave = Date.now() - canvasLastSaveAtRef.current
+    const delay = Math.min(2500, Math.max(250, 10000 - sinceLastSave))
+    autosaveTimerRef.current = setTimeout(() => { void flushCanvasDraft() }, delay)
+    return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current) }
+  }, [canvasScene, contextPack, contextPackText, stepAnswers, activeDesignStep, isCanvasChallenge, attemptId, flushCanvasDraft])
+
+  // Flush pending canvas work when the tab hides, closes, or this workspace
+  // unmounts (client-side nav away), so nothing drawn is lost between ticks.
+  useEffect(() => {
+    if (!isCanvasChallenge || !attemptId) return
+    const flush = () => { void flushCanvasDraft({ keepalive: true, force: true }) }
+    const onVisibility = () => { if (document.visibilityState === 'hidden') flush() }
+    window.addEventListener('pagehide', flush)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('pagehide', flush)
+      document.removeEventListener('visibilitychange', onVisibility)
+      flush()
+    }
+  }, [isCanvasChallenge, attemptId, flushCanvasDraft])
+
+  // Closing the drawing overlay is a natural save point — flush immediately so
+  // "Done, back to write-up" always leaves the diagram persisted.
+  useEffect(() => {
+    if (!isCanvasChallenge || canvasMaximised) return
+    if (canvasDraftDirtyRef.current) void flushCanvasDraft()
+  }, [canvasMaximised, isCanvasChallenge, flushCanvasDraft])
+
+  // Autosave coding drafts every 10s when the code, notes, path step, or
+  // confidence changes. Still silent in the chrome, but the status bar reflects
+  // the real save lifecycle (saving → saved + timestamp).
+  useEffect(() => {
+    if (!isCodingChallenge || !attemptId) return
+    if (!currentCode && !contextPackText) return
     if (codingAutosaveTimerRef.current) clearTimeout(codingAutosaveTimerRef.current)
     codingAutosaveTimerRef.current = setTimeout(async () => {
       try {
+        setCodingSaveState('saving')
         // Merge over ALL existing buckets (codingDraftsRef is the freshest copy)
         // so multi-part challenges don't lose other parts' code on each save.
         // Write the current code into the active part's bucket.
@@ -1555,14 +1963,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               type: apiChallengeType ?? 'coding',
               language: currentLanguage,
               drafts: mergedDrafts,
+              coding_step: codingStep,
+              coding_confidence: codingConfidence,
+              context_pack_fields: contextPack,
             },
             updatedAt: new Date().toISOString(),
           }),
         })
-      } catch { /* fire and forget */ }
+        setCodingSaveState('saved')
+        setCodingSavedAt(new Date())
+      } catch {
+        // fire and forget — a failed save retries on the next change tick
+        setCodingSaveState('idle')
+      }
     }, 10000)
     return () => { if (codingAutosaveTimerRef.current) clearTimeout(codingAutosaveTimerRef.current) }
-  }, [currentCode, currentLanguage, isCodingChallenge, attemptId, activePartId, apiChallengeType])
+  }, [currentCode, currentLanguage, isCodingChallenge, attemptId, activePartId, apiChallengeType, codingStep, codingConfidence, contextPack, contextPackText])
 
   // Autosave MCQ FLOW step drafts every 8s when they change. Without this a
   // refresh or expired session mid-step silently wipes the user's in-progress
@@ -1640,6 +2056,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const partKey = activePartId ?? 'default'
     const draft = codingDraftsRef.current[partKey]?.[currentLanguage]
     setCurrentCode(draft ?? starterCode)
+    // Baseline for the advisory path's Code signal: the first edit that
+    // differs from this text means the user is writing code.
+    initialCodeRef.current = draft ?? starterCode
     // Open chat panel by default for coding challenges
     setChatPanelOpen(true)
   // Only run when challenge first loads (detail.challenge.id changes) or language flips
@@ -1656,8 +2075,34 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (!attemptKey || didHydrateDraftRef.current === attemptKey) return
 
     const snap = detail.current_attempt?.draft_snapshot as
-      | { type?: string; language?: string; drafts?: Record<string, Partial<Record<SupportedLanguage, string>>> }
+      | {
+          type?: string
+          language?: string
+          drafts?: Record<string, Partial<Record<SupportedLanguage, string>>>
+          coding_step?: string
+          coding_confidence?: string
+          context_pack_fields?: ContextPackField[]
+        }
       | undefined
+
+    // Coding Notes tab fields (Plan / Edge cases / Complexity) — start from the
+    // coding defaults and merge any values persisted with this attempt.
+    const baseNoteFields = buildDefaultContextPackFields(apiChallengeType)
+    const savedNoteFields = Array.isArray(snap?.context_pack_fields) ? snap.context_pack_fields : []
+    setContextPack(
+      baseNoteFields.map((field) => {
+        const match = savedNoteFields.find((s) => s?.id === field.id)
+        return match && typeof match.value === 'string' && match.value
+          ? { ...field, value: match.value }
+          : field
+      })
+    )
+    // Restore the advisory path position and declared confidence. Direct set
+    // (not advance) — the snapshot is this attempt's own truth.
+    if (isCodingStep(snap?.coding_step)) setCodingStep(snap.coding_step)
+    if (snap?.coding_confidence === 'low' || snap?.coding_confidence === 'medium' || snap?.coding_confidence === 'high') {
+      setCodingConfidence(snap.coding_confidence)
+    }
 
     if (snap?.drafts && Object.keys(snap.drafts).length > 0) {
       // Restore saved drafts for this attempt.
@@ -1671,6 +2116,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       const metadata = detail.challenge.metadata as { starter_code?: Record<string, string> } | null | undefined
       const saved = snap.drafts[partKey]?.[normLang]
       setCurrentCode(saved ?? metadata?.starter_code?.[normLang] ?? '')
+      initialCodeRef.current = saved ?? metadata?.starter_code?.[normLang] ?? ''
     } else {
       // Fresh attempt with no saved draft: clear any ref left over from a prior
       // attempt AND reset the editor to starter. The starter-init effect doesn't
@@ -1680,11 +2126,74 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setCodingDrafts({})
       const metadata = detail.challenge.metadata as { starter_code?: Record<string, string> } | null | undefined
       setCurrentCode(metadata?.starter_code?.[currentLanguage] ?? '')
+      initialCodeRef.current = metadata?.starter_code?.[currentLanguage] ?? ''
     }
 
     didHydrateDraftRef.current = attemptKey
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detail?.current_attempt?.id, attemptId, isCodingChallenge, detail?.challenge?.id])
+
+  // Hydrate the canvas workspace (write-up + context pack + scene) from the
+  // persisted draft_snapshot once per attempt — mirrors the coding pattern
+  // above. Elements restore goes through canvasInitialData below; setting
+  // canvasScene here keeps summarizeScene + guidance in step immediately.
+  useEffect(() => {
+    if (!isCanvasChallenge || !detail?.challenge) return
+    const attemptKey = detail.current_attempt?.id ?? attemptId
+    if (!attemptKey || didHydrateCanvasRef.current === attemptKey) return
+
+    const snap = detail.current_attempt?.draft_snapshot as
+      | {
+          type?: string
+          elements?: unknown[]
+          step_answers?: StepAnswers
+          active_design_step?: string
+          context_pack?: string
+          context_pack_fields?: ContextPackField[]
+        }
+      | undefined
+
+    if (snap?.type === 'canvas') {
+      if (snap.step_answers && typeof snap.step_answers === 'object') {
+        setStepAnswers(snap.step_answers)
+      }
+      if (isDesignStepId(snap.active_design_step)) {
+        setActiveDesignStep(snap.active_design_step)
+      }
+      if (Array.isArray(snap.context_pack_fields)) {
+        const saved = snap.context_pack_fields
+        setContextPack((prev) =>
+          prev.map((field) => {
+            const match = saved.find((s) => s?.id === field.id)
+            return match && typeof match.value === 'string' && match.value
+              ? { ...field, value: match.value }
+              : field
+          })
+        )
+      }
+      if (Array.isArray(snap.elements) && snap.elements.length > 0) {
+        setCanvasScene({ elements: snap.elements, appState: {} })
+        setEmptyStateDismissed(true)
+      }
+    }
+
+    didHydrateCanvasRef.current = attemptKey
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail?.current_attempt?.id, attemptId, isCanvasChallenge, detail?.challenge?.id])
+
+  // Elements-only initial data for Excalidraw on resume. Never pass the saved
+  // appState — a persisted getAppState() carries `collaborators` and breaks
+  // Excalidraw's initialData restore.
+  const canvasInitialData = useMemo(() => {
+    const snap = detail?.current_attempt?.draft_snapshot as
+      | { type?: string; elements?: unknown[] }
+      | undefined
+    if (snap?.type === 'canvas' && Array.isArray(snap.elements) && snap.elements.length > 0) {
+      return { elements: snap.elements }
+    }
+    return undefined
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail?.current_attempt?.id])
 
   // useCodeRunner hook - always called (React rules of hooks); only active for coding challenges
   const codeChallenge = (isCodingChallenge && detail?.challenge)
@@ -1821,6 +2330,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       codeTail: isCodingChallenge && currentCode ? currentCode.slice(-1500) : null,
       testsPassed: lastRunResult ? lastRunResult.testsPassed : null,
       testsTotal: lastRunResult ? lastRunResult.testsTotal : null,
+      designStep: isCanvasChallenge ? activeDesignStep : null,
+      designSection: isCanvasChallenge ? effectiveActiveSectionId : null,
+      designSectionText:
+        isCanvasChallenge && effectiveActiveSectionId
+          ? stepAnswers[activeDesignStep]?.[effectiveActiveSectionId] ?? null
+          : null,
     }
   }, [
     currentQuestion,
@@ -1831,6 +2346,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     currentLanguage,
     lastRunResult,
     isCodingChallenge,
+    isCanvasChallenge,
+    activeDesignStep,
+    effectiveActiveSectionId,
+    stepAnswers,
   ])
 
   // Rehydrate MCQ step drafts from the persisted snapshot once per attempt, but
@@ -2223,6 +2742,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           },
           contextPack: contextPackText || null,
           canvasPngUrl: canvasPngUrl ?? null,
+          // Structured write-up — the server merges this into
+          // canvas_final_snapshot.step_answers for the grader.
+          stepAnswers,
         }),
       })
       if (!res.ok) throw new Error('Submit failed')
@@ -2255,7 +2777,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       setIsSubmittingInterview(false)
     }
-  }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, isSubmittingInterview, playHatchSound, uploadCanvasPng])
+  }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, stepAnswers, isSubmittingInterview, playHatchSound, uploadCanvasPng])
 
   // Derived: active coding parts from detail (only meaningful for coding challenges)
   const codingParts = (isApiMode ? (detail?.codingParts ?? []) : [])
@@ -2267,6 +2789,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // inline closure that bypassed the guidance machine.
   const handleCodingRun = useCallback(async () => {
     if (codeRunner.status === 'running') return
+    // Advisory path: a run is the Test move (never regresses a later step).
+    advanceStep('test')
     setOutputPanelStatus('running')
     setOutputPanelError(undefined)
     setCodingGradingError(undefined)
@@ -2280,6 +2804,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         setLastRunResult(result)
         feedRunVerdict(result)
         setOutputPanelStatus('done')
+        // All visible tests green — the remaining move is Optimize (check
+        // complexity against constraints, then submit for the hidden set).
+        if (result.testsTotal > 0 && result.testsPassed === result.testsTotal) {
+          advanceStep('optimize')
+        }
         if (activePartId) {
           setPartRunResults(prev => ({ ...prev, [activePartId]: result }))
         }
@@ -2290,7 +2819,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setOutputPanelStatus('error')
       setOutputPanelError(err instanceof Error ? err.message : 'Run failed')
     }
-  }, [codeRunner, currentCode, feedRunVerdict, codingParts, activePartId])
+  }, [codeRunner, currentCode, feedRunVerdict, codingParts, activePartId, advanceStep])
 
   // Submit handler for coding challenges - final correctness first, then Hatch grading.
   const handleCodingSubmit = useCallback(async () => {
@@ -2304,9 +2833,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     setIsLoadingGrading(true)
 
     try {
-      const correctnessResult = await codeRunner.submit(currentCode)
-      if (!correctnessResult) {
-        throw new Error('Could not run final tests. Your attempt is saved locally.')
+      // Submit is self-sufficient: it runs the full test suite itself, so the
+      // user never has to manually Run first. If the runner is momentarily busy
+      // or returns an empty result (transient Judge0 hiccup), retry once before
+      // giving up — this is what otherwise surfaced as the server 422 "not_ready"
+      // reset-to-question bounce.
+      let correctnessResult = await codeRunner.submit(currentCode)
+      if ((!correctnessResult || correctnessResult.testsTotal === 0)) {
+        correctnessResult = await codeRunner.submit(currentCode)
+      }
+      if (!correctnessResult || correctnessResult.testsTotal === 0) {
+        // Still no runnable signal — keep the user in place with an actionable
+        // message instead of POSTing (which would 422 and reset the phase).
+        setPhase('question')
+        throw new Error(
+          currentLanguage === 'sql'
+            ? 'Could not run your query against the tests. Try Run once, then submit again.'
+            : 'Could not run the tests for this submission. Try Run once, then submit again.'
+        )
       }
 
       setLastRunResult(correctnessResult)
@@ -2389,6 +2933,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
     const partId = activePartId
     if (!partId || !challengeId || !attemptId || isSubmittingCoding) return
+    // Advisory path: a part submit runs its tests — the Test move.
+    advanceStep('test')
     setIsSubmittingCoding(true)
     setOutputPanelStatus('running')
     setOutputPanelError(undefined)
@@ -2429,7 +2975,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       setIsSubmittingCoding(false)
     }
-  }, [isApiMode, props, activePartId, attemptId, isSubmittingCoding, codingParts, codeRunner, currentCode, currentLanguage])
+  }, [isApiMode, props, activePartId, attemptId, isSubmittingCoding, codingParts, codeRunner, currentCode, currentLanguage, advanceStep])
 
   // Keyboard shortcuts for the workspace bar actions (coding only):
   // Cmd/Ctrl+' runs, Cmd/Ctrl+Enter submits — but never while Monaco has
@@ -2452,6 +2998,136 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [isCodingChallenge, handleCodingRun, handleCodingSubmit, handleSubmitPart, codingParts.length])
+
+  // ── Coding workspace derivations + Hatch actions (round-4 rebuild) ─────────
+
+  // Visible test cases for the Test Cases panel, from challenge metadata —
+  // the same source useCodeRunner executes. Part-scoped when a multi-part
+  // subtask is active (mirrors handleCodingRun). Hidden cases are counted for
+  // the "+N hidden tests run on submit" footer, never shown.
+  const { visibleTestCases, hiddenTestCount } = useMemo((): { visibleTestCases: TestCase[]; hiddenTestCount: number } => {
+    if (!isCodingChallenge) return { visibleTestCases: [], hiddenTestCount: 0 }
+    const all = getTestCases(detail?.challenge?.metadata as Record<string, unknown> | undefined)
+    const activePart = codingParts.find(p => p.id === activePartId)
+    const scoped = activePart?.coding_test_case_ids?.length
+      ? all.filter(tc => activePart.coding_test_case_ids!.includes(tc.id))
+      : all
+    return {
+      visibleTestCases: scoped
+        .filter(tc => !tc.hidden)
+        .map(tc => ({
+          id: tc.id,
+          label: tc.label,
+          hidden: false,
+          args: 'args' in tc && Array.isArray(tc.args) ? tc.args : [],
+          expected: 'expected_rows' in tc ? tc.expected_rows : ('expected' in tc ? tc.expected : undefined),
+        })),
+      hiddenTestCount: scoped.filter(tc => tc.hidden).length,
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCodingChallenge, detail?.challenge?.id, detail?.challenge?.metadata, codingParts, activePartId])
+
+  // Editor onChange wrapper: the first edit that differs from the hydrated
+  // baseline advances the advisory path to Code. Run/submit stay untouched.
+  const handleEditorChange = useCallback((value: string) => {
+    setCurrentCode(value)
+    if (initialCodeRef.current !== null && value !== initialCodeRef.current) {
+      advanceStep('code')
+    }
+  }, [advanceStep])
+
+  // Advisory path: 20s of reading the Description while the session is live
+  // counts as moving into Plan (the other Plan signal is a Notes edit).
+  useEffect(() => {
+    if (!isCodingChallenge || phase !== 'question' || leftTab !== 'Description') return
+    const timer = setTimeout(() => advanceStep('plan'), 20_000)
+    return () => clearTimeout(timer)
+  }, [isCodingChallenge, phase, leftTab, advanceStep])
+
+  // "Show me a hint" (coding rail): on-demand nudge grounded in the current
+  // code and last run — the same /api/hatch/canvas/nudge coding grounding the
+  // idle nudge sends. Delivered hints accumulate in the rail's list.
+  const requestCodingHint = useCallback(async () => {
+    if (!isCodingChallenge || !attemptId || codingHintPending) return
+    setCodingHintPending(true)
+    try {
+      const res = await fetch('/api/hatch/canvas/nudge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : '',
+          challengeType: apiChallengeType,
+          attemptId,
+          nudgeCount: nudgeCountRef.current,
+          code_language: currentLanguage,
+          code_tail: currentCode ? currentCode.slice(-2000) : null,
+          tests_passed: lastRunResult?.testsPassed ?? null,
+          tests_total: lastRunResult?.testsTotal ?? null,
+        }),
+      })
+      if (!res.ok) return
+      const data = (await res.json()) as { nudge: string | null }
+      lastNudgeAtRef.current = Date.now()
+      if (data.nudge) nudgeCountRef.current += 1
+      const hint = data.nudge ?? 'Nothing urgent from me. Run what you have — the failing case will say more than I can.'
+      setCodingHints((prev) => [...prev, hint])
+    } catch {
+      /* a missed hint is non-critical */
+    } finally {
+      setCodingHintPending(false)
+    }
+  }, [isCodingChallenge, attemptId, codingHintPending, isApiMode, props, apiChallengeType, currentLanguage, currentCode, lastRunResult])
+
+  // "Check your approach" (coding rail): asks Hatch for a pass / partial /
+  // retry verdict on the current code through the interpret endpoint's
+  // asserted_finding self-check flow. The verdict renders in the rail.
+  const runCodingSelfCheck = useCallback(async () => {
+    if (!isCodingChallenge || !attemptId || codingSelfCheck.status === 'checking') return
+    setCodingSelfCheck((prev) => ({ status: 'checking', verdict: prev.verdict }))
+    // challengeTitle / scenarioContext consts are declared later in the render
+    // body (after the loading forks) — derive locally to avoid the TDZ.
+    const selfCheckTitle = detail?.challenge?.title
+    const selfCheckStatement = detail?.challenge?.scenario_context ?? detail?.challenge?.scenario_question
+    try {
+      const res = await fetch('/api/hatch/canvas/interpret', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'Check my approach before I go further.',
+          challengeId: isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : '',
+          challengeType: 'coding',
+          attemptId,
+          asserted_finding: 'I believe my current approach solves this problem and handles the constraints.',
+          current_code: currentCode,
+          current_language: currentLanguage,
+          last_run_result: lastRunResult,
+          coding_step: codingStep,
+          context_pack: contextPackText || undefined,
+          challenge_title: selfCheckTitle ?? undefined,
+          problem_statement: selfCheckStatement ?? undefined,
+          guidance_level: coachRegister,
+          history: [],
+        }),
+      })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null) as { error?: string } | null
+        setCodingSelfCheck({
+          status: 'done',
+          verdict: payload?.error === 'limit_reached'
+            ? 'You have hit the free Hatch review limit for now. The tests still tell the truth — run them.'
+            : 'Hatch could not review that just now. Try again in a moment.',
+        })
+        return
+      }
+      const data = (await res.json()) as { message?: string }
+      setCodingSelfCheck({
+        status: 'done',
+        verdict: data.message?.trim() || 'Hatch could not review that just now. Try again in a moment.',
+      })
+    } catch {
+      setCodingSelfCheck({ status: 'done', verdict: 'Hatch could not review that just now. Try again in a moment.' })
+    }
+  }, [isCodingChallenge, attemptId, codingSelfCheck.status, isApiMode, props, currentCode, currentLanguage, lastRunResult, codingStep, contextPackText, coachRegister, detail?.challenge])
 
   // Re-run Hatch grading on the SAME submission, in place. Used by the "Retry
   // grading" button on the complete screen when the AI grader errored. Reuses the
@@ -3023,7 +3699,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const returnTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : ''
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
-        <HatchGlyph size={48} state="idle" className="text-primary" />
+        <HatchImage size={48} state="idle" />
         <h2 className="font-headline text-2xl font-bold text-on-surface">Your session timed out</h2>
         <p className="text-on-surface-variant max-w-md">Sign back in and you will land right back here. Your latest draft was autosaved.</p>
         <div className="flex gap-3">
@@ -3043,10 +3719,40 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     )
   }
 
+  // Usage cap reached on start: render an inline, non-navigating panel in place
+  // of the (otherwise infinite) loading spinner. The paywall modal handles the
+  // upgrade offer; this keeps the user on the page with the challenge title in
+  // view and one explicit way out, instead of ejecting them.
+  if (isApiMode && paywallData && !attemptId) {
+    const capExitHref = workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 py-12 text-center">
+        <HatchImage size={56} state="idle" />
+        {detail?.challenge.title && (
+          <p className="font-label text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">
+            {detail.challenge.title}
+          </p>
+        )}
+        <h2 className="font-headline text-2xl font-bold text-on-surface">
+          You&rsquo;ve used {paywallData.used} of {paywallData.limit} free reps this month
+        </h2>
+        <p className="max-w-md font-body text-sm text-on-surface-variant">
+          Upgrade to keep practicing without limits, or come back next month when your free reps reset.
+        </p>
+        <Link
+          href={capExitHref}
+          className="font-label text-sm font-semibold text-on-surface-variant underline underline-offset-4 transition-colors hover:text-primary"
+        >
+          Browse challenges
+        </Link>
+      </div>
+    )
+  }
+
   if ((isApiMode && challengeLoading) || phase === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <HatchGlyph size={56} state="reviewing" className="text-primary" />
+        <HatchImage size={56} state="reviewing" />
         <p className="font-body text-on-surface-variant text-sm">Loading challenge…</p>
       </div>
     )
@@ -3129,10 +3835,45 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   const tabs = ['Description', 'Solutions', 'Discussions', 'Submissions'] as const
 
+  // Coding doc tabs: split the description on ## Examples / ## Constraints
+  // boundaries (per CHALLENGE_DESCRIPTION_SPEC — sql's ## Output is the ask and
+  // stays in Description). An absent section means an absent tab, never an
+  // empty pane. Non-coding challenge types keep the four tabs unchanged.
+  const problemSections = isCodingChallenge
+    ? splitProblemSections(
+        challengeBriefSections
+          .filter((s) => s.tone === 'context')
+          .map((s) => s.body)
+          .join('\n\n')
+      )
+    : null
+  const codingPrimaryTabs: Array<'Description' | 'Examples' | 'Constraints' | 'Notes'> = [
+    'Description',
+    ...(problemSections?.examples ? (['Examples'] as const) : []),
+    ...(problemSections?.constraints ? (['Constraints'] as const) : []),
+    'Notes',
+  ]
+  const codingMoreTabs = ['Solutions', 'Discussions', 'Submissions'] as const
+  // Description pane body for coding: the split description replaces the raw
+  // context sections; change/task/support sections keep rendering as before.
+  const briefSectionsForDisplay = isCodingChallenge && problemSections
+    ? (() => {
+        const nonContext = challengeBriefSections.filter((s) => s.tone !== 'context')
+        const firstContext = challengeBriefSections.find((s) => s.tone === 'context')
+        return firstContext
+          ? [{ ...firstContext, body: problemSections.description }, ...nonContext]
+          : challengeBriefSections
+      })()
+    : challengeBriefSections
 
   // Left pane description content
   const descriptionPane = (
     <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
+      {!isInterviewChallenge && (
+        <div className="font-label" style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-ink-strong)', marginBottom: 12 }}>
+          Problem Brief
+        </div>
+      )}
       {/* Chips */}
       {(() => {
         const ch = isApiMode ? detail?.challenge : adapterChallenge
@@ -3151,10 +3892,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 href={practiceFilterHref('discipline', disciplineCopy.discipline)}
                 title={`Browse ${disciplineCopy.label} practice`}
                 style={{
+                  // Sticker chip (spec §7): tinted fill + 1.5px fg border, never
+                  // a solid heavy pill on an inactive element.
                   display: 'inline-flex', alignItems: 'center', gap: 4,
-                  background: 'var(--color-primary)', color: '#fff',
+                  background: 'var(--color-sd-bg)', color: 'var(--color-sd-fg)',
+                  border: '1.5px solid var(--color-sd-fg)',
                   fontSize: 10.5, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase',
-                  padding: '3px 9px', borderRadius: 999,
+                  padding: '2px 9px', borderRadius: 999,
                   fontFamily: 'var(--font-label)', textDecoration: 'none',
                 }}
               >
@@ -3168,10 +3912,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               const filterVal = canonical ? DIFFICULTY_FILTER_VALUE[canonical] : diff
               return (
                 <Link href={practiceFilterHref('difficulty', filterVal ?? diff)} title={`Browse ${label} practice`} style={{
+                  // Amber taxonomy chip instead of the near-black pill — heavy
+                  // fills are reserved for active/primary elements.
                   display: 'inline-flex', alignItems: 'center', gap: 4,
-                  background: 'var(--color-inverse-surface)', color: 'var(--color-inverse-on-surface)',
+                  background: 'var(--color-note-amber)', color: '#8a6116',
+                  border: '1px solid var(--color-note-amber-border)',
                   fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
-                  padding: '3px 9px', borderRadius: 999,
+                  padding: '2.5px 9px', borderRadius: 999,
                   fontFamily: 'var(--font-label)', textDecoration: 'none',
                   position: 'relative', zIndex: 0,
                 }}>
@@ -3181,13 +3928,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             })()}
             {companyTags.map(tag => (
               <Link key={tag} href={practiceFilterHref('company', tag)} title={`Browse ${formatCompany(tag)} practice`} style={{
+                // Quiet neutral chip, no repeated glyph (icon budget §4) and no
+                // dark fill — company names are taxonomy, not state.
                 display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: 'var(--color-hero-forest)', color: '#9ee0b8',
-                fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
-                padding: '3px 9px', borderRadius: 999,
+                background: 'var(--color-surface-container-high)',
+                color: 'var(--color-on-surface-variant)',
+                border: '1px solid var(--color-outline-variant)',
+                fontSize: 10.5, fontWeight: 600, letterSpacing: '0.04em',
+                padding: '2.5px 9px', borderRadius: 999,
                 fontFamily: 'var(--font-label)', textDecoration: 'none',
               }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}>apartment</span>
                 {formatCompany(tag)}
               </Link>
             ))}
@@ -3225,7 +3975,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       {challengeBriefSections.length > 0 && (
         <div style={{ marginBottom: 20 }}>
           {(isCodingChallenge || isCanvasChallenge) ? (
-            <ProblemDocument sections={challengeBriefSections} />
+            <ProblemDocument sections={briefSectionsForDisplay} />
           ) : (
             challengeBriefSections.map((section) => (
               <BriefSectionCard key={section.id} section={section} />
@@ -3462,7 +4212,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                  <HatchGlyph size={22} state="listening" className="text-primary shrink-0" />
+                  <HatchImage size={22} state="listening" />
                   <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 11.5, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
                     Hatch sees these notes with your canvas: {contextPackFieldCount}/{contextPack.length} notes, {scene.entities.length} {apiChallengeType === 'data_modeling' ? 'tables' : 'nodes'}, {scene.connections.length} {apiChallengeType === 'data_modeling' ? 'links' : 'flows'}.
                   </p>
@@ -3549,11 +4299,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         <div data-testid="parts-list" style={{ padding: '0 16px 16px' }}>
           {/* Section header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <div style={{ flex: 1, height: 1, background: 'var(--color-outline-variant)' }} />
-            <span style={{ fontFamily: 'var(--font-label)', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--color-hairline)' }} />
+            <span style={{ fontFamily: 'var(--font-label)', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-ink-secondary)' }}>
               Parts
             </span>
-            <div style={{ flex: 1, height: 1, background: 'var(--color-outline-variant)' }} />
+            <div style={{ flex: 1, height: 1, background: 'var(--color-hairline)' }} />
           </div>
 
           {/* Part cards */}
@@ -3568,20 +4318,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
               // Status chip content
               let statusLabel = 'Not started'
-              let statusBg = 'var(--color-surface-container-high)'
-              let statusColor = 'var(--color-on-surface-variant)'
+              let statusBg = 'var(--color-page-field)'
+              let statusColor = 'var(--color-ink-secondary)'
               if (partSub?.submitted) {
                 statusLabel = 'Submitted'
-                statusBg = 'var(--color-primary)'
-                statusColor = 'var(--color-on-primary)'
+                statusBg = 'var(--color-forest-600)'
+                statusColor = '#ffffff'
               } else if (partRunResult) {
                 statusLabel = `${partRunResult.testsPassed}/${partRunResult.testsTotal}`
-                statusBg = partRunResult.testsPassed === partRunResult.testsTotal ? 'var(--color-primary-container)' : 'var(--color-tertiary-container)'
-                statusColor = 'var(--color-on-surface)'
+                statusBg = partRunResult.testsPassed === partRunResult.testsTotal ? 'var(--color-note-mint)' : 'var(--color-note-amber)'
+                statusColor = 'var(--color-ink-strong)'
               } else if (isActive) {
                 statusLabel = 'Open'
-                statusBg = 'var(--color-surface-container)'
-                statusColor = 'var(--color-on-surface-variant)'
+                statusBg = 'var(--color-page-field)'
+                statusColor = 'var(--color-ink-secondary)'
               }
 
               return (
@@ -3589,9 +4339,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   key={part.id}
                   data-testid={`part-card-${part.id}`}
                   style={{
-                    border: isActive ? '1.5px solid var(--color-primary)' : '1px solid var(--color-outline-variant)',
+                    /* Current part = amber sticky note (spec §7: amber = current). */
+                    border: isActive ? '1px solid var(--color-note-amber-border)' : '1px solid var(--color-hairline)',
                     borderRadius: 10,
-                    background: isActive ? 'var(--color-primary-fixed)' : 'var(--color-surface-container-low)',
+                    background: isActive ? 'var(--color-note-amber)' : 'var(--color-card-bright)',
                     overflow: 'hidden',
                     transition: 'border-color 120ms, background 120ms',
                   }}
@@ -3894,7 +4645,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 >
                   {isFinalizingParts ? (
                     <>
-                      <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+                      <HatchImage size={14} state="reviewing" />
                       Grading…
                     </>
                   ) : 'Submit all parts'}
@@ -3909,6 +4660,83 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </div>
         </div>
       )}
+    </div>
+  )
+
+  // ── Coding doc tabs: Examples / Constraints / Notes panes ─────────────────
+  // Examples and Constraints render the split markdown substrings through the
+  // same document renderer as the Description. They exist only when the
+  // description carries the section (tab absent otherwise, never empty).
+  const examplesPane = problemSections?.examples ? (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
+        <ReactMarkdown components={documentMarkdownComponents}>{problemSections.examples}</ReactMarkdown>
+      </div>
+    </div>
+  ) : null
+
+  const constraintsPane = problemSections?.constraints ? (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
+        <ReactMarkdown components={documentMarkdownComponents}>{problemSections.constraints}</ReactMarkdown>
+      </div>
+    </div>
+  ) : null
+
+  // Notes: the coding flavor of the context-pack fields (Plan / Edge cases /
+  // Complexity). Autosaved with the draft and sent to Hatch as working notes
+  // on every chat turn. The first edit advances the advisory path to Plan.
+  const notesPane = (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <HatchImage size={22} state="listening" />
+        <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
+          Hatch reads these notes with your code, so hints and reviews land on your actual plan.
+        </p>
+      </div>
+      {contextPack.map((field, fieldIdx) => (
+        <div key={field.id}>
+          <label
+            htmlFor={`coding-note-${field.id}`}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, color: 'var(--color-on-surface-variant)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 2 }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 13 }}>{field.icon}</span>
+            {field.label}
+          </label>
+          {field.helper && (
+            <p style={{ margin: '0 0 5px', fontFamily: 'var(--font-label)', fontSize: 10.5, lineHeight: 1.4, color: 'var(--color-on-surface-variant)' }}>
+              {field.helper}
+            </p>
+          )}
+          <textarea
+            id={`coding-note-${field.id}`}
+            value={field.value}
+            onChange={(event) => {
+              const text = event.target.value
+              setContextPack((prev) => prev.map((f, i) => (i === fieldIdx ? { ...f, value: text } : f)))
+              advanceStep('plan')
+            }}
+            placeholder={field.placeholder}
+            rows={field.id === 'plan' ? 4 : 3}
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              resize: 'vertical',
+              minHeight: field.id === 'plan' ? 92 : 72,
+              borderRadius: 12,
+              border: '1px solid var(--color-outline-variant)',
+              background: 'var(--color-card-bright)',
+              color: 'var(--color-on-surface)',
+              padding: '9px 10px',
+              fontFamily: 'var(--font-body)',
+              fontSize: 12.5,
+              lineHeight: 1.45,
+              outline: 'none',
+            }}
+            data-testid={`coding-note-${field.id}`}
+          />
+        </div>
+      ))}
     </div>
   )
 
@@ -4093,8 +4921,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      background: 'var(--color-surface)',
-      borderRight: '1px solid var(--color-outline-variant)',
+      background: 'var(--color-card-bright)',
+      borderRight: '1px solid var(--color-hairline)',
       overflow: 'hidden',
       minHeight: 0,
     }}>
@@ -4108,9 +4936,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           width: 24,
           height: 24,
           borderRadius: 999,
-          border: '1px solid var(--color-outline-variant)',
-          background: 'var(--color-surface-container-low)',
-          color: 'var(--color-on-surface-variant)',
+          border: '1px solid var(--color-hairline)',
+          background: 'var(--color-page-field)',
+          color: 'var(--color-ink-secondary)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
@@ -4139,17 +4967,21 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   ) : (
     // ── Full panel ──
     <section
-      className="rounded-xl border border-outline-variant"
+      className="rounded-xl border border-hairline"
       style={{
         width: `${leftWidth}%`,
+        minWidth: leftPaneMinWidth,
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        background: 'var(--color-surface-container-lowest)',
+        background: 'var(--color-card-bright)',
         overflow: 'hidden',
         minHeight: 0,
       }}>
       {leftTab === 'Description' && descriptionPane}
+      {leftTab === 'Examples' && examplesPane}
+      {leftTab === 'Constraints' && constraintsPane}
+      {leftTab === 'Notes' && notesPane}
       {leftTab === 'Discussions' && discussionsPane}
       {leftTab === 'Submissions' && submissionsPane}
       {leftTab === 'Solutions' && solutionsPane}
@@ -4169,8 +5001,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         fontSize: 10.5,
         fontWeight: 800,
         lineHeight: 1,
-        background: active ? 'var(--color-primary)' : 'var(--color-surface-container-high)',
-        color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+        background: active ? 'var(--color-forest-800)' : 'var(--color-page-field)',
+        color: active ? '#ffffff' : 'var(--color-ink-secondary)',
       }}>
         {count}
       </span>
@@ -4182,7 +5014,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const codingActions = isCodingChallenge ? (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
       {currentLanguage === 'sql' && codeRunner.status === 'hydrating' && (
-        <span className="text-xs text-on-surface-variant font-label flex items-center gap-1">
+        <span className="text-xs text-ink-secondary font-label flex items-center gap-1">
           <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
           Setting up database…
         </span>
@@ -4205,7 +5037,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           <>
             <span className="material-symbols-outlined text-[14px]">play_arrow</span>
             Run
-            <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-outline-variant bg-surface-container text-on-surface-variant">⌘'</kbd>
+            <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-hairline bg-page-field text-ink-muted">⌘'</kbd>
           </>
         )}
       </button>
@@ -4219,7 +5051,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           >
             {isSubmittingCoding ? (
               <>
-                <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+                <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
                 Submitting…
               </>
             ) : (
@@ -4239,14 +5071,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         >
           {isSubmittingCoding ? (
             <>
-              <HatchGlyph size={14} state="reviewing" className="text-on-primary" />
+              <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
               Submitting…
             </>
           ) : (
             <>
               <span className="material-symbols-outlined text-[14px]">upload</span>
               Submit
-              <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-on-primary/40 bg-transparent text-on-primary">⌘⏎</kbd>
+              <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-white/30 bg-transparent text-white/70">⌘⏎</kbd>
             </>
           )}
         </button>
@@ -4259,8 +5091,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      borderBottom: '1px solid var(--color-outline-faint)',
-      background: 'var(--color-surface)',
+      borderBottom: '1px solid var(--color-hairline)',
+      background: 'var(--color-card-bright)',
       flexShrink: 0,
     }}>
       {/* Left side: back + tabs - constrained to leftWidth (or 32px rail when collapsed) */}
@@ -4271,7 +5103,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         gap: 6,
         padding: leftCollapsed ? '6px 4px' : '6px 8px',
         flexShrink: 0,
-        minWidth: 0,
+        minWidth: leftPaneMinWidth ?? 0,
         overflow: 'hidden',
       }}>
         <button
@@ -4291,7 +5123,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {challengeTitle}
           </span>
         )}
-        {!leftCollapsed && (
+        {/* Coding: one adaptive strip over ALL seven doc tabs — as many render
+            inline as the panel width allows, the rest fold behind a three-dots
+            menu that only appears when something is actually hidden. The menu
+            is fixed-positioned so this bar's overflow:hidden can't clip it. */}
+        {!leftCollapsed && isCodingChallenge && (
+          <AdaptiveTabStrip
+            tabs={[...codingPrimaryTabs, ...codingMoreTabs]}
+            active={leftTab}
+            onSelect={(t) => setLeftTab(t as typeof leftTab)}
+            badges={{
+              Discussions: discussionsLoaded ? workspaceTabBadge(discussions.length, leftTab === 'Discussions') : undefined,
+              Submissions: submissionBadgeCount > 0 ? workspaceTabBadge(submissionBadgeCount, leftTab === 'Submissions') : undefined,
+            }}
+          />
+        )}
+        {!leftCollapsed && !isCodingChallenge && (
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -4312,20 +5159,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   style={{
                     flexShrink: 0,
                     whiteSpace: 'nowrap',
-                    padding: '6.5px 10px',
+                    padding: '8px 10px',
                     fontSize: 12.5,
                     fontWeight: active ? 800 : 650,
-                    color: active ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
-                    background: active ? 'var(--color-primary-fixed)' : 'transparent',
-                    border: `1px solid ${active ? 'rgba(74,124,89,0.24)' : 'transparent'}`,
-                    borderRadius: 999,
+                    color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
+                    background: 'transparent',
+                    border: 'none',
+                    /* Round-4 underline tabs (spec §"Signature components" 7):
+                       active = forest underline + semibold, no pill fill. */
+                    boxShadow: active ? 'inset 0 -2px 0 var(--color-forest-600)' : 'none',
+                    borderRadius: 0,
                     cursor: 'pointer',
                     fontFamily: 'inherit',
-                    transition: 'background 140ms ease, border-color 140ms ease, color 140ms ease',
+                    transition: 'box-shadow 140ms ease, color 140ms ease',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 6,
-                    minHeight: 32,
+                    minHeight: 36,
                   }}
                 >
                   <span>{t}</span>
@@ -4346,9 +5196,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               marginLeft: 2,
               padding: '4px 6px',
               borderRadius: 6,
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-hairline)',
               background: 'transparent',
-              color: 'var(--color-on-surface-variant)',
+              color: 'var(--color-ink-secondary)',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
@@ -4368,45 +5218,67 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', gap: 16 }}>
         {isCanvasChallenge ? (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
-              <CanvasThinkingDock
-                challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
-                scene={scene}
-                contextPackFilledCount={contextPackFieldCount}
-                contextPackTotal={contextPack.length}
-                contextPackText={contextPackText}
-                expanded={canvasLoopExpanded}
-                onAskHatch={queueHatchPrompt}
-                onOpenContextPack={openContextPack}
-                onToggleExpanded={() => setCanvasLoopExpanded((v) => !v)}
+            {/* Round-4 structured workspace chrome: title + discipline chip on
+                the left, the FLOW steps inlined as compact pips (the standalone
+                "FLOW Method" band was consolidated into this bar). */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+              {challengeTitle && (
+                <span
+                  className="font-headline"
+                  style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--color-ink-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}
+                  title={challengeTitle}
+                >
+                  {challengeTitle}
+                </span>
+              )}
+              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-secondary-container px-2.5 py-1 font-label text-xs font-bold text-on-secondary-container">
+                {apiChallengeType === 'data_modeling' ? 'Data modeling' : 'System design'}
+              </span>
+            </div>
+            <div style={{ flexShrink: 0, overflow: 'hidden' }} className="hidden min-[1100px]:flex items-center">
+              <CompactStepPips
+                steps={designSteps.map(s => ({ id: s.id, label: s.label }))}
+                activeId={activeDesignStep}
+                doneIds={completedDesignSteps}
+                onSelect={(id) => { if (isDesignStepId(id)) selectDesignStep(id) }}
+                ariaLabel="FLOW method steps"
               />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <button
-                onClick={() => {
-                  window.dispatchEvent(new Event('start-canvas-tour'))
-                  setHintForceOpen(true)
-                  window.setTimeout(() => setHintForceOpen(false), 400)
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  openCanvasOverlay({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
                 }}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface text-xs font-semibold"
-                title="How this canvas works"
-                aria-label="How this canvas works"
-              >?</button>
-              <button
-                onClick={() => setCanvasMaximised((v) => !v)}
-                className="inline-flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
-                title={canvasMaximised ? 'Exit full screen' : 'Full screen canvas'}
-                aria-label={canvasMaximised ? 'Exit full screen' : 'Full screen canvas'}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-2.5 py-1.5 font-label text-xs font-bold text-ink-secondary hover:text-ink-strong transition-colors"
+                title="Open the canvas"
+                aria-label="Open the canvas"
               >
-                <span className="material-symbols-outlined text-[20px]">
-                  {canvasMaximised ? 'fullscreen_exit' : 'fullscreen'}
-                </span>
+                <span className="material-symbols-outlined text-[16px]">fullscreen</span>
+                Open canvas
               </button>
             </div>
           </>
         ) : isCodingChallenge ? (
           <>
-            <div style={{ flex: 1 }} />
+            {/* Advisory solving path, inlined since the standalone "Solving
+                path" band was consolidated into this bar. Hidden on narrow
+                desktops; Run/Submit (flexShrink 0) always wins the space. */}
+            <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }} className="hidden min-[1100px]:flex items-center justify-center">
+              {phase === 'question' && (
+                <CodingStepper
+                  compact
+                  activeStep={codingStep}
+                  onSelectStep={(id) => {
+                    setCodingStep(id)
+                    if (id === 'understand') setLeftTab('Description')
+                    else if (id === 'plan') setLeftTab('Notes')
+                    else if (id === 'test') setConsoleCollapsed(false)
+                  }}
+                />
+              )}
+            </div>
+            <div className="flex-1 min-[1100px]:hidden" />
             {codingActions}
             <button
               onClick={() => setCodingMaximised((v) => !v)}
@@ -4421,16 +5293,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </>
         ) : (
           <>
-            {/* Stepper centered in the right panel */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-              <FlowStepper
-                currentStep={currentStep}
-                completedSteps={completedSteps}
-                /* Commit-forward: completed steps are locked. Retake the challenge to redo a step. */
-                onStepClick={undefined}
-                questionIdx={questionIdx}
-                questionCount={activeStepData?.questions.length}
-              />
+            {/* Round-4 chrome: challenge title + difficulty chip live in the top
+                bar; the stepper moved to its own full-width card below. */}
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+              {challengeTitle && (
+                <span
+                  className="font-headline"
+                  style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--color-ink-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}
+                  title={challengeTitle}
+                >
+                  {challengeTitle}
+                </span>
+              )}
+              {(() => {
+                const diff = (isApiMode ? detail?.challenge : adapterChallenge)?.difficulty
+                const canonical = diff ? coerceDifficulty(diff) : null
+                const label = canonical ? DIFFICULTY_LABEL[canonical] : diff
+                return label ? (
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-soft px-2.5 py-1 font-label text-xs font-bold" style={{ color: '#a16207' }}>
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#eab308' }} />
+                    {label}
+                  </span>
+                ) : null
+              })()}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
               <button
@@ -4455,18 +5340,119 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
+  // Round-4 FLOW method strip: full-width card under the top bar holding the
+  // Frame / List / Optimize / Win stepper (previews/round4/flow-workspace.html
+  // .stepper-card). Desktop FLOW MCQ challenges only; canvas/coding keep their
+  // own chrome and mobile keeps the scrollable stepper bar.
+  const flowStepperStrip = !isInterviewChallenge ? (
+    <div style={{ flexShrink: 0, padding: '10px 16px 2px', background: 'var(--color-page-field)' }}>
+      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: '12px 20px' }}>
+        <div className="font-label" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-ink-secondary)', marginBottom: 8 }}>
+          FLOW Method
+        </div>
+        <FlowStepper
+          currentStep={currentStep}
+          completedSteps={completedSteps}
+          /* Commit-forward: completed steps are locked. Retake the challenge to redo a step. */
+          onStepClick={undefined}
+          questionIdx={questionIdx}
+          questionCount={activeStepData?.questions.length}
+        />
+      </div>
+    </div>
+  ) : null
+
+  // Round-4 Hatch rail (FLOW MCQ question phase, wide desktop only): coach
+  // header with the listening pose, a mint "Hatch's read" note fed by the real
+  // proactive nudge (falling back to the current move's tagline), and the
+  // session progress ring. Pure chrome: it only displays state that already
+  // exists (proactiveNudge, completedSteps, questionIdx).
+  const flowRightRail = (
+    <aside
+      className="hidden min-[1280px]:flex"
+      style={{ width: 288, flexShrink: 0, flexDirection: 'column', gap: 10, marginLeft: 8, minHeight: 0, overflowY: 'auto' }}
+    >
+      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: 14, display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+        <HatchImage state="listening" size={46} className="rounded-lg" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="font-label" style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-ink-strong)' }}>Hatch</div>
+          <div className="font-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-ink-muted)' }}>AI Coach</div>
+        </div>
+      </div>
+
+      <div className="note-mint" style={{ borderRadius: 16, padding: 14, flexShrink: 0 }}>
+        <div className="font-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 13, fontWeight: 800, color: 'var(--color-ink-strong)', marginBottom: 6 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 7, height: 7, borderRadius: 999, background: 'var(--color-forest-600)' }} />
+            {/* Only brand the note as live Hatch output when a real nudge is
+                showing; the static fallback is a method reminder, not a read. */}
+            {proactiveNudge ? <>Hatch&apos;s read</> : <>The move</>}
+          </span>
+          {proactiveNudge && (
+            <button
+              onClick={() => setProactiveNudge(null)}
+              aria-label="Dismiss nudge"
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-ink-secondary)', padding: 0, display: 'inline-flex' }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 15 }}>close</span>
+            </button>
+          )}
+        </div>
+        <p className="font-body" style={{ fontSize: 12.8, lineHeight: 1.55, color: 'var(--color-ink-secondary)', margin: 0 }}>
+          {proactiveNudge?.text ?? `${STEP_LABEL[currentStep]} is the move here. ${FLOW_MOVES[currentStep].tagline}.`}
+        </p>
+      </div>
+
+      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: 14, flexShrink: 0 }}>
+        <div className="font-label" style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-ink-strong)' }}>Session progress</div>
+        <p className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)', margin: '2px 0 12px' }}>
+          {completedSteps.length === 0
+            ? 'No steps graded yet.'
+            : `${completedSteps.length} of ${FLOW_STEPS.length} steps graded.`}
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <ProgressRing
+            percent={Math.round((completedSteps.length / FLOW_STEPS.length) * 100)}
+            size={76}
+            strokeWidth={7}
+            trackColor="#eee9df"
+            color="var(--color-forest-600)"
+          >
+            <span className="font-label" style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-ink-strong)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+              {completedSteps.length}/{FLOW_STEPS.length}
+            </span>
+            <span className="font-label" style={{ fontSize: 8.5, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-ink-muted)', marginTop: 2 }}>Steps</span>
+          </ProgressRing>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>Current step</span>
+              <span className="font-label" style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink-strong)' }}>{STEP_LABEL[currentStep]}</span>
+            </div>
+            {stepQuestions.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>Question</span>
+                <span className="font-label" style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink-strong)', fontVariantNumeric: 'tabular-nums' }}>{Math.min(questionIdx + 1, stepQuestions.length)} of {stepQuestions.length}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </aside>
+  )
+
   // Shared bottom footer - spans full width so the borderTop is continuous
   const bottomFooter = currentQuestion ? (
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      borderTop: '1px solid var(--color-outline-faint)',
-      background: 'var(--color-surface)',
+      borderTop: '1px solid var(--color-hairline)',
+      background: 'var(--color-card-bright)',
       flexShrink: 0,
     }}>
       {/* Left side: like/bookmark/share + online count */}
       <div style={{
         width: leftCollapsed ? 32 : `${leftWidth}%`,
+        minWidth: leftPaneMinWidth,
         flexShrink: 0,
         padding: '10px 16px',
         display: 'flex',
@@ -4536,13 +5522,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         )}
         <button
           className="btn btn--primary"
-          style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--color-primary)', color: 'var(--color-on-primary)', borderRadius: 99, fontWeight: 600, border: 'none' }}
+          style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-forest-950)', color: '#fff', borderRadius: 10, fontWeight: 700, border: 'none', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}
           disabled={!currentQuestionAnswered || activeSubmitting || ackVisible}
           onClick={isLastQuestionInStep ? handleStepSubmit : handleNextQuestion}
         >
           {activeSubmitting ? 'Grading…' : primaryButtonLabel}
           {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
-          {activeSubmitting && <HatchGlyph size={16} state="reviewing" className="text-on-primary" />}
+          {activeSubmitting && <HatchImage size={18} state="reviewing" />}
         </button>
       </div>
     </div>
@@ -4569,7 +5555,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Top bar: back button + horizontally scrollable tabs (no clipping).
   const mobileChrome = isMobile ? (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)', flexShrink: 0, padding: '6px 8px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--color-hairline)', background: 'var(--color-card-bright)', flexShrink: 0, padding: '6px 8px' }}>
       <button
         onClick={props.onExit ?? (() => window.history.back())}
         className="btn btn--ghost"
@@ -4588,10 +5574,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               style={{
                 flexShrink: 0, whiteSpace: 'nowrap', padding: '6.5px 11px', fontSize: 12.5,
                 fontWeight: active ? 800 : 650,
-                color: active ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
-                background: active ? 'var(--color-primary-fixed)' : 'transparent',
-                border: `1px solid ${active ? 'rgba(74,124,89,0.24)' : 'transparent'}`,
-                borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
+                color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
+                background: 'transparent',
+                border: 'none',
+                boxShadow: active ? 'inset 0 -2px 0 var(--color-forest-600)' : 'none',
+                borderRadius: 0, cursor: 'pointer', fontFamily: 'inherit',
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 minHeight: 32,
               }}
@@ -4664,13 +5651,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       )}
       <button
         className="btn btn--primary"
-        style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--color-primary)', color: 'var(--color-on-primary)', borderRadius: 99, fontWeight: 600, border: 'none' }}
+        style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-forest-950)', color: '#fff', borderRadius: 10, fontWeight: 700, border: 'none', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}
         disabled={!currentQuestionAnswered || activeSubmitting || ackVisible}
         onClick={isLastQuestionInStep ? handleStepSubmit : handleNextQuestion}
       >
         {activeSubmitting ? 'Grading…' : primaryButtonLabel}
         {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
-        {activeSubmitting && <HatchGlyph size={16} state="reviewing" className="text-on-primary" />}
+        {activeSubmitting && <HatchImage size={18} state="reviewing" />}
       </button>
     </div>
   ) : null
@@ -4687,7 +5674,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // fixed mobile BottomTabs nav so nothing is occluded.
   const mobileInterviewNotice = (
     <div className="flex flex-col items-center text-center gap-3 px-6 pt-8 pb-6 max-w-md mx-auto" style={{ flexShrink: 0 }}>
-      <HatchGlyph size={56} state="idle" className="text-primary" />
+      <HatchImage size={56} state="idle" />
       <h2 className="font-headline text-xl text-on-surface">Best experienced on desktop</h2>
       <p className="font-body text-sm text-on-surface-variant">
         {isCodingChallenge
@@ -4733,6 +5720,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         {/* Same full-width top chrome as question phase (desktop only - on mobile
             the feedback fills the width and carries its own navigation). */}
         {!isMobile && topChrome}
+        {!isMobile && flowStepperStrip}
 
         {/* Middle: resizable two-pane content on desktop, single column on mobile */}
         <div ref={containerRef} className={isMobile ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden'}>
@@ -4740,10 +5728,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           {!isMobile && dragHandle}
 
           {/* Right panel */}
-          <div className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ background: 'var(--color-background)' }}>
+          <div className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ background: 'var(--color-page-field)' }}>
             {/* History back-nav banner */}
             {historyRecord && (
-              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)' }}>
+              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-hairline)', background: 'var(--color-card-bright)' }}>
                 <button
                   className="btn btn--ghost"
                   style={{ fontSize: 12, padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
@@ -4759,9 +5747,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
             {/* Session complete banner */}
             {phase === 'complete' && !historyRecord && (
-              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-primary-fixed)' }}>
-                <span className="material-symbols-outlined msi-sm" style={{ color: 'var(--color-primary)' }}>check_circle</span>
-                <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 600, color: 'var(--color-on-surface)' }}>
+              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-note-mint-border)', background: 'var(--color-note-mint)' }}>
+                <span className="material-symbols-outlined msi-sm" style={{ color: 'var(--color-forest-600)' }}>check_circle</span>
+                <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 600, color: 'var(--color-ink-strong)' }}>
                   {isCodingChallenge
                     ? isLoadingGrading
                       ? 'Tests complete - Hatch is reviewing your solution'
@@ -4794,7 +5782,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {isCanvasChallenge && historyRecord && (
               historyGradeLoading ? (
                 <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4">
-                  <HatchGlyph size={40} state="reviewing" className="text-primary" />
+                  <HatchImage size={40} state="reviewing" />
                   <p className="font-body text-sm text-on-surface-variant">Loading your feedback…</p>
                 </div>
               ) : historyInterviewGrade ? (
@@ -4822,8 +5810,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               <div className="flex-1 min-h-0 overflow-y-auto p-4 animate-step-enter">
                 {historyRecord && historyGradeLoading ? (
                   <div className="flex h-full flex-col items-center justify-center gap-4">
-                    <HatchGlyph size={40} state="reviewing" className="text-primary" />
-                    <p className="font-body text-sm text-on-surface-variant">Loading your SQL/code results…</p>
+                    <HatchImage size={80} state="reviewing" />
+                    <p className="font-body text-sm text-ink-secondary">Loading your SQL/code results…</p>
                   </div>
                 ) : (
                   <CodingFeedback
@@ -4866,26 +5854,36 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     CanvasChatPanel is unmounted here, so mount a dedicated instance
                     so "Ask Hatch" has a panel to open. Available for the live
                     complete view and the just-graded current attempt. */}
-                {codingControlsLive && (
-                  <CanvasChatPanel
-                    attemptId={attemptId ?? ''}
-                    challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
-                    challengeType="coding"
-                    scene={scene}
-                    queuedPrompt={queuedHatchPrompt}
-                    isOpen={chatPanelOpen}
-                    onToggle={() => setChatPanelOpen((v) => !v)}
-                    onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
-                    currentCode={currentCode}
-                    currentLanguage={currentLanguage}
-                    lastRunResult={lastRunResult}
-                    challengeTitle={challengeTitle ?? undefined}
-                    problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
-                    solutionsOpen={solutionsOpen}
-                    activeSolutionApproach={activeSolutionApproach}
-                    guidanceLevel={coachRegister}
-                  />
-                )}
+                {codingControlsLive && (() => {
+                  const activePart = codingParts.find(p => p.id === activePartId)
+                  return (
+                    <CanvasChatPanel
+                      attemptId={attemptId ?? ''}
+                      challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
+                      challengeType="coding"
+                      scene={scene}
+                      queuedPrompt={queuedHatchPrompt}
+                      isOpen={chatPanelOpen}
+                      onToggle={() => setChatPanelOpen((v) => !v)}
+                      onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
+                      currentCode={currentCode}
+                      currentLanguage={currentLanguage}
+                      lastRunResult={lastRunResult}
+                      challengeTitle={challengeTitle ?? undefined}
+                      problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
+                      activePartId={activePart?.id}
+                      activePartSequence={activePart?.sequence}
+                      activePartTitle={activePart?.title}
+                      activePartPrompt={activePart?.coding_subtask_prompt ?? null}
+                      activePartResponseType={activePart?.response_type}
+                      activePartWeightPct={activePart ? Math.round(activePart.grading_weight_within_step * 100) : undefined}
+                      solutionsOpen={solutionsOpen}
+                      activeSolutionApproach={activeSolutionApproach}
+                      guidanceLevel={coachRegister}
+                      dockSurface="coding"
+                    />
+                  )
+                })()}
               </div>
             )}
 
@@ -4913,6 +5911,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     ? () => { window.location.href = nextChallengeHref }
                     : undefined
                   }
+                  onVoiceStep={!historyRecord
+                    ? () => { window.location.href = '/live-interviews' }
+                    : undefined
+                  }
                 />
               </div>
             ) : (
@@ -4924,7 +5926,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 <StepReveal
                   step={currentStep}
                   stepScore={stepTotalScore ?? stepScore}
-                  maxScore={3.0}
+                  maxScore={FLOW_MAX_SCORE}
                   gradeLabel={stepGrade}
                   roleContext={roleContext}
                   careerSignal={careerSignal}
@@ -4960,126 +5962,292 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       ) : (
         <>
           {topChrome}
+          {flowStepperStrip}
         </>
       )}
 
       {/* Middle: resizable two-pane on desktop, single column on mobile */}
-      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden p-2 bg-surface-container-low'}>
+      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden p-2 bg-page-field'}>
         {!mobileStacked && leftDescriptionPanel}
         {!mobileStacked && dragHandle}
 
         {/* Right pane: scrollable workspace content only */}
         <section
-          className={!isCanvasChallenge && !isCodingChallenge ? 'rounded-xl border border-outline-variant' : undefined}
+          className={!isCanvasChallenge && !isCodingChallenge ? 'rounded-xl border border-hairline' : undefined}
           style={{
             flex: 1, display: 'flex', flexDirection: 'column',
-            background: !isCanvasChallenge && !isCodingChallenge ? 'var(--color-surface-container-lowest)' : 'transparent',
+            background: !isCanvasChallenge && !isCodingChallenge ? 'var(--color-card-bright)' : 'transparent',
             overflow: 'hidden', minHeight: 0,
           }}>
           {/* Grading interstitial - fills the right panel while the model grades. */}
           {isCanvasChallenge && isSubmittingInterview && (
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 animate-step-enter">
-              <HatchGlyph size={48} state="reviewing" className="text-primary" />
-              <div className="font-headline text-xl text-on-surface">Hatch is reviewing your design…</div>
-              <div className="font-body text-sm text-on-surface-variant max-w-md text-center">
-                Reading the schema, checking relationships, and writing your feedback.
+              <HatchImage size={96} state="reviewing" />
+              <div className="font-headline text-xl text-ink-strong">Hatch is reviewing your design…</div>
+              <div className="font-body text-sm text-ink-secondary max-w-md text-center">
+                {apiChallengeType === 'data_modeling'
+                  ? 'Reading the schema, checking relationships, and writing your feedback.'
+                  : 'Tracing the request path, weighing your tradeoffs, and writing your feedback.'}
               </div>
             </div>
           )}
 
-          {/* Canvas workspace for interview challenge types */}
+          {/* Structured canvas workspace for interview challenge types (refs/14
+              anatomy + the approved round4 canvas-workspace overlay). Inline:
+              FLOW stepper (above) + Problem Brief (left panel) + DesignStepForm
+              (center) + DesignRail (right) + docked Hatch chat. The Excalidraw
+              canvas lives in a full-screen overlay that stays MOUNTED when
+              closed (display:none) so scene, undo history, and the chat thread
+              survive every round trip between drawing and writing. */}
           {isCanvasChallenge && !isSubmittingInterview && (
-            <div style={canvasMaximised
-              ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', background: 'var(--color-background)' }
+            <div
+              className={canvasMaximised ? 'canvas-overlay-scrim' : undefined}
+              style={canvasMaximised
+              ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2vh 2vw', background: 'rgba(5, 35, 22, 0.35)' }
               : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
               }>
-              {/* Canvas column - top chrome owns the guide so canvas stays clear. */}
-              <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                <div
-                  data-tour-target="canvas-surface"
-                  className={canvasMaximised ? undefined : 'rounded-xl border border-outline-variant overflow-hidden ml-2'}
-                  style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative', background: 'var(--color-surface-container-lowest)' }}
-                >
-                  <ExcalidrawCanvas
-                    sessionId={attemptId ?? 'draft'}
-                    onSnapshot={setCanvasScene}
-                    onElementsAdded={(count) => requestNudge(count)}
-                    apiRef={excalidrawApiRef}
-                    exportRef={canvasExportRef}
-                  />
-                  <CanvasTourMount active={isCanvasChallenge && !isSubmittingInterview} />
-                  {/* Branded empty-state: replaces the blank-Excalidraw paralysis
-                      with a centered Hatch + three first moves. Shown only while
-                      the canvas has no entity; un-mounts the moment one lands. */}
-                  {!emptyStateDismissed && scene.entities.length === 0 && (
-                    <CanvasEmptyState
-                      challengeType={apiChallengeType as CanvasChallengeType}
-                      guidance={guidance}
-                      onUseTemplate={handleUseTemplate}
-                      onAskHatch={(text, autoSend) => {
-                        setEmptyStateDismissed(true)
-                        queueHatchPrompt(text, autoSend)
-                      }}
-                      onOpenNotes={openContextPack}
-                    />
-                  )}
-                  {/* The compact coach card carries the later phases once the user
-                      has drawn; hidden while the full empty-state is up. */}
-                  {scene.entities.length > 0 && (
-                    <CanvasCoachCard
-                      challengeType={apiChallengeType as CanvasChallengeType}
-                      guidance={guidance}
-                      forceOpen={hintForceOpen}
-                      onOpenNotes={openContextPack}
-                      onAskHatch={queueHatchPrompt}
-                    />
-                  )}
-                  {/* Exit fullscreen - only visible when maximised, since the
-                      topChrome (which holds the toggle in the unmaximised view)
-                      is hidden behind the fixed overlay. */}
-                  {canvasMaximised && (
-                    <button
-                      onClick={() => setCanvasMaximised(false)}
-                      className="absolute top-3 right-3 z-30 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest shadow-sm font-label text-xs font-semibold transition-colors"
-                      title="Exit full screen"
-                      aria-label="Exit full screen"
+              {/* Overlay panel: in full screen everything floats on a rounded
+                  surface above a forest scrim with its own top bar. Inline, this
+                  wrapper is a flex passthrough — the same children switch
+                  columns via display so nothing remounts across the toggle.
+                  Entry scales from the DiagramSlot's viewport position
+                  (canvasOverlayOrigin); exit is instant, the snapshot settling
+                  into the slot carries the return. */}
+              <div
+                className={canvasMaximised ? 'canvas-overlay-panel' : undefined}
+                style={canvasMaximised
+                ? { width: '100%', height: '100%', maxWidth: 1440, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, boxShadow: '0 32px 80px -24px rgba(5,35,22,0.45), 0 8px 24px -8px rgba(5,35,22,0.25)', overflow: 'hidden', transformOrigin: canvasOverlayOrigin }
+                : { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }
+                }>
+                {canvasMaximised && (
+                  <div className="flex items-center justify-between gap-4 px-5 py-3 border-b border-hairline shrink-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {challengeTitle && (
+                        <span className="font-label text-[15px] font-bold text-ink-strong truncate max-w-[420px]" title={challengeTitle}>
+                          {challengeTitle}
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-note-mint px-2.5 py-1 font-label text-xs font-bold text-forest-800 shrink-0">
+                        <span className="h-1.5 w-1.5 rounded-full bg-forest-600" />
+                        {activeDesignStepDef?.label ?? 'Optimize'} · {apiChallengeType === 'data_modeling' ? 'Data modeling' : 'System design'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 shrink-0">
+                      <button
+                        onClick={() => window.dispatchEvent(new Event('start-canvas-tour'))}
+                        className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-card-bright border border-hairline text-ink-secondary hover:text-ink-strong text-xs font-semibold"
+                        title="How this canvas works"
+                        aria-label="How this canvas works"
+                      >?</button>
+                      {attemptId && (
+                        <span className="flex items-center gap-1.5 font-label text-xs font-semibold text-ink-muted" data-testid="canvas-autosave-state">
+                          {canvasSaveState === 'saving' ? (
+                            <span className="material-symbols-outlined animate-spin text-forest-600" style={{ fontSize: 13 }}>progress_activity</span>
+                          ) : (
+                            <span className="flex h-[15px] w-[15px] items-center justify-center rounded-full bg-note-mint text-forest-600">
+                              <span className="material-symbols-outlined" style={{ fontSize: 11 }}>check</span>
+                            </span>
+                          )}
+                          {canvasSaveState === 'saving' ? 'Saving…' : canvasSaveState === 'saved' ? 'Saved' : 'Autosave on'}
+                        </span>
+                      )}
+                      <button
+                        onClick={closeCanvasOverlay}
+                        className="inline-flex items-center gap-2 rounded-lg bg-forest-950 px-4 py-2 font-label text-[13px] font-bold text-white hover:bg-forest-800 transition-colors"
+                        title="Done, back to write-up"
+                        aria-label="Done, back to write-up"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">arrow_back</span>
+                        Done, back to write-up
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div style={{ flex: 1, display: 'flex', minWidth: 0, minHeight: 0 }}>
+                  {/* Write-up column (inline only, kept mounted so scroll and
+                      focus state survive the overlay round trip) */}
+                  <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflowY: 'auto', display: canvasMaximised ? 'none' : 'flex', flexDirection: 'column', padding: '2px 8px 16px' }}>
+                    {/* Full-width card: with the old 300px rail folded into the
+                        Hatch dock this column owns the center, so the write-up
+                        stretches instead of floating at 780px in empty space. */}
+                    <div className="rounded-2xl border border-hairline bg-card-bright" style={{ width: '100%', minHeight: 'calc(100% - 2px)', padding: '20px 28px' }}>
+                      {activeDesignStepDef && (
+                        <DesignStepForm
+                          step={activeDesignStepDef}
+                          values={stepAnswers[activeDesignStep] ?? {}}
+                          onChange={handleDesignAnswerChange}
+                          onSectionFocus={setActiveDesignSection}
+                          diagramThumbUrl={diagramThumbUrl}
+                          diagramEntityCount={scene.entities.length}
+                          diagramConnectionCount={scene.connections.length}
+                          diagramLabels={guidance.labels}
+                          onOpenCanvas={openCanvasOverlay}
+                        />
+                      )}
+                      {/* Free step navigation footer (design steps are not
+                          commit-forward like MCQ FLOW) */}
+                      {designSteps.length > 0 && (() => {
+                        const idx = designSteps.findIndex((s) => s.id === activeDesignStep)
+                        const prev = idx > 0 ? designSteps[idx - 1] : null
+                        const next = idx >= 0 && idx < designSteps.length - 1 ? designSteps[idx + 1] : null
+                        return (
+                          <div className="mt-5 flex items-center justify-between border-t border-hairline pt-4">
+                            {prev ? (
+                              <button
+                                type="button"
+                                onClick={() => selectDesignStep(prev.id)}
+                                className={WORKSPACE_BTN_TONAL}
+                              >
+                                <span className="material-symbols-outlined text-[15px]">arrow_back</span>
+                                {prev.label}
+                              </button>
+                            ) : <span />}
+                            {next && (
+                              <button
+                                type="button"
+                                onClick={() => selectDesignStep(next.id)}
+                                className={WORKSPACE_BTN_PRIMARY}
+                              >
+                                Next: {next.label}
+                                <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+                              </button>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  </div>
+                  {/* Canvas column — mounted always so Excalidraw keeps its scene
+                      and undo stack; visible only while the overlay is up. */}
+                  <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: canvasMaximised ? 'flex' : 'none', flexDirection: 'column' }}>
+                    <div
+                      data-tour-target="canvas-surface"
+                      style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative', background: 'var(--color-card-bright)' }}
                     >
-                      <span className="material-symbols-outlined text-[16px]">fullscreen_exit</span>
-                      Exit full screen
-                    </button>
-                  )}
+                      <ExcalidrawCanvas
+                        sessionId={attemptId ?? 'draft'}
+                        onSnapshot={setCanvasScene}
+                        onElementsAdded={(count) => requestNudge(count)}
+                        initialData={canvasInitialData}
+                        apiRef={excalidrawApiRef}
+                        exportRef={canvasExportRef}
+                      />
+                      <CanvasTourMount active={isCanvasChallenge && !isSubmittingInterview && canvasMaximised} />
+                      {/* Branded empty-state: replaces the blank-Excalidraw paralysis
+                          with a centered Hatch + three first moves. Shown only while
+                          the canvas has no entity; un-mounts the moment one lands. */}
+                      {!emptyStateDismissed && scene.entities.length === 0 && (
+                        <CanvasEmptyState
+                          challengeType={apiChallengeType as CanvasChallengeType}
+                          guidance={guidance}
+                          onUseTemplate={handleUseTemplate}
+                          onAskHatch={(text, autoSend) => {
+                            setEmptyStateDismissed(true)
+                            queueHatchPrompt(text, autoSend)
+                          }}
+                          onOpenNotes={closeCanvasOverlay}
+                        />
+                      )}
+                      {/* Template chips (approved overlay preview): one tap drops a
+                          starting shape through the same executeActions path Hatch
+                          uses. Blank templates are filtered — nothing to draw. */}
+                      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5">
+                        {canvasTemplatesFor(canvasType)
+                          .filter((t) => t.actions.length > 0)
+                          .map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => applyCanvasTemplate(t)}
+                              className="rounded-full border border-hairline bg-card-bright px-3 py-1.5 font-label text-[11.5px] font-bold text-ink-secondary shadow-sm hover:text-ink-strong transition-colors"
+                            >
+                              {t.label}
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Hatch chat — stable tree position so the thread survives the
+                      overlay toggle. Docked, it is the rail's chat slot inline and
+                      the right column of the overlay when the canvas is up. The
+                      old 300px DesignRail folded into it as the Guidance tab. */}
+                  <CanvasChatPanel
+                    attemptId={attemptId ?? ''}
+                    challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
+                    challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
+                    scene={scene}
+                    contextPack={contextPackText || undefined}
+                    queuedPrompt={queuedHatchPrompt}
+                    isOpen={chatPanelOpen}
+                    onToggle={() => setChatPanelOpen((v) => !v)}
+                    autoOpenKey="canvas"
+                    onCanvasActions={handleCanvasActions}
+                    proactiveNudge={proactiveNudge}
+                    guidanceLevel={coachRegister}
+                    onDismissNudge={() => setProactiveNudge(null)}
+                    canvasDrawFailure={canvasDrawFailure}
+                    guidancePhase={guidance.phase}
+                    guidanceLabels={guidance.labels}
+                    stepAnswers={stepAnswers}
+                    activeStep={activeDesignStep}
+                    activeSection={effectiveActiveSectionId}
+                    solutionsOpen={solutionsOpen}
+                    activeSolutionApproach={activeSolutionApproach}
+                    sideTabs={[
+                      {
+                        id: 'guidance',
+                        label: 'Guidance',
+                        icon: ListChecks,
+                        content: (
+                          <div className="flex flex-col gap-3 overflow-y-auto p-3" data-testid="design-guidance-tab">
+                            <DesignRail
+                              steps={designSteps}
+                              activeStepId={activeDesignStep}
+                              onSelectStep={selectDesignStep}
+                              isSectionDone={isDesignSectionDone}
+                              guidance={guidance}
+                              nudge={proactiveNudge ? { text: proactiveNudge.text, onDismiss: () => setProactiveNudge(null) } : null}
+                            />
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => { void requestManualHint() }}
+                                disabled={hintLoading || !attemptId}
+                                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-3 py-2 font-label text-xs font-bold text-ink-strong hover:bg-page-field disabled:opacity-50 transition-colors"
+                              >
+                                <Lightbulb size={14} strokeWidth={1.8} />
+                                {hintLoading ? 'Asking…' : 'Show me a hint'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={runSelfCheck}
+                                disabled={!attemptId}
+                                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-3 py-2 font-label text-xs font-bold text-ink-strong hover:bg-page-field disabled:opacity-50 transition-colors"
+                              >
+                                <ListChecks size={14} strokeWidth={1.8} />
+                                Run self-check
+                              </button>
+                            </div>
+                          </div>
+                        ),
+                      },
+                    ]}
+                    sideTabUnreadSignals={{ guidance: proactiveNudge?.id ?? '' }}
+                  />
                 </div>
               </div>
-              {/* Chat panel */}
-              <CanvasChatPanel
-                attemptId={attemptId ?? ''}
-                challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
-                challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
-                scene={scene}
-                contextPack={contextPackText || undefined}
-                queuedPrompt={queuedHatchPrompt}
-                isOpen={chatPanelOpen}
-                onToggle={() => setChatPanelOpen((v) => !v)}
-                autoOpenKey="canvas"
-                onCanvasActions={handleCanvasActions}
-                proactiveNudge={proactiveNudge}
-                guidanceLevel={coachRegister}
-                onDismissNudge={() => setProactiveNudge(null)}
-                canvasDrawFailure={canvasDrawFailure}
-                guidancePhase={guidance.phase}
-                guidanceLabels={guidance.labels}
-                solutionsOpen={solutionsOpen}
-                activeSolutionApproach={activeSolutionApproach}
-              />
             </div>
           )}
 
-          {/* Coding workspace - Monaco editor + output panel + Hatch chat */}
+          {/* Coding workspace - Monaco editor + test-case console + Hatch rail/chat
+              + status bar (round-4 rebuild). Column: workspace row on top, the
+              status bar pinned underneath. */}
           {isCodingChallenge && phase === 'question' && (
             <div style={codingMaximised
-              ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', background: 'var(--color-background)' }
-              : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
+              ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', background: 'var(--color-background)' }
+              : { flex: '1 1 auto', display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 }
             }>
+            <div style={{ flex: 1, display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }}>
               {/* Floating tab strip - visible only when panel is collapsed + multi-part */}
               {leftCollapsed && codingParts.length > 0 && (
                 <div data-testid="floating-tab-strip" style={{
@@ -5095,10 +6263,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     const isActive = activePartId === part.id
                     const partSub = partSubmissions[part.id]
                     const partRun = partRunResults[part.id]
-                    let chipBg = 'var(--color-surface-container-high)'
-                    let chipColor = 'var(--color-on-surface-variant)'
-                    if (partSub?.submitted) { chipBg = 'var(--color-primary)'; chipColor = 'var(--color-on-primary)' }
-                    else if (partRun) { chipBg = 'var(--color-primary-container)'; chipColor = 'var(--color-on-surface)' }
+                    let chipBg = 'var(--color-card-bright)'
+                    let chipColor = 'var(--color-ink-secondary)'
+                    if (partSub?.submitted) { chipBg = 'var(--color-forest-600)'; chipColor = '#ffffff' }
+                    else if (partRun) { chipBg = 'var(--color-note-mint)'; chipColor = 'var(--color-ink-strong)' }
                     return (
                       <button
                         key={part.id}
@@ -5125,7 +6293,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               {codingMaximised && (
                 <button
                   onClick={() => setCodingMaximised(false)}
-                  className="absolute top-3 right-3 z-30 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest shadow-sm font-label text-xs font-semibold transition-colors"
+                  className="absolute top-3 right-3 z-30 inline-flex items-center gap-1 px-3 py-1.5 rounded-[10px] bg-card-bright border border-hairline text-ink-secondary hover:text-ink-strong hover:bg-page-field shadow-sm font-label text-xs font-bold transition-colors"
                   title="Exit full screen"
                   aria-label="Exit full screen"
                 >
@@ -5152,7 +6320,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     return names[currentLanguage] ?? 'solution'
                   })()}
                   headerExtra={codingParts.length > 0 && activePartId ? (
-                    <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, color: 'var(--color-on-surface-variant)', padding: '2px 8px', borderRadius: 999, background: 'var(--color-surface-container)', border: '1px solid var(--color-outline-variant)', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, color: 'var(--color-ink-secondary)', padding: '2px 8px', borderRadius: 999, background: 'var(--color-page-field)', border: '1px solid var(--color-hairline)', whiteSpace: 'nowrap' }}>
                       {(() => { const cp = codingParts.find(x => x.id === activePartId); return cp ? `Part ${cp.sequence}` : '' })()}
                     </span>
                   ) : undefined}
@@ -5185,7 +6353,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   <div style={{ flex: 1, minHeight: 0 }} data-testid="monaco-editor-container">
                     <MonacoCodeEditor
                       value={currentCode}
-                      onChange={setCurrentCode}
+                      onChange={handleEditorChange}
                       language={currentLanguage}
                       height="100%"
                       onPaste={handleCodePaste}
@@ -5205,26 +6373,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                   >
-                    <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--color-outline-variant)', transition: 'background 120ms' }} />
+                    <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--color-hairline)', transition: 'background 120ms' }} />
                   </div>
                 )}
-                {/* Console card */}
+                {/* Console card — Test Cases / Run Results tabbed panel */}
                 <div
-                  className="rounded-xl border border-outline-variant overflow-hidden flex flex-col"
+                  className="rounded-xl border border-hairline overflow-hidden flex flex-col"
                   style={consoleCollapsed ? { flex: '0 0 auto' } : { flex: `${100 - editorHeightPct} 1 0`, minHeight: 0 }}
                 >
-                  <CodeOutputPanel
+                  <TestCasePanel
+                    testCases={visibleTestCases}
                     results={lastRunResult}
                     status={outputPanelStatus}
                     isSqlMode={currentLanguage === 'sql'}
                     errorMessage={outputPanelError}
+                    hiddenCount={hiddenTestCount}
                     collapsed={consoleCollapsed}
                     onToggleCollapse={() => setConsoleCollapsed(v => !v)}
                   />
                 </div>
               </div>
 
-              {/* Hatch chat panel - right side */}
+              {/* Hatch chat panel - right side. The old 288px CodingRail folded
+                  into it as Guidance/Hints tabs (opened from the top bar). */}
               {(() => {
                 const activePart = codingParts.find(p => p.id === activePartId)
                 return (
@@ -5233,17 +6404,52 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
                     challengeType="coding"
                     scene={scene}
+                    contextPack={contextPackText || undefined}
                     queuedPrompt={queuedHatchPrompt}
                     isOpen={chatPanelOpen}
                     onToggle={() => setChatPanelOpen((v) => !v)}
                     autoOpenKey="coding"
                     proactiveNudge={proactiveNudge}
-                guidanceLevel={coachRegister}
+                    guidanceLevel={coachRegister}
                     onDismissNudge={() => setProactiveNudge(null)}
+                    dockSurface="coding"
+                    sideTabs={[
+                      {
+                        id: 'guidance',
+                        label: 'Guidance',
+                        icon: ListChecks,
+                        content: (
+                          <GuidanceTab
+                            nudge={proactiveNudge ? { text: proactiveNudge.text, onDismiss: () => setProactiveNudge(null) } : null}
+                            lastRun={lastRunResult ? { testsPassed: lastRunResult.testsPassed, testsTotal: lastRunResult.testsTotal } : null}
+                            isRunning={outputPanelStatus === 'running'}
+                            patterns={(detail?.challenge as { tags?: string[] } | null | undefined)?.tags?.filter(t => typeof t === 'string' && t.trim().length > 0)}
+                            selfCheck={codingSelfCheck}
+                            onRunSelfCheck={() => { void runCodingSelfCheck() }}
+                            confidence={codingConfidence}
+                            onConfidenceChange={setCodingConfidence}
+                          />
+                        ),
+                      },
+                      {
+                        id: 'hints',
+                        label: 'Hints',
+                        icon: Lightbulb,
+                        content: (
+                          <HintsTab
+                            hints={codingHints}
+                            hintPending={codingHintPending}
+                            onRequestHint={() => { void requestCodingHint() }}
+                          />
+                        ),
+                      },
+                    ]}
+                    sideTabUnreadSignals={{ guidance: proactiveNudge?.id ?? '', hints: codingHints.length }}
                     onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
                     currentCode={currentCode}
                     currentLanguage={currentLanguage}
                     lastRunResult={lastRunResult}
+                    codingStep={codingStep}
                     challengeTitle={challengeTitle ?? undefined}
                     problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
                     activePartId={activePart?.id}
@@ -5257,6 +6463,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   />
                 )
               })()}
+            </div>
+
+            {/* Status bar — real autosave state, the actual shortcuts, last
+                run count, active language, and the exit flow. */}
+            <CodingStatusBar
+              saveState={codingSaveState}
+              savedAt={codingSavedAt}
+              language={{ python: 'Python', javascript: 'JavaScript', java: 'Java', cpp: 'C++', go: 'Go', sql: 'SQL' }[currentLanguage]}
+              lastRun={lastRunResult ? { testsPassed: lastRunResult.testsPassed, testsTotal: lastRunResult.testsTotal } : null}
+              onEndSession={props.onExit ?? (() => window.history.back())}
+              className="mt-2 rounded-xl border border-hairline"
+            />
             </div>
           )}
 
@@ -5287,15 +6505,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   className="animate-step-enter"
                   style={{
                     display: 'flex', alignItems: 'center', gap: 12,
-                    background: 'var(--color-surface-container)',
-                    border: '1px solid var(--color-outline-variant)',
+                    background: 'var(--color-card-bright)',
+                    border: '1px solid var(--color-hairline)',
                     borderRadius: 16,
                     padding: '16px 22px',
                     boxShadow: '0 4px 18px -8px rgba(30,27,20,0.25)',
                   }}
                 >
-                  <HatchGlyph size={34} state="idle" className="text-primary" />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-on-surface)' }}>
+                  <HatchImage size={40} state="listening" />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-ink-strong)' }}>
                     Answer recorded, keep going.
                   </span>
                 </div>
@@ -5304,9 +6522,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
             {/* Hint card */}
             {hintOpen && activeStepData?.nudge && (
-              <div style={{
-                background: 'var(--color-amber-soft, #f3e2b9)',
-                border: '1px solid #e8d09a',
+              <div className="note-amber" style={{
                 borderRadius: 12,
                 padding: '12px 14px',
                 display: 'flex',
@@ -5335,14 +6551,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {/* Question card */}
             {(isApiMode ? stepLoading : false) ? (
               <div className="flex justify-center py-8">
-                <HatchGlyph size={40} state="reviewing" className="text-primary" />
+                <HatchImage size={72} state="reviewing" />
               </div>
             ) : (isApiMode && stepError) ? (
               <p className="font-body text-error text-sm text-center">{stepError}</p>
             ) : currentQuestion ? (
-              <div data-hatch-target="workspace-answer-area" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-outline-faint)', borderRadius: 14, padding: '18px 20px' }}>
+              <div data-hatch-target="workspace-answer-area" style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: '18px 20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
+                  <span className="font-label" style={{ background: 'var(--color-forest-800)', color: '#fff', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.03em', padding: '3px 10px', borderRadius: 999 }}>
+                    Step {FLOW_STEPS.indexOf(currentStep) + 1} of {FLOW_STEPS.length} · {STEP_LABEL[currentStep]}
+                  </span>
+                  {stepQuestions.length > 1 && (
+                    <span className="font-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-ink-muted)', fontVariantNumeric: 'tabular-nums' }}>
+                      Question {questionIdx + 1} of {stepQuestions.length}
+                    </span>
+                  )}
+                </div>
                 <StepQuestion
                   question={currentQuestion}
+                  questionNumber={questionIdx + 1}
                   responseType={currentQuestion.response_type}
                   selectedOptionId={selectedOptionId}
                   selectedOptionIds={selectedOptionIds}
@@ -5371,12 +6598,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {/* Confidence card */}
             {currentQuestion && (
               <div ref={confidenceCardRef} style={{
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-outline-faint)',
-                borderRadius: 14,
+                background: 'var(--color-card-bright)',
+                border: '1px solid var(--color-hairline)',
+                borderRadius: 16,
                 padding: '14px 16px',
               }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: 10, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-ink-secondary)', marginBottom: 10, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                   Confidence - how sure are you?
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
@@ -5389,12 +6616,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                         disabled={!currentQuestionAnswered}
                         style={{
                           padding: '9px 8px',
-                          borderRadius: 999,
+                          borderRadius: 8,
                           fontSize: 12.5,
-                          fontWeight: 600,
-                          background: active ? 'var(--color-on-surface)' : 'var(--color-surface-container-low)',
-                          color: active ? 'var(--color-inverse-on-surface, #f5f0e8)' : 'var(--color-on-surface-variant)',
-                          border: '1px solid ' + (active ? 'transparent' : 'var(--color-outline-faint)'),
+                          fontWeight: 700,
+                          background: active ? 'var(--color-forest-800)' : 'var(--color-card-bright)',
+                          color: active ? '#ffffff' : 'var(--color-ink-secondary)',
+                          border: '1px solid ' + (active ? 'transparent' : 'var(--color-hairline)'),
                           opacity: currentQuestionAnswered ? 1 : 0.5,
                           cursor: currentQuestionAnswered ? 'pointer' : 'not-allowed',
                           display: 'inline-flex',
@@ -5405,9 +6632,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                           transition: 'background 120ms, color 120ms',
                         }}
                       >
-                        {i === 3 && (
-                          <span className="material-symbols-outlined msi-sm">verified</span>
-                        )}
                         {c}
                       </button>
                     )
@@ -5417,6 +6641,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             )}
           </div>
         </section>
+
+        {!mobileStacked && !isInterviewChallenge && flowRightRail}
       </div>
 
       {/* Submit bar for canvas interview challenge types */}
@@ -5431,7 +6657,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           flexShrink: 0,
           padding: '10px 16px',
         }}>
-          <CanvasReadinessMeter guidance={guidance} />
+          {/* Readiness folded into the DesignRail's progress ring; the footer
+              keeps a one-line summary so submit intent stays informed. */}
+          <span className="font-label text-xs font-semibold text-ink-secondary">
+            {designSectionTotals.done} of {designSectionTotals.total} sections have enough substance to grade
+            {guidance.phase === 'ready' ? ' · reads ready to submit' : ''}
+          </span>
           <button
             onClick={handleInterviewSubmit}
             disabled={isSubmittingInterview}

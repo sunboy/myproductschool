@@ -1,6 +1,6 @@
 'use client'
 
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { MagnetQuiz } from '@/components/landing-v3/lead-magnet/MagnetQuiz'
 import { LeadGateForm } from '@/components/landing-v3/lead-magnet/LeadGateForm'
 import { aiPmReadinessConfig } from '@/lib/lead-magnets/quizzes/ai-pm-readiness'
@@ -28,7 +28,7 @@ export function AiPmReadinessClient() {
           <div className="lm-hero-aside">
             <div className="lm-card">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <HatchGlyph size={32} state="reviewing" className="text-primary" />
+                <HatchImage size={32} state="reviewing" />
                 <p className="lm-gate-sub" style={{ margin: 0 }}>What this quiz tests</p>
               </div>
               <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--ink-2)', lineHeight: 1.7, fontSize: 14 }}>
@@ -46,7 +46,7 @@ export function AiPmReadinessClient() {
       <section className="lm-section lm-section-alt">
         <div className="shell" style={{ maxWidth: 680 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <HatchGlyph size={40} state="listening" className="text-primary" />
+            <HatchImage size={40} state="listening" />
             <h2 style={{ margin: 0 }}>Five scenarios. Your real readiness.</h2>
           </div>
           <p className="lm-section-sub" style={{ marginTop: 8 }}>

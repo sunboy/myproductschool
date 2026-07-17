@@ -16,6 +16,9 @@ import { withRoute } from '@/lib/api/withRoute'
 import { logger } from '@/lib/log'
 import { extractJson, truncateForLog } from '@/lib/anthropic/extract-json'
 import * as Sentry from '@sentry/nextjs'
+import { getRecentHatchInteractions, recordHatchInteraction } from '@/lib/hatch/interactions'
+import { allDesignSections } from '@/components/challenge/design/designSteps'
+import type { CanvasChallengeType } from '@/lib/hatch/canvasGuidance'
 import type { CanvasInterpretResponse, CanvasIntent } from '@/lib/types'
 
 const ROUTE_KEY = 'hatch_canvas_interpret'
@@ -81,12 +84,24 @@ const RequestSchema = z.object({
   challengeType: z.enum(['system_design', 'data_modeling', 'coding', 'claude_code_analytics', 'claude_code_debugging']).optional(),
   attemptId: z.string().max(200).optional(),
   context_pack: z.string().max(50000).nullable().optional(),
+  // ── Structured SD/DM workspace fields ────────────────────────────────────
+  // {stepId: {sectionId: text}} — the write-up beside the canvas, plus which
+  // sub-section the user is looking at right now. Canvas branch only.
+  step_answers: z
+    .record(z.string().max(50), z.record(z.string().max(100), z.string().max(5000)))
+    .nullable()
+    .optional(),
+  active_step: z.enum(['frame', 'list', 'optimize', 'win']).nullable().optional(),
+  active_section: z.string().max(100).nullable().optional(),
   guidance_phase: z
     .enum(['empty', 'sketching', 'has_canvas_no_notes', 'notes_no_tradeoffs', 'ready'])
     .nullable()
     .optional(),
   current_code: z.string().max(200000).nullable().optional(),
   current_language: z.string().max(40).nullable().optional(),
+  // Advisory coding stepper state (Understand → Plan → Code → Test → Optimize).
+  // Advisory only — it shapes coaching emphasis, never gates anything.
+  coding_step: z.enum(['understand', 'plan', 'code', 'test', 'optimize']).nullable().optional(),
   last_run_result: z.unknown().optional(),
   time_elapsed_seconds: z.number().finite().nonnegative().optional(),
   time_remaining_seconds: z.number().finite().nonnegative().optional(),
@@ -406,8 +421,15 @@ function buildCodingUserContent(body: InterpretBody): string {
     `# User context\n` +
     `- Language: ${body.current_language ?? 'unknown'}\n` +
     `- Time elapsed: ${timeElapsedMin}\n` +
-    `- Time remaining: ${timeRemainingMin}`
+    `- Time remaining: ${timeRemainingMin}\n` +
+    `- Working step: ${body.coding_step ?? 'unknown'} (advisory Understand → Plan → Code → Test → Optimize path; weight guidance toward this step's move)`
   )
+
+  // The learner's workspace notes (Plan / Edge cases / Complexity) from the
+  // Notes tab. Same context_pack field the canvas branch reads.
+  if (body.context_pack?.trim()) {
+    parts.push(`# Working notes (the user's own plan, edge cases, complexity notes)\n${body.context_pack.trim()}`)
+  }
 
   if (body.current_code != null && body.current_code.trim()) {
     parts.push(
@@ -418,6 +440,17 @@ function buildCodingUserContent(body: InterpretBody): string {
   }
 
   parts.push(`# Last run result\n${lastRunSummary}`)
+
+  // Self-check: the workspace rail asks for a verdict on the current approach.
+  if (body.asserted_finding?.trim()) {
+    parts.push(
+      `# Self-check request\n${body.asserted_finding.trim()}\n\n` +
+      `Judge the current code and last run against the problem. ` +
+      `Start your reply with one word: pass (approach holds and handles the constraints), ` +
+      `partial (right direction, a named gap remains), or retry (the approach will not work). ` +
+      `Then name the single most important fix. Never paste a full solution. Keep it under three sentences.`
+    )
+  }
 
   if (body.sql_schema_summary) {
     parts.push(`# Schema\n${body.sql_schema_summary}`)
@@ -545,6 +578,47 @@ function buildAnalyticsUserContent(body: InterpretBody): string {
   return parts.join('\n\n')
 }
 
+// Per-section excerpt cap for the write-up block. Sections are capped at
+// 600-1500 chars client-side; 700 keeps every turn's prompt bounded while
+// preserving enough text for Hatch to quote specifics.
+const WRITE_UP_EXCERPT_CHARS = 700
+
+/**
+ * Structured SD/DM workspace write-up. Renders the filled sub-sections in
+ * template order (capped excerpts) and marks the one the user has on screen so
+ * Hatch coaches the section they are actually writing, not the design at large.
+ */
+function writeUpBlock(body: InterpretBody): string | null {
+  const canvasType: CanvasChallengeType =
+    body.challengeType === 'data_modeling' ? 'data_modeling' : 'system_design'
+  const answers = body.step_answers ?? null
+  const hasAnswers =
+    answers && Object.values(answers).some((step) => Object.values(step ?? {}).some((t) => t?.trim()))
+  if (!hasAnswers && !body.active_section) return null
+
+  const lines: string[] = []
+  for (const section of allDesignSections(canvasType)) {
+    if (section.kind === 'diagram') continue // the diagram IS the canvas state above
+    const isActive = body.active_section === section.id
+    const text = answers?.[section.stepId]?.[section.id]?.trim() ?? ''
+    if (!text && !isActive) continue
+    const marker = isActive ? ' [ACTIVE — the user is on this sub-section right now]' : ''
+    const excerpt = text
+      ? text.length > WRITE_UP_EXCERPT_CHARS
+        ? `${text.slice(0, WRITE_UP_EXCERPT_CHARS)}…`
+        : text
+      : `(empty so far. The brief for this sub-section: ${section.prompt})`
+    lines.push(`## ${section.stepId.toUpperCase()} — ${section.label}${marker}\n${excerpt}`)
+  }
+  if (lines.length === 0) return null
+  return (
+    `# Write-up (structured notes beside the canvas)\n` +
+    `Treat these sections plus the canvas as one design. When a section conflicts with the diagram, name the conflict. ` +
+    `When the user asks for feedback, weigh the ACTIVE sub-section first.\n\n` +
+    lines.join('\n\n')
+  )
+}
+
 function buildUserContent(body: InterpretBody): string {
   if (body.challengeType === 'coding') {
     return buildCodingUserContent(body)
@@ -562,6 +636,7 @@ function buildUserContent(body: InterpretBody): string {
   return [
     `# Canvas state\n${sceneText}`,
     body.context_pack?.trim() ? `# Context Pack\n${body.context_pack.trim()}` : null,
+    writeUpBlock(body),
     body.guidance_level ? `# Coaching register\n${canvasRegisterHint(body.guidance_level)}` : null,
     body.guidance_phase ? `# Guidance phase\n${guidancePhaseHint(body.guidance_phase)}` : null,
     solutionsContextBlock(body),
@@ -604,6 +679,97 @@ function guidancePhaseHint(phase: NonNullable<InterpretBody['guidance_phase']>):
       return 'They have a design and notes but no clear tradeoff. Press for the one decision they are betting on: what they gained, what they gave up, and why it is acceptable.'
     case 'ready':
       return 'Design, notes, and a tradeoff are present. Do a final gap check: surface the single highest-risk weakness before they submit.'
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Conversation persistence — challenge_attempts.conversation_summary
+//
+// Interview grading (gradeInterviewSession) interpolates the attempt's
+// conversation_summary into the grading prompt so the hatch_collaboration
+// dimension reflects how the learner actually worked with Hatch. Nothing wrote
+// that column for chat before this, so every canvas session graded as
+// "No conversation recorded." Coding attempts reuse the same column as a JSON
+// event log (code_run, paste_event), so chat lands there as chat_turn events
+// instead of prose. Always fire-and-forget: never blocks or fails the reply.
+// ---------------------------------------------------------------------------
+
+const TRANSCRIPT_TURN_CHARS = 1200
+const TRANSCRIPT_MAX_CHARS = 20000
+const CODING_EVENT_LOG_MAX = 200
+
+function clipTurn(text: string): string {
+  return text.length > TRANSCRIPT_TURN_CHARS ? `${text.slice(0, TRANSCRIPT_TURN_CHARS)}…` : text
+}
+
+async function persistConversationSummary(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  body: InterpretBody,
+  hatchReply: string
+): Promise<void> {
+  const attemptId = body.attemptId
+  if (!attemptId || !hatchReply.trim()) return
+  const challengeType = body.challengeType ?? 'system_design'
+
+  if (challengeType === 'system_design' || challengeType === 'data_modeling') {
+    // Canvas: the grader reads this as prose. Rewrite the whole transcript each
+    // turn from the client-side history plus the latest exchange — idempotent,
+    // so there is no read-modify-write race between rapid turns.
+    const turns = (body.history ?? []).map(
+      (m) => `${m.role === 'hatch' ? 'Hatch' : 'User'}: ${clipTurn(m.content)}`
+    )
+    turns.push(`User: ${clipTurn(body.message)}`)
+    turns.push(`Hatch: ${clipTurn(hatchReply)}`)
+    let transcript = turns.join('\n')
+    if (transcript.length > TRANSCRIPT_MAX_CHARS) {
+      transcript = transcript.slice(-TRANSCRIPT_MAX_CHARS)
+    }
+    await supabase
+      .from('challenge_attempts')
+      .update({ conversation_summary: transcript })
+      .eq('id', attemptId)
+      .eq('user_id', userId)
+    return
+  }
+
+  if (challengeType === 'coding') {
+    // Coding: conversation_summary is a JSON event log shared with code_run and
+    // paste_event entries (src/app/api/code/run/route.ts). Append a chat_turn
+    // event; every consumer filters by type, so unknown types pass through.
+    const { data } = await supabase
+      .from('challenge_attempts')
+      .select('conversation_summary')
+      .eq('id', attemptId)
+      .eq('user_id', userId)
+      .single()
+    if (!data) return
+    let events: unknown[] = []
+    const raw = data.conversation_summary
+    if (Array.isArray(raw)) {
+      events = raw
+    } else if (typeof raw === 'string' && raw) {
+      try {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) events = parsed
+      } catch {
+        // Not an event log — start fresh rather than corrupting prose.
+      }
+    }
+    events.push({
+      type: 'chat_turn',
+      timestamp: new Date().toISOString(),
+      user: clipTurn(body.message),
+      hatch: clipTurn(hatchReply),
+    })
+    if (events.length > CODING_EVENT_LOG_MAX) {
+      events = events.slice(-CODING_EVENT_LOG_MAX)
+    }
+    await supabase
+      .from('challenge_attempts')
+      .update({ conversation_summary: JSON.stringify(events) })
+      .eq('id', attemptId)
+      .eq('user_id', userId)
   }
 }
 
@@ -721,7 +887,19 @@ export const POST = withRoute(async (req: NextRequest) => {
   const isCodingMode = challengeType === 'coding'
   const isAnalyticsMode = isClaudeCodeLab(challengeType)
   const systemPrompt = buildSystemPrompt(challengeType)
-  const userContent = buildUserContent(body)
+  let userContent = buildUserContent(body)
+
+  // Session memory across time: what this learner recently did with Hatch.
+  const recentInteractions = await getRecentHatchInteractions(user.id)
+  if (recentInteractions) {
+    userContent +=
+      `\n\n# RECENT HATCH INTERACTIONS\n` +
+      `This IS your memory of this learner across sessions, newest first. When they ask ` +
+      `what they worked on or asked for before, answer from these entries in your own ` +
+      `words. Never claim you have no memory or that sessions start fresh; if the list ` +
+      `has nothing on a topic, say you have not seen that yet. Never recite the raw list back.\n` +
+      recentInteractions
+  }
 
   try {
     await assertPlanLimit(user.id, userPlan, 'hatch_canvas_interprets')
@@ -737,6 +915,23 @@ export const POST = withRoute(async (req: NextRequest) => {
         isAnalyticsMode,
         budget
       )
+    }
+    // Persist the running conversation onto the attempt so interview grading's
+    // hatch_collaboration dimension sees real usage. Fire-and-forget: a persist
+    // failure never blocks or fails the reply.
+    void persistConversationSummary(supabase, user.id, body, result.message).catch((err) => {
+      logger.warn('[hatch.canvas.interpret] conversation summary persist failed', {
+        error: err instanceof Error ? err.message : String(err),
+      })
+    })
+    // Session memory: a request carrying an asserted finding is a self-check.
+    // Fire-and-forget, never blocks or fails the response.
+    if (body.asserted_finding?.trim()) {
+      recordHatchInteraction(user.id, 'self_check', {
+        challenge_id: body.challengeId ?? null,
+        challenge_type: challengeType,
+        verdict: (result as { verdict?: string }).verdict ?? null,
+      })
     }
     return NextResponse.json(result)
   } catch (error) {

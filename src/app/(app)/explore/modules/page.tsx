@@ -1,511 +1,280 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import { useLearnModules } from '@/hooks/useLearnModules'
-import type { LearnDifficulty, LearnModuleWithProgress } from '@/lib/types'
+import { ArrowRight } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
 import { DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
+import type { LearnModule, LearnModuleWithProgress } from '@/lib/types'
 import { BackButton } from '@/components/navigation/BackButton'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import { HatchSays } from '@/components/redesign/HatchSays'
+import { NoteCard } from '@/components/redesign/NoteCard'
+import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 
-const DIFFICULTIES: Array<{ id: LearnDifficulty | 'all'; label: string }> = [
-  { id: 'all', label: 'All' },
-  { id: 'easy',   label: DIFFICULTY_LABELS.easy },
-  { id: 'medium', label: DIFFICULTY_LABELS.medium },
-  { id: 'hard',   label: DIFFICULTY_LABELS.hard },
-]
+// Guides hub — compact dense dark hero band per spec §1 amendment (the three
+// library hubs keep the approved previews' dark heroes; guides-hub-1440.png).
+// Module grid comes straight from getLearnModuleSummaries; the
+// continue-reading band is real per-user chapter progress from
+// user_learn_progress (same source /api/learn uses), rendered only when a
+// module is genuinely in progress.
 
-const TRACK_CONFIG: Record<string, { label: string; accent: string }> = {
-  'foundations':      { label: 'Foundations',      accent: '#4a7c59' },
-  'systems':          { label: 'Systems',           accent: '#4a4a9c' },
-  'ai-llms':          { label: 'AI & LLMs',         accent: '#c9933a' },
-  'new-era':          { label: 'New Era',            accent: '#8b46d4' },
-  'product-thinking': { label: 'Product Thinking',  accent: '#2a7ab5' },
+function tintFromHex(hex: string, alpha: number): string {
+  const clean = hex.replace('#', '')
+  const r = parseInt(clean.slice(0, 2), 16)
+  const g = parseInt(clean.slice(2, 4), 16)
+  const b = parseInt(clean.slice(4, 6), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-const TRACK_ORDER = ['foundations', 'systems', 'ai-llms', 'new-era', 'product-thinking']
+export default async function ModulesPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-// Keyed on canonical PracticeDifficulty. Easy = green, Medium = amber, Hard = red.
-const DIFF_CONFIG: Record<PracticeDifficulty, { bg: string; iconBg: string; artColor: string }> = {
-  easy:   { bg: '#cfe3d3', iconBg: '#4a7c59', artColor: '#4a7c59' },
-  medium: { bg: '#f3e2b9', iconBg: '#c9933a', artColor: '#c9933a' },
-  hard:   { bg: '#ecdeff', iconBg: '#8b46d4', artColor: '#a878d6' },
-}
+  const modulesRaw = await getLearnModuleSummaries().catch(() => [] as LearnModule[])
 
-// ── Background arts (same pattern as StudyPlanCard) ───────────────────────
-
-function FoundationArt({ color }: { color: string }) {
-  // Subtle grid confined to bottom-right corner
-  return (
-    <svg viewBox="0 0 260 170" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} aria-hidden>
-      {[0,1,2,3].map(i => (
-        <line key={`v${i}`} x1={160 + i * 30} y1={100} x2={160 + i * 30} y2={170} stroke={color} strokeWidth={1} opacity={0.07 + i * 0.02} />
-      ))}
-      {[0,1,2].map(i => (
-        <line key={`h${i}`} x1={150} y1={110 + i * 28} x2={270} y2={110 + i * 28} stroke={color} strokeWidth={1} opacity={0.07 + i * 0.02} />
-      ))}
-    </svg>
-  )
-}
-
-function BeginnerArt({ color }: { color: string }) {
-  // Two gentle waves along the bottom edge only
-  return (
-    <svg viewBox="0 0 220 170" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} aria-hidden>
-      <path d="M-10 145 C 40 138, 90 152, 140 145 C 180 140, 210 150, 230 145" stroke={color} strokeWidth={1.5} fill="none" opacity={0.10} />
-      <path d="M-10 158 C 40 151, 90 165, 140 158 C 180 153, 210 163, 230 158" stroke={color} strokeWidth={1.5} fill="none" opacity={0.07} />
-    </svg>
-  )
-}
-
-function IntermediateArt({ color }: { color: string }) {
-  // Small dot cluster in bottom-right only
-  const dots = []
-  for (let row = 0; row < 4; row++) {
-    for (let col = 0; col < 4; col++) {
-      dots.push({ cx: 160 + col * 28, cy: 110 + row * 22, opacity: 0.06 + (row + col) * 0.015 })
+  // Real per-user chapter progress, same table/shape as /api/learn.
+  let completedByModule: Record<string, number> = {}
+  if (user) {
+    try {
+      const admin = createAdminClient()
+      const { data: progress } = await admin
+        .from('user_learn_progress')
+        .select('module_id')
+        .eq('user_id', user.id)
+      for (const p of progress ?? []) {
+        completedByModule[p.module_id] = (completedByModule[p.module_id] ?? 0) + 1
+      }
+    } catch {
+      completedByModule = {}
     }
   }
-  return (
-    <svg viewBox="0 0 260 176" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} aria-hidden>
-      {dots.map((d, i) => (
-        <circle key={i} cx={d.cx} cy={d.cy} r={2} fill={color} opacity={d.opacity} />
-      ))}
-    </svg>
-  )
-}
 
-function AdvancedArt({ color }: { color: string }) {
-  // Single thin chevron tucked into the right edge
-  return (
-    <svg viewBox="0 0 260 155" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} aria-hidden>
-      <path d="M 210 40 L 255 77 L 210 115" stroke={color} strokeWidth={6} fill="none" opacity={0.09} strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M 228 50 L 258 77 L 228 105" stroke={color} strokeWidth={4} fill="none" opacity={0.06} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
+  const modules: LearnModuleWithProgress[] = modulesRaw.map(m => ({
+    ...m,
+    completed_chapters: completedByModule[m.id] ?? 0,
+    progress_percentage: m.chapter_count > 0
+      ? Math.round(((completedByModule[m.id] ?? 0) / m.chapter_count) * 100)
+      : 0,
+  }))
 
-function NewEraArt({ color }: { color: string }) {
-  // Rings anchored to far right, only partially visible
-  return (
-    <svg viewBox="0 0 260 170" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} aria-hidden>
-      {[45, 70, 95].map((r, i) => (
-        <circle key={i} cx={265} cy={85} r={r} stroke={color} strokeWidth={1} fill="none" opacity={0.07 + i * 0.02} />
-      ))}
-    </svg>
-  )
-}
+  // Continue-reading band: only a module the user has genuinely started and
+  // not finished. No fabricated progress — if nothing qualifies, band omits.
+  const inProgress = modules
+    .filter(m => m.completed_chapters > 0 && m.progress_percentage < 100)
+    .sort((a, b) => b.progress_percentage - a.progress_percentage)
+  const continueModule = inProgress[0] ?? null
+  const resumeChapterNumber = continueModule ? continueModule.completed_chapters + 1 : null
 
-// ── Hero spiral (same as StudyPlansClient) ────────────────────────────────
-
-function SpiralSVG() {
-  const points: string[] = []
-  for (let t = 0; t <= Math.PI * 6; t += 0.10) {
-    const r = 5 + t * 6
-    const x = 110 + r * Math.cos(t)
-    const y = 85 + r * Math.sin(t)
-    points.push(`${x.toFixed(1)},${y.toFixed(1)}`)
-  }
-  return (
-    <svg
-      viewBox="0 0 220 170"
-      style={{ position: 'absolute', bottom: -10, right: -10, width: '70%', height: '70%', pointerEvents: 'none', zIndex: 0 }}
-      aria-hidden
-    >
-      <polyline points={points.join(' ')} stroke="#7ee099" strokeWidth={1.6} fill="none" opacity={0.15} />
-    </svg>
-  )
-}
-
-// ── Module card ────────────────────────────────────────────────────────────
-
-const MODULE_ICONS: Record<PracticeDifficulty, string> = {
-  easy:   'auto_stories',
-  medium: 'layers',
-  hard:   'bolt',
-}
-
-function ModuleCard({ module, index: _index }: { module: LearnModuleWithProgress; index: number }) {
-  const [hovered, setHovered] = useState(false)
-  const diff: PracticeDifficulty = module.difficulty ?? 'easy'
-  const cfg = DIFF_CONFIG[diff] ?? DIFF_CONFIG.easy
-  const diffLabel = DIFFICULTY_LABELS[diff]
-  const hasProgress = module.completed_chapters > 0
-  const ctaLabel = hasProgress ? 'Continue' : 'Start module'
-  const icon = MODULE_ICONS[diff] ?? 'auto_stories'
-
-  return (
-    <Link
-      href={`/explore/modules/${module.slug}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-        background: cfg.bg,
-        borderRadius: 20,
-        padding: '18px 16px',
-        position: 'relative',
-        overflow: 'hidden',
-        border: '1px solid rgba(0,0,0,0.05)',
-        minHeight: 200,
-        cursor: 'pointer',
-        textDecoration: 'none',
-        color: 'inherit',
-        transition: 'transform 200ms cubic-bezier(0.2,0.8,0.2,1), box-shadow 200ms cubic-bezier(0.2,0.8,0.2,1)',
-        transform: hovered ? 'translateY(-4px)' : 'none',
-        boxShadow: hovered ? '0 16px 40px -12px rgba(0,0,0,0.18)' : 'none',
-      }}
-    >
-      {/* Background art by difficulty */}
-      {diff === 'easy'   && <BeginnerArt color={cfg.artColor} />}
-      {diff === 'medium' && <IntermediateArt color={cfg.artColor} />}
-      {diff === 'hard'   && <AdvancedArt color={cfg.artColor} />}
-
-      {/* Top row */}
-      <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 10,
-          background: cfg.iconBg,
-          boxShadow: `0 4px 12px -4px ${cfg.iconBg}55`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        }}>
-          <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
-            {icon}
-          </span>
-        </div>
-        <span style={{
-          background: 'rgba(255,255,255,0.6)', color: 'rgba(0,0,0,0.65)',
-          borderRadius: 999, padding: '3px 9px',
-          fontSize: 10.5, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase' as const,
-          fontFamily: 'var(--font-label)',
-        }}>
-          {diffLabel}
-        </span>
-      </div>
-
-      {/* Title */}
-      <div style={{
-        position: 'relative', zIndex: 1,
-        fontFamily: 'var(--font-headline)',
-        fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.2,
-        color: '#1e1b14',
-      }}>
-        {module.name}
-      </div>
-
-      {/* Tagline */}
-      {module.tagline && (
-        <div style={{
-          position: 'relative', zIndex: 1, flex: 1,
-          fontFamily: 'var(--font-label)',
-          fontSize: 12, fontWeight: 600, lineHeight: 1.5, color: 'rgba(0,0,0,0.70)',
-        }}>
-          {module.tagline}
-        </div>
-      )}
-
-      {/* Stats */}
-      <div style={{
-        position: 'relative', zIndex: 1,
-        display: 'flex', gap: 10,
-        fontSize: 11, fontWeight: 600, color: 'rgba(0,0,0,0.5)',
-        fontFamily: 'var(--font-label)',
-      }}>
-        <span><b style={{ color: 'rgba(0,0,0,0.72)' }}>{module.chapter_count}</b> chapters</span>
-        <span>~<b style={{ color: 'rgba(0,0,0,0.72)' }}>{module.est_minutes}</b> min</span>
-      </div>
-
-      {/* Progress bar */}
-      {hasProgress && (
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, color: 'rgba(0,0,0,0.5)', marginBottom: 5, fontFamily: 'var(--font-label)' }}>
-            <span>Progress</span>
-            <span>{module.progress_percentage}%</span>
-          </div>
-          <div style={{ height: 5, borderRadius: 999, background: 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-            <div style={{ width: `${module.progress_percentage}%`, height: '100%', background: cfg.iconBg, borderRadius: 999 }} />
-          </div>
-        </div>
-      )}
-
-      {/* Bottom row */}
-      <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: 5,
-          background: cfg.iconBg, color: '#fff',
-          padding: '7px 14px', borderRadius: 999,
-          fontWeight: 700, fontSize: 12, fontFamily: 'var(--font-label)',
-          boxShadow: `0 4px 12px -4px ${cfg.iconBg}66`,
-        }}>
-          {ctaLabel}
-          <span className="material-symbols-outlined" style={{ fontSize: 15 }}>arrow_forward</span>
-        </span>
-        {hasProgress && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'var(--font-label)', fontSize: 12, color: 'rgba(0,0,0,0.45)' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-            {module.completed_chapters}/{module.chapter_count} done
-          </div>
-        )}
-      </div>
-    </Link>
-  )
-}
-
-// ── Page ──────────────────────────────────────────────────────────────────
-
-export default function ModulesPage() {
-  const { modules, isLoading } = useLearnModules()
-  const [filter, setFilter] = useState<LearnDifficulty | 'all'>('all')
-
-  const filtered = filter === 'all' ? modules : modules.filter(m => m.difficulty === filter)
-
-  const inProgress = modules.filter(m => m.completed_chapters > 0 && m.progress_percentage < 100)
-  const firstInProgress = inProgress[0]
-
-  // Hero stats — derived from real module data only (no fabricated numbers).
   const totalChapters = modules.reduce((sum, m) => sum + (m.chapter_count ?? 0), 0)
-  const levelCount = new Set(modules.map(m => m.difficulty).filter(Boolean)).size
-  const heroStats: { label: string; value: string }[] = []
-  if (modules.length > 0) heroStats.push({ label: 'Guides', value: String(modules.length) })
-  if (levelCount > 0) heroStats.push({ label: 'Levels', value: String(levelCount) })
-  if (totalChapters > 0) heroStats.push({ label: 'Chapters', value: String(totalChapters) })
+  const totalMinutes = modules.reduce((sum, m) => sum + (m.est_minutes ?? 0), 0)
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 24px 48px' }}>
-
-      {/* ── Back navigation ── */}
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 24px 48px' }}>
       <BackButton href="/explore" label="Back to Explore" className="mb-4" />
 
-      {/* ── Hero ── */}
-      <div style={{
-        borderRadius: 24,
-        overflow: 'hidden',
-        marginBottom: 20,
-        background: 'linear-gradient(135deg, #1e3528 0%, #14241c 58%, #0e1a14 100%)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        padding: '24px 32px',
-        position: 'relative',
-      }}>
-        {/* Dot grid */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
-          backgroundSize: '22px 22px',
-          WebkitMaskImage: 'radial-gradient(ellipse 80% 100% at 72% 50%, black 35%, transparent 78%)',
-          maskImage: 'radial-gradient(ellipse 80% 100% at 72% 50%, black 35%, transparent 78%)',
-        }} />
-        {/* Ambient glow */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-          background: 'radial-gradient(600px 420px at 82% 55%, rgba(78,180,120,0.17), transparent 62%)',
-        }} />
-        <SpiralSVG />
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'center', position: 'relative', zIndex: 1 }}>
-          {/* Left */}
-          <div>
-            <h1 style={{
-              fontFamily: 'var(--font-headline)',
-              fontSize: 34, fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1,
-              color: '#f3ede0', marginBottom: 8,
-            }}>
-              Theory, built for{' '}
-              <span style={{
-                background: 'linear-gradient(90deg, #7ee099, #c9e86e)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}>
-                sharp product thinking
-              </span>
-            </h1>
-            <p style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 14, lineHeight: 1.55,
-              color: 'rgba(243,237,224,0.70)',
-              maxWidth: 500, marginBottom: 16,
-            }}>
-              Self-paced reading tracks from foundations to the new era of AI product. Each module builds the mental models Hatch grades you on.
-            </p>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <Link href="/explore" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: '#f3ede0', color: '#1e1b14',
-                padding: '9px 18px', borderRadius: 999,
-                fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 13,
-                textDecoration: 'none',
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1" }}>explore</span>
-                Back to Explore
-              </Link>
-              <Link href="/explore/plans" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: 'rgba(255,255,255,0.08)', color: '#f3ede0',
-                border: '1px solid rgba(255,255,255,0.14)',
-                padding: '9px 18px', borderRadius: 999,
-                fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 13,
-                textDecoration: 'none',
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>school</span>
-                Study Plans
-              </Link>
+      {/* ── Compact dense dark hero band (guides-hub-1440.png) ── */}
+      <div
+        className="relative mb-5 overflow-hidden rounded-2xl px-[26px] py-6 text-white"
+        style={{
+          background:
+            'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-850) 75%, var(--color-forest-700) 130%)',
+        }}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-16 h-[420px] w-[420px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(30,71,45,.55) 0%, rgba(30,71,45,0) 70%)' }}
+        />
+        <div className="relative z-10 grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
+          <div className="min-w-0 lg:pr-32">
+            <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
+              Guides
             </div>
+            <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-on-hero-strong">
+              Read the theory. Then go train it.
+            </h1>
+            <p className="max-w-[54ch] text-[13px] leading-[1.5] text-white/72">
+              Short, sharp chapters on the frameworks behind every challenge
+              {modules.length > 0 ? `: ${modules.length} guides` : ''}
+              {totalChapters > 0 ? `, ${totalChapters} chapters` : ''}
+              {totalMinutes > 0 ? `, about ${totalMinutes} minutes end to end` : ''}.
+            </p>
           </div>
 
-          {/* Right — stat pills (real, derived numbers; uniform width for alignment) */}
-          {heroStats.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
-              {heroStats.map(stat => (
-                <div key={stat.label} style={{
-                  background: 'rgba(255,255,255,0.07)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  borderRadius: 14, padding: '10px 16px', width: 116, textAlign: 'center',
-                }}>
-                  <div style={{
-                    fontFamily: 'var(--font-label)',
-                    fontSize: 9.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-                    color: 'rgba(243,237,224,0.45)', marginBottom: 3,
-                  }}>
-                    {stat.label}
-                  </div>
-                  <div style={{
-                    fontFamily: 'var(--font-headline)',
-                    fontSize: 18, fontWeight: 600, color: '#f3ede0',
-                  }}>
-                    {stat.value}
-                  </div>
-                </div>
-              ))}
+          <div className="relative flex items-center lg:col-start-2">
+            <div className="pointer-events-none absolute -left-[150px] bottom-[-28px] z-[1] hidden w-[132px] lg:block">
+              <HatchImage state="reading" size={132} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
             </div>
+            {(continueModule || modules.length > 0) && (
+              <HatchSays
+                className="relative z-10 w-full"
+                tint="mint"
+                message={
+                  continueModule
+                    ? `You're ${continueModule.completed_chapters} ${
+                        continueModule.completed_chapters === 1 ? 'chapter' : 'chapters'
+                      } into ${continueModule.name}. Chapter ${resumeChapterNumber} is next.`
+                    : `Start with ${modules[0].name}: ${modules[0].chapter_count} chapters, about ${modules[0].est_minutes} minutes.`
+                }
+                ctaLabel={continueModule ? `Resume chapter ${resumeChapterNumber}` : 'Start reading'}
+                ctaHref={`/explore/modules/${(continueModule ?? modules[0]).slug}`}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Continue reading (real progress only) ── */}
+      {continueModule && (
+        <NoteCard
+          tint="amber"
+          className="mb-5 flex flex-col gap-3 px-[18px] py-3 md:flex-row md:items-center md:gap-4"
+        >
+          <div className="flex min-w-0 items-center gap-4 md:flex-1">
+            <span className="font-label shrink-0 whitespace-nowrap text-[11.5px] font-bold text-on-surface-muted">
+              In progress
+            </span>
+            <span className="h-4 w-px shrink-0 bg-outline-variant" aria-hidden="true" />
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              <span className="font-body truncate text-sm font-bold text-on-surface">
+                {continueModule.name}
+              </span>
+              <span className="font-label min-w-0 truncate text-xs font-semibold tabular-nums text-on-surface-muted">
+                {continueModule.tagline ? `${continueModule.tagline} · ` : ''}Ch. {continueModule.completed_chapters} of {continueModule.chapter_count}
+              </span>
+            </div>
+          </div>
+          <div className="flex w-full shrink-0 items-center gap-2 md:w-[130px]">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-outline-variant/60">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${continueModule.progress_percentage}%`, background: continueModule.accent_color }}
+              />
+            </div>
+            <span className="font-label shrink-0 text-[11px] font-extrabold tabular-nums text-on-surface-variant">
+              {continueModule.progress_percentage}%
+            </span>
+          </div>
+          <Link
+            href={`/explore/modules/${continueModule.slug}`}
+            className="font-label inline-flex shrink-0 items-center gap-1.5 self-start whitespace-nowrap rounded-[8px] px-[18px] py-2.5 text-[12.5px] font-extrabold text-white md:self-auto"
+            style={{ background: 'var(--color-forest-950, #052316)' }}
+          >
+            Resume chapter {resumeChapterNumber}
+            <ArrowRight size={14} strokeWidth={2} />
+          </Link>
+        </NoteCard>
+      )}
+
+      {/* ── Section head ── */}
+      <div className="mb-1 mt-1 flex items-baseline justify-between">
+        <div>
+          <h2 className="font-body" style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-on-surface, #20291f)', margin: 0 }}>
+            All guides
+          </h2>
+          {modules.length > 0 && (
+            <p className="font-label mt-0.5 text-[12.5px] text-on-surface-muted">
+              {totalChapters > 0 ? `${totalChapters} chapters total` : `${modules.length} guides`}
+              {totalMinutes > 0 ? `, ${totalMinutes} minutes end to end` : ''}
+            </p>
           )}
         </div>
       </div>
 
-      {/* ── Hatch in-progress banner ── */}
-      {firstInProgress && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 12,
-          padding: '12px 16px',
-          background: 'var(--color-primary-container, #cfe3d3)',
-          borderRadius: 16,
-          border: '1px solid rgba(0,0,0,0.04)',
-          marginBottom: 16,
-        }}>
-          <HatchGlyph size={36} state="speaking" className="text-primary flex-shrink-0" />
-          <div style={{ flex: 1 }}>
-            <div style={{
-              fontFamily: 'var(--font-headline)',
-              fontSize: 14, fontWeight: 600, color: 'var(--color-on-primary-container, #0f3d1f)', marginBottom: 2,
-            }}>
-              {firstInProgress.name} — {firstInProgress.progress_percentage}% complete. Pick up where you left off.
-            </div>
-          </div>
-          <Link href={`/explore/modules/${firstInProgress.slug}`} style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            background: 'var(--color-primary, #4a7c59)', color: '#fff',
-            borderRadius: 999, padding: '7px 14px', flexShrink: 0,
-            fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 700,
-            textDecoration: 'none',
-          }}>
-            Continue
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
-          </Link>
-        </div>
-      )}
-
-      {/* ── Section heading + filters ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-        <div>
-          <h2 style={{
-            fontFamily: 'var(--font-headline)',
-            fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em',
-            color: 'var(--color-on-surface, #1e1b14)', margin: 0,
-          }}>
-            Pick your level.
-          </h2>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          <span style={{
-            fontFamily: 'var(--font-label)',
-            fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: 'var(--color-on-surface-muted, #78715f)', marginRight: 4,
-          }}>
-            Difficulty
-          </span>
-          {DIFFICULTIES.map(d => (
-            <button
-              key={d.id}
-              onClick={() => setFilter(d.id)}
-              style={{
-                padding: '7px 14px', borderRadius: 999,
-                fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 700,
-                cursor: 'pointer', transition: 'background 150ms, color 150ms',
-                background: filter === d.id ? 'var(--color-on-surface, #1e1b14)' : 'transparent',
-                color: filter === d.id ? '#f7ede0' : 'var(--color-on-surface-variant, #4e4a3f)',
-                border: filter === d.id ? '1px solid transparent' : '1px solid var(--color-outline-variant, #d5cab1)',
-              }}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* ── Module grid ── */}
-      {isLoading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-          {Array(8).fill(0).map((_, i) => (
-            <div key={i} style={{ height: 200, borderRadius: 20, background: 'var(--color-surface-container, #f0ece4)', animation: 'pulse 1.5s ease-in-out infinite' }} />
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div style={{
-          textAlign: 'center', padding: '60px 0',
-          fontFamily: 'var(--font-label)', fontSize: 14,
-          color: 'var(--color-on-surface-muted, #78715f)',
-        }}>
-          No {filter !== 'all' ? filter : ''} modules yet.
-        </div>
-      ) : filter === 'all' ? (
-        <div className="space-y-10">
-          {TRACK_ORDER.map(trackKey => {
-            const trackModules = modules.filter(m => (m.track ?? 'product-thinking') === trackKey)
-            if (trackModules.length === 0) return null
-            const cfg = TRACK_CONFIG[trackKey]
-            return (
-              <div key={trackKey}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-px flex-1 bg-outline-variant" />
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="inline-block w-2 h-2 rounded-full"
-                      style={{ background: cfg.accent }}
-                    />
-                    <span className="font-label font-semibold text-sm text-on-surface-variant uppercase tracking-wide">
-                      {cfg.label}
-                    </span>
-                  </div>
-                  <div className="h-px flex-1 bg-outline-variant" />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {trackModules.map((m, i) => (
-                    <ModuleCard key={m.id} module={m} index={i} />
-                  ))}
-                </div>
-              </div>
-            )
-          })}
+      {modules.length === 0 ? (
+        <div className="font-label py-16 text-center text-sm text-on-surface-muted">
+          No guides published yet.
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-          {filtered.map((m, i) => (
-            <ModuleCard key={m.id} module={m} index={i} />
-          ))}
+        <div className="mt-3 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+          {modules.map(module => {
+            const diff = (module.difficulty ?? 'easy') as PracticeDifficulty
+            const diffLabel = DIFFICULTY_LABELS[diff] ?? DIFFICULTY_LABELS.easy
+            const hasProgress = module.completed_chapters > 0
+            const isComplete = hasProgress && module.progress_percentage >= 100
+            const ctaLabel = isComplete
+              ? 'Read again'
+              : hasProgress
+              ? `Resume chapter ${module.completed_chapters + 1}`
+              : 'Start reading'
+
+            return (
+              <Link
+                key={module.id}
+                href={`/explore/modules/${module.slug}`}
+                className="flex flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface no-underline"
+              >
+                {/* Cover band: tinted surface with the module title as the mark.
+                    Letter-initial covers are banned (spec §8) — the accent
+                    lives in the title text color, never an initial square. */}
+                <div
+                  className="flex items-center px-4"
+                  style={{ minHeight: 68, background: tintFromHex(module.cover_color, 0.12) }}
+                >
+                  <span
+                    className="font-body py-3 text-[15.5px] font-bold leading-snug"
+                    style={{
+                      color: module.accent_color,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {module.name}
+                  </span>
+                </div>
+                <div className="flex flex-1 flex-col p-4">
+                  {module.tagline && (
+                    <div
+                      className="font-body mb-3 text-[13px] leading-relaxed text-on-surface-variant"
+                      style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                    >
+                      {module.tagline}
+                    </div>
+                  )}
+                  <div className="font-label mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold tabular-nums text-on-surface-muted">
+                    <span>{module.chapter_count} ch</span>
+                    <span className="size-[3px] shrink-0 rounded-full bg-on-surface-muted" aria-hidden="true" />
+                    <span>{module.est_minutes} min</span>
+                    <span
+                      className="ml-0.5 rounded-full px-2.5 py-[3px] text-[11px] font-bold"
+                      style={{
+                        color: diff === 'hard' ? '#b83230' : diff === 'medium' ? '#9d6a1a' : 'var(--color-forest-700, #1d432b)',
+                        background: diff === 'hard' ? '#fbe4e2' : diff === 'medium' ? 'var(--color-amber-soft, #fef3e2)' : '#e8f4de',
+                        border: `1.5px solid ${diff === 'hard' ? '#b83230' : diff === 'medium' ? '#9d6a1a' : 'var(--color-forest-700, #1d432b)'}`,
+                      }}
+                    >
+                      {diffLabel}
+                    </span>
+                  </div>
+                  <span className="font-label mt-auto inline-flex items-center justify-center gap-1.5 rounded-[8px] border border-outline-variant bg-surface py-2.5 text-[13px] font-extrabold text-on-surface">
+                    {ctaLabel}
+                    <ArrowRight size={13} strokeWidth={2} />
+                  </span>
+                </div>
+              </Link>
+            )
+          })}
+          {/* Quiet closing cell per preview: teal info note, text only. */}
+          <NoteCard
+            tint="teal"
+            className="flex items-center justify-center rounded-xl px-5 py-6"
+          >
+            <span className="font-body text-center text-sm font-bold text-on-surface-variant">
+              More guides are being written
+            </span>
+          </NoteCard>
         </div>
       )}
+
+      <ProTipStrip
+        lead="Theory decays fast."
+        tip="A framework you read but never use fades within the week. After a chapter, run one challenge that grades against it."
+        ctaLabel="Pick a challenge"
+        ctaHref="/challenges"
+      />
     </div>
   )
 }

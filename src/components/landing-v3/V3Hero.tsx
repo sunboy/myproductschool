@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { DISCIPLINES, type DisciplineId } from './disciplines'
-import { V3DisciplineScreen } from './V3DisciplineScreen'
+import { V3TryRep } from './V3TryRep'
 
 const PILL_MESSAGES = ['Practice the interview out loud', 'Product sense, system design, SQL, coding']
 
@@ -44,25 +44,13 @@ function CheckIcon() {
   )
 }
 
-const CYCLE_MS = 5000
-
 export function V3Hero() {
+  // The discipline tabs are now a labeling affordance ("customize your
+  // practice"); the animated demo screen they used to drive was replaced by the
+  // live try-a-rep card in the hero-right slot, so there is no auto-cycle.
   const [active, setActive] = useState<DisciplineId>('product')
-  const [paused, setPaused] = useState(false)
-
-  useEffect(() => {
-    if (paused) return
-    const id = window.setInterval(() => {
-      setActive((cur) => {
-        const idx = DISCIPLINES.findIndex((d) => d.id === cur)
-        return DISCIPLINES[(idx + 1) % DISCIPLINES.length].id
-      })
-    }, CYCLE_MS)
-    return () => window.clearInterval(id)
-  }, [paused])
 
   function selectPill(id: DisciplineId) {
-    setPaused(true)
     setActive(id)
   }
 
@@ -92,7 +80,7 @@ export function V3Hero() {
           </ul>
 
           <div className="hero-cta-row">
-            <button type="button" className="btn btn-amber hero-cta" onClick={openSignup}>
+            <button type="button" className="btn btn-primary hero-cta" onClick={openSignup}>
               Start free, no card needed <span aria-hidden>→</span>
             </button>
           </div>
@@ -117,7 +105,7 @@ export function V3Hero() {
         </div>
 
         <div className="hero-right">
-          <V3DisciplineScreen active={active} cycling={!paused} cycleMs={CYCLE_MS} />
+          <V3TryRep />
         </div>
       </div>
     </section>

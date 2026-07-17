@@ -10,7 +10,7 @@ import { SkillsLibraryPanel } from './SkillsLibraryPanel'
 import { IdleReapModal } from './IdleReapModal'
 import { MissionBrief, shouldShowMissionBrief, markMissionBriefSeen } from './MissionBrief'
 import { AnalyticsSessionMirror } from './AnalyticsSessionMirror'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { mergeArc } from './analyticsArc'
@@ -947,7 +947,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
         alignItems: 'center', justifyContent: 'center',
         height: '100%', gap: 14, padding: 32,
       }}>
-        <HatchGlyph size={48} state="idle" className="text-primary" />
+        <HatchImage size={48} state="idle" />
         <div style={{
           fontFamily: 'var(--font-headline)', fontSize: 17, fontWeight: 700,
           color: 'var(--color-on-surface)', textAlign: 'center',
@@ -982,6 +982,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
       {showBrief && (
         <MissionBrief
           question={scenario?.question || challenge.title || 'Answer the business question with real data.'}
+          subtitle={lab.missionBrief.subtitle}
+          promises={lab.missionBrief.promises}
+          readyLabel={lab.missionBrief.readyLabel}
           briefBody={[scenario?.context, scenario?.trigger].filter(Boolean).join(' ') || undefined}
           ready={mcpConnected && replRunning}
           firstPrompt={activeSubProblem?.suggestedPrompts?.[0] ?? lab.missionBrief.fallbackFirstPrompt}
@@ -1389,16 +1392,18 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                 padding: '0 4px',
                 fontFamily: 'var(--font-label)',
               }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{
-                    width: 7, height: 7, borderRadius: 99,
-                    background: mcpConnected ? 'var(--color-primary)' : 'var(--color-outline)',
-                    boxShadow: mcpConnected ? '0 0 0 2px rgba(74,124,89,0.2)' : 'none',
-                  }} />
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: mcpConnected ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)' }}>
-                    BigQuery
+                {lab.detectors.mcpChipLabel && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{
+                      width: 7, height: 7, borderRadius: 99,
+                      background: mcpConnected ? 'var(--color-primary)' : 'var(--color-outline)',
+                      boxShadow: mcpConnected ? '0 0 0 2px rgba(74,124,89,0.2)' : 'none',
+                    }} />
+                    <span style={{ fontSize: 10.5, fontWeight: 700, color: mcpConnected ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)' }}>
+                      {lab.detectors.mcpChipLabel}
+                    </span>
                   </span>
-                </span>
+                )}
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                   <span style={{
                     width: 7, height: 7, borderRadius: 99,
@@ -1454,7 +1459,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           <CanvasChatPanel
             attemptId={attemptId}
             challengeId={challenge.id}
-            challengeType="claude_code_analytics"
+            // Lab-aware: the debugging lab gets its own Hatch intro, suggestion
+            // prompts, and pill copy in CanvasChatPanel (repo + failing tests,
+            // not dataset connection). Analytics keeps its original copy.
+            challengeType={lab.id === 'debugging' ? 'claude_code_debugging' : 'claude_code_analytics'}
             // Analytics has no canvas, but the prop is required. Empty scene;
             // all real context flows through the analytics fields below.
             scene={{ elementCount: 0, entities: [], connections: [], groups: [], freeText: [], foreignKeys: [] }}

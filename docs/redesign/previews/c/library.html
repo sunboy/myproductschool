@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Library — The Field Guide · HackProduct</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;0,7..72,700;1,7..72,400;1,7..72,500&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-primary:#4a7c59; --color-on-primary:#ffffff; --color-primary-container:#78a886; --color-on-primary-container:#d8f0de; --color-primary-fixed:#c8e8d0; --color-primary-fixed-dim:#8ecf9e;
+  --color-secondary:#6b6358; --color-secondary-container:#f0e8db; --color-on-secondary-container:#5e5548;
+  --color-tertiary:#705c30; --color-tertiary-container:#c4a66a;
+  --color-background:#faf6f0; --color-on-background:#2e3230;
+  --color-surface:#faf6f0; --color-surface-taupe:#e8e2d8; --color-surface-dim:#dbd7cf;
+  --color-surface-container-lowest:#ffffff; --color-surface-container-low:#f5f1ea; --color-surface-container:#f0ece4; --color-surface-container-high:#eae6de; --color-surface-container-highest:#e4e0d8;
+  --color-on-surface:#2e3230; --color-on-surface-variant:#4a4e4a;
+  --color-outline:#74796e; --color-outline-variant:#c4c8bc;
+  --color-error:#b83230; --color-amber:#c9933a; --color-amber-soft:#f3e2b9; --color-success:#2f7a4a;
+  --color-hero-forest:#1e3528; --color-hero-forest-deep:#14241c; --color-hero-forest-deepest:#0e1a14;
+  --font-display:'Literata',Georgia,serif;
+  --font-ui:'Nunito Sans',system-ui,-apple-system,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+  --r:8px;
+  --rule:1px solid var(--color-outline-variant);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--color-background);color:var(--color-on-surface);font:400 15.5px/1.65 var(--font-ui);-webkit-font-smoothing:antialiased;display:flex;min-height:100vh;position:relative}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;opacity:.035;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;background:none;border:none;color:inherit}
+svg{display:block;flex:none}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;border-radius:4px}
+
+.num{font-family:var(--font-mono);font-weight:600;letter-spacing:-.01em}
+.eyebrow{font:700 10.5px/1 var(--font-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.leaf{background:var(--color-surface-container-lowest);border:var(--rule);border-radius:var(--r)}
+
+.flow-chip{display:inline-flex;align-items:center;font:800 9.5px/1 var(--font-ui);letter-spacing:.09em;text-transform:uppercase;color:var(--color-on-surface-variant);border:1px solid var(--color-outline-variant);border-radius:3px;padding:3px 6px;background:transparent}
+.flow-chip.is-active{background:var(--color-primary);border-color:var(--color-primary);color:var(--color-on-primary)}
+.flow-chip.is-weak{border-color:var(--color-amber);color:var(--color-tertiary)}
+
+.meta-tag{font:600 11px/1 var(--font-mono);letter-spacing:.03em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--color-primary);color:var(--color-on-primary);border:1px solid var(--color-primary);border-radius:var(--r);padding:11px 20px;font:700 14px/1 var(--font-ui);transition:background .15s ease,transform .1s ease}
+.btn-primary:hover{background:var(--color-hero-forest);border-color:var(--color-hero-forest)}
+.btn-ghost{display:inline-flex;align-items:center;gap:6px;background:var(--color-surface-container-lowest);color:var(--color-on-surface);border:var(--rule);border-radius:var(--r);padding:9px 14px;font:700 13px/1 var(--font-ui);transition:border-color .15s ease,background .15s ease}
+.btn-ghost:hover{border-color:var(--color-outline);background:var(--color-surface-container-low)}
+.quiet-link{font:700 13px/1 var(--font-ui);color:var(--color-primary);display:inline-flex;align-items:center;gap:5px}
+.quiet-link:hover{text-decoration:underline;text-underline-offset:3px}
+
+.margin-note{display:flex;gap:9px;padding:9px 0 9px 13px;margin-top:10px;border-left:2px solid var(--color-tertiary-container);font:600 12.5px/1.55 var(--font-ui);color:var(--color-on-surface-variant);position:relative}
+.margin-note::before{content:"";position:absolute;left:-1px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--color-tertiary-container)}
+.margin-note b{color:var(--color-on-surface);font-weight:700}
+.margin-note .pin{font:italic 400 12px/1 var(--font-display);color:var(--color-tertiary);flex:none;margin-top:1px}
+
+/* ===== SIDEBAR ===== */
+.sidebar{position:sticky;top:0;height:100vh;width:236px;flex:none;background:var(--color-surface-container-low);border-right:var(--rule);display:flex;flex-direction:column;padding:20px 14px;z-index:60;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 6px 22px}
+.brand-mark{width:28px;height:28px;flex:none}
+.brand-name{font:600 17px/1 var(--font-display);letter-spacing:-.01em;color:var(--color-on-surface)}
+.brand-name em{font-style:italic;color:var(--color-primary)}
+.navgroup{margin-bottom:18px}
+.navgroup-label{font:700 10px/1 var(--font-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--color-outline);padding:0 10px 8px;display:flex;align-items:center;gap:6px}
+.navgroup-label::after{content:"";flex:1;height:1px;background:var(--color-outline-variant)}
+.navlist{display:flex;flex-direction:column;gap:1px}
+.navitem{position:relative;display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:6px;font:700 13.5px/1 var(--font-ui);color:var(--color-on-surface-variant);transition:background .15s ease,color .15s ease}
+.navitem svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.navitem:hover{background:var(--color-surface-container);color:var(--color-on-surface)}
+.navitem.is-active{background:var(--color-surface-container-lowest);color:var(--color-primary);border:var(--rule)}
+.navitem.is-active::before{content:"";position:absolute;left:-15px;top:8px;bottom:8px;width:2px;background:var(--color-primary)}
+.nav-sec{margin-top:auto;padding-top:14px;border-top:var(--rule)}
+.sidebar-stamp{margin-top:16px;padding:12px 12px;border:1px dashed var(--color-outline-variant);border-radius:var(--r);display:flex;align-items:center;gap:10px}
+.stamp-circle{width:30px;height:30px;border-radius:50%;border:2px solid var(--color-success);display:flex;align-items:center;justify-content:center;flex:none;color:var(--color-success)}
+.stamp-circle svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.4}
+.sidebar-stamp .stxt b{display:block;font:700 12px/1.2 var(--font-ui);color:var(--color-on-surface)}
+.sidebar-stamp .stxt small{font:600 10.5px/1.2 var(--font-ui);color:var(--color-on-surface-variant)}
+
+.shell{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:50;height:60px;background:var(--color-background);border-bottom:var(--rule);display:flex;align-items:center;gap:16px;padding:0 28px}
+.search{display:flex;align-items:center;gap:8px;width:320px;height:36px;padding:0 12px;background:var(--color-surface-container-lowest);border:var(--rule);border-radius:var(--r);color:var(--color-on-surface-variant)}
+.search svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
+.search input{flex:1;border:none;background:none;outline:none;font:600 13px var(--font-ui);color:var(--color-on-surface)}
+.search input::placeholder{color:var(--color-on-surface-variant);opacity:.75}
+.search kbd{font:600 10px var(--font-mono);border:var(--rule);border-radius:3px;padding:2px 5px;color:var(--color-on-surface-variant);background:var(--color-surface-container-low)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.streak-chip{display:flex;align-items:center;gap:6px;height:32px;padding:0 11px;border:var(--rule);border-radius:var(--r);background:var(--color-surface-container-lowest)}
+.streak-chip svg{width:13px;height:13px;fill:var(--color-amber);stroke:none}
+.streak-chip .num{font-size:13px;color:var(--color-on-surface)}
+.streak-chip span:last-child{font:700 10px/1 var(--font-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--color-primary-fixed);color:var(--color-hero-forest);display:flex;align-items:center;justify-content:center;font:700 12px var(--font-display);border:1px solid var(--color-primary-fixed-dim)}
+.mobilenav{display:none;border-bottom:var(--rule);background:var(--color-surface-container-low);overflow-x:auto;scrollbar-width:none}
+.mobilenav::-webkit-scrollbar{display:none}
+.mobilenav-inner{display:flex;gap:2px;padding:8px 14px}
+.mobilenav .navitem{white-space:nowrap;padding:7px 12px}
+
+.main{flex:1;padding:28px;max-width:1340px;width:100%;margin:0 auto}
+
+/* ===== HERO ===== */
+.lib-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+.lib-hero h1{font:600 32px/1.15 var(--font-display)}
+.lib-hero .eyebrow{margin-bottom:8px;display:block}
+.lib-hero-cta{display:flex;align-items:center;gap:14px}
+.lib-hero-cta .cta-text{font:600 12.5px/1.4 var(--font-ui);color:var(--color-on-surface-variant)}
+.lib-hero-cta .cta-text b{color:var(--color-on-surface);display:block;font-size:13.5px}
+
+/* ===== STICKY ANCHOR TABS ===== */
+.anchor-tabs{position:sticky;top:60px;z-index:40;background:var(--color-background);border-bottom:var(--rule);display:flex;gap:2px;padding:12px 0 0;margin-bottom:28px}
+.anchor-tabs::before{content:"";position:absolute;inset:-28px -28px 0;background:var(--color-background);z-index:-1}
+.atab{font:700 13px/1 var(--font-ui);color:var(--color-on-surface-variant);padding:10px 16px 12px;border-bottom:2px solid transparent;transition:color .15s ease,border-color .15s ease}
+.atab:hover{color:var(--color-on-surface)}
+.atab.on{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+
+/* ===== SECTION SCAFFOLD ===== */
+.section{scroll-margin-top:112px;margin-bottom:46px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.sec-head h2{font:600 22px/1.2 var(--font-display)}
+.sec-head .eyebrow{display:block;margin-bottom:6px}
+
+/* ===== STUDY PLANS MARQUEE ===== */
+.plan-marquee{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:16px}
+.plan-card{padding:20px;position:relative;display:flex;flex-direction:column;gap:10px;transition:border-color .15s ease,transform .12s ease}
+.plan-card:hover{border-color:var(--color-outline);transform:translateY(-2px)}
+.plan-card.is-program{background:var(--color-hero-forest);border-color:var(--color-hero-forest);color:#f0ece0}
+.plan-card.is-program .plan-badge{background:var(--color-tertiary-container);color:var(--color-hero-forest-deepest)}
+.plan-badge{align-self:flex-start;font:800 9.5px/1 var(--font-ui);letter-spacing:.09em;text-transform:uppercase;padding:4px 8px;border-radius:3px;background:var(--color-secondary-container);color:var(--color-on-secondary-container)}
+.plan-card h3{font:600 18px/1.3 var(--font-display)}
+.plan-card.is-program h3{font-size:22px}
+.plan-card p{font:400 13px/1.55 var(--font-ui);color:var(--color-on-surface-variant)}
+.plan-card.is-program p{color:#c3d4c8}
+.plan-steps-mini{display:flex;align-items:center;gap:4px;margin-top:auto;padding-top:8px}
+.plan-steps-mini i{flex:1;height:5px;border-radius:3px;background:var(--color-surface-container-high)}
+.plan-card.is-program .plan-steps-mini i{background:rgba(255,255,255,.14)}
+.plan-steps-mini i.filled{background:var(--color-primary)}
+.plan-card.is-program .plan-steps-mini i.filled{background:var(--color-primary-fixed-dim)}
+.plan-foot{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
+.plan-foot .meta-tag{color:var(--color-on-surface-variant)}
+.plan-card.is-program .plan-foot .meta-tag{color:#a9c4b0}
+.see-all-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px;padding:20px;border:1px dashed var(--color-outline-variant);border-radius:var(--r);color:var(--color-on-surface-variant);transition:border-color .15s ease,color .15s ease}
+.see-all-card:hover{border-color:var(--color-primary);color:var(--color-primary)}
+
+/* ===== GUIDES ===== */
+.guide-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.guide-card{padding:18px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s ease,transform .12s ease}
+.guide-card:hover{border-color:var(--color-outline);transform:translateY(-2px)}
+.guide-num{font:600 26px/1 var(--font-display);color:var(--color-outline-variant)}
+.guide-card h4{font:600 15.5px/1.35 var(--font-display)}
+.guide-card p{font:400 12.5px/1.5 var(--font-ui);color:var(--color-on-surface-variant)}
+.guide-foot{margin-top:auto;padding-top:6px;display:flex;align-items:center;gap:8px}
+
+/* ===== AUTOPSIES — case-file with a field-notes clip treatment ===== */
+.autopsy-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.autopsy-card{
+  border-radius:var(--r);overflow:hidden;transition:transform .15s ease,box-shadow .15s ease;
+  background:var(--color-surface-container-lowest);border:var(--rule);
+}
+.autopsy-card:hover{transform:translateY(-3px)}
+.autopsy-cover{
+  height:150px;position:relative;background:var(--color-hero-forest);
+  display:flex;flex-direction:column;justify-content:flex-end;padding:16px;overflow:hidden;
+}
+.autopsy-cover::before{
+  content:"";position:absolute;inset:0;
+  background-image:repeating-linear-gradient(118deg,rgba(255,255,255,.03) 0 1px,transparent 1px 10px);
+}
+/* field-note "clip" corner tab per card */
+.autopsy-cover::after{
+  content:"";position:absolute;top:0;left:22px;width:26px;height:34px;
+  background:var(--color-tertiary-container);border-radius:0 0 4px 4px;
+  box-shadow:0 2px 3px rgba(14,26,20,.25);
+}
+.autopsy-cover .ac-domain{font:700 8.5px/1 var(--font-ui);letter-spacing:.1em;text-transform:uppercase;color:#8ecf9e;position:relative;z-index:2}
+.autopsy-cover .ac-title{font:italic 500 18px/1.2 var(--font-display);color:#f0e8db;margin-top:8px;position:relative;z-index:2}
+.autopsy-body{padding:14px 16px 16px}
+.autopsy-byline{display:flex;align-items:center;gap:8px;font:600 11px/1 var(--font-mono);color:var(--color-on-surface-variant);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
+.autopsy-byline .dot{width:3px;height:3px;border-radius:50%;background:var(--color-outline-variant)}
+.autopsy-body p{font:400 12.5px/1.5 var(--font-ui);color:var(--color-on-surface-variant)}
+.autopsy-tags{display:flex;gap:6px;margin-top:10px}
+
+/* ===== DOMAINS — compact rows ===== */
+.domain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.domain-row{display:flex;align-items:center;gap:14px;padding:14px 16px;transition:border-color .15s ease,background .15s ease}
+.domain-row:hover{border-color:var(--color-outline);background:var(--color-surface-container-low)}
+.domain-icon{width:38px;height:38px;flex:none;border-radius:var(--r);background:var(--color-secondary-container);display:flex;align-items:center;justify-content:center}
+.domain-icon svg{width:19px;height:19px;stroke:var(--color-on-secondary-container);fill:none;stroke-width:1.6}
+.domain-row .dtxt b{display:block;font:700 14px/1.3 var(--font-ui);color:var(--color-on-surface)}
+.domain-row .dtxt small{font:600 11.5px/1.3 var(--font-ui);color:var(--color-on-surface-variant)}
+
+/* ===== COMPANIES CHIP ROW ===== */
+.company-chips{display:flex;flex-wrap:wrap;gap:10px}
+.company-chip{display:inline-flex;align-items:center;gap:9px;padding:9px 16px 9px 10px;border:var(--rule);border-radius:999px;background:var(--color-surface-container-lowest);font:700 13px/1 var(--font-ui);color:var(--color-on-surface);transition:border-color .15s ease,background .15s ease}
+.company-chip:hover{border-color:var(--color-primary);background:var(--color-primary-fixed)}
+.company-mark{width:22px;height:22px;border-radius:50%;background:var(--color-hero-forest);color:#d8f0de;display:flex;align-items:center;justify-content:center;font:700 10px var(--font-display);flex:none}
+
+/* ===== BOTTOM TAG ROW ===== */
+.tagrow-section{padding-top:24px;border-top:var(--rule)}
+.tagrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tag-pill{font:600 11.5px/1 var(--font-ui);color:var(--color-on-surface-variant);border:1px solid var(--color-outline-variant);border-radius:999px;padding:5px 11px}
+.tagrow-foot{margin-top:16px}
+
+.dbadge{position:fixed;right:18px;bottom:18px;z-index:80;display:flex;align-items:center;gap:8px;background:var(--color-hero-forest);color:#e9f0ea;border-radius:999px;padding:9px 16px;font:700 11.5px/1 var(--font-ui);box-shadow:0 8px 22px -8px rgba(14,26,20,.5)}
+.dbadge .num{color:var(--color-primary-fixed-dim);font-size:11.5px}
+
+@media(max-width:1080px){
+  .sidebar{display:none}
+  .mobilenav{display:block}
+  .plan-marquee{grid-template-columns:1fr 1fr}
+  .guide-row{grid-template-columns:1fr 1fr}
+  .autopsy-row{grid-template-columns:1fr 1fr}
+  .domain-grid{grid-template-columns:1fr 1fr}
+  .anchor-tabs{top:0}
+}
+@media(max-width:560px){
+  .main{padding:16px}
+  .search{display:none}
+  .plan-marquee{grid-template-columns:1fr}
+  .guide-row{grid-template-columns:1fr}
+  .autopsy-row{grid-template-columns:1fr}
+  .domain-grid{grid-template-columns:1fr}
+  .lib-hero h1{font-size:26px}
+  .anchor-tabs{overflow-x:auto;scrollbar-width:none}
+  .anchor-tabs::-webkit-scrollbar{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 28 28" fill="none"><rect x="1" y="1" width="26" height="26" rx="7" fill="#4a7c59"/><path d="M8.5 18V9.5l5 4.2 5-4.2V18" stroke="#d8f0de" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="brand-name">Hack<em>Product</em></span>
+  </div>
+  <div class="navgroup">
+    <div class="navgroup-label">Today</div>
+    <nav class="navlist">
+      <a class="navitem" href="dashboard.html"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Home</a>
+      <a class="navitem" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>Practice</a>
+      <a class="navitem" href="#"><svg viewBox="0 0 24 24"><path d="M4 18V8m4 10V5m4 13v-7m4 7V9m4 9V6"/></svg>Interviews</a>
+    </nav>
+  </div>
+  <div class="navgroup">
+    <div class="navgroup-label">Paths</div>
+    <nav class="navlist">
+      <a class="navitem is-active" href="#"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 5v14M4 12h16M20 5v14"/><rect x="4" y="5" width="16" height="14" rx="1"/></svg>Library</a>
+      <a class="navitem" href="#"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 16V9m4 7V6m4 10v-4"/></svg>Progress</a>
+    </nav>
+  </div>
+  <div class="nav-sec">
+    <div class="navgroup-label" style="padding-top:0">Reference</div>
+    <a class="navitem" href="#"><svg viewBox="0 0 24 24"><path d="M4 4h12l4 4v12H4z"/><path d="M8 12h8M8 16h5"/></svg>Review tools</a>
+    <a class="navitem" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0114 0"/></svg>Settings</a>
+  </div>
+  <div class="sidebar-stamp">
+    <div class="stamp-circle"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <div class="stxt"><b>12-day streak</b><small>best run this quarter</small></div>
+  </div>
+</aside>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="Search challenges, autopsies, companies"><kbd>⌘K</kbd></div>
+    <div class="topbar-right">
+      <div class="streak-chip"><svg viewBox="0 0 24 24"><path d="M12 2c2 4 5 5 5 9a5 5 0 01-10 0c0-1 .5-2 1-3 .5 2 2 2 2 2-1-3 1-5 2-8z"/></svg><span class="num">12</span><span>day streak</span></div>
+      <div class="avatar">S</div>
+    </div>
+  </header>
+
+  <nav class="mobilenav"><div class="mobilenav-inner">
+    <a class="navitem" href="dashboard.html">Home</a><a class="navitem" href="#">Practice</a><a class="navitem" href="#">Interviews</a><a class="navitem is-active" href="#">Library</a><a class="navitem" href="#">Progress</a>
+  </div></nav>
+
+  <main class="main">
+
+    <div class="lib-hero">
+      <div>
+        <span class="eyebrow">Library</span>
+        <h1>Everything worth practicing, organized like a syllabus</h1>
+      </div>
+      <div class="lib-hero-cta">
+        <span class="cta-text">In progress<b>Product Sense Sprint · Week 2</b></span>
+        <button class="btn-primary">Continue<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+    <nav class="anchor-tabs">
+      <a class="atab on" href="#plans">Plans</a>
+      <a class="atab" href="#guides">Guides</a>
+      <a class="atab" href="#autopsies">Autopsies</a>
+      <a class="atab" href="#domains">Domains</a>
+      <a class="atab" href="#companies">Companies</a>
+    </nav>
+
+    <!-- ===== STUDY PLANS ===== -->
+    <section class="section" id="plans">
+      <div class="sec-head">
+        <div><span class="eyebrow">Study plans</span><h2>Structured paths, one move at a time</h2></div>
+        <a class="quiet-link" href="#">See all plans →</a>
+      </div>
+      <div class="plan-marquee">
+        <div class="plan-card is-program">
+          <span class="plan-badge">Program · 75 days</span>
+          <h3>Product-75</h3>
+          <p>The full curriculum. Every FLOW move, every discipline, sequenced across ten weeks of deliberate reps.</p>
+          <div class="plan-steps-mini"><i class="filled"></i><i class="filled"></i><i class="filled"></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="plan-foot"><span class="meta-tag">Week 3 of 10</span><span class="quiet-link">Resume →</span></div>
+        </div>
+        <div class="plan-card">
+          <span class="plan-badge">Move · Frame</span>
+          <h3>Frame Like a PM</h3>
+          <p>Find the real problem before you touch a solution.</p>
+          <div class="plan-steps-mini"><i class="filled"></i><i></i><i></i><i></i><i></i></div>
+          <div class="plan-foot"><span class="meta-tag">5 steps</span></div>
+        </div>
+        <div class="plan-card">
+          <span class="plan-badge">Move · Optimize</span>
+          <h3>Optimize Under Pressure</h3>
+          <p>Name the criterion and defend the sacrifice.</p>
+          <div class="plan-steps-mini"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="plan-foot"><span class="meta-tag">5 steps</span></div>
+        </div>
+        <div class="plan-card">
+          <span class="plan-badge">Move · List</span>
+          <h3>The List Move</h3>
+          <p>Widen the option space before narrowing it.</p>
+          <div class="plan-steps-mini"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="plan-foot"><span class="meta-tag">5 steps</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== GUIDES ===== -->
+    <section class="section" id="guides">
+      <div class="sec-head">
+        <div><span class="eyebrow">Guides</span><h2>The reference shelf</h2></div>
+        <a class="quiet-link" href="#">See all guides →</a>
+      </div>
+      <div class="guide-row">
+        <div class="guide-card">
+          <span class="guide-num">01</span>
+          <h4>The FLOW Framework</h4>
+          <p>Frame, List, Optimize, Win. The four-move structure behind every reasoning rep on the platform.</p>
+          <div class="guide-foot"><span class="meta-tag">12 min read</span></div>
+        </div>
+        <div class="guide-card">
+          <span class="guide-num">02</span>
+          <h4>Product Sense Fundamentals</h4>
+          <p>What "product sense" actually means, broken into the judgments that build it.</p>
+          <div class="guide-foot"><span class="meta-tag">9 min read</span></div>
+        </div>
+        <div class="guide-card">
+          <span class="guide-num">03</span>
+          <h4>Metrics &amp; Trade-offs</h4>
+          <p>How to pick a north star metric and defend what you're willing to sacrifice for it.</p>
+          <div class="guide-foot"><span class="meta-tag">11 min read</span></div>
+        </div>
+        <div class="guide-card">
+          <span class="guide-num">04</span>
+          <h4>The Agentic PM</h4>
+          <p>Product judgment for engineers shipping with AI agents in the loop.</p>
+          <div class="guide-foot"><span class="meta-tag">8 min read</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== AUTOPSIES — case-file covers ===== -->
+    <section class="section" id="autopsies">
+      <div class="sec-head">
+        <div><span class="eyebrow">Autopsies · 4 of 102</span><h2>Real product decisions, taken apart</h2></div>
+        <a class="quiet-link" href="#">See all 102 →</a>
+      </div>
+      <div class="autopsy-row">
+        <a class="autopsy-card" href="#">
+          <div class="autopsy-cover">
+            <span class="ac-domain">Collaboration</span>
+            <span class="ac-title">Figma Multiplayer</span>
+          </div>
+          <div class="autopsy-body">
+            <div class="autopsy-byline"><span>Case file</span><span class="dot"></span><span>7 min</span></div>
+            <p>How a real-time cursor became an unbeatable moat.</p>
+            <div class="autopsy-tags"><span class="flow-chip">Frame</span><span class="flow-chip">Optimize</span></div>
+          </div>
+        </a>
+        <a class="autopsy-card" href="#">
+          <div class="autopsy-cover">
+            <span class="ac-domain">Consumer</span>
+            <span class="ac-title">Duolingo Streak</span>
+          </div>
+          <div class="autopsy-body">
+            <div class="autopsy-byline"><span>Case file</span><span class="dot"></span><span>6 min</span></div>
+            <p>The habit loop that turned a language app into a daily ritual.</p>
+            <div class="autopsy-tags"><span class="flow-chip">List</span><span class="flow-chip">Win</span></div>
+          </div>
+        </a>
+        <a class="autopsy-card" href="#">
+          <div class="autopsy-cover">
+            <span class="ac-domain">Growth</span>
+            <span class="ac-title">Dropbox Referral</span>
+          </div>
+          <div class="autopsy-body">
+            <div class="autopsy-byline"><span>Case file</span><span class="dot"></span><span>8 min</span></div>
+            <p>Free storage as a growth lever, and why it stopped working.</p>
+            <div class="autopsy-tags"><span class="flow-chip">Optimize</span></div>
+          </div>
+        </a>
+        <a class="autopsy-card" href="#">
+          <div class="autopsy-cover">
+            <span class="ac-domain">Consumer social</span>
+            <span class="ac-title">Arc Browser Invite</span>
+          </div>
+          <div class="autopsy-body">
+            <div class="autopsy-byline"><span>Case file</span><span class="dot"></span><span>5 min</span></div>
+            <p>Scarcity as onboarding, and where the tactic hit its ceiling.</p>
+            <div class="autopsy-tags"><span class="flow-chip">Frame</span></div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== DOMAINS ===== -->
+    <section class="section" id="domains">
+      <div class="sec-head">
+        <div><span class="eyebrow">Domains</span><h2>Practice inside a market you know</h2></div>
+      </div>
+      <div class="domain-grid">
+        <a class="leaf domain-row" href="#">
+          <div class="domain-icon"><svg viewBox="0 0 24 24"><path d="M4 8l8-5 8 5-8 5-8-5z"/><path d="M4 8v8l8 5 8-5V8"/></svg></div>
+          <div class="dtxt"><b>Marketplaces</b><small>38 challenges</small></div>
+        </a>
+        <a class="leaf domain-row" href="#">
+          <div class="domain-icon"><svg viewBox="0 0 24 24"><path d="M8 3v4M16 3v4M4 9h16M5 6h14v14H5z"/></svg></div>
+          <div class="dtxt"><b>Developer Tools</b><small>24 challenges</small></div>
+        </a>
+        <a class="leaf domain-row" href="#">
+          <div class="domain-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15 20c.3-2.6 2-4.6 4.5-5"/></svg></div>
+          <div class="dtxt"><b>Consumer Social</b><small>31 challenges</small></div>
+        </a>
+        <a class="leaf domain-row" href="#">
+          <div class="domain-icon"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg></div>
+          <div class="dtxt"><b>Fintech</b><small>27 challenges</small></div>
+        </a>
+        <a class="leaf domain-row" href="#">
+          <div class="domain-icon"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.7-4 3.9.9 5.4-4.9-2.6-4.9 2.6.9-5.4-4-3.9 5.5-.7z"/></svg></div>
+          <div class="dtxt"><b>AI Products</b><small>19 challenges</small></div>
+        </a>
+        <a class="leaf domain-row" href="#">
+          <div class="domain-icon"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 8 3 4 7 4c2 0 4 1.5 5 3 1-1.5 3-3 5-3 4 0 6 4 4.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg></div>
+          <div class="dtxt"><b>Health</b><small>15 challenges</small></div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== COMPANIES ===== -->
+    <section class="section" id="companies">
+      <div class="sec-head">
+        <div><span class="eyebrow">Companies</span><h2>Filter practice by who asks it</h2></div>
+      </div>
+      <div class="company-chips">
+        <a class="company-chip" href="#"><span class="company-mark">A</span>Amazon</a>
+        <a class="company-chip" href="#"><span class="company-mark">F</span>Facebook</a>
+        <a class="company-chip" href="#"><span class="company-mark">G</span>Google</a>
+        <a class="company-chip" href="#"><span class="company-mark">S</span>Stripe</a>
+        <a class="company-chip" href="#"><span class="company-mark">N</span>Netflix</a>
+      </div>
+    </section>
+
+    <!-- ===== BOTTOM TAG ROW ===== -->
+    <section class="tagrow-section">
+      <div class="tagrow">
+        <span class="flow-chip">Frame</span>
+        <span class="flow-chip">List</span>
+        <span class="flow-chip">Optimize</span>
+        <span class="flow-chip">Win</span>
+        <span class="tag-pill">Growth loops</span>
+        <span class="tag-pill">Pricing</span>
+        <span class="tag-pill">Retention</span>
+        <span class="tag-pill">Cold start</span>
+        <span class="tag-pill">Trust &amp; safety</span>
+        <span class="tag-pill">Platform strategy</span>
+      </div>
+      <div class="tagrow-foot"><a class="quiet-link" href="#">New to these tags? How FLOW works →</a></div>
+    </section>
+
+  </main>
+</div>
+
+<div class="dbadge">Direction <span class="num">C</span> — Crafted Field Guide</div>
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 'use client'
 
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import type { CanvasChallengeType, GuidanceState } from '@/lib/hatch/canvasGuidance'
 
 interface CanvasEmptyStateProps {
@@ -44,9 +44,11 @@ export function CanvasEmptyState({
       // Soft scrim so the blank canvas reads as intentional space, not an error.
       style={{ background: 'radial-gradient(circle at 50% 38%, rgba(74,124,89,0.06), transparent 60%)' }}
     >
-      <div className="pointer-events-auto w-full max-w-md text-center">
+      {/* The card itself stays pointer-transparent so drag-starts over the canvas
+          center reach Excalidraw; only the buttons re-enable pointer events. */}
+      <div className="pointer-events-none w-full max-w-md text-center">
         <div className="flex justify-center mb-4">
-          <HatchGlyph size={64} state="speaking" className="text-primary" />
+          <HatchImage size={64} state="speaking" />
         </div>
 
         <h2 className="font-headline text-2xl font-semibold tracking-tight text-on-surface">
@@ -61,7 +63,7 @@ export function CanvasEmptyState({
         <div className="mt-5 flex flex-col gap-2">
           <button
             onClick={onUseTemplate}
-            className="group inline-flex items-center justify-between gap-3 rounded-xl bg-primary text-on-primary px-4 py-3 font-label text-sm font-semibold hover:opacity-90 transition-opacity"
+            className="pointer-events-auto group inline-flex items-center justify-between gap-3 rounded-xl bg-primary text-on-primary px-4 py-3 font-label text-sm font-semibold hover:opacity-90 transition-opacity"
           >
             <span className="flex items-center gap-2">
               <span className="material-symbols-outlined text-[20px]">dashboard</span>
@@ -76,14 +78,14 @@ export function CanvasEmptyState({
           <div className="flex gap-2">
             <button
               onClick={() => onAskHatch(seedPrompt, true)}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-surface-container-low border border-outline-variant px-3 py-2.5 font-label text-[13px] font-semibold text-on-surface hover:bg-surface-container transition-colors"
+              className="pointer-events-auto flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-surface-container-low border border-outline-variant px-3 py-2.5 font-label text-[13px] font-semibold text-on-surface hover:bg-surface-container transition-colors"
             >
               <span className="material-symbols-outlined text-[18px] text-primary">auto_awesome</span>
               Ask Hatch to start
             </button>
             <button
               onClick={onOpenNotes}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-surface-container-low border border-outline-variant px-3 py-2.5 font-label text-[13px] font-semibold text-on-surface hover:bg-surface-container transition-colors"
+              className="pointer-events-auto flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-surface-container-low border border-outline-variant px-3 py-2.5 font-label text-[13px] font-semibold text-on-surface hover:bg-surface-container transition-colors"
             >
               <span className="material-symbols-outlined text-[18px] text-primary">edit_note</span>
               Open notes

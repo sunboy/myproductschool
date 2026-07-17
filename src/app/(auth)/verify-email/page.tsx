@@ -2,7 +2,7 @@
 
 import { use, useState } from 'react'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 type VerifyEmailPageProps = {
   searchParams: Promise<{ email?: string | string[] | undefined }>
@@ -55,7 +55,7 @@ export default function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) 
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6 rounded-2xl border border-outline-variant bg-surface p-6 text-center shadow-sm">
         <div className="flex justify-center">
-          <HatchGlyph size={40} state="speaking" className="text-primary" />
+          <HatchImage size={40} state="speaking" />
         </div>
 
         <div className="space-y-2">

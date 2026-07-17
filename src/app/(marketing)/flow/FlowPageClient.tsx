@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { TurnstileWidget, isTurnstileClientEnabled } from '@/components/auth/TurnstileWidget'
 import { createClient } from '@/lib/supabase/client'
 import { loginSchema, signupSchema, zodFieldErrors } from '@/lib/auth/validation'
@@ -540,7 +540,7 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
 
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
-          <HatchGlyph size={28} state="speaking" className="text-primary shrink-0" />
+          <HatchImage size={28} state="speaking" className="shrink-0" />
           <span className="font-headline font-bold text-primary">hackproduct</span>
         </div>
         <p className="font-body text-sm text-on-surface-variant mb-5">
@@ -692,7 +692,7 @@ function HatchRail({ message, visible }: { message: string; visible: boolean }) 
       </div>
       <div className="flex justify-center">
         <div style={{ animation: 'hatchFloat 3s ease-in-out infinite' }}>
-          <HatchGlyph size={56} state="speaking" className="text-primary" />
+          <HatchImage size={56} state="speaking" />
         </div>
       </div>
       <style>{`@keyframes hatchFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }`}</style>
@@ -765,7 +765,7 @@ export default function FlowMarketingPage() {
       {/* ── Hero ───────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="flex items-start gap-4">
-          <HatchGlyph size={48} state="speaking" className="text-primary shrink-0 mt-1" />
+          <HatchImage size={48} state="speaking" className="shrink-0 mt-1" />
           <div>
             <p className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">HackProduct · The Framework</p>
             <h1 className="font-headline text-4xl font-bold text-on-surface leading-tight mb-2">

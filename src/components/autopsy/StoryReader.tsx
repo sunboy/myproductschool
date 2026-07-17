@@ -2,6 +2,12 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 import type { AutopsyStory } from '@/lib/types'
+import { trackEvent } from '@/lib/posthog/client'
+import {
+  EVENT_AUTOPSY_OPENED,
+  EVENT_AUTOPSY_SECTION_VIEWED,
+  EVENT_AUTOPSY_FINISHED,
+} from '@/lib/posthog/events'
 import { StorySection } from './StorySection'
 import { BackCrumb } from '@/components/navigation/BackButton'
 
@@ -21,6 +27,18 @@ export function StoryReader({ story, productName, productSlug, backHref, forceVi
 
   const sectionRefs = React.useRef<(HTMLDivElement | null)[]>([])
 
+  // ── Analytics refs — same payload shape as the legacy AutopsyReaderClient,
+  // the article-resume cron reads slug + section_index + pct off these events.
+  const scrollPctRef = React.useRef(0)
+  const trackedSectionsRef = React.useRef<Set<number>>(new Set())
+  const finishedTrackedRef = React.useRef(false)
+
+  // ── Analytics: autopsy_opened ─────────────────────────────────────────────
+  React.useEffect(() => {
+    trackEvent(EVENT_AUTOPSY_OPENED, { slug: productSlug })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   React.useEffect(() => {
     const main = document.querySelector('main')
     const scrollTarget = main && main.scrollHeight > main.clientHeight + 2 ? main : window
@@ -30,6 +48,7 @@ export function StoryReader({ story, productName, productSlug, backHref, forceVi
       const pct = scrollEl.scrollHeight - scrollEl.clientHeight > 0
         ? (scrollEl.scrollTop / (scrollEl.scrollHeight - scrollEl.clientHeight)) * 100
         : 0
+      scrollPctRef.current = pct
       setScrollPct(pct)
     }
     scrollTarget.addEventListener('scroll', handleScroll, { passive: true })
@@ -49,6 +68,19 @@ export function StoryReader({ story, productName, productSlug, backHref, forceVi
             setVisibleSet(prev => new Set([...prev, index]))
             setVisitedSet(prev => new Set([...prev, index]))
             setActiveIndex(index)
+            // ── Analytics: autopsy_section_viewed / autopsy_finished ────────
+            if (!trackedSectionsRef.current.has(index)) {
+              trackedSectionsRef.current.add(index)
+              trackEvent(EVENT_AUTOPSY_SECTION_VIEWED, {
+                slug: productSlug,
+                section_index: index,
+                pct: Math.round(scrollPctRef.current),
+              })
+            }
+            if (index === story.sections.length - 1 && !finishedTrackedRef.current) {
+              finishedTrackedRef.current = true
+              trackEvent(EVENT_AUTOPSY_FINISHED, { slug: productSlug })
+            }
           } else {
             setVisibleSet(prev => {
               const next = new Set(prev)
@@ -72,7 +104,7 @@ export function StoryReader({ story, productName, productSlug, backHref, forceVi
       observer.disconnect()
       window.clearTimeout(visibilityFallback)
     }
-  }, [story.sections])
+  }, [story.sections, productSlug])
 
   const scrollToSection = (id: string) => {
     document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: 'smooth' })

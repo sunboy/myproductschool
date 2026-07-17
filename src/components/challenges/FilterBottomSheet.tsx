@@ -2,6 +2,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { BadgeCheck, History } from 'lucide-react'
 import type { FilterState, ArrayFilterKey } from './FilterDropdownBar'
 import type { Discipline } from './DisciplineTabStrip'
 import {
@@ -31,8 +32,6 @@ const DISCIPLINE_CHIPS: { key: Discipline; label: string }[] = [
 ]
 
 const STATIC_GROUPS: { key: ArrayFilterKey; label: string; options: string[]; disciplines: Discipline[]; excludeDisciplines?: Discipline[] }[] = [
-  // Paradigm is a product-thinking operating mode; hide it on the pure coding tabs.
-  { key: 'paradigm', label: 'Paradigm', options: ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native'], disciplines: [], excludeDisciplines: ['algorithm', 'sql'] },
   { key: 'difficulty', label: 'Difficulty', options: PRACTICE_DIFFICULTY_OPTIONS.map(o => o.label), disciplines: [] },
   { key: 'role', label: 'Role', options: ['SWE', 'Tech Lead', 'EM', 'ML Eng', 'Data Eng', 'DevOps', 'Founding Eng', 'PM', 'Designer', 'Data Scientist'], disciplines: [] },
   { key: 'company', label: 'Company', options: ['Google', 'Meta', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Amazon', 'Apple'], disciplines: [] },
@@ -121,6 +120,10 @@ export function FilterBottomSheet({
 
   function toggleRealInterview() {
     onChange({ ...filters, real_interview: !filters.real_interview })
+  }
+
+  function toggleResume() {
+    onChange({ ...filters, resume: !filters.resume })
   }
 
   const activeChipEntries = chipTab === 'topics' ? topicOptions : techniqueOptions
@@ -280,7 +283,7 @@ export function FilterBottomSheet({
             </div>
           ))}
 
-          {/* Real interview toggle */}
+          {/* Real interview + resume toggles */}
           <div>
             <div className="font-label text-[10px] font-semibold text-inverse-on-surface/50 uppercase tracking-wider mb-2">
               Source
@@ -295,8 +298,20 @@ export function FilterBottomSheet({
                     : 'bg-white/10 text-inverse-on-surface',
                 ].join(' ')}
               >
-                <span className="material-symbols-outlined text-xs leading-none">verified</span>
+                <BadgeCheck className="size-3" />
                 Real interview only
+              </button>
+              <button
+                onClick={toggleResume}
+                className={[
+                  'rounded-full px-3 py-1 font-label text-xs transition-colors flex items-center gap-1.5',
+                  filters.resume
+                    ? 'bg-primary text-on-primary'
+                    : 'bg-white/10 text-inverse-on-surface',
+                ].join(' ')}
+              >
+                <History className="size-3" />
+                Resume only
               </button>
             </div>
           </div>

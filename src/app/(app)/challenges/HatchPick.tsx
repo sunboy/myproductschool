@@ -1,36 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { cleanDisplayCopy } from '@/lib/copy/display'
-
-interface HatchPickData {
-  challenge: { id: string; slug?: string; title: string }
-  tip: string
-  is_calibrated: boolean
-}
+import { useNextChallenge } from '@/components/redesign/practice/useNextChallenge'
 
 export function HatchPick({ className = 'mb-6' }: { className?: string }) {
   const router = useRouter()
-  const [data, setData] = useState<HatchPickData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data, loading } = useNextChallenge()
   const [navigating, setNavigating] = useState(false)
-
-  useEffect(() => {
-    fetch('/api/challenges/next')
-      .then(r => r.ok ? r.json() : null)
-      .then(json => { if (json?.challenge) setData(json) })
-      .finally(() => setLoading(false))
-  }, [])
 
   if (loading) {
     return (
-      <div className={`bg-primary-container/20 border border-primary-container/30 rounded-xl p-4 flex items-center gap-4 animate-pulse ${className}`}>
-        <div className="w-11 h-11 rounded-full bg-primary-container/40 flex-shrink-0" />
+      <div className={`flex animate-pulse items-center gap-4 rounded-xl border border-note-mint-border bg-note-mint/60 p-4 ${className}`}>
+        <div className="size-11 flex-shrink-0 rounded-full bg-note-mint-border/50" />
         <div className="flex-1 space-y-2.5">
-          <div className="h-4 w-52 bg-primary-container/40 rounded" />
-          <div className="h-3 w-80 bg-primary-container/30 rounded" />
+          <div className="h-4 w-52 rounded bg-note-mint-border/50" />
+          <div className="h-3 w-80 rounded bg-note-mint-border/40" />
         </div>
       </div>
     )
@@ -46,18 +33,15 @@ export function HatchPick({ className = 'mb-6' }: { className?: string }) {
   const href = `/workspace/challenges/${target}`
 
   const challengeTitle = cleanDisplayCopy(data.challenge.title) || data.challenge.title
-  const tip = cleanDisplayCopy(data.tip)
+  const tip = cleanDisplayCopy(data.tip ?? '')
 
   return (
-    <div
-      className={`rounded-xl px-4 py-3 flex items-center gap-4 shadow-[0_12px_32px_-20px_rgba(30,53,40,0.35)] ${className}`}
-      style={{ background: 'linear-gradient(135deg, #cfe3d3 0%, #d8ead9 60%, #e8f2eb 100%)', border: '1px solid rgba(74,124,89,0.20)' }}
-    >
-      <HatchGlyph size={44} state="speaking" className="text-primary flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-primary/70 font-label mb-0.5">Hatch&apos;s Pick</p>
-        <p className="text-[15px] font-bold text-on-surface font-headline leading-snug truncate">{challengeTitle}</p>
-        <p className="text-[12.5px] text-on-surface-variant font-semibold mt-0.5 leading-snug line-clamp-1">{tip}</p>
+    <div className={`flex items-center gap-4 rounded-xl border border-note-mint-border bg-note-mint px-4 py-3 ${className}`}>
+      <HatchImage size={44} state="speaking" className="flex-shrink-0" />
+      <div className="min-w-0 flex-1">
+        <p className="mb-0.5 font-label text-[10px] font-bold uppercase tracking-[0.08em] text-forest-700">Hatch&apos;s Pick</p>
+        <p className="truncate font-headline text-[15px] font-bold leading-snug text-ink-strong">{challengeTitle}</p>
+        <p className="mt-0.5 line-clamp-1 text-[12.5px] font-semibold leading-snug text-ink-secondary">{tip}</p>
       </div>
       <button
         type="button"
@@ -66,10 +50,7 @@ export function HatchPick({ className = 'mb-6' }: { className?: string }) {
           setNavigating(true)
           router.push(href)
         }}
-        className="flex-shrink-0 text-sm font-bold px-5 py-2 rounded-full transition-all whitespace-nowrap hover:-translate-y-px active:translate-y-0 duration-[120ms] disabled:opacity-70 disabled:cursor-wait shadow-[0_8px_20px_-12px_rgba(30,53,40,0.55)]"
-        style={{ backgroundColor: '#1f2421', color: '#f0ede4' }}
-        onMouseEnter={e => { if (!navigating) e.currentTarget.style.backgroundColor = '#111614' }}
-        onMouseLeave={e => { if (!navigating) e.currentTarget.style.backgroundColor = '#1f2421' }}
+        className="flex-shrink-0 whitespace-nowrap rounded-full bg-forest-800 px-5 py-2 text-sm font-bold text-white transition-all duration-[120ms] hover:-translate-y-px hover:bg-forest-900 active:translate-y-0 disabled:cursor-wait disabled:opacity-70"
       >
         {navigating ? 'Opening…' : 'Try Now'}
       </button>

@@ -12,6 +12,7 @@ export const DEBUGGING_LAB_CLIENT: LabClientDefinition = {
     // No MCP: the repo and its test runner ARE the tools. The connection
     // milestone is filled by the Claude REPL alone.
     mcpName: null,
+    mcpChipLabel: null,
     reportPathPattern: '\\/workspace\\/[\\w./-]*report[\\w.-]*\\.md',
   },
   spine: {
@@ -53,6 +54,7 @@ export const DEBUGGING_LAB_CLIENT: LabClientDefinition = {
       { icon: 'construction', text: 'A reusable debugging skill the agent keeps for next time', accent: true },
     ],
     fallbackFirstPrompt: 'Run the test suite and show me what fails',
+    readyLabel: 'Sandbox live · repo checked out',
   },
   startup: {
     steps: [

@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { HatchGlyph, HatchState } from '@/components/shell/HatchGlyph'
+import { HatchImage, type HatchImageState } from '@/components/redesign/HatchImage'
 
 export type HatchAvatarState = 'idle' | 'listening' | 'speaking' | 'thinking' | 'intrigued' | 'challenging' | 'delighted'
 
@@ -11,14 +11,14 @@ interface HatchAvatarProps {
   className?: string
 }
 
-const STATE_MAP: Record<HatchAvatarState, HatchState> = {
+const STATE_MAP: Record<HatchAvatarState, HatchImageState> = {
   speaking: 'speaking',
   listening: 'listening',
   thinking: 'reviewing',
   idle: 'idle',
-  intrigued: 'intrigued',
-  challenging: 'challenging',
-  delighted: 'delighted',
+  intrigued: 'thinking',
+  challenging: 'pointing',
+  delighted: 'celebrating',
 }
 
 export default function HatchAvatar({ state, className }: HatchAvatarProps) {
@@ -27,7 +27,7 @@ export default function HatchAvatar({ state, className }: HatchAvatarProps) {
   return (
     <div className={cn('relative flex items-center justify-center rounded-2xl overflow-hidden', className)}>
       <div className="flex items-center justify-center w-full h-full">
-        <HatchGlyph size={120} state={hatchState} className="text-primary" />
+        <HatchImage size={120} state={hatchState} />
       </div>
     </div>
   )

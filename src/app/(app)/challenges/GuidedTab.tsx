@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 interface Company {
   id: string
@@ -184,7 +184,7 @@ export function GuidedTab() {
             </div>
 
             <div className="flex flex-col items-center py-4 gap-2 text-center">
-              <HatchGlyph size={36} state="idle" className="text-primary" />
+              <HatchImage size={36} state="idle" />
               <p className="text-xs text-on-surface-variant">Pick a focused drill by company, skill, or FLOW move.</p>
               <Link href="/challenges" className="text-xs font-bold text-primary hover:underline">Browse drills →</Link>
             </div>
@@ -195,7 +195,7 @@ export function GuidedTab() {
       {/* Footer Coaching Strip */}
       {!coachingDismissed && (
         <div className="bg-surface-container-low border border-outline-variant p-4 rounded-xl flex items-center gap-4">
-          <HatchGlyph size={28} state="speaking" className="text-primary shrink-0" />
+          <HatchImage size={28} state="speaking" className="shrink-0" />
           <p className="text-sm text-on-surface-variant leading-tight flex-1">
             <span className="font-bold text-on-surface">Hatch&apos;s Tip:</span> Strong <span className="text-primary font-bold italic">Problem Framing</span> is the most common differentiator at Staff-level interviews. Before listing solutions, make sure you&apos;ve defined the core tension clearly.
           </p>

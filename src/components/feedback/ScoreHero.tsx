@@ -7,7 +7,7 @@
 // burst for top-band scores.
 
 import { useEffect, useRef, useState } from 'react'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import {
   normalizeToTen, gradeBand, bandClasses, bandHatchState,
   GRADE_LABELS, GRADE_DESCRIPTORS, type ScoreScale,
@@ -59,7 +59,7 @@ export function ScoreHero({ raw, scale, headline, showRaw, staticRender = false,
         )}
         {!hideHatch && (
           <div className="mt-1">
-            <HatchGlyph size={28} state={bandHatchState(band)} className="text-primary" />
+            <HatchImage size={28} state={bandHatchState(band)} />
           </div>
         )}
       </div>

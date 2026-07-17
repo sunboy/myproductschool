@@ -100,10 +100,10 @@ function SqlRowDiff({
     <div className="mt-2 space-y-2">
       {missing.length > 0 && (
         <div>
-          <p className="text-xs font-label text-primary mb-1">
+          <p className="text-xs font-label text-forest-600 mb-1">
             Missing rows ({missing.length}):
           </p>
-          <div className="bg-primary-container/30 rounded border border-primary/20">
+          <div className="rounded-lg note-mint">
             <SqlResultTable rows={missing} />
           </div>
         </div>
@@ -183,11 +183,11 @@ function SqlTabbedResults({ results }: { results: RunResult }) {
     if (activeTab === 'diff') {
       if (selectedResult.status === 'passed') {
         return (
-          <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary-container/40 p-4">
-            <span className="material-symbols-outlined text-[18px] text-primary">check_circle</span>
+          <div className="note-mint flex items-start gap-2 p-4">
+            <span className="material-symbols-outlined text-[18px] text-forest-600">check_circle</span>
             <div>
-              <p className="font-label text-sm font-bold text-on-surface">Rows match</p>
-              <p className="mt-0.5 text-xs text-on-surface-variant">No missing or unexpected rows for this test case.</p>
+              <p className="font-label text-sm font-bold text-ink-strong">Rows match</p>
+              <p className="mt-0.5 text-xs text-ink-secondary">No missing or unexpected rows for this test case.</p>
             </div>
           </div>
         )
@@ -207,12 +207,12 @@ function SqlTabbedResults({ results }: { results: RunResult }) {
 
   return (
     <div className="grid h-full min-h-0 grid-cols-[minmax(150px,220px)_1fr]">
-      <div className="border-r border-outline-variant bg-surface-container-low p-2">
+      <div className="border-r border-hairline bg-page-field p-2">
         <div className="mb-2 flex items-center justify-between gap-2 px-1">
-          <span className="font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+          <span className="font-label text-[11px] font-bold text-ink-secondary">
             Test cases
           </span>
-          <span className="rounded-full bg-surface px-1.5 py-0.5 font-label text-[10px] font-bold text-on-surface-variant">
+          <span className="rounded-full bg-card-bright border border-hairline px-1.5 py-0.5 font-label text-[10px] font-bold text-ink-secondary tabular-nums">
             {results.testsPassed}/{results.testsTotal}
           </span>
         </div>
@@ -229,19 +229,19 @@ function SqlTabbedResults({ results }: { results: RunResult }) {
                 className={[
                   'flex w-full items-center gap-2 rounded-lg border px-2 py-2 text-left transition-colors',
                   selected
-                    ? 'border-primary bg-primary-fixed'
-                    : 'border-transparent bg-transparent hover:bg-surface-container',
+                    ? 'border-forest-600 bg-card-bright'
+                    : 'border-transparent bg-transparent hover:bg-card-bright',
                 ].join(' ')}
               >
                 <span
-                  className={`material-symbols-outlined text-[16px] ${passed ? 'text-primary' : 'text-error'}`}
+                  className={`material-symbols-outlined text-[16px] ${passed ? 'text-forest-600' : 'text-error'}`}
                   style={{ fontVariationSettings: "'FILL' 1" }}
                 >
                   {icon}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-label text-xs font-bold text-on-surface">{result.label}</span>
-                  <span className="block truncate text-[10.5px] font-medium text-on-surface-variant">
+                  <span className="block truncate font-label text-xs font-bold text-ink-strong">{result.label}</span>
+                  <span className="block truncate text-[10.5px] font-medium text-ink-secondary">
                     {result.hidden ? 'Private' : result.status}
                   </span>
                 </span>
@@ -250,8 +250,8 @@ function SqlTabbedResults({ results }: { results: RunResult }) {
           })}
         </div>
       </div>
-      <div className="flex min-h-0 flex-col overflow-hidden bg-surface">
-        <div className="flex shrink-0 items-center gap-1 border-b border-outline-variant bg-surface-container-low px-3 py-2">
+      <div className="flex min-h-0 flex-col overflow-hidden bg-card-bright">
+        <div className="flex shrink-0 items-center gap-1 border-b border-hairline bg-card-bright px-3 py-2">
           {([
             ['actual', 'Your output'],
             ['expected', 'Expected'],
@@ -262,17 +262,17 @@ function SqlTabbedResults({ results }: { results: RunResult }) {
               type="button"
               onClick={() => setActiveTab(key)}
               className={[
-                'rounded-md px-2.5 py-1 font-label text-xs font-bold transition-colors',
+                'rounded-lg px-2.5 py-1 font-label text-xs font-bold transition-colors',
                 activeTab === key
-                  ? 'bg-primary text-on-primary'
-                  : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface',
+                  ? 'bg-forest-800 text-white'
+                  : 'text-ink-secondary hover:bg-page-field hover:text-ink-strong',
               ].join(' ')}
             >
               {label}
             </button>
           ))}
           {selectedResult && (
-            <span className="ml-auto truncate font-label text-xs text-on-surface-variant">
+            <span className="ml-auto truncate font-label text-xs text-ink-muted">
               {selectedResult.label}
             </span>
           )}
@@ -313,23 +313,23 @@ function AlgoTabbedResults({ results }: { results: RunResult }) {
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* View tabs + case chips */}
-      <div className="flex items-center gap-2 px-3 pt-2.5 pb-2 flex-wrap border-b border-outline-variant/50">
+      <div className="flex items-center gap-2 px-3 pt-2.5 pb-2 flex-wrap border-b border-hairline">
         <div className="flex items-center gap-1">
           {(['testcase', 'result'] as const).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`px-3 py-1 rounded-full text-xs font-label font-semibold transition-colors ${
+              className={`px-3 py-1 rounded-lg text-xs font-label font-bold transition-colors ${
                 view === v
-                  ? 'bg-primary text-on-primary'
-                  : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
+                  ? 'bg-forest-800 text-white'
+                  : 'text-ink-secondary hover:bg-page-field'
               }`}
             >
               {v === 'testcase' ? 'Testcase' : 'Result'}
             </button>
           ))}
         </div>
-        <div className="w-px h-4 bg-outline-variant/60" />
+        <div className="w-px h-4 bg-hairline" />
         <div className="flex items-center gap-1 flex-wrap">
           {visible.map((r, i) => {
             const isActive = i === activeIdx
@@ -338,22 +338,22 @@ function AlgoTabbedResults({ results }: { results: RunResult }) {
               <button
                 key={r.id}
                 onClick={() => setActiveIdx(i)}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-label font-semibold transition-colors ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-label font-bold transition-colors border ${
                   isActive
-                    ? 'bg-surface-container-highest text-on-surface'
-                    : 'text-on-surface-variant hover:bg-surface-container-high'
+                    ? 'border-hairline bg-page-field text-ink-strong'
+                    : 'border-transparent text-ink-secondary hover:bg-page-field'
                 }`}
                 data-testid={`case-chip-${i + 1}`}
               >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${passed ? 'bg-primary' : 'bg-error'}`}
+                  className={`w-1.5 h-1.5 rounded-full ${passed ? 'bg-forest-600' : 'bg-error'}`}
                 />
                 Case {i + 1}
               </button>
             )
           })}
           {hiddenCount > 0 && (
-            <span className="text-[11px] font-label text-on-surface-variant px-1.5">
+            <span className="text-[11px] font-label text-ink-muted px-1.5">
               +{hiddenCount} hidden
             </span>
           )}
@@ -389,10 +389,10 @@ function TestResultRow({ result, isSqlMode, forceDetails = false }: { result: Te
   const isTimeout = result.status === 'timeout'
 
   const statusIcon = isPassed ? 'check_circle' : isTimeout ? 'timer_off' : 'cancel'
-  const statusColor = isPassed ? 'text-primary' : 'text-error'
+  const statusColor = isPassed ? 'text-forest-600' : 'text-error'
 
   return (
-    <div className="border-b border-outline-variant/40 last:border-0 py-2.5 px-3">
+    <div className="border-b border-hairline last:border-0 py-2.5 px-3">
       {/* Header row */}
       <div className="flex items-center gap-2">
         <span
@@ -496,23 +496,23 @@ export function CodeOutputPanel({
 
   return (
     <div
-      className="flex flex-col h-full bg-surface-container-lowest overflow-hidden"
+      className="flex flex-col h-full bg-card-bright overflow-hidden"
       data-testid="output-panel"
     >
       {/* Header */}
-      <div className={`flex items-center gap-2 px-3 h-9 bg-surface-container-low ${collapsed ? '' : 'border-b border-outline-variant'} flex-shrink-0`}>
-        <span className="material-symbols-outlined text-[15px] text-on-surface-variant">
+      <div className={`flex items-center gap-2 px-3.5 h-10 bg-card-bright ${collapsed ? '' : 'border-b border-hairline'} flex-shrink-0`}>
+        <span className="material-symbols-outlined text-[15px] text-ink-secondary">
           terminal
         </span>
-        <span className="text-[11px] font-label font-bold text-on-surface-variant uppercase tracking-[0.07em]">
-          Console
+        <span className="text-[12.5px] font-label font-bold text-ink-strong">
+          Test results
         </span>
         <span className="ml-auto flex items-center gap-2">
           {results && !isRunning && (
             <span
-              className={`text-xs font-label font-semibold ${
+              className={`text-xs font-label font-bold tabular-nums ${
                 results.testsPassed === results.testsTotal
-                  ? 'text-primary'
+                  ? 'text-forest-600'
                   : 'text-error'
               }`}
             >
@@ -522,7 +522,7 @@ export function CodeOutputPanel({
           {onToggleCollapse && (
             <button
               onClick={onToggleCollapse}
-              className="inline-flex items-center justify-center w-6 h-6 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
+              className="inline-flex items-center justify-center w-6 h-6 rounded text-ink-secondary hover:text-ink-strong hover:bg-page-field transition-colors"
               title={collapsed ? 'Expand console' : 'Collapse console'}
               aria-label={collapsed ? 'Expand console' : 'Collapse console'}
               data-testid="console-collapse-button"
@@ -622,7 +622,7 @@ function RunningIndicator() {
   return (
     <div className="flex flex-col gap-2 px-4 py-6">
       <div className="flex items-center gap-3">
-        <span className="material-symbols-outlined text-primary text-xl animate-spin">
+        <span className="material-symbols-outlined text-forest-600 text-xl animate-spin">
           progress_activity
         </span>
         <span className="text-sm text-on-surface-variant font-label">{stage}</span>
@@ -633,8 +633,8 @@ function RunningIndicator() {
         )}
       </div>
       {/* Indeterminate progress bar — pure motion, no fake percentage. */}
-      <div className="h-1 w-full overflow-hidden rounded-full bg-surface-container-high">
-        <div className="h-full w-1/3 animate-[codeRunSlide_1.2s_ease-in-out_infinite] rounded-full bg-primary" />
+      <div className="h-1 w-full overflow-hidden rounded-full bg-hairline">
+        <div className="h-full w-1/3 animate-[codeRunSlide_1.2s_ease-in-out_infinite] rounded-full bg-forest-600" />
       </div>
       <style jsx>{`
         @keyframes codeRunSlide {

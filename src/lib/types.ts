@@ -374,6 +374,10 @@ export interface StudyPlan {
   icon?: string | null
   difficulty?: string
   order_index?: number
+  /** 'study_plan' (default) or 'loop' — multi-round interview-loop tracks. See migration 20260519000400. */
+  track_type?: 'study_plan' | 'loop'
+  /** Discipline tags for loop tracks (e.g. ['system_design','product_sense']). Empty for most study plans today. */
+  disciplines?: string[]
 }
 
 export interface StudyPlanChapterChallenge {

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getOrCreateAttemptShare } from '@/lib/share/attempt-scorecard'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { COMMUNITY_LENS_LABELS, formatCommunityDisplayName } from '@/lib/community-shared'
 import type { CommunityDisplayMode, CommunityLensTag } from '@/lib/types'
 
@@ -123,7 +123,7 @@ export default async function ShareScoreCardGatePage({ params, searchParams }: S
         <section className="w-full overflow-hidden rounded-2xl border border-primary/25 bg-surface p-6 shadow-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <HatchGlyph size={32} state="idle" className="text-primary" />
+              <HatchImage size={32} state="idle" />
               <span className="font-headline text-lg font-bold text-primary">HackProduct</span>
             </div>
             {publishedSubmission && (
@@ -161,7 +161,7 @@ export default async function ShareScoreCardGatePage({ params, searchParams }: S
 
         <section className="w-full rounded-2xl border border-white/10 bg-white/10 p-5 text-white">
           <div className="flex items-start gap-3">
-            <HatchGlyph size={46} state="celebrating" className="shrink-0 text-primary-fixed" />
+            <HatchImage size={46} state="celebrating" className="shrink-0" />
             <div>
               <h2 className="font-headline text-lg font-bold">Try the same prompt first</h2>
               <p className="mt-1 text-sm leading-6 text-white/75">

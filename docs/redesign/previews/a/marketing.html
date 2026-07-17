@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HackProduct — Product judgment, trained like a muscle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-primary:#4a7c59; --color-on-primary:#ffffff; --color-primary-container:#78a886; --color-on-primary-container:#d8f0de; --color-primary-fixed:#c8e8d0; --color-primary-fixed-dim:#8ecf9e;
+  --color-secondary:#6b6358; --color-secondary-container:#f0e8db; --color-on-secondary-container:#5e5548;
+  --color-tertiary:#705c30; --color-tertiary-container:#c4a66a;
+  --color-background:#faf6f0; --color-on-background:#2e3230;
+  --color-surface:#faf6f0; --color-surface-taupe:#e8e2d8; --color-surface-dim:#dbd7cf;
+  --color-surface-container-lowest:#ffffff; --color-surface-container-low:#f5f1ea; --color-surface-container:#f0ece4; --color-surface-container-high:#eae6de; --color-surface-container-highest:#e4e0d8;
+  --color-on-surface:#2e3230; --color-on-surface-variant:#4a4e4a;
+  --color-outline:#74796e; --color-outline-variant:#c4c8bc;
+  --color-error:#b83230; --color-amber:#c9933a; --color-amber-soft:#f3e2b9; --color-success:#2f7a4a;
+  --color-hero-forest:#1e3528; --color-hero-forest-deep:#14241c; --color-hero-forest-deepest:#0e1a14;
+  --font-ui:'Nunito Sans',system-ui,-apple-system,sans-serif;
+  --font-display:'Literata',Georgia,serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+  --radius:6px;
+  --line:1px solid var(--color-outline-variant);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--color-background);color:var(--color-on-surface);font:400 14px/1.6 var(--font-ui);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;background:none;border:none;color:inherit}
+svg{display:block;flex:none}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;border-radius:4px}
+img{max-width:100%;display:block}
+
+.num{font-family:var(--font-mono);font-weight:600;letter-spacing:-.01em}
+.microlabel{font:700 10px/1.2 var(--font-ui);letter-spacing:.11em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.panel{position:relative;background:var(--color-surface-container-lowest);border:var(--line);border-radius:var(--radius);transition:border-color .15s ease}
+.panel:hover{border-color:var(--color-outline)}
+.rail::before{content:"";position:absolute;left:-1px;top:10px;bottom:10px;width:3px;border-radius:0 2px 2px 0;background:var(--color-outline-variant)}
+.rail-active::before{background:var(--color-amber)}
+.rail-done::before{background:var(--color-success)}
+.flow-chip{display:inline-flex;align-items:center;font:800 9.5px/1 var(--font-ui);letter-spacing:.09em;text-transform:uppercase;color:var(--color-on-surface-variant);border:1px solid var(--color-outline-variant);border-radius:3px;padding:3px 6px;background:transparent}
+.flow-chip.is-active{background:var(--color-primary);border-color:var(--color-primary);color:var(--color-on-primary)}
+.meta-tag{font:600 10.5px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--color-primary);color:var(--color-on-primary);border:1px solid var(--color-primary);border-radius:var(--radius);padding:11px 20px;font:700 14px/1 var(--font-ui);transition:background .15s ease,border-color .15s ease}
+.btn-primary:hover{background:var(--color-hero-forest);border-color:var(--color-hero-forest)}
+.btn-primary svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;background:var(--color-surface-container-lowest);color:var(--color-on-surface);border:var(--line);border-radius:var(--radius);padding:10px 18px;font:700 13px/1 var(--font-ui);transition:border-color .15s ease,background .15s ease}
+.btn-ghost:hover{border-color:var(--color-outline);background:var(--color-surface-container-low)}
+.btn-primary.on-dark{background:var(--color-primary-fixed-dim);color:var(--color-hero-forest-deepest);border-color:var(--color-primary-fixed-dim)}
+.btn-primary.on-dark:hover{background:#fff;border-color:#fff}
+.btn-ghost.on-dark{background:transparent;color:#e9f0ea;border-color:rgba(233,240,234,.25)}
+.btn-ghost.on-dark:hover{border-color:rgba(233,240,234,.55);background:rgba(255,255,255,.04)}
+.quiet-link{font:700 12.5px/1 var(--font-ui);color:var(--color-primary);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.quiet-link:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- public nav ---------- */
+.pubnav{position:sticky;top:0;z-index:60;height:60px;background:rgba(250,246,240,.9);backdrop-filter:blur(10px);border-bottom:var(--line);display:flex;align-items:center;gap:28px;padding:0 32px}
+.brand{display:flex;align-items:center;gap:9px}
+.brand-mark{width:27px;height:27px;flex:none}
+.brand-name{font:800 16px/1 var(--font-ui);letter-spacing:-.01em;color:var(--color-on-surface)}
+.brand-name em{font-style:normal;color:var(--color-primary)}
+.pubnav-links{display:flex;align-items:center;gap:22px;margin-left:8px}
+.pubnav-links a{font:700 13px/1 var(--font-ui);color:var(--color-on-surface-variant);transition:color .15s ease}
+.pubnav-links a:hover{color:var(--color-on-surface)}
+.pubnav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.pubnav-right .login{font:700 13px/1 var(--font-ui);color:var(--color-on-surface-variant);padding:9px 6px}
+.pubnav-right .login:hover{color:var(--color-on-surface)}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+
+/* ---------- hero (instrument panel on dark) ---------- */
+.hero{background:var(--color-hero-forest);background-image:radial-gradient(ellipse 900px 480px at 18% -10%,rgba(142,207,158,.14),transparent 60%);color:#e9f0ea;overflow:hidden;position:relative}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:
+  linear-gradient(rgba(233,240,234,.05) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(233,240,234,.05) 1px,transparent 1px);
+  background-size:64px 64px;mask-image:linear-gradient(180deg,black,transparent 75%)}
+.hero-inner{position:relative;padding:76px 32px 0;max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:44px;align-items:start}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font:700 10.5px/1 var(--font-ui);letter-spacing:.12em;text-transform:uppercase;color:#8ecf9e;border:1px solid rgba(142,207,158,.35);border-radius:999px;padding:6px 12px 6px 10px}
+.hero-eyebrow i{width:6px;height:6px;border-radius:50%;background:#8ecf9e}
+.hero h1{font:600 54px/1.12 var(--font-display);letter-spacing:-.015em;margin-top:22px;max-width:620px;color:#fff}
+.hero h1 em{font-style:normal;color:#8ecf9e}
+.hero .sub{font:500 16px/1.65 var(--font-ui);color:#c3d3c8;margin-top:20px;max-width:520px}
+.hero .sub b{color:#e9f0ea;font-weight:700}
+.hero-ctas{display:flex;align-items:center;gap:12px;margin-top:30px}
+.hero-fineprint{margin-top:16px;font:600 11.5px/1 var(--font-ui);color:#8a9c90}
+
+/* readout card echoing the readiness bar motif */
+.readout{background:var(--color-hero-forest-deep);border:1px solid rgba(233,240,234,.1);border-radius:var(--radius);padding:4px;margin-top:36px}
+.readout-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 14px;border-bottom:1px solid rgba(233,240,234,.08)}
+.readout-row:last-child{border-bottom:none}
+.readout-lab{font:700 10px/1 var(--font-ui);letter-spacing:.08em;text-transform:uppercase;color:#8ecf9e}
+.readout-val{font:600 15px/1 var(--font-mono);color:#fff}
+.readout-val small{font-size:10.5px;color:#a9c4b0;font-weight:600;margin-left:2px}
+
+/* device panel */
+.devpanel{background:var(--color-hero-forest-deep);border:1px solid rgba(233,240,234,.12);border-radius:var(--radius);overflow:hidden;box-shadow:0 24px 60px -24px rgba(0,0,0,.55)}
+.devpanel-head{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid rgba(233,240,234,.08)}
+.devpanel-head i{width:8px;height:8px;border-radius:50%;background:rgba(233,240,234,.18)}
+.devpanel-head span{font:700 10px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:#8a9c90;margin-left:4px}
+.devpanel-body{padding:16px}
+.dp-title{font:700 9.5px/1 var(--font-ui);letter-spacing:.08em;text-transform:uppercase;color:#8ecf9e;margin-bottom:10px}
+.dp-block{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed rgba(233,240,234,.1)}
+.dp-block:last-child{border-bottom:none;padding-bottom:0}
+.dp-dot{width:18px;height:18px;border-radius:50%;border:2px solid rgba(233,240,234,.25);flex:none;display:flex;align-items:center;justify-content:center;font:700 8px var(--font-mono);color:#a9c4b0;margin-top:1px}
+.dp-dot.done{background:var(--color-success);border-color:var(--color-success);color:#fff}
+.dp-dot.active{border-color:var(--color-amber);background:var(--color-amber-soft);color:var(--color-tertiary)}
+.dp-body{flex:1;min-width:0}
+.dp-body .step{font:700 9px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:#8a9c90;display:block;margin-bottom:3px}
+.dp-body h4{font:700 12.5px/1.35 var(--font-ui);color:#e9f0ea}
+.dp-fbar{height:5px;border-radius:3px;background:rgba(233,240,234,.1);overflow:hidden;margin-top:8px}
+.dp-fbar i{display:block;height:100%;border-radius:3px;background:var(--color-amber)}
+
+/* ---------- credibility band ---------- */
+.stats{padding:64px 32px 8px}
+.stats-inner{max-width:1180px;margin:0 auto}
+.stats-head{max-width:560px}
+.stats-head .microlabel{color:var(--color-primary)}
+.stats-head h2{font:600 30px/1.25 var(--font-display);letter-spacing:-.01em;margin-top:8px}
+.stats-head p{font:500 14px/1.6 var(--font-ui);color:var(--color-on-surface-variant);margin-top:10px;max-width:520px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:36px}
+.stat-card{padding:22px 22px 20px}
+.stat-card .stat-icon{width:34px;height:34px;border-radius:var(--radius);background:var(--color-primary-fixed);border:1px solid var(--color-primary-fixed-dim);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.stat-card .stat-icon svg{width:18px;height:18px;stroke:var(--color-hero-forest);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.stat-card .stat-val{font:600 34px/1 var(--font-mono);color:var(--color-on-surface);letter-spacing:-.02em}
+.stat-card .stat-val small{font-size:16px;color:var(--color-primary);font-weight:700}
+.stat-card .stat-lab{font:700 12.5px/1.4 var(--font-ui);color:var(--color-on-surface-variant);margin-top:8px}
+
+/* ---------- content showcase row ---------- */
+.showcase{padding:52px 32px 80px}
+.showcase-inner{max-width:1180px;margin:0 auto}
+.showcase-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.showcase-head h2{font:600 22px/1.3 var(--font-display);letter-spacing:-.01em}
+.showcase-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.spec-card{padding:16px;display:flex;flex-direction:column;gap:10px;height:100%}
+.spec-card .idx-row{display:flex;align-items:center;justify-content:space-between}
+.spec-card .idx{font:600 10px var(--font-mono);letter-spacing:.08em;color:var(--color-on-surface-variant)}
+.diff-chip{font:700 9px/1 var(--font-ui);letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:3px}
+.diff-hard{background:var(--color-amber-soft);color:var(--color-tertiary);border:1px solid var(--color-tertiary-container)}
+.diff-medium{background:var(--color-secondary-container);color:var(--color-on-secondary-container)}
+.diff-easy{background:var(--color-primary-fixed);color:var(--color-hero-forest)}
+.diff-advanced{background:var(--color-hero-forest);color:#d8f0de}
+.spec-card h3{font:800 14.5px/1.35 var(--font-ui);letter-spacing:-.01em}
+.spec-card .type{font:600 11.5px/1.4 var(--font-ui);color:var(--color-on-surface-variant)}
+.spec-card .foot{margin-top:auto;padding-top:10px;border-top:var(--line);display:flex;align-items:center;justify-content:space-between}
+
+/* ---------- footer ---------- */
+.footer{border-top:var(--line);padding:26px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:var(--color-surface-container-low)}
+.footer .brand{opacity:.9}
+.footer-links{display:flex;align-items:center;gap:20px}
+.footer-links a{font:700 12px/1 var(--font-ui);color:var(--color-on-surface-variant)}
+.footer-links a:hover{color:var(--color-on-surface)}
+.footer-copy{font:600 11px/1 var(--font-mono);color:var(--color-on-surface-variant)}
+
+.dirbadge{position:fixed;right:16px;bottom:16px;z-index:99;display:flex;align-items:center;gap:8px;background:var(--color-surface-container-lowest);border:var(--line);border-radius:999px;padding:7px 13px 7px 11px;font:700 10px/1 var(--font-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--color-on-surface-variant);box-shadow:0 6px 20px -10px rgba(30,27,20,.35)}
+.dirbadge i{width:8px;height:8px;border-radius:2px;background:var(--color-amber)}
+.dirbadge b{font:700 10px var(--font-mono);color:var(--color-primary)}
+
+/* ---------- responsive ---------- */
+@media (max-width:1080px){
+  .hero-inner{grid-template-columns:1fr;padding-top:56px}
+  .hero h1{font-size:42px}
+  .devpanel,.readout{max-width:460px}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .showcase-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  .pubnav{padding:0 16px;gap:14px}
+  .pubnav-links{display:none}
+  .wrap,.hero-inner,.stats,.showcase,.footer{padding-left:16px;padding-right:16px}
+  .hero-inner{padding-top:40px}
+  .hero h1{font-size:32px}
+  .hero .sub{font-size:14.5px}
+  .hero-ctas{flex-wrap:wrap}
+  .stat-grid{grid-template-columns:1fr}
+  .showcase-grid{grid-template-columns:1fr}
+  .footer{flex-direction:column;align-items:flex-start}
+  .dirbadge{right:10px;bottom:10px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= PUBLIC NAV ================= -->
+<header class="pubnav">
+  <a class="brand" href="#">
+    <svg class="brand-mark" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+      <rect x="1" y="1" width="24" height="24" rx="6" fill="#4a7c59"/>
+      <path d="M8 17V9l5 4 5-4v8" stroke="#d8f0de" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="brand-name">Hack<em>Product</em></span>
+  </a>
+  <nav class="pubnav-links" aria-label="Primary">
+    <a href="#">Practice</a>
+    <a href="#">Autopsies</a>
+    <a href="#">Pricing</a>
+  </nav>
+  <div class="pubnav-right">
+    <a class="login" href="#">Log in</a>
+    <a class="btn-primary" href="#">Get started</a>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="hero-eyebrow"><i></i>Live now &middot; Claude Code Analytics loop</span>
+      <h1>Product judgment,<br>trained like <em>a muscle</em>.</h1>
+      <p class="sub">Four hundred reps in, you stop guessing and start pattern-matching. HackProduct is a practice gym for product thinking: <b>500+ graded challenges</b>, <b>102 company autopsies</b>, and live AI interview loops that score you the way a real panel would.</p>
+      <div class="hero-ctas">
+        <a class="btn-primary on-dark" href="#">Start your first rep<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
+        <a class="btn-ghost on-dark" href="#">See how FLOW works</a>
+      </div>
+      <div class="hero-fineprint">No credit card. First calibration rep is graded in under 4 minutes.</div>
+
+      <div class="readout">
+        <div class="readout-row">
+          <span class="readout-lab">Graded challenges</span>
+          <span class="readout-val">500<small>+</small></span>
+        </div>
+        <div class="readout-row">
+          <span class="readout-lab">Company autopsies</span>
+          <span class="readout-val">102</span>
+        </div>
+        <div class="readout-row">
+          <span class="readout-lab">Live interview loops</span>
+          <span class="readout-val">1<small>:</small>1 <small>with Hatch</small></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="devpanel">
+      <div class="devpanel-head"><i></i><i></i><i></i><span>today's session</span></div>
+      <div class="devpanel-body">
+        <span class="dp-title">Product Sense Sprint &middot; Week 2</span>
+        <div class="dp-block">
+          <div class="dp-dot done">&#10003;</div>
+          <div class="dp-body">
+            <span class="step">Warm-up &middot; Quick Take</span>
+            <h4>Should Spotify ship an AI DJ for team workspaces?</h4>
+          </div>
+        </div>
+        <div class="dp-block">
+          <div class="dp-dot active">2</div>
+          <div class="dp-body">
+            <span class="step">Main rep &middot; Product Sense</span>
+            <h4>Frame the buyer, the user, and the payer for Airbnb Experiences</h4>
+            <div class="dp-fbar"><i style="width:41%"></i></div>
+          </div>
+        </div>
+        <div class="dp-block">
+          <div class="dp-dot">3</div>
+          <div class="dp-body">
+            <span class="step">Cooldown &middot; Autopsy read</span>
+            <h4>Figma's multiplayer wedge: how a feature became the moat</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CREDIBILITY BAND ================= -->
+<section class="stats">
+  <div class="stats-inner">
+    <div class="stats-head">
+      <span class="microlabel">Why this works</span>
+      <h2>Reps you can measure, not modules you finish.</h2>
+      <p>Every rep is graded against the same four-move rubric a real interview panel scores you on. Nothing here is a quiz. Everything resolves to a number and a next action.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="panel stat-card">
+        <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8M8 8h8M8 16h5"/></svg></div>
+        <div class="stat-val">500<small>+</small></div>
+        <div class="stat-lab">Graded challenges across coding, SQL, system design, and product sense</div>
+      </div>
+      <div class="panel stat-card">
+        <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h6M8 17h4"/></svg></div>
+        <div class="stat-val">102</div>
+        <div class="stat-lab">Company autopsies breaking down the decisions behind real product launches</div>
+      </div>
+      <div class="panel stat-card">
+        <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></div>
+        <div class="stat-val">Live</div>
+        <div class="stat-lab">AI interview loops that run a full round and debrief you like a real panel would</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONTENT SHOWCASE ================= -->
+<section class="showcase">
+  <div class="showcase-inner">
+    <div class="showcase-head">
+      <div>
+        <span class="microlabel">From the challenge bank</span>
+        <h2 style="margin-top:6px">Pick a rep, get a score</h2>
+      </div>
+      <a class="quiet-link" href="#">Browse all 500+ challenges &rarr;</a>
+    </div>
+
+    <div class="showcase-grid">
+      <a class="panel rail rail-active spec-card" href="#">
+        <div class="idx-row"><span class="idx">PS-3041</span><span class="diff-chip diff-hard">Hard</span></div>
+        <h3>Reconstruct Delivery Routes from Checkpoint Logs</h3>
+        <span class="type">Coding</span>
+        <div class="foot"><span class="flow-chip">List</span><span class="meta-tag">18 min avg</span></div>
+      </a>
+      <a class="panel rail spec-card" href="#">
+        <div class="idx-row"><span class="idx">ALG-1188</span><span class="diff-chip diff-medium">Medium</span></div>
+        <h3>Rebuild Playlist from Shuffle Logs</h3>
+        <span class="type">Coding</span>
+        <div class="foot"><span class="flow-chip">Optimize</span><span class="meta-tag">12 min avg</span></div>
+      </a>
+      <a class="panel rail spec-card" href="#">
+        <div class="idx-row"><span class="idx">SQL-2076</span><span class="diff-chip diff-advanced">Advanced</span></div>
+        <h3>Amazon: Top 3 Products per Category</h3>
+        <span class="type">SQL</span>
+        <div class="foot"><span class="flow-chip">List</span><span class="meta-tag">9 min avg</span></div>
+      </a>
+      <a class="panel rail spec-card" href="#">
+        <div class="idx-row"><span class="idx">SYS-0512</span><span class="diff-chip diff-hard">System Design</span></div>
+        <h3>Design a Real-Time Leaderboard System</h3>
+        <span class="type">System Design</span>
+        <div class="foot"><span class="flow-chip is-active">Frame</span><span class="meta-tag">24 min avg</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <a class="brand" href="#">
+    <svg class="brand-mark" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+      <rect x="1" y="1" width="24" height="24" rx="6" fill="#4a7c59"/>
+      <path d="M8 17V9l5 4 5-4v8" stroke="#d8f0de" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="brand-name">Hack<em>Product</em></span>
+  </a>
+  <nav class="footer-links" aria-label="Footer">
+    <a href="#">Practice</a>
+    <a href="#">Autopsies</a>
+    <a href="#">Pricing</a>
+    <a href="#">Log in</a>
+  </nav>
+  <span class="footer-copy">&copy; 2026 HackProduct</span>
+</footer>
+
+<div class="dirbadge" aria-hidden="true"><i></i><span>Direction <b>A</b> &mdash; Precision Instrument</span></div>
+
+</body>
+</html>

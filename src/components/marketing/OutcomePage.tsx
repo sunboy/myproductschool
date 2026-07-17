@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { V3PageShell } from '@/components/landing-v3/V3PageShell'
 import { V3PageHero, V3Section, V3CtaBand } from '@/components/landing-v3/sections'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import type { OutcomePageEntry } from '@/lib/seo/outcomes'
 
 const FLOW = [
@@ -222,7 +222,7 @@ export function OutcomePage({ outcome }: { outcome: OutcomePageEntry }) {
                 color: 'var(--forest-deep)',
               }}
             >
-              <HatchGlyph state="challenging" size={34} />
+              <HatchImage state="pointing" size={34} />
               <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, lineHeight: 1.45 }}>{detail.signupHook}</p>
             </div>
           </div>

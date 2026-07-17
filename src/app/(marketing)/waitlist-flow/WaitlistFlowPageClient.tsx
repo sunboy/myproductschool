@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Instrument_Serif, DM_Sans, Geist_Mono } from 'next/font/google'
 import { WaitlistForm } from '@/components/marketing/WaitlistForm'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 const instrumentSerif = Instrument_Serif({ subsets: ['latin'], weight: ['400'], style: ['normal', 'italic'], variable: '--wf-display' })
 const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '400', '500', '600'], variable: '--wf-body' })
@@ -51,7 +51,7 @@ function WaitlistModal({ trigger, onClose }: { trigger: string; onClose: () => v
 
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
-          <HatchGlyph size={28} state="idle" className="text-primary shrink-0" />
+          <HatchImage size={28} state="idle" className="shrink-0" />
           <span className="font-headline font-bold text-primary">hackproduct</span>
         </div>
         <h3 style={{ fontFamily: 'var(--wf-display)', fontSize: '1.75rem', fontWeight: 400, lineHeight: 1.1, color: '#0E1B15', marginBottom: '0.5rem' }}>
@@ -716,7 +716,7 @@ export default function WaitlistFlowPage() {
                   <p className="wf-body" style={{ fontSize: '0.82rem', lineHeight: 1.55 }}>{step.hatchMsg}</p>
                 </div>
                 <div className="hatch-float" style={{ display: 'flex', justifyContent: 'center' }}>
-                  <HatchGlyph size={64} state="speaking" className="text-primary" />
+                  <HatchImage size={64} state="speaking" />
                 </div>
               </div>
 

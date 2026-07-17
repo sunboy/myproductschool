@@ -3,7 +3,7 @@ import { getChallenges } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
 import { getTechniqueLabelAny, getTopicLabelAny } from '@/lib/data/taxonomy'
 import { challengePath } from '@/lib/challenges/challengeNumber'
@@ -364,7 +364,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
           {/* Hatch's Coaching */}
           <div style={{ background: '#cfe3d3', borderRadius: 24, padding: 18, border: '1px solid rgba(0,0,0,0.04)' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-              <HatchGlyph size={36} state="speaking" className="flex-shrink-0" />
+              <HatchImage size={36} state="speaking" className="flex-shrink-0" />
               <div>
                 <div style={{
                   fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800,

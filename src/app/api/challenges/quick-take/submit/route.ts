@@ -14,6 +14,7 @@ import { apiError } from '@/lib/api/error'
 import { buildCompletedQuickTakeResult } from '@/lib/scoring/completed-attempt-result'
 import { buildEmptyStateResponse, buildSkillContextPrompt, detectSubmissionQuality } from '@/lib/hatch/skill-context'
 import { checkAndGrantAchievements } from '@/lib/achievements/check'
+import { recordHatchInteraction } from '@/lib/hatch/interactions'
 import { captureServerImmediate } from '@/lib/posthog/server'
 
 // XP base for quick-takes (lower than full challenges)
@@ -284,6 +285,9 @@ export async function POST(req: NextRequest) {
     payload: { challenge_id, move: primaryMove, score, xp_earned },
   })
   if (sessionEventError) console.error('[quick-take] session_events insert failed:', sessionEventError.message)
+
+  // Session memory: fire-and-forget, never blocks or fails the submit.
+  recordHatchInteraction(user.id, 'quick_take_submit', { challenge_id, move: primaryMove, score, xp_earned })
 
   await applyMoveLevelXp(user.id, { [primaryMove]: Math.round(score * 10) }, 'quick-take')
 

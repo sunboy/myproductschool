@@ -2,7 +2,7 @@
 
 import { ScoreHero, DimensionCard } from '@/components/feedback'
 import { FeedbackText } from '@/components/ui/FeedbackText'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import type { RunResult, GradingFeedback, GradingDimensionKey, SupportedLanguage } from '@/lib/coding/types'
 
 interface CodingFeedbackProps {
@@ -401,7 +401,7 @@ function GradingColumn({
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-3 p-3 bg-primary-container rounded-xl">
-          <HatchGlyph size={28} state="reviewing" className="text-primary" />
+          <HatchImage size={28} state="reviewing" />
           <div>
             <p className="text-sm font-label font-medium text-on-primary-container">
               Hatch is analysing your session...
@@ -451,7 +451,7 @@ function GradingColumn({
     return (
       <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
         <div className="flex items-start gap-2">
-          <HatchGlyph size={24} state="listening" className="shrink-0 text-primary" />
+          <HatchImage size={24} state="listening" />
           <div>
             <p className="font-label text-sm font-bold text-on-surface">Hatch feedback is pending</p>
             <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
@@ -578,7 +578,7 @@ function GradingColumn({
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-primary text-on-primary text-sm font-label font-semibold hover:bg-primary/90 transition-colors"
             data-testid="hatch-chat-panel"
           >
-            <HatchGlyph size={18} state="speaking" className="text-on-primary" />
+            <HatchImage size={18} state="speaking" />
             Ask Hatch about this
           </button>
         )}
@@ -655,7 +655,7 @@ export function CodingFeedback({
                 data-testid="ask-hatch-banner"
                 className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 font-label text-xs font-bold text-on-primary transition-opacity hover:opacity-90"
               >
-                <HatchGlyph size={15} state="speaking" className="text-on-primary" />
+                <HatchImage size={15} state="speaking" />
                 Ask Hatch
               </button>
             )}

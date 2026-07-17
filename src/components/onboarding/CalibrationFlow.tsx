@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { HatchGlyph, type HatchState } from '@/components/shell/HatchGlyph'
+import { HatchImage, type HatchImageState } from '@/components/redesign/HatchImage'
 import { QUESTIONS, FEEDBACK_BY_TIER } from '@/lib/calibration/questions'
 import { clearOnboardingState, getOnboardingState, saveOnboardingState } from '@/lib/onboarding/state-client'
 import type { OptionQuality } from '@/lib/types'
@@ -357,7 +357,7 @@ export function CalibrationFlow({
   onComplete?: (path: 'challenge' | 'plan' | 'flow' | 'tour', slug?: string | null) => void
 }) {
   const [screen, setScreen] = useState<CalScreen>('intro')
-  const [hatchState, setHatchState] = useState<HatchState>('celebrating')
+  const [hatchState, setHatchState] = useState<HatchImageState>('celebrating')
   const [visible, setVisible] = useState(true)
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [roleContext, setRoleContext] = useState<RoleContext | null>(null)
@@ -682,7 +682,7 @@ export function CalibrationFlow({
         {/* ── INTRO ─────────────────────────────────────────────────────────── */}
         {screen === 'intro' && (
           <div className="flex flex-col items-center gap-5 text-center">
-            <HatchGlyph size={96} state={hatchState} className="text-primary" />
+            <HatchImage size={96} state={hatchState} />
             <div className="space-y-2.5">
               <h1 className="font-headline font-bold text-[28px] text-on-surface leading-tight">
                 Let me figure out where you are.
@@ -708,7 +708,7 @@ export function CalibrationFlow({
         {screen === 'role' && (
           <div className="w-full flex flex-col gap-4">
             <div className="flex items-center gap-3">
-              <HatchGlyph size={42} state={hatchState} className="text-primary flex-shrink-0" />
+              <HatchImage size={42} state={hatchState} className="flex-shrink-0" />
               <h2 className="font-headline font-bold text-[20px] text-on-surface leading-snug">
                 What&apos;s your primary role?
               </h2>
@@ -748,7 +748,7 @@ export function CalibrationFlow({
         {screen === 'context' && (
           <div className="w-full flex flex-col gap-4">
             <div className="flex items-start gap-3">
-              <HatchGlyph size={42} state={hatchState} className="text-primary flex-shrink-0" />
+              <HatchImage size={42} state={hatchState} className="flex-shrink-0" />
               <div>
                 <h2 className="font-headline font-bold text-[20px] text-on-surface leading-snug">
                   What brings you here right now?
@@ -778,7 +778,7 @@ export function CalibrationFlow({
         {screen === 'goal' && (
           <div className="w-full flex flex-col gap-4">
             <div className="flex items-start gap-3">
-              <HatchGlyph size={42} state={hatchState} className="text-primary flex-shrink-0" />
+              <HatchImage size={42} state={hatchState} className="flex-shrink-0" />
               <div>
                 <h2 className="font-headline font-bold text-[20px] text-on-surface leading-snug">
                   What does winning look like in the next few months?
@@ -808,7 +808,7 @@ export function CalibrationFlow({
         {screen === 'timeline' && (
           <div className="w-full flex flex-col gap-4">
             <div className="flex items-start gap-3">
-              <HatchGlyph size={42} state={hatchState} className="text-primary flex-shrink-0" />
+              <HatchImage size={42} state={hatchState} className="flex-shrink-0" />
               <div>
                 <h2 className="font-headline font-bold text-[20px] text-on-surface leading-snug">
                   How soon does this matter?
@@ -865,7 +865,7 @@ export function CalibrationFlow({
             <FlowMoveStrip activeIdx={questionIdx} completedSet={completedSet} />
 
             <div className="flex items-start gap-3">
-              <HatchGlyph size={40} state={hatchState} className="text-primary flex-shrink-0 mt-0.5" />
+              <HatchImage size={40} state={hatchState} className="flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-[10px] font-label font-bold uppercase tracking-widest mb-0.5" style={{ color: currentMove.color }}>
                   {currentMove.label} move
@@ -933,7 +933,7 @@ export function CalibrationFlow({
                   animation: 'calFadeUp 0.25s ease',
                 }}
               >
-                <HatchGlyph size={20} state="speaking" className="text-primary flex-shrink-0 mt-0.5" />
+                <HatchImage size={20} state="speaking" className="flex-shrink-0 mt-0.5" />
                 <p className="text-[12px] text-on-surface font-body leading-relaxed italic">
                   {microFeedback}
                 </p>
@@ -945,7 +945,7 @@ export function CalibrationFlow({
         {/* ── READING ───────────────────────────────────────────────────────── */}
         {screen === 'reading' && (
           <div className="flex flex-col items-center gap-8 text-center py-10">
-            <HatchGlyph size={112} state="reviewing" className="text-primary" />
+            <HatchImage size={112} state="reviewing" />
             <div className="space-y-2">
               <p
                 key={readingPhraseIdx}
@@ -964,7 +964,7 @@ export function CalibrationFlow({
         {/* ── FLOW INTRO ────────────────────────────────────────────────────── */}
         {screen === 'flow_intro' && (
           <div className="flex flex-col items-center gap-5 text-center">
-            <HatchGlyph size={88} state="speaking" className="text-primary" />
+            <HatchImage size={88} state="speaking" />
             <div className="space-y-3">
               <h2 className="font-headline font-bold text-[26px] text-on-surface leading-tight">
                 Now the fun part.
@@ -989,7 +989,7 @@ export function CalibrationFlow({
 
             {/* Hero: celebrating Hatch + heading */}
             <div className="flex flex-col items-center gap-2 pt-3 text-center">
-              <HatchGlyph size={76} state="celebrating" className="text-primary" />
+              <HatchImage size={76} state="celebrating" />
               <div
                 className="transition-all duration-500"
                 style={{

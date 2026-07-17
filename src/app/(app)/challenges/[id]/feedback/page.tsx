@@ -1,10 +1,14 @@
 import { getChallengeById } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ScoreHero, DimensionCard, FeedbackShell, FeedbackSection, TakeawayCard } from '@/components/feedback'
-import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakdown'
+import {
+  Share2, ArrowRight, ChevronRight, CheckCircle2, Play, BookOpen,
+  MessagesSquare, LayoutGrid, PenLine, BadgeCheck, Lightbulb,
+} from 'lucide-react'
+import { DimensionCard } from '@/components/feedback'
 
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
+import { NoteCard } from '@/components/redesign/NoteCard'
 import { BackButton } from '@/components/navigation/BackButton'
 import { Md } from '@/components/ui/Md'
 import { FeedbackText } from '@/components/ui/FeedbackText'
@@ -26,6 +30,20 @@ const dimensionConfig: Record<string, { label: string; icon: string }> = {
 
 function prettifyDimension(key: string): string {
   return dimensionConfig[key]?.label ?? key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+function formatCompetencyLabel(key: string): string {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+/** Discipline accents for the FLOW breakdown cards (spec §Palette / preview
+ * feedback-debrief.html .flow-dot): frame=green, list=blue, optimize=purple,
+ * win=orange. */
+const FLOW_STEP_ACCENT: Record<string, string> = {
+  frame: 'var(--color-sd-fg)',
+  list: 'var(--color-ps-fg)',
+  optimize: 'var(--color-dm-fg)',
+  win: 'var(--color-sql-fg)',
 }
 
 function toFiniteNumber(value: unknown): number | null {
@@ -282,12 +300,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     return (
       <div className="max-w-2xl mx-auto px-4 md:px-6 py-12">
         <BackButton href={browseHref} label="Back to practice" className="mb-8" />
-        <div className="bg-surface-container rounded-2xl p-8 md:p-10 text-center editorial-shadow">
-          <HatchGlyph size={56} state="idle" className="text-primary mx-auto mb-5" />
-          <h1 className="font-headline text-2xl font-bold text-on-surface mb-2">
+        <div className="rounded-2xl border border-hairline bg-card-bright p-8 md:p-10 text-center">
+          <HatchImage state="idle" size={72} className="mx-auto mb-5" />
+          <h1 className="font-headline text-2xl font-semibold text-forest-950 mb-2">
             No graded attempt yet
           </h1>
-          <p className="text-sm text-on-surface-variant leading-relaxed max-w-md mx-auto mb-7">
+          <p className="text-sm text-ink-secondary leading-relaxed max-w-md mx-auto mb-7">
             Hatch grades your reasoning the moment you submit. Run this challenge and
             it will read your actual work, then break down what landed and the one
             move that closes the gap.
@@ -295,14 +313,14 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href={retryHref}
-              className="inline-flex items-center gap-1.5 bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-1.5 bg-forest-950 text-white rounded-lg px-5 py-2.5 font-label font-bold text-sm hover:opacity-90 transition-opacity"
             >
-              <span className="material-symbols-outlined text-base">play_arrow</span>
+              <Play size={15} strokeWidth={1.8} />
               Start this challenge
             </Link>
             <Link
               href={browseHref}
-              className="inline-flex items-center gap-1.5 bg-secondary-container text-on-secondary-container rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-1.5 bg-card-bright border border-hairline text-ink-strong rounded-lg px-5 py-2.5 font-label font-bold text-sm hover:bg-page-field transition-colors"
             >
               Browse practice
             </Link>
@@ -335,14 +353,14 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   const full = feedbackFull ?? (isMock ? MOCK_FEEDBACK_FULL : EMPTY_FEEDBACK_FULL)
   const items = feedback.length > 0 ? feedback : (full.dimensions as HatchFeedbackItem[])
 
-  // Determine score descriptor text
+  // Determine score descriptor (one highlighter word per page, spec §7)
   const scoreDescriptor = overallScoreNum >= 90
-    ? "That's the run that gets the offer"
+    ? <>That&rsquo;s the run that gets the <span className="hl-word">offer</span></>
     : overallScoreNum >= 75
-      ? 'Strong run. One sharpening move below and this is yours for good'
+      ? <>Strong run. One <span className="hl-word">sharpening</span> move below and this is yours for good</>
       : overallScoreNum >= 60
-        ? 'The shape is there. The gap below is the rep that closes it'
-        : "Better to miss it here than in the room. Here's exactly where"
+        ? <>The shape is there. The gap below is the <span className="hl-word">rep</span> that closes it</>
+        : <>Better to miss it <span className="hl-word">here</span> than in the room. Here&rsquo;s exactly where</>
 
   // Format submission date
   const formattedDate = submissionDate
@@ -377,142 +395,194 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     confidence: p.confidence,
     evidence: p.evidence,
   })) ?? []
-  // Prefer the canonical text slug so the back-to-challenge link is clean and
-  // skips the id→slug redirect hop (challenge was resolved via getChallengeById,
-  // which returns the slug). Falls back to the route param if slug is absent.
-  const challengeCanonical = (challenge as { slug?: string | null }).slug ?? id
-  const challengeHref = appendReturnTo(
-    `/workspace/challenges/${challengeCanonical}${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`,
-    returnTo,
-  )
   const nextChallengeHref = nextChallenge
     ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}`
     : undefined
   const shareHref = `/workspace/challenges/${id}/share${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`
   const browseHref = returnTo ?? '/challenges'
 
+  // Score-hero ring geometry (static SVG, preview .ring-wrap: 108px, r=46)
+  const RING = 108
+  const RING_R = 46
+  const RING_C = 2 * Math.PI * RING_R
+  const ringPct = Math.max(0, Math.min(100, Math.round(overallScoreNum)))
+
+  // Lowest-scoring FLOW step gets the "Needs focus" treatment (scores are the
+  // rollup's real 0-100 percents; steps without a score never get the tag).
+  const flowScores = (mentalModelsBreakdown ?? [])
+    .map(s => (typeof s.score === 'number' ? s.score : null))
+    .filter((s): s is number => s != null)
+  const lowestFlowScore = flowScores.length > 0 ? Math.min(...flowScores) : null
+
+  const evidenceCards = detectedPatterns.filter(dp => dp.evidence && dp.evidence.trim().length > 0)
+
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
-      <BackButton href={browseHref} label="Back to practice" className="mb-4" />
+    <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-5">
 
-      {/* Two-pane grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      {/* Crumb row */}
+      <div className="mb-3 flex items-center gap-3">
+        <BackButton href={browseHref} label="Back to practice" />
+        <span className="rounded-full bg-sd-bg px-3 py-1 text-xs font-bold text-forest-600 tabular-nums">
+          Completed {formattedDate}
+        </span>
+      </div>
 
-        {/* ─── Left Pane: Case Context (5 cols) ─── */}
-        <section className="col-span-12 lg:col-span-5 space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-headline text-2xl font-bold text-on-surface">Case Context</h2>
-            <span className="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-bold uppercase tracking-wider">
-              {challenge.difficulty}
-            </span>
+      {/* Title row */}
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="font-headline text-[28px] font-bold text-forest-950">Session debrief</h1>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[13.5px] text-ink-secondary">
+            <span>{challenge.title}</span>
+            <span className="text-ink-muted">&middot;</span>
+            <span className="capitalize">{challenge.difficulty}</span>
+            <span className="text-ink-muted">&middot;</span>
+            <span className="tabular-nums">{challenge.estimated_minutes} min</span>
           </div>
+        </div>
+        <Link
+          href={shareHref}
+          className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-hairline bg-card-bright px-4 py-2 text-[13px] font-bold text-ink-strong hover:bg-page-field transition-colors"
+        >
+          <Share2 size={15} strokeWidth={1.8} />
+          Share debrief
+        </Link>
+      </div>
 
-          {/* Challenge card - sticky on desktop */}
-          <div className="bg-surface-container p-5 rounded-xl editorial-shadow space-y-4 lg:sticky lg:top-24">
-            {/* Challenge title */}
-            <h3 className="font-headline text-xl font-bold text-primary">{challenge.title}</h3>
+      {/* Center column + right rail */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <section className="min-w-0 space-y-5">
 
-            {/* Prompt text */}
-            <div className="text-sm text-on-surface-variant leading-relaxed">
-              <Md variant="compact" tone="inherit">{challenge.prompt_text ?? ''}</Md>
-            </div>
-
-            {/* Tag chips */}
-            <div className="flex flex-wrap gap-2 pt-2">
-              {Array.from(new Set([
-                ...((challenge as unknown as { topic_tags?: string[] }).topic_tags ?? []),
-                ...((challenge as unknown as { technique_tags?: string[] }).technique_tags ?? challenge.tags ?? []),
-              ])).map(tag => (
-                <span
-                  key={tag}
-                  className="text-xs px-2 py-1 bg-surface-variant text-on-surface-variant rounded-md border border-outline-variant/30"
-                >
-                  {formatCompany(tag)}
+          {/* ── Score hero band ── */}
+          <div
+            className="relative flex flex-col items-start gap-5 overflow-hidden rounded-2xl px-6 py-5 md:flex-row md:items-center"
+            style={{ background: 'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-800) 100%)' }}
+          >
+            <div className="relative shrink-0" style={{ width: RING, height: RING }}>
+              <svg width={RING} height={RING} viewBox={`0 0 ${RING} ${RING}`} style={{ transform: 'rotate(-90deg)' }}>
+                <circle cx={RING / 2} cy={RING / 2} r={RING_R} fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth={10} />
+                <circle
+                  cx={RING / 2} cy={RING / 2} r={RING_R} fill="none"
+                  stroke="var(--color-gold)" strokeWidth={10} strokeLinecap="round"
+                  strokeDasharray={RING_C} strokeDashoffset={RING_C * (1 - ringPct / 100)}
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="font-headline text-[25px] font-bold leading-none text-white tabular-nums">
+                  {ringPct}<sup className="text-[13px]">%</sup>
                 </span>
-              ))}
+              </div>
             </div>
 
-            {/* Submission details */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-3 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
-                <span className="material-symbols-outlined text-primary">calendar_today</span>
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-on-surface-variant uppercase">Submission Date</p>
-                  <p className="text-sm font-semibold text-on-surface">{formattedDate}</p>
-                </div>
-              </div>
-              {wordCount && (
-                <div className="flex items-center gap-3 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
-                  <span className="material-symbols-outlined text-primary">description</span>
-                  <div className="flex-1">
-                    <p className="text-xs font-bold text-on-surface-variant uppercase">Response Length</p>
-                    <p className="text-sm font-semibold text-on-surface">{wordCount} words</p>
-                  </div>
+            <div className="relative z-[1] min-w-0 flex-1">
+              <h2 className="font-headline text-xl font-semibold leading-tight text-on-hero-strong max-w-[520px]">
+                {scoreDescriptor}
+              </h2>
+              {full.overall && (
+                <FeedbackText className="mt-2 block max-w-[470px] text-[13px] leading-relaxed text-on-hero-muted">
+                  {full.overall}
+                </FeedbackText>
+              )}
+            </div>
+
+            <div className="relative z-[1] flex w-[128px] shrink-0 flex-col items-center self-center">
+              <HatchImage state="celebrating" size={100} priority />
+              {weakestCompetency && (
+                <div className="mt-1 max-w-[140px] rounded-[10px] bg-white/95 px-3 py-2 text-center text-[11px] font-bold leading-snug text-forest-900">
+                  {formatCompetencyLabel(weakestCompetency)} is the gap. Drill it next.
                 </div>
               )}
-              <div className="flex items-center gap-3 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
-                <span className="material-symbols-outlined text-primary">timer</span>
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-on-surface-variant uppercase">Estimated Time</p>
-                  <p className="text-sm font-semibold text-on-surface">{challenge.estimated_minutes} min</p>
+            </div>
+          </div>
+
+          {/* ── FLOW breakdown ── */}
+          {mentalModelsBreakdown && mentalModelsBreakdown.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between">
+                <h3 className="font-headline text-lg font-semibold text-forest-950">FLOW breakdown</h3>
+                <div className="hidden items-center gap-4 text-xs text-ink-secondary sm:flex">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-forest-600" />
+                    On track
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-flame" />
+                    Needs focus
+                  </span>
                 </div>
+              </div>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {mentalModelsBreakdown.map((item) => {
+                  const stepKey = item.step.toLowerCase()
+                  const accent = FLOW_STEP_ACCENT[stepKey] ?? 'var(--color-forest-600)'
+                  const pct = typeof item.score === 'number'
+                    ? Math.max(0, Math.min(100, Math.round(item.score)))
+                    : null
+                  const needsFocus = pct != null && lowestFlowScore != null && pct === lowestFlowScore && pct < 75
+                  return (
+                    <div key={item.step} className="rounded-xl border border-hairline bg-card-bright p-4">
+                      <div className="flex items-center gap-2">
+                        <span aria-hidden className="h-2 w-2 shrink-0 rounded-full" style={{ background: accent }} />
+                        <span className="text-[13px] font-bold capitalize" style={{ color: accent }}>{item.step}</span>
+                      </div>
+                      {pct != null && (
+                        <div className="mt-1 font-headline text-2xl font-bold text-forest-950 tabular-nums">{pct}%</div>
+                      )}
+                      {item.demonstrated && item.demonstrated !== 'No signal recorded' && (
+                        <p className="mt-1.5 text-[12.5px] leading-snug text-ink-secondary line-clamp-3">{item.demonstrated}</p>
+                      )}
+                      {pct != null && (
+                        <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-hairline">
+                          <div
+                            className="h-full rounded-full"
+                            style={{ width: `${pct}%`, background: needsFocus ? 'var(--color-flame)' : 'var(--color-forest-600)' }}
+                          />
+                        </div>
+                      )}
+                      {needsFocus && (
+                        <div className="mt-1.5 text-[10.5px] font-bold text-flame">Needs focus</div>
+                      )}
+                      {item.missed && (
+                        <p className="mt-1.5 text-[11.5px] leading-snug text-ink-muted">{item.missed}</p>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
+          )}
 
-            {/* User's submitted response (if available) */}
-            {responseText && (
-              <div className="pt-2">
-                <p className="text-xs font-bold text-on-surface-variant uppercase mb-2">Your Response</p>
-                <div className="bg-surface-container-lowest rounded-xl p-4 text-sm text-on-surface-variant leading-relaxed max-h-64 overflow-y-auto whitespace-pre-line border border-outline-variant/20">
-                  {responseText}
-                </div>
+          {/* ── Evidence highlights (grader-detected patterns with evidence) ── */}
+          {evidenceCards.length > 0 && (
+            <div>
+              <h3 className="font-headline text-lg font-semibold text-forest-950">From your answer</h3>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {evidenceCards.map((dp, i) => (
+                  <NoteCard key={dp.pattern_name} tint={i % 2 === 0 ? 'amber' : 'teal'} className="rounded-xl p-3.5">
+                    <p className="text-[13px] font-semibold leading-snug text-ink-strong">
+                      &ldquo;{dp.evidence}&rdquo;
+                    </p>
+                    <div className="mt-2 text-[11.5px] font-bold text-ink-secondary">{dp.pattern_name}</div>
+                  </NoteCard>
+                ))}
               </div>
-            )}
-          </div>
-        </section>
+            </div>
+          )}
 
-        {/* ─── Right Pane: Hatch's Analysis (7 cols) ─── */}
-        <section className="col-span-12 lg:col-span-7 space-y-4">
-          <h2 className="font-headline text-2xl font-bold text-on-surface">Submission Review</h2>
-
-          <FeedbackShell
-            hero={
-              <div className="flex flex-col gap-4">
-                <ScoreHero raw={overallScoreNum} scale={100} headline={scoreDescriptor} />
-                {full.overall && (
-                  <FeedbackText className="text-on-surface text-sm leading-relaxed">{full.overall}</FeedbackText>
-                )}
-              </div>
-            }
-            takeaway={
-              (full.what_worked.length > 0 || full.what_to_fix.length > 0) ? (
-                <>
-                  {full.what_worked[0] && <TakeawayCard kind="strength" text={full.what_worked[0]} />}
-                  {full.what_to_fix[0] && <TakeawayCard kind="fix" text={full.what_to_fix[0]} />}
-                </>
-              ) : undefined
-            }
-          >
-            {/* FLOW is the spine: the per-move Mental Models breakdown leads. */}
-            {mentalModelsBreakdown && mentalModelsBreakdown.length > 0 && (
-              <MentalModelsBreakdown
-                breakdown={mentalModelsBreakdown}
-                weakestCompetency={weakestCompetency ?? undefined}
-                nextChallengeHref={nextChallengeHref}
-                nextChallengeTitle={nextChallenge?.title}
-              />
-            )}
-
-            {/* Canvas snapshot (system_design / data_modeling only) */}
-            {isCanvasChallenge && canvasSnapshot && (
-              <FeedbackSection title="Your diagram" icon="schema">
+          {/* Canvas snapshot (system_design / data_modeling only) */}
+          {isCanvasChallenge && canvasSnapshot && (
+            <div>
+              <h3 className="font-headline text-lg font-semibold text-forest-950">Your diagram</h3>
+              <div className="mt-3">
                 <CanvasSnapshotViewer snapshot={canvasSnapshot} annotations={canvasAnnotations} />
-              </FeedbackSection>
-            )}
+              </div>
+            </div>
+          )}
 
-            {/* Per-dimension coaching: the one shared DimensionCard. */}
-            <FeedbackSection title="Where the score came from" icon="analytics">
-              <div className="flex flex-col gap-2.5">
+          {/* Per-dimension coaching: the one shared DimensionCard. */}
+          {dimensionPanels.length > 0 && (
+            <div>
+              <h3 className="font-headline text-lg font-semibold text-forest-950">Where the score came from</h3>
+              <div className="mt-3 flex flex-col gap-2.5">
                 {(() => {
                   const lowest = dimensionPanels.reduce(
                     (min, d) => (d.score < min ? d.score : min),
@@ -531,136 +601,186 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                   ))
                 })()}
               </div>
-              {detectedPatterns.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {detectedPatterns.map((dp) => (
-                    <span key={dp.pattern_name} className="font-label text-[11px] font-bold px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant">
-                      {dp.pattern_name}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </FeedbackSection>
-
-            {/* Full strength / growth lists (the takeaway row carries the top
-                item of each; these are the receipts). */}
-            {(full.what_worked.length > 1 || full.what_to_fix.length > 1) && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" data-fb-section>
-                {full.what_worked.length > 1 && (
-                  <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
-                      <h4 className="font-headline font-extrabold text-on-surface text-lg">What Worked</h4>
-                    </div>
-                    <ul className="space-y-2">
-                      {full.what_worked.slice(1).map((item, i) => (
-                        <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
-                          <span className="material-symbols-outlined text-primary text-lg flex-shrink-0">check_circle</span>
-                          <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {full.what_to_fix.length > 1 && (
-                  <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-secondary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
-                      <h4 className="font-headline font-extrabold text-on-surface text-lg">Areas for Growth</h4>
-                    </div>
-                    <ul className="space-y-2">
-                      {full.what_to_fix.slice(1).map((item, i) => (
-                        <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
-                          <span className="material-symbols-outlined text-secondary text-lg flex-shrink-0">arrow_forward</span>
-                          <FeedbackText className="flex-1 text-on-surface-variant">{item}</FeedbackText>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
+            </div>
+          )}
 
           {/* Key Insight — hidden when a real attempt has none (no mock fallback) */}
           {full.key_insight && (
-            <div data-fb-section className="bg-tertiary-fixed rounded-xl p-5 flex items-start gap-3">
-              <span className="material-symbols-outlined text-tertiary flex-shrink-0 mt-0.5">lightbulb</span>
-              <div>
-                <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
-                <FeedbackText className="text-on-tertiary-fixed-variant">{full.key_insight}</FeedbackText>
+            <NoteCard tint="amber" className="flex items-start gap-3 rounded-xl p-4">
+              <Lightbulb size={16} strokeWidth={1.8} className="mt-0.5 shrink-0 text-ink-secondary" />
+              <div className="min-w-0">
+                <p className="mb-1 text-[13px] font-bold text-ink-strong">Key insight</p>
+                <FeedbackText className="text-[13px] leading-relaxed text-ink-strong">{full.key_insight}</FeedbackText>
               </div>
-            </div>
+            </NoteCard>
           )}
 
-          {/* Up next banner */}
+          {/* ── Recommended next rep ── */}
           {nextChallenge && nextChallengeHref && (
-            <div data-fb-section className="bg-primary/10 border border-primary/20 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex items-start gap-3 flex-1 min-w-0">
-                <span className="material-symbols-outlined text-primary flex-shrink-0 mt-0.5">rocket_launch</span>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-primary uppercase tracking-wider font-label">Up next</p>
-                  <p className="text-sm font-semibold text-on-surface truncate">{nextChallenge.title}</p>
-                  {weakestCompetency && (
-                    <p className="text-xs text-on-surface-variant font-label mt-0.5">
-                      Targets your weakest move this run
-                    </p>
-                  )}
-                </div>
+            <div
+              className="flex flex-col items-start gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:gap-6"
+              style={{
+                background: 'linear-gradient(120deg, #eef6e6 0%, #e4f0da 100%)',
+                borderColor: '#d8e8ca',
+              }}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-wider text-forest-600">Recommended next rep</p>
+                <p className="mt-1 font-headline text-[19px] font-semibold leading-snug text-forest-950">{nextChallenge.title}</p>
+                {weakestCompetency && (
+                  <p className="mt-1 text-[13px] text-ink-secondary">
+                    Picked because {formatCompetencyLabel(weakestCompetency)} was your weakest move this run.
+                  </p>
+                )}
               </div>
-              <Link
-                href={nextChallengeHref}
-                className="py-3 px-6 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 shadow-md shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm whitespace-nowrap"
-              >
-                Start next challenge
-                <span className="material-symbols-outlined">arrow_forward</span>
-              </Link>
+              <div className="flex shrink-0 flex-col items-start gap-2">
+                <Link
+                  href={nextChallengeHref}
+                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-forest-950 px-4 py-2.5 text-sm font-bold text-white hover:opacity-90 transition-opacity"
+                >
+                  Start this rep
+                  <ArrowRight size={15} strokeWidth={2} />
+                </Link>
+                <Link
+                  href={browseHref}
+                  className="inline-flex items-center gap-1 text-[12.5px] font-bold text-forest-700 hover:underline"
+                >
+                  Pick a different rep
+                  <ChevronRight size={13} strokeWidth={1.9} />
+                </Link>
+              </div>
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+          {/* Action buttons */}
+          <div className="flex flex-col gap-3 pt-1 sm:flex-row">
             <Link
               href={`/challenges/${id}/diagnosis?attempt=${attempt ?? 'mock'}`}
-              className="flex-1 py-3 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 shadow-md shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-forest-950 py-2.5 text-sm font-bold text-white hover:opacity-90 transition-opacity"
             >
-              <span className="material-symbols-outlined">verified</span>
-              See Diagnosis
+              <BadgeCheck size={16} strokeWidth={1.8} />
+              See diagnosis
             </Link>
             <Link
               href={`/workspace/challenges/${id}`}
-              className="flex-1 py-3 border border-primary text-primary rounded-full font-bold hover:bg-primary/5 transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-hairline bg-card-bright py-2.5 text-sm font-bold text-ink-strong hover:bg-page-field transition-colors"
             >
-              <span className="material-symbols-outlined">edit_note</span>
-              Try Again
+              <PenLine size={15} strokeWidth={1.8} />
+              Try again
             </Link>
             <Link
               href={shareHref}
-              className="flex-1 py-3 border border-outline-variant text-on-surface rounded-full font-bold hover:bg-surface-container transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-hairline bg-card-bright py-2.5 text-sm font-bold text-ink-strong hover:bg-page-field transition-colors"
             >
-              <span className="material-symbols-outlined">ios_share</span>
+              <Share2 size={15} strokeWidth={1.8} />
               Share scorecard
             </Link>
           </div>
 
           {/* Links row */}
-          <div className="flex items-center justify-center gap-4 pt-1 pb-4">
-            <Link href={`/challenges/${id}/model-answer`} className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors font-label">
-              <span className="material-symbols-outlined text-sm">auto_stories</span>
+          <div className="flex items-center justify-center gap-4 pb-4 pt-1">
+            <Link href={`/challenges/${id}/model-answer`} className="flex items-center gap-1.5 text-xs font-semibold text-ink-secondary hover:text-forest-700 transition-colors">
+              <BookOpen size={13} strokeWidth={1.8} />
               Model answer
             </Link>
-            <span className="text-outline-variant">&#183;</span>
-            <Link href={`/challenges/${id}/discussion`} className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors font-label">
-              <span className="material-symbols-outlined text-sm">forum</span>
+            <span className="text-ink-muted">&#183;</span>
+            <Link href={`/challenges/${id}/discussion`} className="flex items-center gap-1.5 text-xs font-semibold text-ink-secondary hover:text-forest-700 transition-colors">
+              <MessagesSquare size={13} strokeWidth={1.8} />
               Discussion
             </Link>
-            <span className="text-outline-variant">&#183;</span>
-            <Link href="/challenges" className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors font-label">
-              <span className="material-symbols-outlined text-sm">grid_view</span>
+            <span className="text-ink-muted">&#183;</span>
+            <Link href="/challenges" className="flex items-center gap-1.5 text-xs font-semibold text-ink-secondary hover:text-forest-700 transition-colors">
+              <LayoutGrid size={13} strokeWidth={1.8} />
               All challenges
             </Link>
           </div>
-          </FeedbackShell>
         </section>
+
+        {/* ── Right rail ── */}
+        <aside className="min-w-0 space-y-3">
+
+          {/* Strengths — mint (coach/positive) */}
+          {full.what_worked.length > 0 && (
+            <NoteCard tint="mint" className="rounded-xl p-4">
+              <h4 className="mb-2.5 text-[14px] font-bold text-ink-strong">Strengths</h4>
+              <ul className="space-y-2">
+                {full.what_worked.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-forest-600 text-white">
+                      <CheckCircle2 size={12} strokeWidth={2.2} className="text-white" />
+                    </span>
+                    <FeedbackText className="min-w-0 flex-1 text-[13px] leading-snug text-ink-strong">{item}</FeedbackText>
+                  </li>
+                ))}
+              </ul>
+            </NoteCard>
+          )}
+
+          {/* Growth areas — blush (review) */}
+          {full.what_to_fix.length > 0 && (
+            <NoteCard tint="blush" className="rounded-xl p-4">
+              <h4 className="mb-2.5 text-[14px] font-bold text-ink-strong">Growth areas</h4>
+              <ul className="space-y-2">
+                {full.what_to_fix.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    {/* Raw hex kept intentionally: nearest token (note-blush-border #dcbcd6) is far
+                        lighter and the bullet would lose contrast against the blush note fill. */}
+                    <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#b06ba3]" />
+                    <FeedbackText className="min-w-0 flex-1 text-[13px] leading-snug text-ink-strong">{item}</FeedbackText>
+                  </li>
+                ))}
+              </ul>
+            </NoteCard>
+          )}
+
+          {/* Case context */}
+          <div className="rounded-xl border border-hairline bg-card-bright p-4">
+            <h4 className="text-[14px] font-bold text-ink-strong">The case</h4>
+            <p className="mt-1.5 text-[13.5px] font-bold text-forest-700">{challenge.title}</p>
+            <div className="mt-2 max-h-48 overflow-y-auto text-[12.5px] leading-relaxed text-ink-secondary">
+              <Md variant="compact" tone="inherit">{challenge.prompt_text ?? ''}</Md>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {Array.from(new Set([
+                ...((challenge as unknown as { topic_tags?: string[] }).topic_tags ?? []),
+                ...((challenge as unknown as { technique_tags?: string[] }).technique_tags ?? challenge.tags ?? []),
+              ])).map(tag => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-hairline bg-page-field px-2 py-0.5 text-[11px] font-semibold text-ink-secondary"
+                >
+                  {formatCompany(tag)}
+                </span>
+              ))}
+            </div>
+            <div className="mt-3 space-y-1.5 border-t border-hairline pt-3 text-[12px] text-ink-secondary">
+              <div className="flex items-center justify-between">
+                <span>Submitted</span>
+                <span className="font-bold text-ink-strong tabular-nums">{formattedDate}</span>
+              </div>
+              {wordCount && (
+                <div className="flex items-center justify-between">
+                  <span>Response length</span>
+                  <span className="font-bold text-ink-strong tabular-nums">{wordCount} words</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <span>Estimated time</span>
+                <span className="font-bold text-ink-strong tabular-nums">{challenge.estimated_minutes} min</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Submitted response */}
+          {responseText && (
+            <div className="rounded-xl border border-hairline bg-card-bright p-4">
+              <h4 className="mb-2 text-[14px] font-bold text-ink-strong">Your response</h4>
+              <div className="max-h-64 overflow-y-auto whitespace-pre-line rounded-lg border border-hairline bg-page-field p-3 text-[12.5px] leading-relaxed text-ink-secondary">
+                {responseText}
+              </div>
+            </div>
+          )}
+        </aside>
       </div>
     </div>
   )

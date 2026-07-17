@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { LeadGateForm } from '@/components/landing-v3/lead-magnet/LeadGateForm'
 import { useMagnetTracking } from '@/components/landing-v3/lead-magnet/useMagnetTracking'
 import {
@@ -124,7 +124,7 @@ export function AnswerFixClient() {
       <section className="lm-section lm-section-alt">
         <div className="shell">
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <HatchGlyph size={40} state="speaking" className="text-primary" />
+            <HatchImage size={40} state="speaking" />
             <h2 style={{ margin: 0 }}>Rebuild it, one move at a time.</h2>
           </div>
           <p className="lm-section-sub" style={{ marginTop: 8 }}>

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { useOnboardingModal } from '@/context/OnboardingModalContext'
 
 export function CalibrationHero() {
@@ -12,7 +12,7 @@ export function CalibrationHero() {
       {/* Top accent strip */}
       <div className="h-1 bg-gradient-to-r from-primary via-tertiary to-primary opacity-60" />
       <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-        <HatchGlyph size={72} state="celebrating" className="text-primary flex-shrink-0 self-center sm:self-auto" />
+        <HatchImage size={72} state="celebrating" className="flex-shrink-0 self-center sm:self-auto" />
         <div className="flex-1 min-w-0">
           {hasMeaningfulProgress ? (
             <>

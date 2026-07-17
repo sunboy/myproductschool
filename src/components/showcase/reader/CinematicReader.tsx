@@ -1,6 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { trackEvent } from '@/lib/posthog/client';
+import {
+  EVENT_AUTOPSY_OPENED,
+  EVENT_AUTOPSY_SECTION_VIEWED,
+  EVENT_AUTOPSY_FINISHED,
+} from '@/lib/posthog/events';
 import { useReaderScroll } from '@/hooks/useReaderScroll';
 import { useReaderResume } from '@/hooks/useReaderResume';
 import { ParallaxHero } from './ParallaxHero';
@@ -70,6 +76,39 @@ export function CinematicReader({
 
   const { scrollPct, activeSection, visitedSections } = useReaderScroll(sectionIds, contentRef);
   const backHref = `/explore/autopsies/${story.companySlug}`;
+
+  // ── Analytics: autopsy_opened ─────────────────────────────────────────────
+  useEffect(() => {
+    trackEvent(EVENT_AUTOPSY_OPENED, { slug: story.companySlug });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Analytics: autopsy_section_viewed / autopsy_finished ─────────────────
+  // Same payload shape as the legacy AutopsyReaderClient — the article-resume
+  // cron reads slug + section_index + pct off these events.
+  const scrollPctRef = useRef(scrollPct);
+  scrollPctRef.current = scrollPct;
+  const trackedSectionsRef = useRef<Set<string>>(new Set());
+  const finishedTrackedRef = useRef(false);
+  useEffect(() => {
+    if (!activeSection) return;
+    const slug = story.companySlug;
+    const idx = sectionIds.indexOf(activeSection);
+    if (idx === -1) return;
+    if (!trackedSectionsRef.current.has(activeSection)) {
+      trackedSectionsRef.current.add(activeSection);
+      trackEvent(EVENT_AUTOPSY_SECTION_VIEWED, {
+        slug,
+        section_index: idx,
+        pct: Math.round(scrollPctRef.current),
+      });
+    }
+    if (idx === sectionIds.length - 1 && !finishedTrackedRef.current) {
+      finishedTrackedRef.current = true;
+      trackEvent(EVENT_AUTOPSY_FINISHED, { slug });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection, sectionIds]);
 
   const activeLabel = tocItems.find(t => t.id === activeSection)?.label ?? null;
 

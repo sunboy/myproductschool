@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { isCurrentUserAdmin } from '@/lib/api/admin-helpers'
 
 const adminNav = [
@@ -26,7 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Admin sidebar */}
       <nav className="sticky top-0 z-40 flex w-full flex-col border-b border-outline-variant bg-surface-container-low md:h-screen md:w-56 md:shrink-0 md:border-b-0 md:border-r">
         <div className="flex items-center gap-2 border-b border-outline-variant px-4 py-3 md:py-4">
-          <HatchGlyph size={20} className="text-primary" />
+          <HatchImage size={20} state="avatar" />
           <span className="font-headline text-sm font-bold text-on-surface">Admin</span>
         </div>
         <div className="flex gap-1 overflow-x-auto px-2 py-2 md:block md:flex-1 md:space-y-1 md:overflow-x-visible md:py-3">

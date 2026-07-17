@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import {
@@ -9,7 +9,7 @@ import {
   type LiveInterviewDiscipline,
 } from '@/lib/live-interview/disciplines'
 import StartInterviewButton from './StartInterviewButton'
-import { MotionList, MotionListItem, PresencePanel, motion } from '@/components/motion'
+import { MotionList, MotionListItem, PresencePanel } from '@/components/motion'
 import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 
 const T = {
@@ -45,6 +45,13 @@ const DIFF_DOT: Record<PracticeDifficulty, string> = {
   hard: T.danger,
 }
 
+/** Step-3 swap: pure opacity + slight y fade. No scale/height animation so the panel never reads as a clipped frame mid-transition. */
+const OPTIONS_SWAP_VARIANTS = {
+  hidden: { opacity: 0, y: 6 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] as const } },
+  exit: { opacity: 0, y: -4, transition: { duration: 0.14, ease: [0.7, 0, 0.84, 0] as const } },
+}
+
 interface CompanyEntry {
   companyId: string
   companyName: string
@@ -73,12 +80,20 @@ function groupPersonasByCompany(personas: LiveInterviewPersona[]): CompanyEntry[
   return Array.from(map.values())
 }
 
+export interface SingleRoundSelection {
+  company: boolean
+  discipline: boolean
+}
+
 export default function SingleRoundPicker({
   personas,
   scenarios,
+  onSelectionChange,
 }: {
   personas: LiveInterviewPersona[]
   scenarios: ScenarioBrief[]
+  /** Chrome-only: reports which setup steps are done so the shell's Prep check ring can render real state. */
+  onSelectionChange?: (selection: SingleRoundSelection) => void
 }) {
   const companies = useMemo(() => groupPersonasByCompany(personas), [personas])
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
@@ -90,6 +105,13 @@ export default function SingleRoundPicker({
   const quickStartPersona = selectedPersona ?? companies[0]?.roles[0] ?? personas[0] ?? null
   const activeDiscipline = selectedDiscipline ?? 'product_sense'
   const quickStartScenario = scenarios.find((s) => s.discipline === activeDiscipline) ?? scenarios[0] ?? null
+
+  useEffect(() => {
+    onSelectionChange?.({
+      company: selectedCompanyId !== null,
+      discipline: selectedDiscipline !== null,
+    })
+  }, [onSelectionChange, selectedCompanyId, selectedDiscipline])
 
   const filteredScenarios = useMemo(
     () => selectedDiscipline ? scenarios.filter((s) => s.discipline === selectedDiscipline).slice(0, 8) : [],
@@ -105,7 +127,7 @@ export default function SingleRoundPicker({
   return (
     <div
       style={{
-        borderRadius: 24,
+        borderRadius: 16,
         overflow: 'hidden',
         border: `1px solid ${T.outlineFaint}`,
         background: T.surface,
@@ -115,7 +137,7 @@ export default function SingleRoundPicker({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(260px, 0.86fr) minmax(280px, 1fr) minmax(340px, 1.18fr)',
+          gridTemplateColumns: 'minmax(0, 0.86fr) minmax(0, 1fr) minmax(0, 1.18fr)',
           minHeight: 560,
         }}
         className="max-lg:!grid-cols-1"
@@ -429,12 +451,12 @@ function OptionsPanel({
   scenarios: ScenarioBrief[]
 }) {
   return (
-    <section style={{ background: T.surfaceContainerLow, padding: 20, minHeight: 560 }}>
-      <PresencePanel isOpen={!company || !persona || !discipline} mode="wait">
+    <section style={{ background: T.surfaceContainerLow, padding: 20 }}>
+      <PresencePanel isOpen={!company || !persona || !discipline} mode="wait" variants={OPTIONS_SWAP_VARIANTS}>
         <DefaultOptionsState hasCompany={Boolean(company)} />
       </PresencePanel>
 
-      <PresencePanel isOpen={Boolean(company && persona && discipline)} mode="wait">
+      <PresencePanel isOpen={Boolean(company && persona && discipline)} mode="wait" variants={OPTIONS_SWAP_VARIANTS}>
         {company && persona && discipline && (
           <InterviewOptions
             company={company}
@@ -466,13 +488,8 @@ function InterviewOptions({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <SectionEyebrow step="3" label={`${meta.shortLabel} options`} />
 
-      <motion.div
-        layout
+      <div
         style={{
-          borderRadius: 22,
-          padding: 18,
-          background: T.surface,
-          border: `1px solid ${T.outlineFaint}`,
           display: 'flex',
           flexDirection: 'column',
           gap: 13,
@@ -512,6 +529,11 @@ function InterviewOptions({
           </p>
         )}
 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, lineHeight: 1.45, color: T.onSurfaceVariant }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 15, color: T.onSurfaceMuted }}>mic</span>
+          Voice or chat, your pick. The mic is optional; typing runs the same interview and the same grading.
+        </div>
+
         <StartInterviewButton
           variant="hero"
           label={autoPickScenario ? 'Start recommended scenario' : 'Start persona interview'}
@@ -521,23 +543,39 @@ function InterviewOptions({
           companyName={persona.companyName}
           discipline={discipline}
         />
-      </motion.div>
+      </div>
 
       {scenarios.length > 0 ? (
-        <div>
+        <div style={{ borderTop: `1px solid ${T.outlineFaint}`, paddingTop: 16 }}>
           <div style={{ color: T.onSurfaceMuted, fontSize: 11, fontWeight: 850, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>
             Pick a specific prompt
           </div>
-          <MotionList layoutKey={`live-options-${company.companyId}-${discipline}`} style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-            {scenarios.map((scenario) => (
-              <ScenarioRow
-                key={scenario.id}
-                scenario={scenario}
-                persona={persona}
-                discipline={discipline}
-              />
-            ))}
-          </MotionList>
+          <div style={{ position: 'relative' }}>
+            <div style={{ maxHeight: 320, overflowY: 'auto', paddingBottom: 20 }}>
+              <MotionList layoutKey={`live-options-${company.companyId}-${discipline}`} style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {scenarios.map((scenario) => (
+                  <ScenarioRow
+                    key={scenario.id}
+                    scenario={scenario}
+                    persona={persona}
+                    discipline={discipline}
+                  />
+                ))}
+              </MotionList>
+            </div>
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 24,
+                pointerEvents: 'none',
+                background: `linear-gradient(to bottom, rgba(244,238,226,0), ${T.surfaceContainerLow})`,
+              }}
+            />
+          </div>
         </div>
       ) : (
         <div style={{ borderRadius: 18, padding: 16, background: T.surface, border: `1px dashed ${T.outlineVariant}`, color: T.onSurfaceMuted, fontSize: 13, lineHeight: 1.5 }}>

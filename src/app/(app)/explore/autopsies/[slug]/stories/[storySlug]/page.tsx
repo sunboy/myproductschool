@@ -7,6 +7,7 @@ import { getReadableAppStories, isReadableAppAutopsyStory } from '@/lib/autopsie
 import { featureAutopsyToStory } from '@/lib/autopsies/showcase-adapter';
 import { getLegacyCompanyTeardown } from '@/lib/autopsies/legacy-showcase';
 import { getAutopsyStory, getQueuedAutopsyStories } from '@/lib/autopsies/queries';
+import { resolvePracticeCards } from '@/lib/autopsies/practice-links';
 import { getBookmarkState } from '@/lib/showcase/bookmarks';
 import { getPrevNext } from '@/lib/showcase/prev-next';
 
@@ -68,7 +69,7 @@ export default async function StoryPage({ params }: Props) {
   if (result && isReadableAppAutopsyStory(result.story) && result.story.storyType === 'company_teardown') {
     const legacy = await getLegacyCompanyTeardown(slug, storySlug);
     if (legacy?.reader === 'aarrr') {
-      return <AutopsyReaderClient product={legacy.product} />;
+      return <AutopsyReaderClient product={legacy.product} practiceCards={await resolvePracticeCards(legacy.product)} />;
     }
     if (legacy) {
       return (
@@ -99,7 +100,7 @@ export default async function StoryPage({ params }: Props) {
   // --- Legacy-only path ---
   const legacy = await getLegacyCompanyTeardown(slug, storySlug);
   if (legacy?.reader === 'aarrr') {
-    return <AutopsyReaderClient product={legacy.product} />;
+    return <AutopsyReaderClient product={legacy.product} practiceCards={await resolvePracticeCards(legacy.product)} />;
   }
   if (legacy) {
     return (

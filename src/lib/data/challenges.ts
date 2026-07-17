@@ -293,6 +293,141 @@ export async function getFeaturedChallenges(): Promise<ChallengeWithDomain[]> {
   return toChallengeWithDomain(rows, statsMap)
 }
 
+/**
+ * In-progress practice reps for the signed-in user, most recent attempt first,
+ * deduped by challenge. Feeds the Practice right rail (Next best rep + Focus
+ * queue). Returns [] when signed out or nothing is paused.
+ */
+export async function getInProgressPractice(limit = 5): Promise<ChallengeWithDomain[]> {
+  if (IS_MOCK) return []
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data: attempts } = await supabase
+    .from('challenge_attempts')
+    .select('challenge_id, total_score, status, started_at')
+    .eq('user_id', user.id)
+    .eq('status', 'in_progress')
+    .order('started_at', { ascending: false })
+    .limit(limit * 4)
+
+  const orderedIds: string[] = []
+  for (const a of attempts ?? []) {
+    if (!orderedIds.includes(a.challenge_id)) orderedIds.push(a.challenge_id)
+  }
+  if (orderedIds.length === 0) return []
+
+  const candidateIds = orderedIds.slice(0, limit * 2)
+  const { data } = await supabase
+    .from('challenges')
+    .select(CHALLENGE_LIST_COLUMNS)
+    .eq('is_published', true)
+    .neq('challenge_type', 'quick_take')
+    .in('id', candidateIds)
+
+  const rows = (data ?? []) as unknown as ChallengeListRow[]
+  const statsMap = buildStatsMap(rows.map(r => r.id), (attempts ?? []) as AttemptRow[])
+  const byId = new Map(toChallengeWithDomain(rows, statsMap).map(c => [c.id, c]))
+  return candidateIds.map(id => byId.get(id)).filter((c): c is ChallengeWithDomain => Boolean(c)).slice(0, limit)
+}
+
+/** One bar in the Practice right-rail Skill coverage card. */
+export interface PracticeCoverageItem {
+  label: string
+  completed: number
+  total: number
+}
+
+/**
+ * Completion coverage for the Practice right rail. For a single discipline:
+ * top topics by catalog size with the user's completed share per topic. For
+ * 'all': per-discipline completion against the supplied HEAD counts. Totals
+ * come from the same sources the list UI shows, so the bars match the counts
+ * the user sees elsewhere on the page.
+ */
+export async function getPracticeCoverage(
+  discipline: CountDiscipline,
+  counts: Record<CountDiscipline, number>,
+  maxItems = 4,
+): Promise<PracticeCoverageItem[]> {
+  if (IS_MOCK) return []
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  // The user's completed challenges with the two fields coverage needs. A
+  // user's completed set is small (hundreds at most), so this stays cheap.
+  const { data: attempts } = await supabase
+    .from('challenge_attempts')
+    .select('challenge_id')
+    .eq('user_id', user.id)
+    .eq('status', 'completed')
+  const completedIds = Array.from(new Set((attempts ?? []).map(a => a.challenge_id)))
+
+  const completedRows: { id: string; topic_tags: string[] | null; challenge_type: string | null }[] = []
+  if (completedIds.length > 0) {
+    const { data } = await supabase
+      .from('challenges')
+      .select('id, topic_tags, challenge_type')
+      .eq('is_published', true)
+      .in('id', completedIds)
+    completedRows.push(...((data ?? []) as typeof completedRows))
+  }
+
+  if (discipline === 'all') {
+    const labels: Partial<Record<CountDiscipline, string>> = {
+      algorithm: 'Coding / DSA',
+      sql: 'SQL',
+      system_design: 'System design',
+      data_modeling: 'Data modeling',
+      product_sense: 'Product sense',
+    }
+    const completedByDiscipline = new Map<CountDiscipline, number>()
+    for (const row of completedRows) {
+      for (const key of Object.keys(labels) as CountDiscipline[]) {
+        if (disciplineToTypes(key).includes(row.challenge_type ?? '')) {
+          completedByDiscipline.set(key, (completedByDiscipline.get(key) ?? 0) + 1)
+        }
+      }
+    }
+    return (Object.keys(labels) as CountDiscipline[])
+      .map(key => ({
+        label: labels[key]!,
+        completed: completedByDiscipline.get(key) ?? 0,
+        total: counts[key] ?? 0,
+      }))
+      .filter(item => item.total > 0)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, maxItems)
+  }
+
+  const topicTotals = await getTagCounts('topic', discipline)
+  const disciplineTypes = disciplineToTypes(discipline)
+  const completedByTopic = new Map<string, number>()
+  for (const row of completedRows) {
+    if (!disciplineTypes.includes(row.challenge_type ?? '')) continue
+    for (const tag of row.topic_tags ?? []) {
+      completedByTopic.set(tag, (completedByTopic.get(tag) ?? 0) + 1)
+    }
+  }
+
+  const { getTopicLabelAny } = await import('@/lib/data/taxonomy')
+  return Object.entries(topicTotals)
+    .filter(([, total]) => total > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, maxItems)
+    .map(([slug, total]) => ({
+      label: getTopicLabelAny(slug) ?? slug,
+      completed: Math.min(completedByTopic.get(slug) ?? 0, total),
+      total,
+    }))
+}
+
 /** Add the discipline → challenge_type constraint to a query. */
 export function applyDisciplineFilter<
   Q extends { eq: (c: string, v: string) => Q; in: (c: string, v: readonly string[]) => Q },
@@ -401,8 +536,15 @@ export async function getChallengePreviews(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Analytics is flag-gated: include its preview slice only when the feature is
+  // on, so the "All practice" AI Analytics section has cards to seed it (its
+  // section total comes from getChallengeCounts, which gates the same way).
+  const previewDisciplines: CountDiscipline[] = isAnalyticsFeatureEnabled()
+    ? [...COUNT_DISCIPLINES, 'analytics']
+    : [...COUNT_DISCIPLINES]
+
   const slices = await Promise.all(
-    COUNT_DISCIPLINES.map(async (discipline) => {
+    previewDisciplines.map(async (discipline) => {
       let q = supabase
         .from('challenges')
         .select(CHALLENGE_LIST_COLUMNS)

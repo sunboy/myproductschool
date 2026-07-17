@@ -4,7 +4,7 @@ import { getTopicBySlug } from '@/lib/data/topics'
 import { getConcepts } from '@/lib/data/concepts'
 import { getChallenges } from '@/lib/data/challenges'
 import { getDomainBySlug } from '@/lib/data/domains'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { challengePath } from '@/lib/challenges/challengeNumber'
 import { BackButton } from '@/components/navigation/BackButton'
 
@@ -128,7 +128,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
           {/* Hatch's Take */}
           <div className="bg-primary-fixed p-4 rounded-xl">
             <div className="flex items-center gap-2 mb-3">
-              <HatchGlyph size={28} state="reviewing" />
+              <HatchImage size={28} state="reviewing" />
               <h3 className="font-headline font-semibold text-on-surface text-sm">
                 Hatch&apos;s Take
               </h3>

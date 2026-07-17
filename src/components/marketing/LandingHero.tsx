@@ -1,12 +1,12 @@
 import Link from 'next/link'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 
 export function LandingHero() {
   return (
     <section className="relative py-24 md:py-32 text-center overflow-hidden">
-      {/* Large subtle HatchGlyph watermark */}
+      {/* Large subtle Hatch watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <HatchGlyph size={400} className="text-primary opacity-5" />
+        <HatchImage size={400} state="idle" className="opacity-5" />
       </div>
 
       <div className="relative z-10 space-y-8">

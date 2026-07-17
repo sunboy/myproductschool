@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { BackButton } from '@/components/navigation/BackButton'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import type { CareerBenchmark, Competency, FlowMove } from '@/lib/types'
@@ -288,7 +288,7 @@ function SkillLadderContent() {
           <div className="bg-surface-container rounded-xl p-5 flex items-center gap-5 border border-outline-variant">
             <div className="relative shrink-0">
               <div className="w-14 h-14 rounded-full border-2 border-primary flex items-center justify-center overflow-hidden bg-primary-fixed">
-                <HatchGlyph size={48} state="speaking" className="text-primary" />
+                <HatchImage state="speaking" size={48} />
               </div>
               <div className="absolute -top-1 -right-1 bg-primary text-white p-0.5 rounded-full border border-white">
                 <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1" }}>chat</span>

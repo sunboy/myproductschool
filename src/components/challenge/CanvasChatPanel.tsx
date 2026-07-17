@@ -3,12 +3,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { ReportButton } from '@/components/feedback/ReportButton'
 import { Md } from '@/components/ui/Md'
-import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchImage } from '@/components/redesign/HatchImage'
 import { VoiceInputButton } from './VoiceInputButton'
 import type { CanvasScene } from '@/lib/hatch/canvas-scene'
 import type { GuidancePhase, GuidanceLabels } from '@/lib/hatch/canvasGuidance'
 import type { CanvasInterpretResponse, InterviewGrade } from '@/lib/types'
-import { useHatchDockState } from '@/hooks/useHatchDockState'
+import type { LucideIcon } from 'lucide-react'
+import { useHatchDockState, type HatchDockMode, type HatchDockSurface } from '@/hooks/useHatchDockState'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
 
@@ -56,6 +57,10 @@ interface CanvasChatPanelProps {
   timeRemaining?: number
   challengeTitle?: string
   problemStatement?: string
+  /** Advisory coding-path step (Understand → Plan → Code → Test → Optimize).
+   *  Sent as coding_step on every interpret turn so Hatch weights guidance
+   *  toward the step's move (CLAUDE.md Hatch-awareness). */
+  codingStep?: 'understand' | 'plan' | 'code' | 'test' | 'optimize' | null
   // Multi-part coding context (only when a part is active)
   activePartId?: string
   activePartSequence?: number
@@ -83,10 +88,29 @@ interface CanvasChatPanelProps {
   // in the draw → notes → ask → submit loop, per CLAUDE.md Hatch-awareness.
   guidancePhase?: GuidancePhase
   guidanceLabels?: GuidanceLabels
+  // Structured SD/DM workspace write-up (canvas types only): {stepId: {sectionId: text}}
+  // plus the sub-section the user has on screen. Sent on every interpret turn so
+  // Hatch reads the write-up alongside the diagram (CLAUDE.md Hatch-awareness).
+  stepAnswers?: Partial<Record<string, Record<string, string>>> | null
+  activeStep?: 'frame' | 'list' | 'optimize' | 'win' | null
+  activeSection?: string | null
   // Solutions tab awareness — set while the user has the official solution open,
   // so Hatch can coach relative to the approach they are reading.
   solutionsOpen?: boolean
   activeSolutionApproach?: { title: string; tagline: string; stepTitle?: string; stepDecision?: string } | null
+  /** localStorage surface for dock mode/width. Defaults to 'canvas' (legacy shared key). */
+  dockSurface?: HatchDockSurface
+  /** Extra panel tabs rendered after Chat (e.g. coding Guidance / Hints). Absent = today's chat-only panel. */
+  sideTabs?: Array<{ id: string; label: string; icon: LucideIcon; content: React.ReactNode }>
+  /** Imperative "open docked on this tab" command (queuedPrompt-style: new id = new command). */
+  openCommand?: { id: string; tab: string } | null
+  /** Reports dock mode changes so the workspace chrome can badge its own buttons. */
+  onModeChange?: (mode: HatchDockMode) => void
+  /** Reports active tab changes (only fires when sideTabs are present). */
+  onActiveTabChange?: (tabId: string) => void
+  /** Per-tab change signals: when a tab's signal changes while it isn't visible,
+   *  the tab shows an unread dot until selected. Keys must match sideTabs ids. */
+  sideTabUnreadSignals?: Record<string, string | number>
 }
 
 // Defensive guard: a chat turn should be prose, but a malformed structured-output
@@ -142,8 +166,11 @@ function getInitialMessage(
   if (challengeType === 'data_modeling') {
     return "Let's model this data together. Draw your entities and relationships, or describe them and I'll add them to the canvas."
   }
-  if (challengeType === 'claude_code_analytics' || challengeType === 'claude_code_debugging') {
+  if (challengeType === 'claude_code_analytics') {
     return "I can see your session, the dataset connection, and the skills you have written. Ask me how to push the analysis further."
+  }
+  if (challengeType === 'claude_code_debugging') {
+    return "I can see your session, the repository, and the failing tests. Ask me how to corner the root cause or prove your fix."
   }
   return "I'm here to help you design this system. You can draw by hand, type here, or speak - I'll help build and critique your diagram."
 }
@@ -170,11 +197,18 @@ function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' |
       "What's the trade-off in this relationship?",
     ]
   }
-  if (challengeType === 'claude_code_analytics' || challengeType === 'claude_code_debugging') {
+  if (challengeType === 'claude_code_analytics') {
     return [
       "Why is my query returning nothing?",
       'How do I segment this by device?',
       'Is this finding strong enough to mark the step?',
+    ]
+  }
+  if (challengeType === 'claude_code_debugging') {
+    return [
+      'How do I reproduce this failure reliably?',
+      'Is this the root cause or just a symptom?',
+      'Does my fix hold against the full test suite?',
     ]
   }
   return [
@@ -182,6 +216,19 @@ function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' |
     'Compare my design to a top response.',
     "What's the trade-off here?",
   ]
+}
+
+/** Two-line copy for the collapsed "Ask Hatch" pill, matched to what Hatch can
+ *  actually see in each workspace context (round4 canvas-workspace preview). */
+function getPillCopy(
+  challengeType: 'system_design' | 'data_modeling' | 'coding' | 'claude_code_analytics' | 'claude_code_debugging',
+): { title: string; sub: string } {
+  if (challengeType === 'coding') return { title: 'Ask about your code', sub: 'Hatch can see your editor' }
+  if (challengeType === 'claude_code_analytics' || challengeType === 'claude_code_debugging') {
+    return { title: 'Ask about the session', sub: 'Hatch can see your terminal' }
+  }
+  if (challengeType === 'data_modeling') return { title: 'Ask about your model', sub: 'Hatch can see this diagram' }
+  return { title: 'Ask about your design', sub: 'Hatch can see this diagram' }
 }
 
 export function CanvasChatPanel({
@@ -208,6 +255,7 @@ export function CanvasChatPanel({
   challengeTitle,
   problemStatement,
   activePartId,
+  codingStep = null,
   activePartSequence,
   activePartTitle,
   activePartPrompt,
@@ -227,10 +275,19 @@ export function CanvasChatPanel({
   assertedFinding,
   guidancePhase,
   guidanceLabels,
+  stepAnswers = null,
+  activeStep = null,
+  activeSection = null,
   solutionsOpen = false,
   activeSolutionApproach = null,
+  dockSurface = 'canvas',
+  sideTabs,
+  openCommand = null,
+  onModeChange,
+  onActiveTabChange,
+  sideTabUnreadSignals,
 }: CanvasChatPanelProps) {
-  const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState('canvas')
+  const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState(dockSurface)
   const { muted, toggleMuted, play } = useHatchSonics()
 
   // One-shot: capture the phase-aware opener at mount only. Not reactive to
@@ -270,6 +327,66 @@ export function CanvasChatPanel({
   // Suppress unused variable warnings - grade is reserved for future use; isOpen kept for callers
   void grade
   void isOpen
+
+  // Side tabs (coding Guidance / Hints). Chat is always the first tab; the strip
+  // only renders when a caller passes sideTabs, so canvas/analytics are unchanged.
+  const hasSideTabs = !!sideTabs && sideTabs.length > 0
+  const [activeTab, setActiveTab] = useState('chat')
+  const [unreadTabs, setUnreadTabs] = useState<ReadonlySet<string>>(() => new Set())
+  const selectTab = useCallback((tabId: string) => {
+    setActiveTab(tabId)
+    setUnreadTabs((prev) => {
+      if (!prev.has(tabId)) return prev
+      const next = new Set(prev)
+      next.delete(tabId)
+      return next
+    })
+  }, [])
+
+  // Report dock mode / active tab up so workspace chrome (Guidance/Hints buttons)
+  // can reflect state without lifting the dock state out of this panel.
+  useEffect(() => { onModeChange?.(mode) }, [mode, onModeChange])
+  useEffect(() => {
+    if (hasSideTabs) onActiveTabChange?.(activeTab)
+  }, [activeTab, hasSideTabs, onActiveTabChange])
+
+  // Imperative open-to-tab command (mirrors the queuedPrompt id-ref pattern).
+  const lastOpenCommandIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!openCommand || openCommand.id === lastOpenCommandIdRef.current) return
+    lastOpenCommandIdRef.current = openCommand.id
+    setMode('docked')
+    if (openCommand.tab === 'chat' || sideTabs?.some((t) => t.id === openCommand.tab)) {
+      selectTab(openCommand.tab)
+    }
+  }, [openCommand, sideTabs, setMode, selectTab])
+
+  // Unread dots: when a tab's change signal moves while that tab isn't visible
+  // (dock closed or another tab active), mark it unread until selected.
+  const lastSignalsRef = useRef<Record<string, string | number>>({})
+  useEffect(() => {
+    if (!hasSideTabs || !sideTabUnreadSignals) return
+    const prev = lastSignalsRef.current
+    const changed: string[] = []
+    for (const [tabId, signal] of Object.entries(sideTabUnreadSignals)) {
+      if (tabId in prev && prev[tabId] !== signal) changed.push(tabId)
+    }
+    lastSignalsRef.current = { ...sideTabUnreadSignals }
+    if (changed.length === 0) return
+    setUnreadTabs((current) => {
+      let next: Set<string> | null = null
+      for (const tabId of changed) {
+        if (mode !== 'closed' && activeTab === tabId) continue
+        if (!current.has(tabId)) {
+          next = next ?? new Set(current)
+          next.add(tabId)
+        }
+      }
+      return next ?? current
+    })
+  // mode/activeTab read at signal-change time only; re-marking on tab switches would be wrong
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasSideTabs, sideTabUnreadSignals])
 
   // First-session coaching: open the dock once (docked) the first time autoOpenKey
   // is seen, then never again. The dock state lives in useHatchDockState (a parent
@@ -346,6 +463,11 @@ export function CanvasChatPanel({
         context_pack: contextPack,
         guidance_level: guidanceLevel,
         guidance_phase: guidancePhase ?? null,
+        // Structured SD/DM write-up context — the server's canvas branch renders
+        // these into the prompt; other branches ignore them.
+        step_answers: stepAnswers ?? undefined,
+        active_step: activeStep ?? undefined,
+        active_section: activeSection ?? undefined,
         solutions_tab_open: solutionsOpen,
         solution_approach_title: activeSolutionApproach?.title ?? null,
         solution_approach_tagline: activeSolutionApproach?.tagline ?? null,
@@ -364,6 +486,7 @@ export function CanvasChatPanel({
         time_remaining_seconds: timeRemaining,
         challenge_title: challengeTitle,
         problem_statement: problemStatement,
+        coding_step: codingStep ?? undefined,
         active_part_id: activePartId,
         active_part_sequence: activePartSequence,
         active_part_title: activePartTitle,
@@ -462,7 +585,7 @@ export function CanvasChatPanel({
     }
   }, [isLoading, scene, contextPack, challengeId, challengeType, attemptId, messages, onCanvasActions,
       currentCode, currentLanguage, lastRunResult, timeElapsed, timeRemaining,
-      challengeTitle, problemStatement,
+      challengeTitle, problemStatement, codingStep,
       activePartId, activePartSequence, activePartTitle, activePartPrompt,
       activePartResponseType, activePartWeightPct,
       // Analytics context
@@ -472,6 +595,8 @@ export function CanvasChatPanel({
       markedFindings, assertedFinding,
       // Canvas guidance context
       guidancePhase,
+      // Structured write-up context
+      stepAnswers, activeStep, activeSection,
       // Solutions tab context
       solutionsOpen, activeSolutionApproach,
       play, isThrottled])
@@ -532,19 +657,66 @@ export function CanvasChatPanel({
     }
   }
 
+  const activeSideTab = hasSideTabs && activeTab !== 'chat'
+    ? sideTabs!.find((t) => t.id === activeTab) ?? null
+    : null
+
+  // Tab strip shared by the docked and floating branches. Absent without sideTabs.
+  const tabStrip = hasSideTabs ? (
+    <div className="flex shrink-0 items-center gap-1 border-b border-hairline bg-card-bright px-2" role="tablist">
+      {[{ id: 'chat', label: 'Chat', icon: null as LucideIcon | null }, ...sideTabs!].map((tab) => {
+        const selected = activeTab === tab.id
+        const Icon = tab.icon
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            data-testid={`hatch-tab-${tab.id}`}
+            onClick={() => selectTab(tab.id)}
+            className={`relative flex items-center gap-1.5 border-b-2 px-2.5 py-2 font-label text-[12.5px] font-bold transition-colors ${
+              selected
+                ? 'border-forest-700 text-forest-800'
+                : 'border-transparent text-ink-secondary hover:text-ink-strong'
+            }`}
+          >
+            {Icon && <Icon size={13} />}
+            {tab.label}
+            {unreadTabs.has(tab.id) && (
+              <span
+                className="absolute right-0 top-1.5 h-2 w-2 rounded-full bg-gold"
+                aria-label={`New activity in ${tab.label}`}
+              />
+            )}
+          </button>
+        )
+      })}
+    </div>
+  ) : null
+
   if (mode === 'closed') {
+    const pillCopy = getPillCopy(challengeType)
     return (
       <button
         data-hatch-target="workspace-hatch-chat"
         onClick={() => { play('open'); setMode('floating'); onToggle() }}
-        className="absolute bottom-4 right-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+        className="absolute bottom-4 right-4 z-20 flex items-center gap-2.5 rounded-full bg-forest-950 py-2 pl-2 pr-4 text-white shadow-[0_12px_28px_-10px_rgba(5,35,22,0.5)] hover:bg-forest-800 transition-colors"
         title="Open Hatch chat"
       >
-        <HatchGlyph size={20} state="idle" className="text-on-primary" />
-        <span className="font-label font-semibold text-sm">Ask Hatch</span>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-note-mint">
+          <HatchImage size={28} state="avatar" />
+        </span>
+        <span className="flex flex-col items-start leading-tight">
+          <span className="font-label text-[13px] font-bold">{pillCopy.title}</span>
+          <span className="font-label text-[10.5px] font-semibold text-white/60">{pillCopy.sub}</span>
+        </span>
+        <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/10">
+          <span className="material-symbols-outlined text-[13px]">expand_less</span>
+        </span>
         {hasUnreadNudge && (
           <span
-            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-tertiary-container border-2 border-background"
+            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-gold border-2 border-card-bright"
             aria-label="Hatch has a new tip"
           />
         )}
@@ -559,7 +731,7 @@ export function CanvasChatPanel({
           data-testid="hatch-chat-panel"
           data-hatch-target="workspace-hatch-chat"
           style={{ width: panelWidth, minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH }}
-          className="relative ml-2 flex flex-col rounded-xl border border-outline-variant bg-surface-container h-full overflow-hidden shrink-0"
+          className="relative ml-2 flex flex-col rounded-2xl border border-hairline bg-card-bright h-full overflow-hidden shrink-0"
         >
         {/* Drag handle */}
         <div
@@ -567,17 +739,17 @@ export function CanvasChatPanel({
           className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/20 z-10"
         />
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high shrink-0">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-hairline bg-card-bright shrink-0">
           <div className="flex min-w-0 flex-col">
             <div className="flex items-center gap-2">
-              <HatchGlyph size={20} state={isLoading ? 'reviewing' : 'idle'} className="text-primary" />
-              <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+              <HatchImage size={22} state={isLoading ? 'thinking' : 'avatar'} />
+              <span className="font-label font-bold text-sm text-ink-strong">Hatch</span>
             </div>
             {canvasStatusLabel && (
-              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 font-label text-[10px] font-bold text-on-surface-variant">
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 font-label text-[10px] font-bold text-ink-secondary">
                 <span className="truncate">{canvasStatusLabel}</span>
-                <span className="h-1 w-1 rounded-full bg-outline-variant" />
-                <span className={hasContextPack ? 'text-primary' : ''}>{hasContextPack ? 'context synced' : 'add context'}</span>
+                <span className="h-1 w-1 rounded-full bg-hairline" />
+                <span className={hasContextPack ? 'text-forest-600' : ''}>{hasContextPack ? 'context synced' : 'add context'}</span>
               </div>
             )}
           </div>
@@ -608,12 +780,19 @@ export function CanvasChatPanel({
             </button>
           </div>
         </div>
+        {tabStrip}
+        {activeSideTab ? (
+          <div className="flex-1 min-h-0 overflow-y-auto" data-testid="hatch-side-tab-content">
+            {activeSideTab.content}
+          </div>
+        ) : (
+        <>
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
           {messages.map((msg, i) => (
             <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
               {msg.role === 'hatch' && (
-                <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
+                <HatchImage size={20} state="avatar" className="mt-0.5 self-start h-5 w-5" />
               )}
               <div className={`flex max-w-[85%] flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                 <div
@@ -624,7 +803,7 @@ export function CanvasChatPanel({
                       : msg.kind === 'canvas_action'
                         ? 'bg-primary-container text-on-primary-container'
                         : msg.kind === 'nudge'
-                          ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
+                          ? 'note-amber text-ink-strong'
                           : 'bg-surface-container-high text-on-surface'
                   }`}
                 >
@@ -675,7 +854,7 @@ export function CanvasChatPanel({
           )}
           {isLoading && (
             <div className="flex gap-2">
-              <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
+              <HatchImage size={20} state="thinking" />
               <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">
                 {challengeType === 'coding' ? 'Hatch is thinking…' : isAnalyticsMode ? 'Hatch is reading the session…' : onCanvasActions ? 'Hatch is reading notes and canvas…' : '…'}
               </div>
@@ -715,6 +894,8 @@ export function CanvasChatPanel({
             )}
           </div>
         )}
+        </>
+        )}
         </div>
         <PaywallModal
           open={!!limitGate}
@@ -729,20 +910,20 @@ export function CanvasChatPanel({
 
   return (
     <>
-    <div data-testid="hatch-chat-panel" data-hatch-target="workspace-hatch-chat" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-outline-variant rounded-xl bg-surface-container shadow-2xl overflow-hidden">
+    <div data-testid="hatch-chat-panel" data-hatch-target="workspace-hatch-chat" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-hairline rounded-2xl bg-card-bright shadow-[0_24px_56px_-16px_rgba(5,35,22,0.35)] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-hairline bg-card-bright">
         <div className="flex items-center gap-2">
           <div className="flex min-w-0 flex-col">
             <div className="flex items-center gap-2">
-              <HatchGlyph size={20} state={isLoading ? 'reviewing' : 'idle'} className="text-primary" />
-              <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+              <HatchImage size={22} state={isLoading ? 'thinking' : 'avatar'} />
+              <span className="font-label font-bold text-sm text-ink-strong">Hatch</span>
             </div>
             {canvasStatusLabel && (
-              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 font-label text-[10px] font-bold text-on-surface-variant">
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 font-label text-[10px] font-bold text-ink-secondary">
                 <span className="truncate">{canvasStatusLabel}</span>
-                <span className="h-1 w-1 rounded-full bg-outline-variant" />
-                <span className={hasContextPack ? 'text-primary' : ''}>{hasContextPack ? 'context synced' : 'add context'}</span>
+                <span className="h-1 w-1 rounded-full bg-hairline" />
+                <span className={hasContextPack ? 'text-forest-600' : ''}>{hasContextPack ? 'context synced' : 'add context'}</span>
               </div>
             )}
           </div>
@@ -774,13 +955,19 @@ export function CanvasChatPanel({
           </button>
         </div>
       </div>
-
+      {tabStrip}
+      {activeSideTab ? (
+        <div className="flex-1 min-h-0 overflow-y-auto" data-testid="hatch-side-tab-content">
+          {activeSideTab.content}
+        </div>
+      ) : (
+      <>
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
             {msg.role === 'hatch' && (
-              <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
+              <HatchImage size={20} state="avatar" className="mt-0.5 self-start h-5 w-5" />
             )}
             <div className={`flex max-w-[85%] flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div
@@ -791,7 +978,7 @@ export function CanvasChatPanel({
                     : msg.kind === 'canvas_action'
                       ? 'bg-primary-container text-on-primary-container'
                       : msg.kind === 'nudge'
-                        ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
+                        ? 'note-amber text-ink-strong'
                         : 'bg-surface-container-high text-on-surface'
                 }`}
               >
@@ -849,7 +1036,7 @@ export function CanvasChatPanel({
         )}
         {isLoading && (
           <div className="flex gap-2">
-            <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
+            <HatchImage size={20} state="thinking" />
             <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">
               {challengeType === 'coding' ? 'Hatch is thinking…' : isAnalyticsMode ? 'Hatch is reading the session…' : onCanvasActions ? 'Hatch is reading notes and canvas…' : '…'}
             </div>
@@ -889,6 +1076,8 @@ export function CanvasChatPanel({
             </p>
           )}
         </div>
+      )}
+      </>
       )}
     </div>
     <PaywallModal

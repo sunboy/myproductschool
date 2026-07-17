@@ -1,0 +1,641 @@
+<meta charset="UTF-8">
+<title>Autopsy Reader · Round 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,14..72,400;0,14..72,500;0,14..72,600;0,14..72,700;1,14..72,500&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest-950:#052316;
+    --forest-900:#0b2d1c;
+    --forest-850:#103020;
+    --forest-800:#123b20;
+    --forest-700:#1d432b;
+    --forest-600:#266235;
+    --forest-500:#1c5a34;
+    --mint-glow:#a3ebb1;
+    --page:#faf8f4;
+    --card:#fffdfa;
+    --hairline:#ece7dd;
+    --ink:#20291f;
+    --ink-secondary:#5b685e;
+    --ink-muted:#a6a9a4;
+    --flame:#fe9817;
+    --gold:#fdb41f;
+    --amber-soft:#fef3e2;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--page);
+    color:var(--ink);
+    font-family:'Nunito Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{font-family:'Literata', serif;}
+  svg{display:block;}
+
+  /* ===== Top bar (copied pattern from flow-workspace) ===== */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 24px;
+    max-width:1400px;
+    margin:0 auto;
+    border-bottom:1px solid var(--hairline);
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Literata', serif;
+    font-weight:700;
+    font-size:20px;
+    color:var(--forest-950);
+  }
+  .logo .spark{color:var(--gold);font-size:14px;}
+  .breadcrumb{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    color:var(--ink-secondary);
+    margin-left:20px;
+  }
+  .breadcrumb .sep{color:var(--ink-muted);}
+  .breadcrumb .current{color:var(--ink);font-weight:600;}
+  .topbar-left{display:flex;align-items:center;flex:1;}
+  .topbar-right{display:flex;align-items:center;gap:28px;}
+  .stat-cluster{display:flex;align-items:center;gap:8px;}
+  .stat-cluster .num{font-family:'Literata',serif;font-weight:700;font-size:15px;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums;}
+  .stat-cluster .label{font-size:10.5px;color:var(--ink-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.03em;line-height:1.2;}
+  .avatar-cluster{display:flex;align-items:center;gap:8px;cursor:default;}
+  .avatar-circle{
+    width:34px;height:34px;border-radius:50%;
+    background:linear-gradient(135deg,#eadfc8,#d9c7a0);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;color:var(--forest-800);font-size:13px;
+    border:1px solid var(--hairline);
+  }
+  .bell-btn{
+    width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-secondary);
+  }
+
+  /* ===== Page shell: 3-zone reading layout ===== */
+  .reader-shell{
+    max-width:1400px;
+    margin:0 auto;
+    padding:28px 24px 100px;
+    display:grid;
+    grid-template-columns:220px minmax(0,720px) 280px;
+    gap:32px;
+    justify-content:center;
+    align-items:start;
+  }
+
+  /* ===== LEFT: sticky stage rail ===== */
+  .stage-rail{
+    position:sticky;
+    top:28px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .rail-ring-block{
+    display:flex;align-items:center;gap:12px;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .rail-ring{position:relative;width:44px;height:44px;flex-shrink:0;}
+  .rail-ring svg{transform:rotate(-90deg);}
+  .rail-ring-center{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:12px;color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .rail-ring-text .rt1{font-size:12.5px;font-weight:800;color:var(--ink);line-height:1.3;}
+  .rail-ring-text .rt2{font-size:11px;color:var(--ink-muted);font-weight:600;}
+
+  .stage-list{display:flex;flex-direction:column;gap:1px;}
+  .stage-item{
+    display:flex;align-items:center;gap:10px;
+    padding:7px 8px;
+    border-radius:8px;
+  }
+  .stage-marker{
+    width:20px;height:20px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;font-size:10.5px;font-weight:700;
+    background:transparent;
+    font-variant-numeric:tabular-nums;
+  }
+  .stage-marker.done{width:22px;height:22px;background:var(--forest-600);border:none;color:#fff;}
+  .stage-marker.current{border:1.4px solid var(--forest-700);color:var(--forest-700);}
+  .stage-marker.upcoming{border:1.4px solid var(--hairline);color:var(--ink-muted);}
+  .stage-name{font-size:13.5px;font-weight:600;color:var(--ink-muted);}
+  .stage-item.current{background:#eef4ec;}
+  .stage-item.current .stage-name{color:var(--forest-800);font-weight:700;}
+  .stage-item.done .stage-name{color:var(--ink);}
+  .stage-more{
+    font-size:12px;color:var(--ink-muted);font-weight:600;
+    padding:8px 8px 2px 40px;
+  }
+
+  /* ===== CENTER: reading column ===== */
+  .reading-col{min-width:0;}
+  .story-eyebrow{
+    font-size:11px;font-weight:800;color:var(--forest-700);
+    text-transform:uppercase;letter-spacing:0.08em;
+    margin-bottom:14px;
+    font-variant-numeric:tabular-nums;
+  }
+  .story-title{
+    font-family:'Literata',serif;
+    font-size:40px;font-weight:700;
+    line-height:1.12;letter-spacing:-0.01em;
+    color:var(--ink);
+    margin:0 0 18px;
+  }
+  .story-lede{
+    font-family:'Literata',serif;
+    font-size:19px;line-height:1.6;
+    color:var(--ink-secondary);
+    margin:0 0 28px;
+    max-width:64ch;
+  }
+
+  .metrics-strip{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:0;
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:16px;
+    box-shadow:0 1px 2px rgba(30,27,20,.04), 0 12px 32px -24px rgba(30,27,20,.18);
+    margin-bottom:44px;
+    overflow:hidden;
+  }
+  .metric-cell{
+    padding:20px 22px;
+    display:flex;flex-direction:column;gap:4px;
+  }
+  .metric-cell + .metric-cell{border-left:1px solid var(--hairline);}
+  .metric-cell .mval{font-family:'Literata',serif;font-size:26px;font-weight:700;color:var(--forest-800);line-height:1.1;font-variant-numeric:tabular-nums;}
+  .metric-cell .mlabel{font-size:12px;color:var(--ink-muted);font-weight:600;}
+
+  .section-eyebrow{
+    font-size:11px;font-weight:800;color:var(--ink-muted);
+    text-transform:uppercase;letter-spacing:0.08em;
+    margin-bottom:8px;
+    font-variant-numeric:tabular-nums;
+  }
+  .section-head{
+    font-family:'Literata',serif;
+    font-size:30px;font-weight:700;
+    color:var(--ink);
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  .section-question{
+    font-family:'Literata',serif;
+    font-style:italic;
+    font-size:18px;
+    color:var(--forest-700);
+    margin:0 0 26px;
+  }
+
+  .story-body p{
+    font-family:'Literata',serif;
+    font-size:17px;
+    line-height:1.7;
+    color:var(--ink);
+    margin:0 0 22px;
+    max-width:68ch;
+  }
+
+  .war-room{
+    background:linear-gradient(135deg, var(--forest-950), var(--forest-800));
+    border-radius:16px;
+    padding:28px 30px;
+    margin:36px 0;
+    box-shadow:0 1px 2px rgba(5,35,22,.2), 0 20px 40px -24px rgba(5,35,22,.5);
+  }
+  .war-room-head{
+    display:flex;align-items:center;gap:9px;
+    margin-bottom:20px;
+  }
+  .war-room-head h4{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:16px;font-weight:700;
+    color:#f9faf5;margin:0;
+  }
+  .war-room-sub{
+    font-size:12px;color:rgba(249,250,245,0.55);
+    font-weight:600;margin-left:auto;
+    text-transform:uppercase;letter-spacing:0.04em;
+    font-variant-numeric:tabular-nums;
+  }
+  .war-room-rows{display:flex;flex-direction:column;gap:16px;}
+  .wr-row{display:flex;gap:14px;align-items:flex-start;}
+  .wr-role{
+    flex-shrink:0;width:56px;
+    font-size:11px;font-weight:800;
+    color:var(--mint-glow);
+    text-transform:uppercase;letter-spacing:0.04em;
+    padding-top:2px;
+  }
+  .wr-quote{
+    font-family:'Literata',serif;
+    font-style:italic;
+    font-size:15px;line-height:1.55;
+    color:#eef2ec;
+    margin:0;
+  }
+  .wr-quote::before{content:"\201C";}
+  .wr-quote::after{content:"\201D";}
+  .wr-divider{height:1px;background:rgba(249,250,245,0.1);}
+
+  .hatch-says-margin{
+    display:flex;gap:14px;
+    background:var(--amber-soft);
+    border:1px solid #f3dfb8;
+    border-radius:16px;
+    padding:20px 22px;
+    margin:36px 0;
+  }
+  .hatch-says-margin img{
+    width:44px;height:44px;border-radius:8px;
+    object-fit:cover;flex-shrink:0;
+    background:#eef4ec;
+  }
+  .hs-body{flex:1;}
+  .hs-label{
+    font-size:11.5px;font-weight:800;color:#a16207;
+    text-transform:uppercase;letter-spacing:0.04em;
+    margin-bottom:6px;
+  }
+  .hs-msg{
+    font-family:'Literata',serif;
+    font-size:15px;line-height:1.55;
+    color:#5b4a1f;
+    margin:0;
+  }
+
+  .section-footer{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:44px;
+    padding-top:24px;
+    border-top:1px solid var(--hairline);
+  }
+  .footer-hint{font-size:13px;color:var(--ink-muted);font-weight:600;font-variant-numeric:tabular-nums;}
+  .next-stage-btn{
+    display:flex;align-items:center;gap:8px;
+    background:var(--forest-950);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:12px 22px;
+    font-family:'Nunito Sans',sans-serif;
+    font-size:14px;font-weight:700;
+    cursor:default;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  /* ===== RIGHT: rail ===== */
+  .right-rail{
+    position:sticky;
+    top:28px;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .rail-panel{
+    background:var(--card);
+    border:1px solid var(--hairline);
+    border-radius:16px;
+    padding:16px;
+  }
+  .rail-panel h3{
+    font-family:'Nunito Sans',sans-serif;
+    font-size:15px;font-weight:700;
+    color:var(--ink);
+    margin:0 0 4px;
+  }
+  .rail-panel .rail-sub{
+    font-size:12px;color:var(--ink-muted);
+    margin:0 0 12px;line-height:1.45;
+  }
+
+  .practice-row{
+    display:block;
+    padding:11px 0;
+    border-top:1px solid var(--hairline);
+  }
+  .practice-row:first-of-type{border-top:none;padding-top:0;}
+  .pr-title{
+    font-size:13.5px;font-weight:700;color:var(--ink);
+    line-height:1.35;margin:0 0 6px;
+  }
+  .pr-meta{
+    display:flex;align-items:center;gap:8px;
+    margin-bottom:10px;
+  }
+  .pr-chip{
+    font-size:10.5px;font-weight:700;
+    padding:2.5px 8px;
+    border-radius:999px;
+    background:#ebeef8;color:#2778f2;
+  }
+  .pr-chip.hard{background:#fde8e8;color:#c23a3a;}
+  .pr-meta-text{font-size:11px;color:var(--ink-muted);font-weight:600;}
+  .pr-start{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:12.5px;font-weight:700;
+    color:var(--forest-700);
+  }
+
+  .toc-list{display:flex;flex-direction:column;gap:1px;}
+  .toc-item{
+    display:flex;align-items:center;gap:9px;
+    padding:7px 0;
+    font-size:13px;font-weight:600;
+    color:var(--ink-muted);
+  }
+  .toc-item.active{color:var(--forest-800);font-weight:700;}
+  .toc-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+
+  .reading-saved{
+    padding:12px 14px;
+    background:#fdf0c2;
+    border-radius:12px;
+    border:1px solid #ecd48a;
+    transform:rotate(-0.8deg);
+  }
+  .reading-saved p{
+    font-size:11.5px;color:#5b4a1f;
+    line-height:1.4;margin:0;font-weight:600;
+  }
+
+  .rail-panel.mint-note{
+    background:#dff3d0;
+    border-color:#b9d9a6;
+  }
+  .rail-panel.mint-note .practice-row{border-top-color:#c3dfb4;}
+  .rail-panel.mint-note .pr-title{color:var(--forest-950);}
+
+  /* ===== Round pill ===== */
+  .round-pill{
+    position:fixed;
+    bottom:18px;right:18px;
+    background:var(--forest-950);
+    color:#fff;
+    font-size:11.5px;font-weight:700;
+    padding:8px 14px;
+    border-radius:999px;
+    box-shadow:0 8px 24px -8px rgba(5,35,22,0.5);
+    z-index:50;
+    font-family:'Nunito Sans',sans-serif;
+  }
+
+  @media (max-width: 1180px){
+    .reader-shell{grid-template-columns:1fr;max-width:760px;}
+    .stage-rail{
+      position:static;
+      flex-direction:row;
+      overflow-x:auto;
+      gap:8px;
+      padding-bottom:12px;
+    }
+    .rail-ring-block{display:none;}
+    .stage-list{flex-direction:row;}
+    .stage-item{flex-direction:column;gap:6px;padding:8px 10px;min-width:76px;text-align:center;}
+    .stage-name{font-size:11px;}
+    .stage-more{display:none;}
+    .right-rail{position:static;flex-direction:row;flex-wrap:wrap;}
+    .rail-panel{flex:1 1 280px;}
+  }
+  @media (max-width: 640px){
+    .breadcrumb{display:none;}
+    .story-title{font-size:30px;}
+    .metrics-strip{grid-template-columns:1fr;}
+    .metric-cell + .metric-cell{border-left:none;border-top:1px solid var(--hairline);}
+    .section-footer{flex-direction:column;align-items:flex-start;gap:14px;}
+    .right-rail{flex-direction:column;}
+    /* keep the top bar inside the viewport: drop the streak/XP readouts, keep bell+avatar */
+    .topbar-right{gap:10px;}
+    .stat-cluster,.avatar-cluster span,.avatar-cluster svg{display:none;}
+    /* the stage scroller must scroll internally, not widen the page */
+    .stage-rail{max-width:100%;}
+    .stage-list{width:max-content;}
+  }
+</style>
+
+<!-- ===== TOP BAR ===== -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo"><span class="spark">&#10022;</span> HackProduct</div>
+    <div class="breadcrumb">
+      <span>Autopsies</span>
+      <span class="sep">&rsaquo;</span>
+      <span class="current">Netflix, Decoded</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="stat-cluster">
+      <div>
+        <div class="num">12</div>
+        <div class="label">Day streak</div>
+      </div>
+    </div>
+    <div class="stat-cluster">
+      <div>
+        <div class="num">9,860 <span style="font-size:11px;font-weight:700;color:var(--ink-muted);">XP</span></div>
+        <div class="label">Level 12</div>
+      </div>
+    </div>
+    <div class="bell-btn">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </div>
+    <div class="avatar-cluster">
+      <div class="avatar-circle">S</div>
+      <span style="font-size:13.5px;font-weight:700;color:var(--ink);">Sandeep</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="1.7"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 3-ZONE READER SHELL ===== -->
+<div class="reader-shell">
+
+  <!-- LEFT: sticky stage rail -->
+  <div class="stage-rail">
+    <div class="rail-ring-block">
+      <div class="rail-ring">
+        <svg width="44" height="44" viewBox="0 0 44 44">
+          <circle cx="22" cy="22" r="18" fill="none" stroke="#eee9df" stroke-width="5"/>
+          <circle cx="22" cy="22" r="18" fill="none" stroke="#266235" stroke-width="5"
+            stroke-dasharray="113.1" stroke-dashoffset="87.9" stroke-linecap="round"/>
+        </svg>
+        <div class="rail-ring-center">2/9</div>
+      </div>
+      <div class="rail-ring-text">
+        <div class="rt1">Stage 2 of 9</div>
+        <div class="rt2">Reading progress</div>
+      </div>
+    </div>
+
+    <div class="stage-list">
+      <div class="stage-item done">
+        <span class="stage-marker done">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
+        </span>
+        <span class="stage-name">Hero</span>
+      </div>
+      <div class="stage-item current">
+        <span class="stage-marker current">2</span>
+        <span class="stage-name">Acquisition</span>
+      </div>
+      <div class="stage-item upcoming">
+        <span class="stage-marker upcoming">3</span>
+        <span class="stage-name">Activation</span>
+      </div>
+      <div class="stage-item upcoming">
+        <span class="stage-marker upcoming">4</span>
+        <span class="stage-name">Retention</span>
+      </div>
+      <div class="stage-item upcoming">
+        <span class="stage-marker upcoming">5</span>
+        <span class="stage-name">Revenue</span>
+      </div>
+      <div class="stage-item upcoming">
+        <span class="stage-marker upcoming">6</span>
+        <span class="stage-name">Referral</span>
+      </div>
+    </div>
+    <div class="stage-more">+ 3 more stages</div>
+  </div>
+
+  <!-- CENTER: reading column -->
+  <div class="reading-col">
+    <div class="story-eyebrow">Product Autopsy &middot; 20 min read</div>
+    <h1 class="story-title">Netflix, Decoded</h1>
+    <p class="story-lede">Follow one viewer from signing up for a single show to becoming a multi-profile household that can never cancel.</p>
+
+    <div class="metrics-strip">
+      <div class="metric-cell">
+        <span class="mval">283M</span>
+        <span class="mlabel">Global subscribers</span>
+      </div>
+      <div class="metric-cell">
+        <span class="mval">~$15</span>
+        <span class="mlabel">Avg CAC, blended</span>
+      </div>
+      <div class="metric-cell">
+        <span class="mval">190+</span>
+        <span class="mlabel">Countries</span>
+      </div>
+    </div>
+
+    <div class="section-eyebrow">Stage 2 of 9</div>
+    <h2 class="section-head">Acquisition</h2>
+    <p class="section-question">Where do they come from, and why now?</p>
+
+    <div class="story-body">
+      <p>Nobody signs up for Netflix because of Netflix. They sign up because a specific show crossed into the cultural bloodstream and a friend, a group chat, or a trending tab made the show impossible to ignore. Acquisition here is not a funnel built on ads. It is a funnel built on borrowed attention, and the entire machine is tuned to convert that borrowed attention before it decays.</p>
+      <p>At 283M global subscribers across 190+ countries, the acquisition math stopped being about first-time internet users years ago. Blended CAC sits around $15, low enough that a single strong original can pay for itself in weeks, but that number hides an uneven reality. In mature markets the real cost is retention-adjacent: winning back a lapsed household costs more than winning a new one, so the acquisition team spends as much energy on win-back flows as on new sign-up. In emerging markets, mobile-only plans and regional originals do the acquisition work that a global ad budget cannot.</p>
+      <p>The trust question sits underneath all of it. A stranger has to hand over a card number, or in some markets a mobile wallet, before watching a single minute. Free trials used to absorb that risk. Removing them in most markets was a bet that word-of-mouth and a recognizable title card now carry more trust than a 30-day guarantee ever did.</p>
+    </div>
+
+    <div class="war-room">
+      <div class="war-room-head">
+        <h4>War Room</h4>
+        <span class="war-room-sub">3 perspectives</span>
+      </div>
+      <div class="war-room-rows">
+        <div class="wr-row">
+          <span class="wr-role">PM</span>
+          <p class="wr-quote">The acquisition metric that matters isn't sign-ups, it's sign-ups that survive the first watch session. A trial that converts on the wrong show churns in month two.</p>
+        </div>
+        <div class="wr-divider"></div>
+        <div class="wr-row">
+          <span class="wr-role">Eng</span>
+          <p class="wr-quote">Recommendation cold-start has to work in the first 90 seconds after signup, before any watch history exists. That's a harder ranking problem than personalizing for an existing account.</p>
+        </div>
+        <div class="wr-divider"></div>
+        <div class="wr-row">
+          <span class="wr-role">Data</span>
+          <p class="wr-quote">CAC blended at $15 masks a 4x spread across markets. Aggregating it into one number hides where the growth budget is actually working.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hatch-says-margin">
+      <img src="../../../../public/hatch/avatar.png" alt="Hatch">
+      <div class="hs-body">
+        <div class="hs-label">Hatch says</div>
+        <p class="hs-msg">The acquisition question here is really a trust question. Keep that lens for Activation: the trust a viewer hands over at sign-up is what gets spent during the first watch session.</p>
+      </div>
+    </div>
+
+    <div class="section-footer">
+      <span class="footer-hint">Stage 2 of 9 &middot; Acquisition</span>
+      <button class="next-stage-btn">
+        Next stage: Activation
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT: rail -->
+  <div class="right-rail">
+    <div class="rail-panel mint-note">
+      <h3>Practice what you read</h3>
+      <p class="rail-sub">Two reps built on this story's decisions.</p>
+
+      <div class="practice-row">
+        <p class="pr-title">Building a Podcast Product for Netflix</p>
+        <div class="pr-meta">
+          <span class="pr-chip">Product Sense</span>
+          <span class="pr-meta-text">Hard</span>
+        </div>
+        <span class="pr-start">
+          Start
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </div>
+
+      <div class="practice-row">
+        <p class="pr-title">Design a Distributed Ad Frequency Cap System at Scale</p>
+        <div class="pr-meta">
+          <span class="pr-chip hard">Netflix real interview</span>
+          <span class="pr-meta-text">Hard</span>
+        </div>
+        <span class="pr-start">
+          Start
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </div>
+    </div>
+
+    <div class="rail-panel">
+      <h3>In this story</h3>
+      <p class="rail-sub">9-stage AARRR walkthrough</p>
+      <div class="toc-list">
+        <div class="toc-item"><span class="toc-dot"></span>Hero</div>
+        <div class="toc-item active"><span class="toc-dot"></span>Acquisition</div>
+        <div class="toc-item"><span class="toc-dot"></span>Activation</div>
+        <div class="toc-item"><span class="toc-dot"></span>Retention</div>
+        <div class="toc-item"><span class="toc-dot"></span>Revenue</div>
+        <div class="toc-item"><span class="toc-dot"></span>Referral</div>
+      </div>
+    </div>
+
+    <div class="reading-saved">
+      <p>Reading position saved. You'll resume at Acquisition.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="round-pill">Round 4 &middot; Autopsy Reader</div>

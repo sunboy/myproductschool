@@ -1,0 +1,1411 @@
+<meta charset="utf-8" />
+<title>Dashboard (Home, Pro) · Round 4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --forest-950: #052316;
+    --forest-900: #0b2d1c;
+    --forest-850: #103020;
+    --forest-800: #123b20;
+    --forest-700: #1d432b;
+    --forest-600: #266235;
+    --forest-500: #1c5a34;
+    --mint-glow: #a3ebb1;
+
+    --page: #faf8f4;
+    --card: #fffdfa;
+    --sidebar: #ffffff;
+    --hairline: #ece7dd;
+    --ink: #20291f;
+    --ink-secondary: #5b685e;
+    --ink-muted: #a6a9a4;
+
+    --flame: #fe9817;
+    --gold: #fdb41f;
+    --amber-soft: #fef3e2;
+    --amber-deep: #fce2c2;
+
+    --sd-bg: #e8f4de; --sd-fg: #266235;
+    --ps-bg: #ebeef8; --ps-fg: #2778f2;
+    --dm-bg: #f4e9f6; --dm-fg: #9d61c8;
+    --sql-bg: #feefdc; --sql-fg: #fe9817;
+
+    --note-mint: #dff3d0; --note-mint-border: #b9d9a6;
+    --note-amber: #fdf0c2; --note-amber-border: #ecd48a;
+    --note-teal: #d9efec; --note-teal-border: #a9d4cf;
+    --note-blush: #f6e3f3; --note-blush-border: #dcbcd6;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: 'Nunito Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .serif { font-family: 'Literata', serif; }
+
+  a { text-decoration: none; color: inherit; }
+  button { font-family: inherit; cursor: pointer; }
+
+  svg { display: block; }
+
+  /* ---------- Shell ---------- */
+  .shell {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 232px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    background: var(--sidebar);
+    border-right: 1px solid var(--hairline);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .brand {
+    padding: 0 8px;
+  }
+
+  .brand-word {
+    font-family: 'Literata', serif;
+    font-weight: 700;
+    font-size: 21px;
+    color: var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .brand-tag {
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    margin-top: 2px;
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-secondary);
+  }
+
+  .nav-item svg { flex-shrink: 0; opacity: .85; }
+
+  .nav-item.active {
+    background: var(--forest-800);
+    color: #fff;
+  }
+  .nav-item.active svg { opacity: 1; }
+
+  .nav-item .live-pill {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    background: var(--amber-soft);
+    color: var(--flame);
+    padding: 2px 7px;
+    border-radius: 999px;
+  }
+
+  .sidebar-lower {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .hatch-card {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .hatch-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hatch-card-top img {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    object-fit: contain;
+    background: var(--forest-900);
+    padding: 3px;
+  }
+
+  .hatch-card-name { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .hatch-card-role { font-size: 11.5px; color: var(--ink-muted); }
+
+  .hatch-status {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    color: var(--ink-secondary);
+  }
+
+  .hatch-status .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--forest-600);
+  }
+
+  .hatch-status-extra {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--hairline);
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    line-height: 1.4;
+  }
+
+  .help-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-secondary);
+  }
+  .help-row .left { display: flex; align-items: center; gap: 8px; }
+
+  /* ---------- Main column ---------- */
+  .main {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--page);
+  }
+
+  .search {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 9px 14px;
+    color: var(--ink-muted);
+  }
+  .search input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 13.5px;
+    flex: 1;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .search input::placeholder { color: var(--ink-muted); }
+  .kbd {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    background: var(--page);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 2px 6px;
+  }
+
+  .top-cluster {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .stat-pill .num { font-size: 14px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat-pill .lbl { font-size: 10.5px; color: var(--ink-muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .bell-btn {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--hairline);
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-secondary);
+  }
+
+  .avatar-cluster {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .avatar-circle {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #6b6358, #3f3a32);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .avatar-name { font-size: 13.5px; font-weight: 700; }
+
+  .pro-chip {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    color: var(--gold);
+    background: transparent;
+    border: 1.5px solid var(--gold);
+    border-radius: 999px;
+    padding: 1px 8px;
+    line-height: 1.5;
+  }
+
+  /* ---------- Content ---------- */
+  .content {
+    padding: 20px 32px 48px;
+    display: grid;
+    grid-template-columns: 1fr 268px;
+    gap: 20px;
+  }
+
+  .content-left { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .content-right { display: flex; flex-direction: column; gap: 20px; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    background: linear-gradient(120deg, var(--forest-950) 0%, var(--forest-900) 45%, var(--forest-850) 75%, var(--forest-700) 130%);
+    border-radius: 16px;
+    padding: 22px 26px;
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: -60px; right: -40px;
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, rgba(30,71,45,.55) 0%, rgba(30,71,45,0) 70%);
+    pointer-events: none;
+  }
+
+  .hero-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) 190px;
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .hero-col-left { display: flex; flex-direction: column; min-width: 0; }
+
+  .hero-greeting {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: rgba(255,255,255,.85);
+    margin-bottom: 6px;
+  }
+
+  .hero-headline {
+    font-family: 'Literata', serif;
+    font-weight: 600;
+    font-size: 26px;
+    line-height: 1.2;
+    color: #f9faf5;
+    max-width: 480px;
+    margin: 0 0 16px;
+  }
+
+  .hl-word {
+    display: inline-block;
+    background: #ffe95c;
+    color: var(--forest-950);
+    transform: rotate(-1deg);
+    padding: 0 .14em;
+  }
+
+  .daily-focus-label {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    margin-bottom: 7px;
+  }
+
+  .focus-main { min-width: 0; }
+
+  .focus-title-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .focus-title-line .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #7fd398;
+    flex-shrink: 0;
+  }
+  .focus-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    font-size: 16.5px;
+    color: #fff;
+  }
+
+  .focus-desc {
+    font-size: 12.5px;
+    color: rgba(255,255,255,.68);
+    line-height: 1.45;
+    margin-bottom: 10px;
+  }
+
+  .chip-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .chip {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 4px 11px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.1);
+    color: rgba(255,255,255,.85);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .cta-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+  .btn-primary-dark {
+    background: var(--forest-600);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.12) inset;
+  }
+
+  .link-light {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: rgba(255,255,255,.72);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* middle column: weekly goal ring + text, centered vertically */
+  .hero-col-mid {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-top: 22px;
+  }
+
+  .ring-wrap {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+    background: conic-gradient(var(--gold) 0deg 216deg, rgba(255,255,255,.14) 216deg 360deg);
+  }
+  .ring-inner {
+    width: 57px; height: 57px;
+    border-radius: 50%;
+    background: var(--forest-900);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-inner .frac { font-family: 'Nunito Sans', sans-serif; font-size: 14px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
+  .ring-inner .frac-lbl { font-size: 8px; color: rgba(255,255,255,.6); }
+
+  .weekly-goal-text {
+    font-size: 12px;
+    color: rgba(255,255,255,.62);
+    line-height: 1.42;
+    max-width: 150px;
+  }
+  .weekly-goal-text b { color: #fff; font-weight: 700; }
+
+  /* right column: hatch says card + small overlapping mascot */
+  .hero-col-right {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .hatch-says {
+    background: var(--note-mint);
+    border: 1px solid var(--note-mint-border);
+    border-radius: 12px;
+    padding: 13px 15px;
+    width: 100%;
+  }
+  .hatch-says-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--forest-800);
+    margin-bottom: 6px;
+  }
+  .hatch-says-msg {
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.45;
+    margin-bottom: 9px;
+  }
+  .hatch-says-btn {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--forest-800);
+    border: none;
+    border-radius: 8px;
+    padding: 6px 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .hero-pose {
+    position: absolute;
+    right: -22px;
+    bottom: -26px;
+    width: 130px;
+    z-index: 2;
+  }
+  .hero-pose img {
+    width: 100%;
+    max-width: 130px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+  }
+
+  /* ---------- Stat strip ---------- */
+  .stat-strip {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 16px 8px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    box-shadow: 0 1px 2px rgba(30,27,20,.04), 0 12px 32px -24px rgba(30,27,20,.18);
+  }
+
+  .stat-cell {
+    padding: 0 20px;
+    border-right: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .stat-cell:last-child { border-right: none; }
+
+  .stat-label { font-size: 12px; color: var(--ink-secondary); font-weight: 600; }
+  .stat-value {
+    font-family: 'Literata', serif;
+    font-weight: 700;
+    font-size: 25px;
+    color: var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-value .side {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ink-muted);
+  }
+  .stat-delta {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--forest-600);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-progress {
+    height: 5px;
+    border-radius: 999px;
+    background: var(--hairline);
+    overflow: hidden;
+    margin-top: 2px;
+  }
+  .stat-progress > div { height: 100%; background: var(--forest-700); border-radius: 999px; }
+
+  /* ---------- Section header ---------- */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+  .section-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .section-link {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--forest-700);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ---------- Recommended cards ---------- */
+  .rec-row {
+    position: relative;
+  }
+  .rec-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .rec-card {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 1px 2px rgba(30,27,20,.04), 0 12px 32px -24px rgba(30,27,20,.18);
+  }
+
+  .rec-eyebrow {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+  .rec-eyebrow.sd { color: var(--sd-fg); }
+  .rec-eyebrow.ps { color: var(--ps-fg); }
+  .rec-eyebrow.dm { color: var(--dm-fg); }
+  .rec-eyebrow.sql { color: var(--sql-fg); }
+
+  .rec-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--ink);
+    min-height: 39px;
+  }
+  .rec-meta {
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .rec-reason {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-secondary);
+    line-height: 1.4;
+    border-top: 1px solid var(--hairline);
+    padding-top: 9px;
+    margin-top: auto;
+  }
+
+  .rec-arrow {
+    position: absolute;
+    right: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid var(--hairline);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-secondary);
+    box-shadow: 0 4px 12px rgba(30,27,20,.08);
+  }
+
+  /* ---------- 3-col row: today's path / this week / peers ---------- */
+  .lower-grid {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 16px 18px 18px;
+    box-shadow: 0 1px 2px rgba(30,27,20,.04), 0 12px 32px -24px rgba(30,27,20,.18);
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .panel-title { font-family: 'Nunito Sans', sans-serif; font-weight: 700; font-size: 15.5px; }
+  .panel-sub { font-size: 11.5px; color: var(--ink-muted); font-weight: 600; }
+  .panel-link {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--forest-700);
+  }
+
+  /* today's path */
+  .path-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .path-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+  }
+  .path-row:not(:last-child) {
+    border-bottom: 1px solid var(--hairline);
+  }
+  .path-row.current {
+    background: var(--note-amber);
+    border: 1px solid var(--note-amber-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin: 2px 0;
+    transform: rotate(-.6deg);
+  }
+  .path-row.current:not(:last-child) { border-bottom: 1px solid var(--note-amber-border); }
+
+  .path-marker {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 800;
+    border: 1.8px solid var(--hairline);
+    color: var(--ink-muted);
+    background: transparent;
+  }
+  .path-marker.done {
+    width: 24px; height: 24px;
+    border: none;
+    background: var(--forest-600);
+    color: #fff;
+  }
+  .path-marker.current {
+    width: 24px; height: 24px;
+    border: 2px solid var(--forest-800);
+    color: var(--forest-800);
+    font-size: 12px;
+  }
+  .path-marker.upcoming { border-color: var(--hairline); color: var(--ink-muted); }
+
+  .path-body { flex: 1; min-width: 0; }
+  .path-title { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .path-meta { font-size: 11.5px; color: var(--ink-muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+  .path-btn {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 7px 14px;
+    border: 1px solid var(--hairline);
+    background: #fff;
+    color: var(--ink);
+  }
+  .path-btn.primary {
+    background: var(--forest-800);
+    color: #fff;
+    border: none;
+  }
+
+  .ink-arrow {
+    flex-shrink: 0;
+    opacity: .28;
+    margin-right: -6px;
+  }
+
+  /* this week */
+  .week-dots {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .week-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+  }
+  .week-day-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--ink-muted);
+  }
+  .week-dot {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .week-dot.done {
+    background: transparent;
+  }
+  .week-dot.done .inner-dot {
+    width: 12px; height: 12px; border-radius: 50%; background: var(--forest-600);
+  }
+  .week-dot.today {
+    border: 2px solid var(--forest-600);
+    background: #fff;
+  }
+  .week-dot.today .inner-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--forest-600);
+  }
+  .week-dot.empty {
+    border: 1.4px solid var(--hairline);
+    background: var(--page);
+  }
+  .week-dot.empty .inner-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--ink-muted);
+  }
+
+  .focus-areas-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin: 14px 0 8px;
+  }
+  .focus-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .fchip {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .fchip.sd { background: var(--sd-bg); color: var(--sd-fg); }
+  .fchip.ps { background: var(--ps-bg); color: var(--ps-fg); }
+  .fchip.sql { background: var(--sql-bg); color: var(--sql-fg); }
+  .fchip.dsa { background: var(--dm-bg); color: var(--dm-fg); }
+
+  .streak-note {
+    border-top: 1px solid var(--hairline);
+    padding-top: 12px;
+  }
+  .streak-note-text { font-size: 12px; color: var(--ink-secondary); line-height: 1.4; font-variant-numeric: tabular-nums; }
+  .streak-note-text b { color: var(--ink); }
+
+  /* peers & community */
+  .tab-row {
+    display: flex;
+    gap: 4px;
+    background: var(--page);
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 14px;
+  }
+  .tab-btn {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 8px;
+    border-radius: 6px;
+    color: var(--ink-muted);
+  }
+  .tab-btn.active { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(30,27,20,.08); }
+
+  .leader-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+  }
+  .leader-row + .leader-row {
+    border-top: 1px solid var(--hairline);
+  }
+  .leader-rank {
+    width: 20px;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--ink-muted);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .leader-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: linear-gradient(160deg, #78a886, #4a7c59);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+  .leader-body { flex: 1; min-width: 0; }
+  .leader-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .leader-level { font-size: 11px; color: var(--ink-muted); }
+  .leader-right { text-align: right; display: flex; align-items: center; gap: 6px; }
+  .leader-xp { font-size: 12.5px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .leader-row.you { margin-top: 4px; padding-top: 12px; }
+  .leader-row.you .leader-avatar { background: var(--forest-800); }
+
+  /* ---------- Right rail: FLOW ---------- */
+  .flow-card { background: var(--card); border: 1px solid var(--hairline); border-radius: 16px; padding: 16px 16px 14px; box-shadow: 0 1px 2px rgba(30,27,20,.04), 0 12px 32px -24px rgba(30,27,20,.18); }
+  .flow-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .flow-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .flow-row:last-of-type { border-bottom: none; padding-bottom: 4px; }
+  .flow-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+  .flow-dot.frame { background: var(--sd-fg); }
+  .flow-dot.list { background: var(--ps-fg); }
+  .flow-dot.optimize { background: var(--dm-fg); }
+  .flow-dot.win { background: var(--sql-fg); }
+  .flow-body { flex: 1; }
+  .flow-title { font-size: 13.5px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+  .flow-desc { font-size: 11.5px; color: var(--ink-muted); line-height: 1.4; }
+  .flow-link {
+    margin-top: 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--forest-700);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* ---------- Floating badge ---------- */
+  .round-badge {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    background: var(--forest-950);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 7px 13px;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(5,35,22,.35);
+    z-index: 50;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1180px) {
+    .lower-grid { grid-template-columns: 1fr; }
+    .rec-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .content { grid-template-columns: 1fr; }
+    .content-right { order: 3; }
+    .hero-grid { grid-template-columns: 1fr; gap: 18px; }
+    .hero-col-mid { padding-top: 0; }
+    .hero-pose { display: none; }
+    .stat-strip { grid-template-columns: repeat(2, 1fr); row-gap: 16px; }
+    .stat-cell { border-right: none; border-bottom: 1px solid var(--hairline); padding-bottom: 12px; }
+    .top-cluster { gap: 12px; }
+  }
+
+  @media (max-width: 600px) {
+    .rec-grid { grid-template-columns: 1fr; }
+    .content { padding: 14px 16px 48px; }
+    .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+    .hero { padding: 20px 18px; }
+    .hero-headline { font-size: 24px; }
+    .stat-strip { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<div class="shell">
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-word">HackProduct</div>
+      <div class="brand-tag">The practice gym for product thinking</div>
+    </div>
+
+    <nav class="nav">
+      <a class="nav-item active">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5" /><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" /></svg>
+        Home
+      </a>
+      <a class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l7 6-7 6Z" /><rect x="3" y="3" width="18" height="18" rx="3" /></svg>
+        Practice
+      </a>
+      <a class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7" /></svg>
+        Interviews
+        <span class="live-pill">Live</span>
+      </a>
+      <a class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16.5H6.5A2.5 2.5 0 0 0 4 22" /><path d="M4 5.5v16" /></svg>
+        Study Plans
+      </a>
+      <a class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V10M10 20V4M17 20v-7" /></svg>
+        Progress
+      </a>
+      <a class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3.5 20c.5-3.5 3-5.5 5.5-5.5s5 2 5.5 5.5" /><path d="M14.8 15.2c2 .3 3.6 2 4 4.8" /></svg>
+        Community
+      </a>
+      <a class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 16v-4M12 16V8M16 16v-2" /></svg>
+        Analytics
+      </a>
+    </nav>
+
+    <div class="sidebar-lower">
+      <div class="hatch-card">
+        <div class="hatch-card-top">
+          <img src="../../../../public/hatch/avatar.png" alt="Hatch" />
+          <div>
+            <div class="hatch-card-name">Hatch</div>
+            <div class="hatch-card-role">AI Coach</div>
+          </div>
+        </div>
+        <div class="hatch-status"><span class="dot"></span> Has notes on your Frame step</div>
+        <div class="hatch-status-extra">Unlimited gradings this month, no caps to track.</div>
+      </div>
+
+      <div class="help-row">
+        <span class="left">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1.3 1-1.3 1.9" /><path d="M12 17h.01" /></svg>
+          Help &amp; Support
+        </span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <input type="text" placeholder="Search topics, problems, or interviews..." />
+        <span class="kbd">⌘K</span>
+      </div>
+
+      <div class="top-cluster">
+        <div class="stat-pill">
+          <span>
+            <div class="num">12-day streak</div>
+            <div class="lbl">Best: 36</div>
+          </span>
+        </div>
+        <div class="stat-pill">
+          <span>
+            <div class="num">9,860 XP</div>
+            <div class="lbl">Level 12</div>
+          </span>
+        </div>
+        <button class="bell-btn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
+        </button>
+        <div class="avatar-cluster">
+          <div class="avatar-circle">S</div>
+          <span class="avatar-name">Sandeep</span>
+          <span class="pro-chip">Pro</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="content-left">
+
+        <!-- HERO -->
+        <div class="hero">
+          <div class="hero-grid">
+            <!-- LEFT: greeting, headline, daily focus -->
+            <div class="hero-col-left">
+              <div class="hero-greeting">Welcome back, Sandeep</div>
+              <h1 class="hero-headline">You paused mid-Frame on the AI-Native App <span class="hl-word">rep</span>. Ten minutes finishes the step.</h1>
+
+              <div class="daily-focus-label">In Progress</div>
+              <div class="focus-main">
+                <div class="focus-title-line">
+                  <span class="dot"></span>
+                  <span class="focus-title">Designing the First Screen of an AI-Native App</span>
+                </div>
+                <div class="focus-desc">Frame, step 1 of 4. List, Optimize, and Win follow.</div>
+                <div class="chip-row">
+                  <span class="chip">Intermediate</span>
+                  <span class="chip">45 min</span>
+                </div>
+                <div class="cta-row">
+                  <button class="btn-primary-dark">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z" /></svg>
+                    Resume Frame step
+                  </button>
+                  <a class="link-light">View session details
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- MIDDLE: weekly goal ring -->
+            <div class="hero-col-mid">
+              <div class="ring-wrap">
+                <div class="ring-inner">
+                  <div class="frac">3/5</div>
+                  <div class="frac-lbl">Weekly Goal</div>
+                </div>
+              </div>
+              <div class="weekly-goal-text">
+                3 of 5 done. <b>Two sessions</b> left on this week's goal.
+              </div>
+            </div>
+
+            <!-- RIGHT: HatchSays + small overlapping mascot -->
+            <div class="hero-col-right">
+              <div class="hatch-says">
+                <div class="hatch-says-top">Hatch says</div>
+                <div class="hatch-says-msg">Frame is your weakest move at 41%. The step you paused on drills exactly that.</div>
+                <button class="hatch-says-btn">See Frame breakdown</button>
+              </div>
+              <div class="hero-pose">
+                <img src="../../../../public/hatch/pose-thinking.png" alt="Hatch thinking" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STAT STRIP -->
+        <div class="stat-strip">
+          <div class="stat-cell">
+            <div class="stat-label">Overall Progress</div>
+            <div class="stat-value">68%</div>
+            <div class="stat-delta">↑ 12% this week</div>
+            <div class="stat-progress"><div style="width:68%"></div></div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-label">Total XP</div>
+            <div class="stat-value">9,860 <span class="side">Level 12</span></div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-label">Problems Solved</div>
+            <div class="stat-value">428</div>
+            <div class="stat-delta">↑ 36 this week</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-label">Mock Interviews</div>
+            <div class="stat-value">12</div>
+            <div class="stat-delta">↑ 3 this week</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-label">Avg. Score</div>
+            <div class="stat-value">84%</div>
+            <div class="stat-delta">↑ 6% this week</div>
+          </div>
+        </div>
+
+        <!-- RECOMMENDED -->
+        <div>
+          <div class="section-head">
+            <div class="section-title">Picked for you</div>
+            <a class="section-link">View all
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="rec-row">
+          <div class="rec-grid">
+            <div class="rec-card">
+              <div class="rec-eyebrow sd">System Design</div>
+              <div class="rec-title">Design the Cart Backend for a Food Delivery Marketplace</div>
+              <div class="rec-meta">Uber · Medium · 45 min</div>
+              <div class="rec-reason">Next up in today's path</div>
+            </div>
+
+            <div class="rec-card">
+              <div class="rec-eyebrow ps">Product Sense</div>
+              <div class="rec-title">YouTube Watch Time Down 10%</div>
+              <div class="rec-meta">Easy · 30 min</div>
+              <div class="rec-reason">Picked because Frame is your weakest move</div>
+            </div>
+
+            <div class="rec-card">
+              <div class="rec-eyebrow dm">Data Modeling</div>
+              <div class="rec-title">Model a Subscription Billing System</div>
+              <div class="rec-meta">Intermediate · 40 min</div>
+              <div class="rec-reason">Builds on your last SQL rep</div>
+            </div>
+
+            <div class="rec-card">
+              <div class="rec-eyebrow sql">SQL</div>
+              <div class="rec-title">Airbnb: Premium City Listings</div>
+              <div class="rec-meta">Intermediate · 35 min</div>
+              <div class="rec-reason">Follows this morning's SQL warm-up</div>
+            </div>
+          </div>
+          <div class="rec-arrow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+          </div>
+        </div>
+
+        <!-- LOWER GRID: today's path / this week / peers -->
+        <div class="lower-grid">
+          <!-- Today's path -->
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title">Today's path</div>
+              <div class="panel-sub">1 of 4 done</div>
+            </div>
+            <div class="path-list">
+              <div class="path-row">
+                <div class="path-marker done">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7" /></svg>
+                </div>
+                <div class="path-body">
+                  <div class="path-title">Warm up: 2 SQL problems</div>
+                  <div class="path-meta">Completed · 20 min</div>
+                </div>
+                <button class="path-btn">Review</button>
+              </div>
+              <div class="path-row current">
+                <div class="path-marker current">2</div>
+                <div class="path-body">
+                  <div class="path-title">System Design: Design the Cart Backend</div>
+                  <div class="path-meta">In progress · 45 min</div>
+                </div>
+                <svg class="ink-arrow" width="34" height="22" viewBox="0 0 34 22" fill="none" stroke="var(--forest-800)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4c8 1 17 2 24 8" /><path d="M20.5 10.5 26.5 12.5 25 6" /></svg>
+                <button class="path-btn primary">Continue</button>
+              </div>
+              <div class="path-row">
+                <div class="path-marker upcoming">3</div>
+                <div class="path-body">
+                  <div class="path-title">Product Sense: YouTube Watch Time Down 10%</div>
+                  <div class="path-meta">Upcoming · 30 min</div>
+                </div>
+                <button class="path-btn">Start</button>
+              </div>
+              <div class="path-row">
+                <div class="path-marker upcoming">4</div>
+                <div class="path-body">
+                  <div class="path-title">AI Mock Interview</div>
+                  <div class="path-meta">Upcoming · 30 min</div>
+                </div>
+                <button class="path-btn">Start</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- This week -->
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title">This week</div>
+              <a class="panel-link">View full plan →</a>
+            </div>
+
+            <div class="week-dots">
+              <div class="week-col"><span class="week-day-label">Mon</span><div class="week-dot done"><span class="inner-dot"></span></div></div>
+              <div class="week-col"><span class="week-day-label">Tue</span><div class="week-dot done"><span class="inner-dot"></span></div></div>
+              <div class="week-col"><span class="week-day-label">Wed</span><div class="week-dot today"><span class="inner-dot"></span></div></div>
+              <div class="week-col"><span class="week-day-label">Thu</span><div class="week-dot empty"><span class="inner-dot"></span></div></div>
+              <div class="week-col"><span class="week-day-label">Fri</span><div class="week-dot empty"><span class="inner-dot"></span></div></div>
+              <div class="week-col"><span class="week-day-label">Sat</span><div class="week-dot empty"><span class="inner-dot"></span></div></div>
+              <div class="week-col"><span class="week-day-label">Sun</span><div class="week-dot empty"><span class="inner-dot"></span></div></div>
+            </div>
+
+            <div class="focus-areas-label">Focus Areas</div>
+            <div class="focus-chip-row">
+              <span class="fchip sd">System Design</span>
+              <span class="fchip ps">Product Sense</span>
+              <span class="fchip sql">SQL</span>
+              <span class="fchip dsa">DSA</span>
+            </div>
+
+            <div class="streak-note">
+              <div class="streak-note-text"><b>12-day streak.</b> Your best is 36.</div>
+            </div>
+          </div>
+
+          <!-- Peers & community -->
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title">Peers &amp; community</div>
+              <a class="panel-link">View leaderboard →</a>
+            </div>
+
+            <div class="tab-row">
+              <div class="tab-btn active">Top Learners</div>
+              <div class="tab-btn">Recent Activity</div>
+            </div>
+
+            <div class="leader-row">
+              <div class="leader-rank">1</div>
+              <div class="leader-avatar">AV</div>
+              <div class="leader-body">
+                <div class="leader-name">Aditya Verma</div>
+                <div class="leader-level">Level 14</div>
+              </div>
+              <div class="leader-right">
+                <span class="leader-xp">12,590 XP</span>
+              </div>
+            </div>
+            <div class="leader-row">
+              <div class="leader-rank">2</div>
+              <div class="leader-avatar">MR</div>
+              <div class="leader-body">
+                <div class="leader-name">Meera Rao</div>
+                <div class="leader-level">Level 13</div>
+              </div>
+              <div class="leader-right">
+                <span class="leader-xp">11,200 XP</span>
+              </div>
+            </div>
+            <div class="leader-row">
+              <div class="leader-rank">3</div>
+              <div class="leader-avatar">RS</div>
+              <div class="leader-body">
+                <div class="leader-name">Rohit Singh</div>
+                <div class="leader-level">Level 13</div>
+              </div>
+              <div class="leader-right">
+                <span class="leader-xp">10,340 XP</span>
+              </div>
+            </div>
+            <div class="leader-row you">
+              <div class="leader-rank">4</div>
+              <div class="leader-avatar">S</div>
+              <div class="leader-body">
+                <div class="leader-name">You</div>
+                <div class="leader-level">Level 12</div>
+              </div>
+              <div class="leader-right">
+                <span class="leader-xp">9,860 XP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT RAIL -->
+      <div class="content-right">
+        <div class="flow-card">
+          <div class="flow-head">
+            <div class="section-title" style="font-size:16px;">FLOW Method</div>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-dot frame"></div>
+            <div class="flow-body">
+              <div class="flow-title">Frame</div>
+              <div class="flow-desc">Find the problem behind the problem</div>
+            </div>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-dot list"></div>
+            <div class="flow-body">
+              <div class="flow-title">List</div>
+              <div class="flow-desc">Map stakeholders and distinct options</div>
+            </div>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-dot optimize"></div>
+            <div class="flow-body">
+              <div class="flow-title">Optimize</div>
+              <div class="flow-desc">Name the criterion, accept the tradeoff</div>
+            </div>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-dot win"></div>
+            <div class="flow-body">
+              <div class="flow-title">Win</div>
+              <div class="flow-desc">Define the metric that proves it worked</div>
+            </div>
+          </div>
+
+          <a class="flow-link">Learn more about FLOW
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="round-badge">Round 4 · Dashboard · Pro</div>

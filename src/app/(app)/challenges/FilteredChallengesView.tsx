@@ -8,9 +8,10 @@ import { FilterDropdownBar, type FilterState } from '@/components/challenges/Fil
 import { ActiveFilterPills } from '@/components/challenges/ActiveFilterPills'
 import { FilterBottomSheet } from '@/components/challenges/FilterBottomSheet'
 import { MotionList } from '@/components/motion'
-import { AppTooltip } from '@/components/ui/AppTooltip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeList'
+import { DisciplineChipRow } from '@/components/redesign/practice/DisciplineChipRow'
+import { SortSegmented, isPracticeSort, type PracticeSort } from '@/components/redesign/practice/SortSegmented'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
 import type { ChallengeWithDomain } from '@/lib/types'
 import { isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
@@ -35,80 +36,26 @@ interface Props {
 }
 
 const EMPTY_FILTERS: FilterState = {
-  paradigm: [],
   difficulty: [],
   role: [],
   company: [],
   topic: [],
   technique: [],
   real_interview: false,
+  resume: false,
 }
 
 type FilterKey = keyof FilterState
-type ArrayFilterKey = Exclude<FilterKey, 'real_interview'>
+type ArrayFilterKey = Exclude<FilterKey, 'real_interview' | 'resume'>
 type SearchParamReader = Pick<URLSearchParams, 'get' | 'getAll'>
 type SearchParamGetter = Pick<URLSearchParams, 'get'>
 
-const ARRAY_FILTER_KEYS = (Object.keys(EMPTY_FILTERS) as FilterKey[]).filter(k => k !== 'real_interview') as ArrayFilterKey[]
+const BOOLEAN_FILTER_KEYS: FilterKey[] = ['real_interview', 'resume']
+const ARRAY_FILTER_KEYS = (Object.keys(EMPTY_FILTERS) as FilterKey[]).filter(k => !BOOLEAN_FILTER_KEYS.includes(k)) as ArrayFilterKey[]
 const FILTER_KEYS = Object.keys(EMPTY_FILTERS) as FilterKey[]
 
-const DISCIPLINES: Array<{
-  key: Discipline
-  label: string
-  description: string
-  icon: string
-  accent: string
-}> = [
-  {
-    key: 'all',
-    label: 'All practice',
-    description: 'Every rep across product, data, systems, SQL, and coding.',
-    icon: 'apps',
-    accent: '#4a7c59',
-  },
-  {
-    key: 'algorithm',
-    label: 'Coding/DSA',
-    description: 'DSA practice for implementation speed and correctness.',
-    icon: 'data_object',
-    accent: '#3a5a7c',
-  },
-  {
-    key: 'sql',
-    label: 'SQL',
-    description: 'Live query execution with real interview-style datasets.',
-    icon: 'database',
-    accent: '#5a3a7c',
-  },
-  {
-    key: 'system_design',
-    label: 'System design',
-    description: 'Architecture prompts, tradeoffs, scale, and context.',
-    icon: 'hub',
-    accent: '#7a5c2e',
-  },
-  {
-    key: 'analytics',
-    label: 'AI Analytics',
-    description: 'Drive a live Claude Code agent against a real dataset to answer a business question.',
-    icon: 'analytics',
-    accent: '#1565c0',
-  },
-  {
-    key: 'data_modeling',
-    label: 'Data modeling',
-    description: 'Schema, entities, analytics thinking, and durable models.',
-    icon: 'account_tree',
-    accent: '#5b6f4d',
-  },
-  {
-    key: 'product_sense',
-    label: 'Product sense',
-    description: 'MCQs and judgment drills for product-quality thinking.',
-    icon: 'psychology',
-    accent: '#4a7c59',
-  },
-]
+/** Order matters — mirrors the chip order in DisciplineChipRow ('all' last). */
+const DISCIPLINE_KEYS: Discipline[] = ['algorithm', 'sql', 'system_design', 'analytics', 'data_modeling', 'product_sense', 'all']
 
 const ALL_VIEW_DISCIPLINES = ['algorithm', 'sql', 'system_design', 'analytics', 'data_modeling', 'product_sense'] as const
 const DISCIPLINE_LABELS: Record<string, string> = {
@@ -129,7 +76,7 @@ const DISCIPLINE_COLORS: Record<string, string> = {
 }
 
 function isDiscipline(value: string | null): value is Discipline {
-  return DISCIPLINES.some((discipline) => discipline.key === value)
+  return DISCIPLINE_KEYS.includes(value as Discipline)
 }
 
 function readFilterValues(searchParams: SearchParamReader, key: FilterKey): string[] {
@@ -186,7 +133,6 @@ function buildListQuery(opts: {
   const p = new URLSearchParams()
   if (opts.discipline !== 'all') p.set('discipline', opts.discipline)
   const setMulti = (key: string, values: string[]) => { if (values.length > 0) p.set(key, values.join(',')) }
-  setMulti('paradigm', opts.filters.paradigm)
   setMulti('difficulty', opts.filters.difficulty)
   setMulti('role', opts.filters.role)
   setMulti('company', opts.filters.company)
@@ -195,6 +141,7 @@ function buildListQuery(opts: {
   if (opts.topic) p.set('topic', opts.topic)
   else setMulti('topic', opts.filters.topic)
   if (opts.filters.real_interview) p.set('real_interview', '1')
+  if (opts.filters.resume) p.set('resume', '1')
   p.set('page', String(opts.page))
   p.set('limit', String(opts.limit))
   return p.toString()
@@ -241,14 +188,17 @@ export function FilteredChallengesView({
   const { topicCounts, techniqueCounts } = useTopicTechniqueCounts(discipline, searchString)
 
   const filters = useMemo<FilterState>(() => ({
-    paradigm: readFilterValues(parsedParams, 'paradigm'),
     difficulty: readFilterValues(parsedParams, 'difficulty'),
     role: readFilterValues(parsedParams, 'role'),
     company: readFilterValues(parsedParams, 'company'),
     topic: readFilterValues(parsedParams, 'topic'),
     technique: readFilterValues(parsedParams, 'technique'),
     real_interview: parsedParams.get('real_interview') === '1',
+    resume: parsedParams.get('resume') === '1',
   }), [parsedParams])
+
+  const sortParam = parsedParams.get('sort')
+  const sort: PracticeSort = isPracticeSort(sortParam) ? sortParam : 'recommended'
 
   const listView = parsedParams.get('view') !== 'grid'
   const returnHref = `${pathname}${searchString ? `?${searchString}` : ''}`
@@ -265,12 +215,18 @@ export function FilteredChallengesView({
       params.delete('type')
       params.delete('topic')
       params.delete('technique')
-      // Paradigm has no meaning on the pure coding tabs and its control is hidden
-      // there - drop any active paradigm filter so results aren't silently scoped
-      // by a filter the user can no longer see or remove.
-      if (nextDiscipline === 'algorithm' || nextDiscipline === 'sql') params.delete('paradigm')
+      // The Paradigm filter control was removed; drop any legacy param so results
+      // aren't silently scoped by a filter the user can't see or clear.
+      params.delete('paradigm')
       if (nextDiscipline === 'all') params.delete('discipline')
       else params.set('discipline', nextDiscipline)
+    })
+  }
+
+  function handleSortChange(nextSort: PracticeSort) {
+    updateParams((params) => {
+      if (nextSort === 'recommended') params.delete('sort')
+      else params.set('sort', nextSort)
     })
   }
 
@@ -279,12 +235,14 @@ export function FilteredChallengesView({
       ARRAY_FILTER_KEYS.forEach((key) => writeFilterValues(params, key, nextFilters[key] as string[]))
       if (nextFilters.real_interview) params.set('real_interview', '1')
       else params.delete('real_interview')
+      if (nextFilters.resume) params.set('resume', '1')
+      else params.delete('resume')
     })
   }
 
   function handleRemoveFilter(key: keyof FilterState, value: string) {
-    if (key === 'real_interview') {
-      handleFilterChange({ ...filters, real_interview: false })
+    if (key === 'real_interview' || key === 'resume') {
+      handleFilterChange({ ...filters, [key]: false })
     } else {
       const current = filters[key] as string[]
       handleFilterChange({ ...filters, [key]: current.filter((v) => v !== value) })
@@ -294,6 +252,7 @@ export function FilteredChallengesView({
   function handleClearAll() {
     updateParams((params) => {
       FILTER_KEYS.forEach((key) => params.delete(key))
+      params.delete('paradigm')
     })
   }
 
@@ -311,71 +270,20 @@ export function FilteredChallengesView({
 
   const totalForDiscipline = countFor(discipline)
 
-  // Hide the Analytics tab entirely while the feature is dark.
+  // Hide the Analytics chip entirely while the feature is dark.
   const visibleDisciplines = analyticsEnabled
-    ? DISCIPLINES
-    : DISCIPLINES.filter((d) => d.key !== 'analytics')
-
-  // Match the desktop column count to the number of cards so the row stays a
-  // single, evenly-filled band instead of orphaning the last card on a second
-  // row (7 cards in a 6-col grid left "Coding" alone, misaligned). Literal
-  // classes only — Tailwind cannot see interpolated class names.
-  const lgGridColsClass = visibleDisciplines.length >= 7 ? 'lg:grid-cols-7' : 'lg:grid-cols-6'
+    ? DISCIPLINE_KEYS
+    : DISCIPLINE_KEYS.filter((key) => key !== 'analytics')
 
   return (
-    <div className="-mx-4 flex min-w-0 flex-col sm:-mx-6">
-      <section data-tour-target="practice-filters" className="px-4 pb-4 sm:px-6">
-        <div className={`grid grid-cols-2 gap-2 md:grid-cols-4 ${lgGridColsClass}`}>
-          {visibleDisciplines.map((entry) => {
-            const active = discipline === entry.key
-            const count = countFor(entry.key)
-
-            return (
-              <AppTooltip key={entry.key} label={entry.description} side="bottom" className="flex">
-                <button
-                  type="button"
-                  onClick={() => handleDisciplineChange(entry.key)}
-                  aria-pressed={active}
-                  title={entry.description}
-                  className={[
-                    'group flex min-h-[88px] w-full flex-col justify-between rounded-lg border p-3 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
-                    active
-                      ? 'border-primary bg-primary-fixed text-primary shadow-[0_10px_24px_-18px_rgba(51,82,58,0.75)]'
-                      : 'border-outline-variant/55 bg-surface-container-low text-on-surface hover:-translate-y-0.5 hover:border-outline hover:bg-surface-container',
-                  ].join(' ')}
-                >
-                  <span className="flex items-start justify-between gap-2">
-                    <span
-                      className="material-symbols-outlined text-[19px] leading-none"
-                      style={{
-                        color: active ? 'var(--color-primary)' : entry.accent,
-                        fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0",
-                      }}
-                    >
-                      {entry.icon}
-                    </span>
-                    <span
-                      className={[
-                        'rounded-md px-1.5 py-0.5 text-[10px] font-bold font-label tabular-nums',
-                        active ? 'bg-primary text-on-primary' : 'bg-surface text-on-surface-variant',
-                      ].join(' ')}
-                    >
-                      {count}
-                    </span>
-                  </span>
-                  <span className="space-y-0.5">
-                    <span className="block truncate font-headline text-[13px] font-bold leading-tight text-current">
-                      {entry.label}
-                    </span>
-                    <span className="line-clamp-2 block text-[10.5px] leading-tight text-on-surface-variant">
-                      {entry.description}
-                    </span>
-                  </span>
-                </button>
-              </AppTooltip>
-            )
-          })}
-        </div>
+    <div className="flex min-w-0 flex-col gap-3">
+      <section data-tour-target="practice-filters">
+        <DisciplineChipRow
+          active={discipline}
+          counts={countFor}
+          onChange={handleDisciplineChange}
+          visible={visibleDisciplines}
+        />
       </section>
 
       {/* Secondary filter bar — includes count-aware Topic/Technique dropdowns
@@ -413,7 +321,7 @@ export function FilteredChallengesView({
       />
 
       {/* Results */}
-      <div className="px-4 pt-4 sm:px-6">
+      <div className="pt-1">
         {discipline === 'all' ? (
           <AllPracticeView
             initialChallenges={initialChallenges}
@@ -439,6 +347,8 @@ export function FilteredChallengesView({
             returnHref={returnHref}
             pageSize={pageSize}
             searchString={searchString}
+            sort={sort}
+            onSortChange={handleSortChange}
           />
         )}
       </div>
@@ -643,6 +553,13 @@ function AllPracticeSection({
     }
   }, [discipline, filters, pageSize])
 
+  // The SSR seed can't apply the resume filter (it's attempt-scoped, resolved by
+  // the API); refetch page 1 whenever it's active so the preview rows match.
+  useEffect(() => {
+    if (filters.resume) void expandToFull()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.resume])
+
   const showingPreview = rows.length <= previewPerDiscipline
 
   const previewParadigms: Record<string, string> = {}
@@ -655,7 +572,7 @@ function AllPracticeSection({
         <button
           type="button"
           onClick={onSeeAll}
-          className="font-label text-xs text-on-surface-variant font-normal hover:underline"
+          className="font-label text-xs text-ink-secondary font-normal hover:underline"
         >
           see all {total} →
         </button>
@@ -697,6 +614,8 @@ function DisciplineView({
   returnHref,
   pageSize,
   searchString,
+  sort,
+  onSortChange,
 }: {
   discipline: Discipline
   filters: FilterState
@@ -705,33 +624,44 @@ function DisciplineView({
   returnHref: string
   pageSize: number
   searchString: string
+  sort: PracticeSort
+  onSortChange: (s: PracticeSort) => void
 }) {
   // Analytics challenges have no topic/technique taxonomy, so the topic-grouped
   // view would render empty. Always show them as a flat list (same as the
-  // chip-filtered case). Otherwise group by topic when no chip filter is active.
-  const flat = discipline === 'analytics' || filters.topic.length > 0 || filters.technique.length > 0
-
-  if (flat) {
-    return (
-      <FlatDisciplineList
-        discipline={discipline}
-        filters={filters}
-        initialChallenges={initialChallenges}
-        initialTotal={initialTotal}
-        returnHref={returnHref}
-        pageSize={pageSize}
-      />
-    )
-  }
+  // chip-filtered case). The resume filter is attempt-scoped, which the grouped
+  // topic counts don't know about, so it also forces the flat list. Otherwise
+  // group by topic when no chip filter is active.
+  const flat = discipline === 'analytics' || filters.resume || filters.topic.length > 0 || filters.technique.length > 0
 
   return (
-    <GroupedChallengeList
-      discipline={discipline}
-      filters={filters}
-      returnHref={returnHref}
-      searchString={searchString}
-      pageSize={pageSize}
-    />
+    <div className="flex flex-col gap-3">
+      {/* Sort control — Recommended (next best action) / Newest / Hardest */}
+      <div className="flex items-center justify-end">
+        <SortSegmented value={sort} onChange={onSortChange} />
+      </div>
+
+      {flat ? (
+        <FlatDisciplineList
+          discipline={discipline}
+          filters={filters}
+          initialChallenges={initialChallenges}
+          initialTotal={initialTotal}
+          returnHref={returnHref}
+          pageSize={pageSize}
+          sort={sort}
+        />
+      ) : (
+        <GroupedChallengeList
+          discipline={discipline}
+          filters={filters}
+          returnHref={returnHref}
+          searchString={searchString}
+          pageSize={pageSize}
+          sort={sort}
+        />
+      )}
+    </div>
   )
 }
 
@@ -743,6 +673,7 @@ function FlatDisciplineList({
   initialTotal,
   returnHref,
   pageSize,
+  sort,
 }: {
   discipline: Discipline
   filters: FilterState
@@ -750,6 +681,7 @@ function FlatDisciplineList({
   initialTotal: number
   returnHref: string
   pageSize: number
+  sort: PracticeSort
 }) {
   const [rows, setRows] = useState<ChallengeWithDomain[]>(initialChallenges)
   const [page, setPage] = useState(1)
@@ -814,7 +746,7 @@ function FlatDisciplineList({
 
   return (
     <div className="flex flex-col gap-3">
-      <GroupedChallengeList.FlatRows challenges={rows} returnHref={returnHref} />
+      <GroupedChallengeList.FlatRows challenges={rows} returnHref={returnHref} sort={sort} />
       {hasMore && (
         <button
           type="button"
