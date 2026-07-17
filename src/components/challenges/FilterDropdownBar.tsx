@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { BadgeCheck, Check, ChevronDown, History, LayoutGrid, List, SlidersHorizontal } from 'lucide-react'
 import type { Discipline } from './DisciplineTabStrip'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { getTopicsForDiscipline, getTechniquesForDiscipline, type Discipline as TaxonomyDiscipline } from '@/lib/data/taxonomy'
@@ -18,24 +19,24 @@ const UI_TO_TAXONOMY: Partial<Record<Discipline, TaxonomyDiscipline>> = {
 }
 
 export interface FilterState {
-  paradigm: string[]
   difficulty: string[]
   role: string[]
   company: string[]
   topic: string[]       // controlled-vocabulary topic slugs
   technique: string[]   // controlled-vocabulary technique slugs
   real_interview: boolean
+  /** Show only reps the user has started but not finished. */
+  resume: boolean
 }
 
 /** Keys whose value is string[] (the majority). */
-export type ArrayFilterKey = Exclude<keyof FilterState, 'real_interview'>
+export type ArrayFilterKey = Exclude<keyof FilterState, 'real_interview' | 'resume'>
 /** All filter keys. */
 export type FilterKey = keyof FilterState
 
-const PARADIGM_OPTIONS = ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native']
 const DIFFICULTY_OPTIONS = PRACTICE_DIFFICULTY_OPTIONS.map(o => o.label)
-const ROLE_OPTIONS = ['SWE', 'Tech Lead', 'EM', 'ML Eng', 'Data Eng', 'DevOps', 'Founding Eng', 'PM', 'Designer', 'Data Scientist']
-const COMPANY_OPTIONS = ['Google', 'Meta', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Amazon', 'Apple']
+export const ROLE_OPTIONS = ['SWE', 'Tech Lead', 'EM', 'ML Eng', 'Data Eng', 'DevOps', 'Founding Eng', 'PM', 'Designer', 'Data Scientist']
+export const COMPANY_OPTIONS = ['Google', 'Meta', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Amazon', 'Apple']
 
 interface DropdownDef {
   key: ArrayFilterKey
@@ -48,9 +49,6 @@ interface DropdownDef {
 }
 
 const DROPDOWNS: DropdownDef[] = [
-  // Paradigm is a product-thinking operating mode; it has no meaning on pure
-  // algorithm/SQL coding problems, so hide it on those two tabs.
-  { key: 'paradigm', label: 'Paradigm', options: PARADIGM_OPTIONS, disciplines: [], excludeDisciplines: ['algorithm', 'sql'] },
   { key: 'difficulty', label: 'Difficulty', options: DIFFICULTY_OPTIONS, disciplines: [] },
   { key: 'role', label: 'Role', options: ROLE_OPTIONS, disciplines: [] },
   { key: 'company', label: 'Company', options: COMPANY_OPTIONS, disciplines: [] },
@@ -59,13 +57,13 @@ const DROPDOWNS: DropdownDef[] = [
 ]
 
 const DROPDOWN_HELP: Record<FilterKey, string> = {
-  paradigm: 'Choose the operating mode: classic product work, AI-assisted, agentic, or AI-native.',
   difficulty: 'Match the rep to your current energy: Easy, Medium, or Hard.',
   role: 'Show scenarios calibrated to the job you are aiming for.',
   company: 'Practice with the product and systems style of specific companies.',
   topic: 'Filter by a specific topic area (e.g. caching, arrays, pricing).',
   technique: 'Filter by a problem-solving technique (e.g. two-pointers, cache-aside).',
   real_interview: 'Show only challenges sourced from confirmed real interview questions.',
+  resume: 'Show only reps you have started but not finished.',
 }
 
 /** One selectable option in a multi-select dropdown. `value` is the stored filter
@@ -88,6 +86,10 @@ interface Props {
   /** Grid/list toggle only affects the cross-discipline 'all' view; hidden elsewhere (grouped list is list-only). */
   showViewToggle?: boolean
 }
+
+const CHIP_BASE = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-label text-xs whitespace-nowrap transition-colors'
+const CHIP_ACTIVE = 'border-forest-600 bg-sd-bg text-forest-700 font-semibold'
+const CHIP_IDLE = 'border-hairline bg-card-bright text-ink-secondary hover:border-hairline-strong hover:bg-page-field'
 
 function MultiSelectDropdown({
   label, options, selected, onToggle, helpText,
@@ -114,32 +116,27 @@ function MultiSelectDropdown({
           type="button"
           onClick={() => setOpen((o) => !o)}
           title={helpText ?? label}
-          className={[
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-label text-xs whitespace-nowrap transition-colors',
-            hasSelection
-              ? 'border-primary bg-primary-fixed text-primary font-semibold'
-              : 'border-outline-variant bg-surface text-on-surface-variant hover:border-outline',
-          ].join(' ')}
+          className={[CHIP_BASE, hasSelection ? CHIP_ACTIVE : CHIP_IDLE].join(' ')}
         >
           {label}
-          {hasSelection && <span className="bg-primary text-on-primary rounded-full w-4 h-4 flex items-center justify-center text-[10px]">{selected.length}</span>}
-          <span className="material-symbols-outlined text-sm leading-none">expand_more</span>
+          {hasSelection && <span className="bg-forest-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px]">{selected.length}</span>}
+          <ChevronDown className="size-3.5 shrink-0" />
         </button>
 
         {open && (
-          <div className="absolute top-full left-0 mt-1 bg-surface border border-outline-variant rounded-xl shadow-lg z-50 min-w-44 max-h-72 overflow-y-auto py-1">
+          <div className="absolute top-full left-0 mt-1 bg-card-bright border border-hairline rounded-xl shadow-lg z-50 min-w-44 max-h-72 overflow-y-auto py-1">
             {options.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => onToggle(opt.value)}
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-label text-on-surface hover:bg-surface-container-low text-left"
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-label text-ink-strong hover:bg-page-field text-left"
               >
-                <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 ${selected.includes(opt.value) ? 'bg-primary border-primary' : 'border-outline-variant'}`}>
-                  {selected.includes(opt.value) && <span className="material-symbols-outlined text-on-primary text-[10px] leading-none">check</span>}
+                <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 ${selected.includes(opt.value) ? 'bg-forest-700 border-forest-700' : 'border-hairline-strong'}`}>
+                  {selected.includes(opt.value) && <Check className="size-2.5 text-white" strokeWidth={3} />}
                 </span>
                 <span className="flex-1 min-w-0 truncate">{opt.label}</span>
                 {opt.count !== undefined && (
-                  <span className="ml-auto shrink-0 tabular-nums text-on-surface-variant/60 text-[10px]">{opt.count}</span>
+                  <span className="ml-auto shrink-0 tabular-nums text-ink-muted text-[10px]">{opt.count}</span>
                 )}
               </button>
             ))}
@@ -190,19 +187,22 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
     onChange({ ...filters, real_interview: !filters.real_interview })
   }
 
+  function toggleResume() {
+    onChange({ ...filters, resume: !filters.resume })
+  }
+
   const activeFilterCount = [
-    ...Object.entries(filters).filter(([k, v]) => k !== 'real_interview' && Array.isArray(v) && (v as string[]).length > 0),
-    ...(filters.real_interview ? [['real_interview', true]] : []),
+    ...Object.entries(filters).filter(([, v]) => Array.isArray(v) && (v as string[]).length > 0),
+    ...(filters.real_interview ? [1] : []),
+    ...(filters.resume ? [1] : []),
   ].length
 
   return (
     <>
       {/* Desktop secondary filter bar */}
-      <div className="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-surface border-b border-outline-variant flex-wrap">
+      <div className="hidden sm:flex items-center gap-1.5 px-4 py-2 flex-wrap rounded-xl border border-hairline bg-card-bright">
         {/* Filter icon label */}
-        <span className="material-symbols-outlined text-[14px] leading-none text-on-surface-variant mr-0.5" style={{ fontVariationSettings: "'FILL' 0" }}>
-          tune
-        </span>
+        <SlidersHorizontal className="size-3.5 text-ink-muted mr-0.5 shrink-0" />
 
         {visibleDropdowns.map((d) => {
           const opts = resolveOptions(d)
@@ -226,108 +226,113 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
           <button
             type="button"
             onClick={toggleRealInterview}
-            className={[
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-label text-xs whitespace-nowrap transition-colors',
-              filters.real_interview
-                ? 'border-primary bg-primary-fixed text-primary font-semibold'
-                : 'border-outline-variant bg-surface text-on-surface-variant hover:border-outline hover:bg-surface-container-low',
-            ].join(' ')}
+            className={[CHIP_BASE, filters.real_interview ? CHIP_ACTIVE : CHIP_IDLE].join(' ')}
           >
-            <span className="material-symbols-outlined text-[13px] leading-none">verified</span>
+            <BadgeCheck className="size-3.5" />
             Real interview
+          </button>
+        </AppTooltip>
+
+        {/* Resume-only pill toggle */}
+        <AppTooltip label={DROPDOWN_HELP.resume} side="bottom">
+          <button
+            type="button"
+            onClick={toggleResume}
+            className={[CHIP_BASE, filters.resume ? CHIP_ACTIVE : CHIP_IDLE].join(' ')}
+          >
+            <History className="size-3.5" />
+            Resume only
           </button>
         </AppTooltip>
 
         <div className="min-w-0 flex-1" />
 
         {/* Result count */}
-        <span className="shrink-0 font-label text-[11px] text-on-surface-variant tabular-nums">
+        <span className="shrink-0 font-label text-[11px] text-ink-secondary tabular-nums">
           {resultCount} result{resultCount !== 1 ? 's' : ''}
         </span>
 
         {/* View toggle — segmented control. Only meaningful on the 'all' view;
             single-discipline views render a list-only grouped layout. */}
         {showViewToggle && (
-          <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-outline-variant">
+          <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-hairline">
             <button
               type="button"
               onClick={() => listView && onToggleView()}
               className={[
                 'px-2 py-1.5 flex items-center transition-colors',
-                !listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+                !listView ? 'bg-sd-bg text-forest-700' : 'bg-card-bright text-ink-secondary hover:bg-page-field',
               ].join(' ')}
               title="Grid view: visual cards for browsing"
               aria-label="Grid view"
             >
-              <span className="material-symbols-outlined text-sm leading-none">grid_view</span>
+              <LayoutGrid className="size-3.5" />
             </button>
             <button
               type="button"
               onClick={() => !listView && onToggleView()}
               className={[
                 'px-2 py-1.5 flex items-center transition-colors',
-                listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+                listView ? 'bg-sd-bg text-forest-700' : 'bg-card-bright text-ink-secondary hover:bg-page-field',
               ].join(' ')}
               title="List view: dense scan mode"
               aria-label="List view"
             >
-              <span className="material-symbols-outlined text-sm leading-none">view_list</span>
+              <List className="size-3.5" />
             </button>
           </div>
         )}
       </div>
 
       {/* Mobile filter bar */}
-      <div className="flex items-center gap-2 border-b border-outline-variant bg-surface px-3 py-2 sm:hidden">
+      <div className="flex items-center gap-2 rounded-xl border border-hairline bg-card-bright px-3 py-2 sm:hidden">
         <button
           type="button"
           onClick={onOpenMobileSheet}
           title="Open filters"
           className={[
             'flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-label text-xs font-semibold transition-colors',
-            activeFilterCount > 0
-              ? 'border-primary bg-primary-fixed text-primary'
-              : 'border-outline-variant bg-surface text-on-surface',
+            activeFilterCount > 0 ? CHIP_ACTIVE : 'border-hairline bg-card-bright text-ink-strong',
           ].join(' ')}
         >
-          <span className="material-symbols-outlined text-sm leading-none">tune</span>
+          <SlidersHorizontal className="size-3.5" />
           Filter
           {activeFilterCount > 0 && (
-            <span className="bg-primary text-on-primary rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
+            <span className="bg-forest-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
               {activeFilterCount}
             </span>
           )}
         </button>
         <div className="min-w-0 flex-1" />
         {showViewToggle && (
-          <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-outline-variant">
+          <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-hairline">
             <button
               type="button"
               onClick={() => listView && onToggleView()}
               className={[
                 'px-2 py-1.5 flex items-center transition-colors',
-                !listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+                !listView ? 'bg-sd-bg text-forest-700' : 'bg-card-bright text-ink-secondary hover:bg-page-field',
               ].join(' ')}
               title="Grid view"
               aria-label="Grid view"
             >
-              <span className="material-symbols-outlined text-sm leading-none">grid_view</span>
+              <LayoutGrid className="size-3.5" />
             </button>
             <button
               type="button"
               onClick={() => !listView && onToggleView()}
               className={[
                 'px-2 py-1.5 flex items-center transition-colors',
-                listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low',
+                listView ? 'bg-sd-bg text-forest-700' : 'bg-card-bright text-ink-secondary hover:bg-page-field',
               ].join(' ')}
               title="List view"
               aria-label="List view"
             >
-              <span className="material-symbols-outlined text-sm leading-none">view_list</span>
+              <List className="size-3.5" />
             </button>
           </div>
         )}
-        <span className="shrink-0 font-label text-xs text-on-surface-variant tabular-nums">{resultCount}</span>
+        <span className="shrink-0 font-label text-xs text-ink-secondary tabular-nums">{resultCount}</span>
       </div>
     </>
   )

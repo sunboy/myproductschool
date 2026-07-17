@@ -3,17 +3,19 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { ArrowRight, BadgeCheck, CheckCircle2, ChevronDown, ChevronUp, Circle, Lock, Tag, Timer } from 'lucide-react'
 import { useIsAtLimit } from '@/context/UsageContext'
 import { appendReturnTo } from '@/lib/navigation/return-to'
 import { challengePath, formatChallengeNumber } from '@/lib/challenges/challengeNumber'
-import { coerceDifficulty, DIFFICULTY_PILL_CLASSES } from '@/lib/practice/difficulty'
+import { coerceDifficulty, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 import { askedAtLabel } from '@/lib/format/company'
-import { deriveChallengeStatus } from '@/lib/challenges/status'
+import { deriveChallengeStatus, type ChallengeStatus } from '@/lib/challenges/status'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { ChallengeWithDomain } from '@/lib/types'
 import type { Discipline } from './DisciplineTabStrip'
 import type { FilterState } from './FilterDropdownBar'
+import type { PracticeSort } from '@/components/redesign/practice/SortSegmented'
 
 /**
  * Server mode (Practice): topic counts + lazy per-section row loading via the
@@ -42,6 +44,8 @@ interface ServerProps {
   searchString: string
   /** Rows fetched per section page. */
   pageSize: number
+  /** Active list ordering (defaults to 'recommended' = next best action). */
+  sort?: PracticeSort
   /** Apply the challenges usage paywall (lock rows at limit). Default true. */
   enforceLimit?: boolean
 }
@@ -77,18 +81,42 @@ function difficultyOrder(d: string | null | undefined): number {
   return 3
 }
 
-function sortChallenges(list: ChallengeWithDomain[]): ChallengeWithDomain[] {
+/** Recommended = next best action: paused reps first, fresh ones next, finished last. */
+function statusOrder(c: ChallengeWithDomain): number {
+  const status = deriveChallengeStatus(c)
+  if (status === 'attempted') return 0
+  if (status === 'not_started') return 1
+  return 2
+}
+
+export function sortChallenges(list: ChallengeWithDomain[], sort: PracticeSort = 'recommended'): ChallengeWithDomain[] {
+  if (sort === 'newest') return [...list] // server order is created_at desc
   return [...list].sort((a, b) => {
-    const diff = difficultyOrder(a.difficulty) - difficultyOrder(b.difficulty)
-    if (diff !== 0) return diff
+    if (sort === 'recommended') {
+      const status = statusOrder(a) - statusOrder(b)
+      if (status !== 0) return status
+      const diff = difficultyOrder(a.difficulty) - difficultyOrder(b.difficulty)
+      if (diff !== 0) return diff
+    } else {
+      // hardest
+      const diff = difficultyOrder(b.difficulty) - difficultyOrder(a.difficulty)
+      if (diff !== 0) return diff
+    }
     return (a.title ?? '').localeCompare(b.title ?? '')
   })
+}
+
+const SORT_DESCRIPTOR: Record<PracticeSort, string> = {
+  recommended: 'sorted by your next best action',
+  newest: 'newest first',
+  hardest: 'hardest first',
 }
 
 /** Build a /api/challenges query for a discipline section, optionally scoped to a topic. */
 function sectionQuery(opts: { searchString: string; discipline: Discipline; topic?: string; page: number; limit: number }): string {
   const p = new URLSearchParams(opts.searchString)
   p.delete('view')
+  p.delete('sort')
   if (opts.discipline !== 'all') p.set('discipline', opts.discipline)
   if (opts.topic) p.set('topic', opts.topic)
   p.set('page', String(opts.page))
@@ -96,9 +124,33 @@ function sectionQuery(opts: { searchString: string; discipline: Discipline; topi
   return p.toString()
 }
 
+const STATUS_ICON: Record<ChallengeStatus, React.ReactNode> = {
+  completed: <CheckCircle2 className="size-[18px] shrink-0 text-forest-600" />,
+  attempted: <Timer className="size-[18px] shrink-0 text-flame" />,
+  not_started: <Circle className="size-[18px] shrink-0 text-ink-muted/60" />,
+}
+
+const ACTION_LABEL: Record<ChallengeStatus, string> = {
+  completed: 'Review',
+  attempted: 'Resume',
+  not_started: 'Start',
+}
+
+const ACTION_CLASS: Record<ChallengeStatus, string> = {
+  completed: 'text-ink-muted',
+  attempted: 'text-flame',
+  not_started: 'text-forest-700',
+}
+
+/** Stage B difficulty pill tints (Easy green, Medium amber, Hard red). */
+const DIFFICULTY_PILL: Record<PracticeDifficulty, string> = {
+  easy: 'bg-sd-bg text-sd-fg',
+  medium: 'bg-sql-bg text-sql-fg',
+  hard: 'bg-error/10 text-error',
+}
+
 function ChallengeRow({ challenge, locked = false, returnHref, collectionParam }: { challenge: ChallengeWithDomain; locked?: boolean; returnHref?: string; collectionParam?: CollectionParam }) {
   const difficulty = coerceDifficulty(challenge.difficulty)
-  const pillClass = difficulty ? DIFFICULTY_PILL_CLASSES[difficulty] : 'bg-surface-container text-on-surface-variant'
   const topicLabel = challenge.topic_tags?.[0] ? getTopicLabelAny(challenge.topic_tags[0]) : undefined
   const techLabel = challenge.technique_tags?.[0] ? getTechniqueLabelAny(challenge.technique_tags[0]) : undefined
   const isReal = challenge.is_real_interview && (challenge.company_tags ?? []).length > 0
@@ -111,57 +163,37 @@ function ChallengeRow({ challenge, locked = false, returnHref, collectionParam }
     : appendReturnTo(basePath, returnHref)
   const status = deriveChallengeStatus(challenge)
 
-  const rowClass = 'flex items-center gap-3 px-4 py-3 group transition-colors'
+  const rowClass = 'flex items-center gap-3 px-4 py-2.5 group transition-colors'
   const inner = (
     <>
       {/* Completion state */}
-      <span
-        className={`material-symbols-outlined text-[20px] shrink-0 ${
-          status === 'completed' ? 'text-primary' : status === 'attempted' ? 'text-tertiary' : 'text-outline'
-        }`}
-        style={status !== 'not_started' ? { fontVariationSettings: "'FILL' 1" } : {}}
-      >
-        {status === 'completed'
-          ? 'check_circle'
-          : status === 'attempted'
-          ? 'timelapse'
-          : 'radio_button_unchecked'}
-      </span>
+      {STATUS_ICON[status]}
 
       {/* Title + chips */}
       <div className="min-w-0 flex-1">
-        <span
-          className={`text-sm font-semibold truncate block ${
-            status === 'completed' ? 'text-on-surface' : 'text-on-surface-variant'
-          }`}
-        >
+        <span className={`block truncate text-[13.5px] font-bold ${status === 'not_started' ? 'text-ink-strong' : 'text-ink-strong/90'}`}>
           {challenge.title}
         </span>
         {(numberLabel || topicLabel || techLabel || isReal) && (
-          <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+          <div className="mt-0.5 flex flex-wrap items-center gap-1">
             {numberLabel && (
-              <span className="font-mono text-[10px] px-1.5 py-px rounded-full bg-surface-container-highest text-on-surface-variant">
+              <span className="rounded-full bg-page-field px-1.5 py-px font-mono text-[10px] text-ink-secondary">
                 {numberLabel}
               </span>
             )}
             {topicLabel && (
-              <span className="text-[10px] font-label font-semibold px-1.5 py-px rounded-full bg-primary-fixed text-primary">
+              <span className="rounded-full bg-sd-bg px-1.5 py-px font-label text-[10px] font-semibold text-sd-fg">
                 {topicLabel}
               </span>
             )}
             {techLabel && (
-              <span className="text-[10px] font-label font-semibold px-1.5 py-px rounded-full bg-surface-container-highest text-on-surface-variant">
+              <span className="rounded-full bg-page-field px-1.5 py-px font-label text-[10px] font-semibold text-ink-secondary">
                 {techLabel}
               </span>
             )}
             {isReal && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-label font-bold px-1.5 py-px rounded-full bg-tertiary-container text-on-secondary-container">
-                <span
-                  className="material-symbols-outlined text-[10px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  verified
-                </span>
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-note-amber px-1.5 py-px font-label text-[10px] font-bold text-ink-strong/80">
+                <BadgeCheck className="size-2.5" />
                 {askedAtLabel(challenge.company_tags![0])}
               </span>
             )}
@@ -169,36 +201,27 @@ function ChallengeRow({ challenge, locked = false, returnHref, collectionParam }
         )}
       </div>
 
-      {/* Right: difficulty + score */}
-      <div className="flex items-center gap-2 shrink-0 ml-2">
-        {difficulty && (
-          <span className={`text-[10px] font-label font-bold px-2 py-0.5 rounded-full capitalize ${pillClass}`}>
-            {difficulty}
-          </span>
-        )}
+      {/* Fixed columns: score · difficulty · action · arrow */}
+      <span className="hidden w-14 shrink-0 text-right text-[11.5px] font-bold tabular-nums sm:block">
         {challenge.best_score != null ? (
-          <span
-            className={`text-[11px] font-bold px-2 py-0.5 rounded-full tabular-nums ${
-              challenge.best_score >= 70
-                ? 'text-primary bg-primary-fixed'
-                : 'text-amber-700 bg-tertiary-container'
-            }`}
-          >
+          <span className={challenge.best_score >= 70 ? 'text-forest-700' : 'text-flame'}>
             {challenge.best_score}/100
           </span>
-        ) : (
-          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-tight font-label">
-            {status === 'attempted' ? 'Resume' : 'Start'}
-          </span>
-        )}
-        {locked ? (
-          <span className="material-symbols-outlined text-on-surface-variant text-sm">lock</span>
-        ) : (
-          <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">
-            arrow_forward
-          </span>
-        )}
-      </div>
+        ) : null}
+      </span>
+      {difficulty && (
+        <span className={`w-[62px] shrink-0 rounded-full px-2 py-0.5 text-center font-label text-[10px] font-bold capitalize ${DIFFICULTY_PILL[difficulty]}`}>
+          {difficulty}
+        </span>
+      )}
+      <span className={`w-[54px] shrink-0 text-right font-label text-[10.5px] font-extrabold uppercase tracking-wide ${ACTION_CLASS[status]}`}>
+        {ACTION_LABEL[status]}
+      </span>
+      {locked ? (
+        <Lock className="size-3.5 shrink-0 text-ink-muted" />
+      ) : (
+        <ArrowRight className="size-3.5 shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5" />
+      )}
     </>
   )
 
@@ -211,7 +234,7 @@ function ChallengeRow({ challenge, locked = false, returnHref, collectionParam }
   }
 
   return (
-    <Link href={href} className={`${rowClass} hover:bg-surface-container`}>
+    <Link href={href} className={`${rowClass} hover:bg-page-field`}>
       {inner}
     </Link>
   )
@@ -232,6 +255,7 @@ function TopicSection({
   discipline,
   searchString,
   pageSize,
+  sort = 'recommended',
 }: {
   title: string
   topicSlug: string
@@ -242,6 +266,7 @@ function TopicSection({
   discipline: Discipline
   searchString: string
   pageSize: number
+  sort?: PracticeSort
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded)
   const [rows, setRows] = useState<ChallengeWithDomain[]>([])
@@ -278,44 +303,37 @@ function TopicSection({
     }
   }, [expanded, fetchPage])
 
-  const sorted = sortChallenges(rows)
+  const sorted = sortChallenges(rows, sort)
 
   return (
-    <div className="border border-outline-variant rounded-xl overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-hairline bg-card-bright">
       <button
         onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center justify-between px-5 py-4 bg-surface-container-high/30 hover:bg-surface-container-high/50 transition-colors sticky top-0 z-10"
+        className="sticky top-0 z-10 flex w-full items-center justify-between px-5 py-3.5 transition-colors hover:bg-page-field"
       >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <span
-              className="material-symbols-outlined text-primary text-[18px]"
-              style={{ fontVariationSettings: "'FILL' 0" }}
-            >
-              label
-            </span>
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sd-bg">
+            <Tag className="size-4 text-sd-fg" />
           </div>
           <div className="text-left">
-            <div className="font-label font-bold text-sm text-on-surface">{title}</div>
-            <div className="text-[11px] text-on-surface-variant font-label mt-0.5 tabular-nums">
-              {total} challenge{total !== 1 ? 's' : ''}
+            <div className="font-label text-sm font-bold text-ink-strong">{title}</div>
+            <div className="mt-0.5 font-label text-[11px] tabular-nums text-ink-secondary">
+              {total} challenge{total !== 1 ? 's' : ''} · {SORT_DESCRIPTOR[sort]}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="font-label text-[11px] font-semibold text-on-surface-variant tabular-nums">
+          <span className="font-label text-[11px] font-semibold tabular-nums text-ink-secondary">
             {total}
           </span>
-          <span className="material-symbols-outlined text-on-surface-variant">
-            {expanded ? 'expand_less' : 'expand_more'}
-          </span>
+          {expanded ? <ChevronUp className="size-4 text-ink-secondary" /> : <ChevronDown className="size-4 text-ink-secondary" />}
         </div>
       </button>
 
       {expanded && (
-        <div className="bg-surface divide-y divide-outline-variant/10">
+        <div className="divide-y divide-hairline/60 border-t border-hairline">
           {loading && rows.length === 0 ? (
-            <div className="px-5 py-6 text-center text-on-surface-variant font-label text-xs">Loading…</div>
+            <div className="px-5 py-6 text-center font-label text-xs text-ink-secondary">Loading…</div>
           ) : (
             <>
               {sorted.map(c => (
@@ -326,7 +344,7 @@ function TopicSection({
                   type="button"
                   onClick={() => fetchPage(page + 1, false)}
                   disabled={loading}
-                  className="w-full px-5 py-3 text-center font-label text-xs font-semibold text-primary hover:bg-surface-container-low disabled:opacity-50"
+                  className="w-full px-5 py-3 text-center font-label text-xs font-semibold text-forest-700 hover:bg-page-field disabled:opacity-50"
                 >
                   {loading ? 'Loading…' : `Load more (${total - rows.length} more)`}
                 </button>
@@ -363,29 +381,29 @@ function StaticTopicSection({
   const sorted = sortChallenges(challenges)
 
   return (
-    <div className="border border-outline-variant rounded-xl overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-hairline bg-card-bright">
       <button
         onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center justify-between px-5 py-4 bg-surface-container-high/30 hover:bg-surface-container-high/50 transition-colors sticky top-0 z-10"
+        className="sticky top-0 z-10 flex w-full items-center justify-between px-5 py-3.5 transition-colors hover:bg-page-field"
       >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-primary text-[18px]" style={{ fontVariationSettings: "'FILL' 0" }}>label</span>
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sd-bg">
+            <Tag className="size-4 text-sd-fg" />
           </div>
           <div className="text-left">
-            <div className="font-label font-bold text-sm text-on-surface">{title}</div>
-            <div className="text-[11px] text-on-surface-variant font-label mt-0.5 tabular-nums">
+            <div className="font-label text-sm font-bold text-ink-strong">{title}</div>
+            <div className="mt-0.5 font-label text-[11px] tabular-nums text-ink-secondary">
               {completedCount}/{challenges.length} completed
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="font-label text-[11px] font-semibold text-on-surface-variant tabular-nums">{challenges.length}</span>
-          <span className="material-symbols-outlined text-on-surface-variant">{expanded ? 'expand_less' : 'expand_more'}</span>
+          <span className="font-label text-[11px] font-semibold tabular-nums text-ink-secondary">{challenges.length}</span>
+          {expanded ? <ChevronUp className="size-4 text-ink-secondary" /> : <ChevronDown className="size-4 text-ink-secondary" />}
         </div>
       </button>
       {expanded && (
-        <div className="bg-surface divide-y divide-outline-variant/10">
+        <div className="divide-y divide-hairline/60 border-t border-hairline">
           {sorted.map(c => (
             <ChallengeRow key={c.id} challenge={c} locked={locked} returnHref={returnHref} collectionParam={collectionParam} />
           ))}
@@ -407,7 +425,7 @@ function StaticGroupedList({ challenges, groupBy, topicLabels, returnHref, colle
   if (groupBy === 'none') {
     const sorted = sortChallenges(challenges)
     return (
-      <div className="border border-outline-variant rounded-xl overflow-hidden bg-surface divide-y divide-outline-variant/10">
+      <div className="divide-y divide-hairline/60 overflow-hidden rounded-xl border border-hairline bg-card-bright">
         {sorted.map(c => <ChallengeRow key={c.id} challenge={c} locked={locked} returnHref={returnHref} collectionParam={collectionParam} />)}
       </div>
     )
@@ -473,7 +491,7 @@ export function GroupedChallengeList(props: Props) {
   return <ServerGroupedList {...props} />
 }
 
-function ServerGroupedList({ discipline, returnHref, searchString, pageSize, enforceLimit = true }: ServerProps) {
+function ServerGroupedList({ discipline, returnHref, searchString, pageSize, sort = 'recommended', enforceLimit = true }: ServerProps) {
   const atLimit = useIsAtLimit('challenges')
   const locked = enforceLimit && atLimit
 
@@ -495,7 +513,7 @@ function ServerGroupedList({ discipline, returnHref, searchString, pageSize, enf
   }, [discipline, searchString])
 
   if (loading) {
-    return <div className="text-center py-12 text-on-surface-variant font-label text-sm">Loading…</div>
+    return <div className="py-12 text-center font-label text-sm text-ink-secondary">Loading…</div>
   }
 
   const topicEntries = Object.entries(topicCounts)
@@ -528,6 +546,7 @@ function ServerGroupedList({ discipline, returnHref, searchString, pageSize, enf
           discipline={discipline}
           searchString={searchString}
           pageSize={pageSize}
+          sort={sort}
         />
       ))}
     </div>
@@ -539,12 +558,12 @@ function ServerGroupedList({ discipline, returnHref, searchString, pageSize, enf
  * holds the rows in state (paginated by its parent). Renders a single bordered
  * list with no topic grouping.
  */
-function FlatRows({ challenges, returnHref }: { challenges: ChallengeWithDomain[]; returnHref?: string }) {
+function FlatRows({ challenges, returnHref, sort = 'recommended' }: { challenges: ChallengeWithDomain[]; returnHref?: string; sort?: PracticeSort }) {
   const atLimit = useIsAtLimit('challenges')
   if (challenges.length === 0) return null
-  const sorted = sortChallenges(challenges)
+  const sorted = sortChallenges(challenges, sort)
   return (
-    <div className="border border-outline-variant rounded-xl overflow-hidden bg-surface divide-y divide-outline-variant/10">
+    <div className="divide-y divide-hairline/60 overflow-hidden rounded-xl border border-hairline bg-card-bright">
       {sorted.map(c => (
         <ChallengeRow key={c.id} challenge={c} locked={atLimit} returnHref={returnHref} />
       ))}

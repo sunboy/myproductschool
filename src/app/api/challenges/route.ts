@@ -48,6 +48,30 @@ export async function GET(req: NextRequest) {
     technique: multi('technique'),
     real_interview: searchParams.get('real_interview') === '1' || searchParams.get('real_interview') === 'true',
   }
+  const resumeOnly = searchParams.get('resume') === '1' || searchParams.get('resume') === 'true'
+
+  // The resume filter is attempt-scoped, and attempt stats are normally joined
+  // AFTER the paginated challenge query — filtering client-side would break
+  // pagination and counts. Instead, resolve the user's attempted-but-unfinished
+  // challenge ids up front (a user's attempt set is small) and constrain the
+  // main query to them, keeping `total` / `has_more` truthful.
+  let resumeIds: string[] | null = null
+  if (resumeOnly) {
+    const { data: allAttempts } = await supabase
+      .from('challenge_attempts')
+      .select('challenge_id, total_score, status')
+      .eq('user_id', user.id)
+    const attemptRows = (allAttempts ?? []) as Pick<ChallengeAttemptV2, 'challenge_id' | 'total_score' | 'status'>[]
+    const attemptedIds = Array.from(new Set(attemptRows.map(a => a.challenge_id)))
+    const attemptedStats = buildStatsMap(attemptedIds, attemptRows)
+    resumeIds = attemptedIds.filter(id => {
+      const s = attemptedStats.get(id)
+      return s && !s.is_completed && (s.is_in_progress || s.attempt_count > 0)
+    })
+    if (resumeIds.length === 0) {
+      return NextResponse.json({ challenges: [], total: 0, has_more: false })
+    }
+  }
 
   let query = supabase
     .from('challenges')
@@ -58,6 +82,7 @@ export async function GET(req: NextRequest) {
     .range(offset, offset + limit - 1)
 
   query = applyChallengeFilters(query, filters)
+  if (resumeIds) query = query.in('id', resumeIds)
   if (industrySlug) query = query.contains('industry_tags', [industrySlug])
   // Discipline maps to challenge_type(s); product_sense spans a set.
   if (discipline && isCountDiscipline(discipline)) query = applyDisciplineFilter(query, discipline)

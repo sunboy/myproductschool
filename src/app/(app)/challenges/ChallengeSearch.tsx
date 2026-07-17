@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useCallback, useRef } from 'react'
+import { Search } from 'lucide-react'
 
 export function ChallengeSearch({ total, className }: { total: number; className?: string }) {
   const router = useRouter()
@@ -26,18 +27,13 @@ export function ChallengeSearch({ total, className }: { total: number; className
 
   return (
     <div className={`relative w-full ${className ?? 'sm:w-auto'}`}>
-      <span
-        className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]"
-        style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
-      >
-        search
-      </span>
+      <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-muted" />
       <input
         key={currentValue}
         defaultValue={currentValue}
         onChange={onChange}
-        placeholder={`Search ${total} challenges…`}
-        className="w-full min-w-0 rounded-full border border-outline-variant bg-surface py-2.5 pl-9 pr-4 font-body text-sm text-on-surface outline-none focus:border-primary sm:min-w-[220px]"
+        placeholder={`Search ${total} challenges by title, company, technique, or tag…`}
+        className="w-full min-w-0 rounded-full border border-hairline bg-card-bright py-2.5 pl-9 pr-4 font-body text-sm text-ink-strong outline-none placeholder:text-ink-muted focus:border-forest-600 sm:min-w-[220px]"
       />
     </div>
   )
