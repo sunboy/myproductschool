@@ -102,11 +102,11 @@ export function DashboardHero({
 
           <div className="relative flex items-end">
             <HatchSays message={hatchMessage} tint="mint" className="relative z-10 w-full" />
-            {/* Overlapping mascot per previews/round4/dashboard-first-run.html
-                .hero-pose (hidden at narrow widths, same as the preview's
-                media query). */}
-            <div className="pointer-events-none absolute -bottom-6 -right-4 z-[1] hidden w-32 lg:block">
-              <HatchImage state="thinking" size={128} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
+            {/* Mascot pose: in front of the card (behind it, the bubble cut the
+                image off), smaller, tucked into the card's bottom-right corner.
+                Hidden at narrow widths per the preview's media query. */}
+            <div className="pointer-events-none absolute -bottom-4 -right-3 z-20 hidden w-[84px] lg:block">
+              <HatchImage state="thinking" size={84} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
             </div>
           </div>
         </div>
@@ -208,11 +208,12 @@ export function DashboardHero({
               </Link>
             )}
           </div>
-          {/* Overlapping mascot per previews/round4/dashboard.html and
-              dashboard-pro.html .hero-pose (130px, bottom-right overlap;
-              hidden at narrow widths per the preview's media query). */}
-          <div className="pointer-events-none absolute -bottom-6 -right-5 z-[2] hidden w-[130px] lg:block">
-            <HatchImage state="thinking" size={130} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
+          {/* Mascot pose: IN FRONT of the card (it used to sit behind at z-[2],
+              which read as the bubble cutting the image off), smaller and
+              tucked into the card's empty bottom-right corner. Hidden at
+              narrow widths per the preview's media query. */}
+          <div className="pointer-events-none absolute -bottom-4 -right-3 z-20 hidden w-[84px] lg:block">
+            <HatchImage state="thinking" size={84} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
           </div>
         </div>
       </div>

@@ -1,5 +1,4 @@
 import { cache, Suspense } from 'react'
-import { CircleCheck, Mic, Star, TrendingUp, Zap } from 'lucide-react'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -24,7 +23,6 @@ import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { getCuratedFirstRepSlug, FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
 import { type ResumeOrStartAction } from '@/components/dashboard/cards/resume-or-start'
 import { DashboardHero } from '@/components/redesign/dashboard/DashboardHero'
-import { StatStrip } from '@/components/redesign/StatStrip'
 import { FirstWeekStrip } from '@/components/redesign/dashboard/FirstWeekStrip'
 import { RecommendedRow, type RecommendedCardData } from '@/components/redesign/dashboard/RecommendedRow'
 import { TodaysPathPanel } from '@/components/redesign/dashboard/TodaysPathPanel'
@@ -33,8 +31,9 @@ import { ThisWeekPanel } from '@/components/redesign/dashboard/ThisWeekPanel'
 import { PeersPanel } from '@/components/redesign/dashboard/PeersPanel'
 import { FlowMethodRail } from '@/components/redesign/dashboard/FlowMethodRail'
 import { QuietInviteRow, QuietInviteRail } from '@/components/redesign/dashboard/QuietInvite'
+import { WhyThisOrderCard } from '@/components/redesign/dashboard/WhyThisOrderCard'
 import { ProTipStrip } from '@/components/redesign/ProTipStrip'
-import { difficultyLabel, levelFromXp } from '@/lib/utils'
+import { difficultyLabel } from '@/lib/utils'
 import { COMPETENCY_LABELS, type Competency } from '@/lib/types'
 import type { FocusArea } from '@/components/redesign/dashboard/ThisWeekPanel'
 
@@ -759,8 +758,15 @@ async function DashboardContent() {
       tone: FOCUS_TONES[i % FOCUS_TONES.length],
     }))
 
+  const todaysPathPanel = !isDayZero ? (
+    <TodaysPathPanel
+      steps={core.todaysPathSteps.map(s => ({ label: s.label, sub: s.sub, done: s.done, active: s.active, href: s.href, cta: s.cta }))}
+      completed={core.todaysPathCompleted}
+    />
+  ) : null
+
   return (
-    <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_268px]">
+    <div className="grid min-w-0 grid-cols-1 gap-[22px] lg:grid-cols-[minmax(0,1fr)_316px]">
       <div className="flex min-w-0 flex-col gap-5">
         {core.resumeOrStartAction && (
           <DashboardHero
@@ -778,7 +784,10 @@ async function DashboardContent() {
           />
         )}
 
-        {isDayZero ? (
+        {/* The Overall Progress / Today's Progress / Total XP stat strip was
+            removed on purpose: XP and streak already live in the top bar, and
+            Today's Progress duplicates the Today's path header in the rail. */}
+        {isDayZero && (
           <FirstWeekStrip
             steps={[
               { label: 'Do one rep', meta: 'In progress', active: true },
@@ -786,11 +795,15 @@ async function DashboardContent() {
               { label: 'Pick a plan', meta: 'Up next', active: false },
             ]}
           />
-        ) : (
-          <StatStrip cells={buildStatCells(lead, core)} />
         )}
 
+        {/* Mobile-only: Today's path sits high in the single column, just under
+            the hero, so the day's next action is reachable without scrolling
+            past the recommendations. On lg+ it lives in the rail instead. */}
+        {todaysPathPanel && <div className="lg:hidden">{todaysPathPanel}</div>}
+
         <RecommendedRow
+          title="Recommended after you finish"
           viewAllHref="/challenges"
           cards={buildRecommendedCards(core, isDayZero)}
         />
@@ -798,31 +811,13 @@ async function DashboardContent() {
         {isDayZero ? (
           <QuietInviteRow text="Your week view and cohort appear after your first rep." />
         ) : (
-          <>
-            <div className="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-[1.35fr_1fr_1fr]">
-              <TodaysPathPanel
-                steps={core.todaysPathSteps.map(s => ({ label: s.label, sub: s.sub, done: s.done, active: s.active, href: s.href, cta: s.cta }))}
-                completed={core.todaysPathCompleted}
-              />
-              <ThisWeekPanel
-                weekDates={core.weekDates}
-                streakDays={core.streakDays}
-                focusAreas={focusAreas}
-                viewPlanHref={core.activePlanSlug ? `/explore/plans/${core.activePlanSlug}` : '/explore/plans'}
-              />
-              <PeersPanel entries={core.leaderboard} viewLeaderboardHref="/cohort" />
-            </div>
-            {/* Full-width row below the trio grid: the panel used to sit inside
-                the first grid column, leaving a two-column white hole beside it
-                whenever the week/peers panels ran shorter. */}
-            {core.quickTakePrompt?.prompt_text && (
-              <QuickTakePanel
-                prompt={core.quickTakePrompt.prompt_text}
-                challengeId={core.quickTakePrompt.id}
-                move={core.quickTakePrompt.move_tags?.[0] ?? null}
-              />
-            )}
-          </>
+          core.quickTakePrompt?.prompt_text && (
+            <QuickTakePanel
+              prompt={core.quickTakePrompt.prompt_text}
+              challengeId={core.quickTakePrompt.id}
+              move={core.quickTakePrompt.move_tags?.[0] ?? null}
+            />
+          )
         )}
 
         {core.pausedLoopData && (
@@ -838,7 +833,24 @@ async function DashboardContent() {
       </div>
 
       <aside className="flex min-w-0 flex-col gap-5">
+        {/* Today's path leads the rail for returning users. Rendered here on
+            lg+ only — the mobile copy above keeps it high in the single column. */}
+        {todaysPathPanel && <div className="hidden lg:block">{todaysPathPanel}</div>}
+
+        {!isDayZero && <WhyThisOrderCard />}
+
         <FlowMethodRail weakestMove={core.weakestMove} learnMoreHref="/explore/plans" />
+
+        {!isDayZero && (
+          <ThisWeekPanel
+            weekDates={core.weekDates}
+            streakDays={core.streakDays}
+            focusAreas={focusAreas}
+            viewPlanHref={core.activePlanSlug ? `/explore/plans/${core.activePlanSlug}` : '/explore/plans'}
+          />
+        )}
+
+        {!isDayZero && <PeersPanel entries={core.leaderboard} viewLeaderboardHref="/cohort" />}
 
         {isDayZero && (
           <QuietInviteRail
@@ -868,81 +880,6 @@ async function DashboardContent() {
   )
 }
 
-function buildStatCells(
-  lead: Awaited<ReturnType<typeof loadDashboardLeadUncached>>,
-  core: Awaited<ReturnType<typeof loadDashboardCoreUncached>>,
-) {
-  const cells: Parameters<typeof StatStrip>[0]['cells'] = []
-  const trends = core.weeklyTrends
-
-  // Overall Progress and Total XP carry no trend line: move_levels stores no
-  // weekly history and the preview shows Total XP without a delta. Solved,
-  // interviews, and avg score derive real this-week movement from the
-  // two-week attempt/interview window loaded above.
-  const overallProgressPct = core.allMoveLevels.length > 0
-    ? Math.round(core.allMoveLevels.reduce((sum, m) => sum + m.progress_pct, 0) / core.allMoveLevels.length)
-    : null
-  if (overallProgressPct !== null) {
-    cells.push({
-      key: 'progress',
-      label: 'Overall Progress',
-      icon: <TrendingUp size={16} strokeWidth={1.7} className="text-forest-600" />,
-      value: `${overallProgressPct}%`,
-      progressPercent: overallProgressPct,
-    })
-  }
-
-  cells.push({
-    key: 'xp',
-    label: 'Total XP',
-    icon: <Zap size={16} strokeWidth={1.7} className="text-gold" />,
-    value: lead.xpTotal.toLocaleString(),
-    // Same derivation as the top utility bar pill — the two must agree.
-    valueSuffix: lead.xpTotal > 0 ? `Level ${levelFromXp(lead.xpTotal)}` : undefined,
-  })
-
-  const completedCount = lead.hatchContext?.practiceStats.completedChallenges ?? null
-  if (completedCount !== null && completedCount > 0) {
-    cells.push({
-      key: 'solved',
-      label: 'Problems Solved',
-      icon: <CircleCheck size={16} strokeWidth={1.7} className="text-ps-fg" />,
-      value: completedCount.toLocaleString(),
-      delta: trends.solvedThisWeek > 0 ? `↑ ${trends.solvedThisWeek} this week` : undefined,
-    })
-  }
-
-  const completedInterviews = lead.hatchContext?.practiceStats.completedLiveInterviews ?? null
-  if (completedInterviews !== null && completedInterviews > 0) {
-    cells.push({
-      key: 'interviews',
-      label: 'Mock Interviews',
-      icon: <Mic size={16} strokeWidth={1.7} className="text-sql-fg" />,
-      value: completedInterviews.toLocaleString(),
-      delta: trends.interviewsThisWeek > 0 ? `↑ ${trends.interviewsThisWeek} this week` : undefined,
-    })
-  }
-
-  // averageChallengeScore is on the 0-5 scale (hatch-context.ts renders it as
-  // "avg challenge score X/5"); convert to a percentage so the cell agrees
-  // with the % delta line below instead of printing the raw /5 value as "2%".
-  const avgScore = lead.hatchContext?.practiceStats.averageChallengeScore ?? null
-  if (avgScore !== null) {
-    cells.push({
-      key: 'avg-score',
-      label: 'Avg. Score',
-      icon: <Star size={16} strokeWidth={1.7} className="text-amber" />,
-      value: `${Math.min(100, Math.round((avgScore / 5) * 100))}%`,
-      delta:
-        trends.avgScoreDeltaPct !== null && trends.avgScoreDeltaPct !== 0
-          ? `${trends.avgScoreDeltaPct > 0 ? '↑' : '↓'} ${Math.abs(trends.avgScoreDeltaPct)}% this week`
-          : undefined,
-    })
-  }
-
-  return cells
-}
-
 function buildRecommendedCards(
   core: Awaited<ReturnType<typeof loadDashboardCoreUncached>>,
   isDayZero: boolean,
@@ -964,7 +901,7 @@ function buildRecommendedCards(
   }
 
   for (const ch of core.hotChallenges) {
-    if (cards.length >= 4) break
+    if (cards.length >= 3) break
     if (core.nextChallenge && ch.id === core.nextChallenge.id) continue
     cards.push({
       key: `hot-${ch.id}`,
@@ -977,7 +914,7 @@ function buildRecommendedCards(
     })
   }
 
-  return cards.slice(0, 4)
+  return cards.slice(0, 3)
 }
 
 async function AnalyticsLabSection({ preloaded }: { preloaded: Awaited<ReturnType<typeof getCcAnalyticsFrontDoor>> | null }) {
