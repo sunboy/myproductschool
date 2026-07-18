@@ -2,10 +2,29 @@ import 'server-only'
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { sanitizeAiOutput } from '@/lib/ai/sanitize'
-import { EMAIL_ART, EMAIL_BRAND } from '@/lib/email/art'
+import { EMAIL_ART } from '@/lib/email/art'
 import { configuredFromEmail, configuredReplyTo, getResendClient } from '@/lib/email/client'
+import {
+  accentImage,
+  contentCards,
+  emailShell,
+  footerBlock,
+  heroImage,
+  pillButton,
+  signoffBlock,
+  statGrid,
+  toneHeaderBlock,
+  urgencyBanner,
+  valueBulletList,
+  escapeHtml,
+  COLOR,
+  type EmailContentCard,
+  type EmailDeadline,
+  type EmailStat,
+  type EmailTone,
+} from '@/lib/email/layout'
 
-type TransactionalEmailKind =
+export type TransactionalEmailKind =
   | 'welcome'
   | 'verification'
   | 'magic_link'
@@ -159,14 +178,12 @@ interface ActivationDripInput extends BaseTransactionalInput {
   url?: string | null
 }
 
-type EmailTone = 'default' | 'celebratory' | 'urgent'
-
 interface SecondaryCta {
   label: string
   url: string
 }
 
-interface TransactionalEmailPayload extends BaseTransactionalInput {
+export interface TransactionalEmailPayload extends BaseTransactionalInput {
   kind: TransactionalEmailKind
   subject: string
   eyebrow: string
@@ -192,20 +209,23 @@ interface TransactionalEmailPayload extends BaseTransactionalInput {
    * account.
    */
   audienceNote?: string | null
+  /** Inbox preview line shown after the subject. Falls back to `body`. */
+  previewText?: string | null
+  /** 2x2 stat cards (digest numbers, receipt facts). */
+  stats?: EmailStat[] | null
+  /** REAL deadline strip — requires an actual date or nothing renders. */
+  deadline?: EmailDeadline | null
+  /** Bordered content cards after the prose (Educative pattern). */
+  contentCards?: EmailContentCard[] | null
+  /** Repeat the primary CTA before the sign-off (long emails only). */
+  repeatCta?: boolean
+  /** Hatch sign-off text; undefined = default line, null = suppressed. */
+  signoff?: string | null
 }
 
 function appUrl(path = '/') {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   return new URL(path, base).toString()
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;')
 }
 
 function formatMoney(amount: number | null | undefined, currency: string | null | undefined) {
@@ -229,75 +249,6 @@ function formatDate(value: string | null | undefined) {
     day: 'numeric',
     year: 'numeric',
   }).format(date)
-}
-
-// Terra palette, email-safe hex (no CSS vars in mail clients).
-const COLOR = {
-  bg: '#f8f3ea',
-  card: '#ffffff',
-  border: '#d7d2c8',
-  ink: '#233028',
-  muted: '#4f5a51',
-  faint: '#74796e',
-  primary: '#2d5a3d',
-  primaryText: '#ffffff',
-  amber: '#705c30',
-}
-
-function toneHeader(tone: EmailTone | undefined) {
-  // Header bar background + eyebrow accent per tone. Default = forest green.
-  switch (tone) {
-    case 'celebratory':
-      // Forest green with a warm amber eyebrow to feel like a win.
-      return { bar: COLOR.primary, eyebrow: '#e7c98c' }
-    case 'urgent':
-      // Deeper, warmer green-brown to read as "needs attention" without alarm red.
-      return { bar: '#5e4a2e', eyebrow: 'rgba(255,255,255,.7)' }
-    default:
-      return { bar: COLOR.primary, eyebrow: 'rgba(255,255,255,.62)' }
-  }
-}
-
-function pillButton(href: string | null | undefined, label: string | null | undefined, variant: 'primary' | 'secondary' = 'primary') {
-  if (!href || !label) return ''
-  const styles =
-    variant === 'primary'
-      ? `background:${COLOR.primary};color:${COLOR.primaryText};border:1px solid ${COLOR.primary};`
-      : `background:#ffffff;color:${COLOR.primary};border:1px solid ${COLOR.border};`
-  return `<a href="${escapeHtml(href)}" style="display:inline-block;${styles}text-decoration:none;border-radius:999px;padding:12px 22px;font-weight:700;font-size:14px;line-height:1;">${escapeHtml(label)}</a>`
-}
-
-function heroImage(url: string | null | undefined, alt: string | null | undefined) {
-  if (!url) return ''
-  return `
-          <div style="text-align:center;padding:26px 24px 0;">
-            <img src="${escapeHtml(url)}" alt="${escapeHtml(alt ?? 'Hatch')}" width="132" style="width:132px;height:auto;display:inline-block;" />
-          </div>`
-}
-
-function valueBulletList(bullets: string[] | null | undefined) {
-  if (!bullets || bullets.length === 0) return ''
-  const rows = bullets
-    .map(
-      bullet => `
-            <tr>
-              <td valign="top" style="padding:6px 10px 6px 0;color:${COLOR.primary};font-size:15px;font-weight:800;line-height:1.5;">&#10003;</td>
-              <td valign="top" style="padding:6px 0;color:${COLOR.ink};font-size:15px;line-height:1.5;">${escapeHtml(bullet)}</td>
-            </tr>`
-    )
-    .join('')
-  return `
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0 0;width:100%;">
-              ${rows}
-            </table>`
-}
-
-function accentImage(url: string | null | undefined) {
-  if (!url) return ''
-  return `
-            <div style="text-align:center;margin-top:22px;">
-              <img src="${escapeHtml(url)}" alt="Hatch" width="96" style="width:96px;height:auto;display:inline-block;opacity:.95;" />
-            </div>`
 }
 
 function cleanAiDynamicText(input: TransactionalEmailPayload) {
@@ -324,7 +275,7 @@ function cleanAiDynamicText(input: TransactionalEmailPayload) {
 
 /**
  * Render an email payload to HTML + text without sending. Pure; used by the
- * template preview script (scripts/preview-emails.ts). Not part of the send path.
+ * preview harness (/admin/emails) and its test-send route.
  */
 export function renderEmailForPreview(input: TransactionalEmailPayload) {
   return { html: renderHtmlEmail(input), text: renderTextEmail(input) }
@@ -333,7 +284,6 @@ export function renderEmailForPreview(input: TransactionalEmailPayload) {
 function renderHtmlEmail(input: TransactionalEmailPayload) {
   const name = input.name?.trim()
   const greeting = name ? `Hi ${escapeHtml(name)},` : 'Hi,'
-  const header = toneHeader(input.tone)
   const detail = input.detail
     ? `<p style="margin:16px 0 0;color:${COLOR.muted};font-size:14px;line-height:1.6;">${escapeHtml(input.detail)}</p>`
     : ''
@@ -347,18 +297,19 @@ function renderHtmlEmail(input: TransactionalEmailPayload) {
             </div>`
       : ''
 
-  return `
-    <div style="margin:0;padding:0;background:${COLOR.bg};font-family:Inter,Arial,sans-serif;color:${COLOR.ink};">
-      <div style="max-width:560px;margin:0 auto;padding:36px 20px;">
-        <div style="margin-bottom:20px;text-align:left;">
-          <img src="${EMAIL_BRAND.wordmark}" alt="HackProduct" style="height:40px;width:auto;" />
-        </div>
-        <div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:18px;overflow:hidden;">
+  // Long emails repeat the primary CTA before the sign-off so the reader who
+  // scrolled past the first button never has to scroll back up.
+  const repeatCtaBlock =
+    input.repeatCta && input.ctaUrl && input.ctaLabel
+      ? `
+            <div style="margin-top:26px;">
+              ${pillButton(input.ctaUrl, input.ctaLabel, 'primary')}
+            </div>`
+      : ''
+
+  const card = `
           ${heroImage(input.heroImageUrl, input.heroAlt)}
-          <div style="background:${header.bar};padding:22px 24px;color:#ffffff;">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;color:${header.eyebrow};">${escapeHtml(input.eyebrow)}</div>
-            <h1 style="margin:8px 0 0;font-size:25px;line-height:1.15;letter-spacing:-.02em;">${escapeHtml(input.heading)}</h1>
-          </div>
+          ${toneHeaderBlock(input.eyebrow, input.heading, input.tone)}
           <div style="padding:24px;">
             <p style="margin:0 0 14px;color:${COLOR.ink};font-size:15px;line-height:1.7;">${greeting}</p>
             <p style="margin:0;color:${COLOR.muted};font-size:15px;line-height:1.7;">${escapeHtml(input.body)}</p>
@@ -369,24 +320,41 @@ function renderHtmlEmail(input: TransactionalEmailPayload) {
               )
               .join('')}
             ${detail}
+            ${urgencyBanner(input.deadline)}
+            ${statGrid(input.stats)}
             ${valueBulletList(input.valueBullets)}
             ${ctaBlock}
+            ${contentCards(input.contentCards)}
+            ${repeatCtaBlock}
             ${accentImage(input.accentImageUrl)}
-          </div>
-        </div>
-        <p style="margin:18px 0 0;color:${COLOR.faint};font-size:12px;line-height:1.6;">
-          ${escapeHtml(input.audienceNote ?? 'You are receiving this because you have a HackProduct account.')}
-          ${input.unsubscribeUrl ? `<br /><a href="${escapeHtml(input.unsubscribeUrl)}" style="color:${COLOR.primary};text-decoration:underline;">Unsubscribe</a>` : ''}
-        </p>
-      </div>
-    </div>
-  `
+            ${signoffBlock(input.signoff)}
+          </div>`
+
+  return emailShell({
+    card,
+    footer: footerBlock({ audienceNote: input.audienceNote, unsubscribeUrl: input.unsubscribeUrl }),
+    previewText: input.previewText ?? input.body,
+  })
 }
 
 function renderTextEmail(input: TransactionalEmailPayload) {
   const bullets =
     input.valueBullets && input.valueBullets.length > 0
       ? input.valueBullets.map(b => `- ${b}`).join('\n')
+      : null
+  const stats =
+    input.stats && input.stats.length > 0
+      ? input.stats.map(s => `${s.label}: ${s.value}${s.sublabel ? ` (${s.sublabel})` : ''}`).join('\n')
+      : null
+  const cards =
+    input.contentCards && input.contentCards.length > 0
+      ? input.contentCards
+          .map(c => [`${c.eyebrow}: ${c.title}`, c.description, c.ctaUrl && c.ctaLabel ? `${c.ctaLabel}: ${c.ctaUrl}` : null].filter(Boolean).join('\n'))
+          .join('\n\n')
+      : null
+  const deadline =
+    input.deadline?.at && !Number.isNaN(new Date(input.deadline.at).getTime())
+      ? input.deadline.label
       : null
 
   const parts = [
@@ -396,9 +364,13 @@ function renderTextEmail(input: TransactionalEmailPayload) {
     input.body,
     ...(input.bodyParagraphs ?? []).map((p) => `\n${p}`),
     input.detail ?? null,
+    deadline ? `\n${deadline}` : null,
+    stats ? `\n${stats}` : null,
     bullets ? `\n${bullets}` : null,
     input.ctaUrl && input.ctaLabel ? `\n${input.ctaLabel}: ${input.ctaUrl}` : null,
     input.secondaryCta ? `${input.secondaryCta.label}: ${input.secondaryCta.url}` : null,
+    cards ? `\n${cards}` : null,
+    input.signoff === null ? null : `\n${input.signoff ?? '— Hatch, your HackProduct coach'}`,
     input.unsubscribeUrl ? `\nUnsubscribe: ${input.unsubscribeUrl}` : null,
   ].filter(Boolean)
 

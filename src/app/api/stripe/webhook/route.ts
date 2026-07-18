@@ -5,7 +5,7 @@ import { createStripeClient } from '@/lib/stripe/config'
 import {
   invoicePeriodEnd,
   planLabelFromInterval,
-} from '@/lib/email/billing'
+} from '@/lib/stripe/invoice-helpers'
 import {
   processAffiliateInvoicePaid,
   updateAffiliateAccountFromStripeAccount,
