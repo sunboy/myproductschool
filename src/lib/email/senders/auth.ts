@@ -25,7 +25,7 @@ export function sendVerificationEmail(admin: SupabaseClient, input: LinkEmailInp
     eyebrow: 'Email verification',
     heading: 'Confirm your email.',
     previewText: 'One click finishes setting up your account.',
-    body: 'Open the confirmation link below to finish setting up your account. The link expires in 24 hours.',
+    body: 'Open the confirmation link below to finish setting up your account. The link expires in 1 hour.',
     bodyParagraphs: [
       'If you did not create a HackProduct account, ignore this email. Nothing happens without the link.',
     ],
@@ -42,8 +42,8 @@ export function sendMagicLinkEmail(admin: SupabaseClient, input: LinkEmailInput)
     subject: 'Your HackProduct magic link',
     eyebrow: 'Sign in',
     heading: 'Use this link to sign in.',
-    previewText: 'This link signs you in. It expires in 10 minutes.',
-    body: 'Open the link below to sign in. It expires in 10 minutes.',
+    previewText: 'This link signs you in. It expires in 1 hour.',
+    body: 'Open the link below to sign in. It expires in 1 hour.',
     bodyParagraphs: [
       'Nobody can sign in without this email. If you did not request it, you can ignore it.',
     ],
