@@ -3,7 +3,7 @@ import type Stripe from 'stripe'
 import { createUnsubscribeToken } from '@/lib/notifications/unsubscribe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createStripeClient } from '@/lib/stripe/config'
-import { planLabelFromInterval } from '@/lib/email/billing'
+import { planLabelFromInterval } from '@/lib/stripe/invoice-helpers'
 import { sendTrialEndingEmail } from '@/lib/email/transactional'
 
 const ONE_DAY_SECONDS = 24 * 60 * 60

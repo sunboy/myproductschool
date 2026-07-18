@@ -5,7 +5,7 @@ import { createStripeClient } from '@/lib/stripe/config'
 import {
   invoicePeriodEnd,
   planLabelFromInterval,
-} from '@/lib/email/billing'
+} from '@/lib/stripe/invoice-helpers'
 import {
   processAffiliateInvoicePaid,
   updateAffiliateAccountFromStripeAccount,
@@ -550,6 +550,7 @@ export async function POST(req: NextRequest) {
         amount: invoice.amount_due,
         currency: invoice.currency,
         periodEnd: invoicePeriodEnd(invoice),
+        retryAtIso: unixToIso(invoice.next_payment_attempt),
         url: invoice.hosted_invoice_url ?? appReturnUrl(req),
       })
       break
@@ -668,6 +669,8 @@ export async function POST(req: NextRequest) {
         dedupeKey: `${event.id}:trial_ending`,
         userId,
         planLabel: planLabelFromInterval(interval),
+        amount: item?.price?.unit_amount ?? null,
+        currency: item?.price?.currency ?? null,
         periodEnd: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
         url: appReturnUrl(req),
       })
