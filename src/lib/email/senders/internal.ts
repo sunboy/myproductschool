@@ -45,18 +45,27 @@ export interface GrowthReportInput {
 }
 
 export function sendDiscussionReplyEmail(admin: SupabaseClient, input: DiscussionReplyInput) {
-  const detail = input.excerpt
-    ? `"${input.excerpt.slice(0, 180)}${input.excerpt.length > 180 ? '...' : ''}"`
-    : null
+  const excerpt = input.excerpt
+    ? `${input.excerpt.slice(0, 180)}${input.excerpt.length > 180 ? '...' : ''}`
+    : 'Open the discussion to read the full reply.'
 
   return sendTransactionalEmail(admin, {
     ...input,
     kind: 'discussion_reply',
     subject: 'New reply on your HackProduct discussion',
     eyebrow: 'Discussion reply',
+    previewText: excerpt,
     heading: input.challengeTitle ?? 'Someone replied to your comment.',
     body: `${input.replyAuthor ?? 'Someone'} replied to your discussion comment.`,
-    detail,
+    contentCards: [
+      {
+        eyebrow: 'Reply',
+        title: input.replyAuthor ?? 'Someone',
+        description: excerpt,
+        ctaLabel: 'View reply',
+        ctaUrl: input.url,
+      },
+    ],
     ctaLabel: 'View reply',
     ctaUrl: input.url,
   })
@@ -69,19 +78,14 @@ export function sendAccountDeletedEmail(admin: SupabaseClient, input: BaseTransa
     subject: 'Your HackProduct account was deleted',
     eyebrow: 'Account deleted',
     heading: 'Your account has been deleted.',
-    body: 'Your HackProduct account and profile data have been removed.',
+    previewText: 'Your account, profile, and progress data have been removed.',
+    body: 'Your HackProduct account, profile, and practice history have been permanently removed.',
+    bodyParagraphs: ['This is final. There is nothing further to do, and we will not contact you about this account again.'],
+    signoff: null,
   })
 }
 
 export function sendAbuseReportEmail(admin: SupabaseClient, input: AbuseReportEmailInput) {
-  const detail = [
-    `Report ID: ${input.reportId}`,
-    `Surface: ${input.targetType}`,
-    `Category: ${input.category}`,
-    input.message ? `Message: ${input.message.slice(0, 500)}` : null,
-    input.targetUrl ? `Target: ${input.targetUrl}` : null,
-  ].filter(Boolean).join(' | ')
-
   return sendTransactionalEmail(admin, {
     ...input,
     to: input.to ?? configuredReplyTo(),
@@ -89,22 +93,21 @@ export function sendAbuseReportEmail(admin: SupabaseClient, input: AbuseReportEm
     subject: 'New HackProduct abuse report',
     eyebrow: 'Abuse report',
     heading: 'A report needs review.',
+    previewText: `${input.category} report on ${input.targetType}`,
     body: 'A user reported content in HackProduct.',
-    detail,
+    bodyParagraphs: input.message ? [input.message.slice(0, 500)] : null,
+    stats: [
+      { label: 'Report ID', value: input.reportId },
+      { label: 'Surface', value: input.targetType },
+      { label: 'Category', value: input.category },
+    ],
     ctaLabel: input.targetUrl ? 'Open reported surface' : null,
     ctaUrl: input.targetUrl ?? null,
+    signoff: null,
   })
 }
 
 export function sendProductFeedbackEmail(admin: SupabaseClient, input: ProductFeedbackEmailInput) {
-  const detail = [
-    `Feedback ID: ${input.feedbackId}`,
-    `Kind: ${input.kind}`,
-    `Rating: ${input.rating}/5`,
-    input.path ? `Path: ${input.path}` : null,
-    input.message ? `Message: ${input.message.slice(0, 700)}` : null,
-  ].filter(Boolean).join(' | ')
-
   return sendTransactionalEmail(admin, {
     ...input,
     to: input.to ?? configuredReplyTo(),
@@ -112,10 +115,18 @@ export function sendProductFeedbackEmail(admin: SupabaseClient, input: ProductFe
     subject: 'New HackProduct feedback',
     eyebrow: 'Product feedback',
     heading: 'A user sent feedback.',
-    body: 'Review the latest in-app feedback from HackProduct.',
-    detail,
+    previewText: input.message ? input.message.slice(0, 140) : 'Review the latest in-app feedback.',
+    body: 'A user sent feedback from inside HackProduct.',
+    bodyParagraphs: input.message ? [input.message.slice(0, 700)] : null,
+    stats: [
+      { label: 'Feedback ID', value: input.feedbackId },
+      { label: 'Kind', value: input.kind },
+      { label: 'Rating', value: `${input.rating}/5` },
+      ...(input.path ? [{ label: 'Path', value: input.path }] : []),
+    ],
     ctaLabel: input.path ? 'Open surface' : null,
     ctaUrl: input.path ? appUrl(input.path) : null,
+    signoff: null,
   })
 }
 
@@ -124,13 +135,15 @@ export function sendGrowthReportEmail(admin: SupabaseClient, input: GrowthReport
     to: input.to,
     dedupeKey: `growth-report:${input.weekLabel}`,
     kind: 'growth_report',
-    subject: `Growth report — week of ${input.weekLabel}`,
+    subject: `Growth report: week of ${input.weekLabel}`,
     eyebrow: 'Monday funnel report',
     heading: input.headline,
+    previewText: 'Trailing 7 days vs. the 7 days before, internal and test accounts excluded.',
     body: 'Weekly funnel numbers, internal and test accounts excluded. Deltas compare the trailing 7 days against the 7 days before.',
-    detail: input.detail ?? null,
+    bodyParagraphs: input.detail ? [input.detail] : null,
     valueBullets: input.metrics,
     ctaLabel: 'Open the Growth hub',
     ctaUrl: 'https://linear.app/sunboy-labs',
+    signoff: null,
   })
 }

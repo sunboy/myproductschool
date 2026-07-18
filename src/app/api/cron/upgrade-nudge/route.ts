@@ -121,10 +121,14 @@ export async function GET(request: NextRequest) {
     subsByUser.set(row.user_id, row)
   }
 
-  // Build set of users with recent activity.
+  // Build set of users with recent activity, and a per-user completed count
+  // (cheap in-memory grouping over the same rows — no extra query) to ground
+  // the upgrade nudge copy in actual usage.
   const recentlyActive = new Set<string>()
+  const usageCountByUser = new Map<string, number>()
   for (const row of (attemptsResult.data ?? []) as AttemptRow[]) {
     recentlyActive.add(row.user_id)
+    usageCountByUser.set(row.user_id, (usageCountByUser.get(row.user_id) ?? 0) + 1)
   }
 
   // Index lifecycle pref — absence means default (true).
@@ -182,6 +186,7 @@ export async function GET(request: NextRequest) {
       name: profile.display_name,
       url: appUrl(request, '/pricing'),
       unsubscribeUrl,
+      usageCount: usageCountByUser.get(profile.id) ?? null,
     })
 
     const { data: emailEvent } = await admin

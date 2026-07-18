@@ -15,6 +15,7 @@ const adminNav = [
   { href: '/admin/coupons', icon: 'local_offer', label: 'Coupons' },
   { href: '/admin/audit-log', icon: 'policy', label: 'Audit Log' },
   { href: '/admin/waitlist', icon: 'mail', label: 'Waitlist' },
+  { href: '/admin/emails', icon: 'forward_to_inbox', label: 'Emails' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
