@@ -2161,12 +2161,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const finalSnap = detail.latest_completed_attempt?.canvas_final_snapshot as
       | { elements?: unknown[] }
       | undefined
+    // An empty canvas draft (fresh attempt that autosaved before any drawing)
+    // must not block the submitted-scene fallback.
+    const draftHasContent = draft?.type === 'canvas' &&
+      ((Array.isArray(draft.elements) && draft.elements.length > 0) || Boolean(draft.step_answers))
     const snap: CanvasSnap | undefined =
-      draft?.type === 'canvas'
+      draftHasContent
         ? draft
         : Array.isArray(finalSnap?.elements) && finalSnap.elements.length > 0
           ? { type: 'canvas', elements: finalSnap.elements }
-          : undefined
+          : draft?.type === 'canvas' ? draft : undefined
 
     if (snap?.type === 'canvas') {
       if (snap.step_answers && typeof snap.step_answers === 'object') {

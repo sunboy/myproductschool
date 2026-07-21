@@ -23,6 +23,21 @@ interface ChallengeDetailResponse {
   codingParts: CodingPart[]
 }
 
+/**
+ * Newest completed attempt, preferring one whose canvas_final_snapshot has
+ * elements. Duplicate/abandoned twins can produce a newest attempt with an
+ * empty snapshot; restoring from that would show a blank canvas even though a
+ * real submitted drawing exists one row down.
+ */
+function pickCompletedAttempt(rows: ChallengeAttemptV2[] | null): ChallengeAttemptV2 | null {
+  if (!rows || rows.length === 0) return null
+  const withScene = rows.find((r) => {
+    const snap = r.canvas_final_snapshot as { elements?: unknown[] } | undefined
+    return Array.isArray(snap?.elements) && snap.elements.length > 0
+  })
+  return withScene ?? rows[0]
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -132,9 +147,8 @@ export async function GET(
       .eq('user_id', userId)
       .eq('challenge_id', resolvedId)
       .eq('status', 'completed')
-      .order('started_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+      .order('completed_at', { ascending: false, nullsFirst: false })
+      .limit(5),
   ])
 
   if (stepsError) {
@@ -235,7 +249,7 @@ export async function GET(
     challenge: challenge as Challenge,
     steps,
     current_attempt: (currentAttempt as ChallengeAttemptV2) ?? null,
-    latest_completed_attempt: (latestCompletedAttempt as ChallengeAttemptV2) ?? null,
+    latest_completed_attempt: pickCompletedAttempt(latestCompletedAttempt as ChallengeAttemptV2[] | null),
     codingParts,
   }
 
