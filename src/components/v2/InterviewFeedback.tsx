@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ScoreHero, DimensionCard, TakeawayCard } from '@/components/feedback'
 import Link from 'next/link'
 import type { InterviewGrade, ChallengeType } from '@/lib/types'
@@ -9,6 +9,8 @@ interface InterviewFeedbackProps {
   grade: InterviewGrade
   challengeType: ChallengeType
   canvasPngUrl?: string | null
+  /** Submitted scene elements (canvas_final_snapshot). Rendered as an SVG preview when no PNG exists. */
+  canvasElements?: unknown[] | null
   onRetry?: () => void
   onBackToCanvas?: () => void
   /** Next challenge to attempt (origin-preserving href). Primary "what next" CTA. */
@@ -17,13 +19,46 @@ interface InterviewFeedbackProps {
   backToListHref?: string | null
 }
 
+/**
+ * Renders the submitted drawing from raw Excalidraw elements via exportToSvg.
+ * The PNG upload at submit time fails silently for most attempts, so the
+ * persisted scene is the reliable way to show the design.
+ */
+function CanvasSceneSvg({ elements }: { elements: unknown[] }) {
+  const hostRef = useRef<HTMLDivElement>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    import('@excalidraw/excalidraw')
+      .then(async ({ exportToSvg }) => {
+        const svg = await exportToSvg({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          elements: elements as any,
+          appState: { exportBackground: true, viewBackgroundColor: '#ffffff' },
+          files: null,
+        })
+        if (cancelled || !hostRef.current) return
+        svg.style.width = '100%'
+        svg.style.height = 'auto'
+        svg.style.maxHeight = '16rem'
+        hostRef.current.replaceChildren(svg)
+      })
+      .catch(() => { if (!cancelled) setFailed(true) })
+    return () => { cancelled = true }
+  }, [elements])
+
+  if (failed) return null
+  return <div ref={hostRef} className="w-full [&_svg]:mx-auto" />
+}
+
 
 
 // Animated SVG score ring with count-up
 
 // Collapsible dimension tile
 
-export function InterviewFeedback({ grade, challengeType: _challengeType, canvasPngUrl, onRetry, onBackToCanvas, nextChallengeHref, backToListHref }: InterviewFeedbackProps) {
+export function InterviewFeedback({ grade, challengeType: _challengeType, canvasPngUrl, canvasElements, onRetry, onBackToCanvas, nextChallengeHref, backToListHref }: InterviewFeedbackProps) {
   const [calloutVisible, setCalloutVisible] = useState(false)
 
   // Lift expanded state up so parent can collapse grid to 1-col when any tile is open
@@ -45,16 +80,20 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
         </div>
 
         {/* ── 2. CANVAS SNAPSHOT ─────────────────────────────── */}
-        {canvasPngUrl && (
+        {(canvasPngUrl || (canvasElements && canvasElements.length > 0)) && (
           <div className="rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low">
             <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant px-3 py-2 border-b border-outline-variant">
               Your diagram
             </p>
-            <img
-              src={canvasPngUrl}
-              alt="Canvas snapshot"
-              className="w-full object-contain max-h-64"
-            />
+            {canvasPngUrl ? (
+              <img
+                src={canvasPngUrl}
+                alt="Canvas snapshot"
+                className="w-full object-contain max-h-64"
+              />
+            ) : (
+              <CanvasSceneSvg elements={canvasElements!} />
+            )}
           </div>
         )}
 

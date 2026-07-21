@@ -656,6 +656,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [interviewGrade, setInterviewGrade] = useState<InterviewGrade | null>(null)
   const [submittedCanvasPngUrl, setSubmittedCanvasPngUrl] = useState<string | null>(null)
   const [historyInterviewGrade, setHistoryInterviewGrade] = useState<InterviewGrade | null>(null)
+  const [historyCanvasElements, setHistoryCanvasElements] = useState<unknown[] | null>(null)
   const [historyCodingFeedback, setHistoryCodingFeedback] = useState<GradingFeedback | null>(null)
   const [historyCodingCorrectness, setHistoryCodingCorrectness] = useState<RunResult | null>(null)
   const [historyCodingLanguage, setHistoryCodingLanguage] = useState<SupportedLanguage | null>(null)
@@ -960,6 +961,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   useEffect(() => {
     if (selectedHistoryIdx === null) {
       setHistoryInterviewGrade(null)
+      setHistoryCanvasElements(null)
       setHistoryCodingFeedback(null)
       setHistoryCodingCorrectness(null)
       setHistoryCodingLanguage(null)
@@ -976,8 +978,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       code?: string | null
       language?: SupportedLanguage | null
       correctness?: RunResult | null
+      canvasElements?: unknown[] | null
     } | null) => {
       const historyChallengeType = data?.challengeType ?? record.challengeType ?? apiChallengeType ?? null
+      setHistoryCanvasElements(data?.canvasElements ?? null)
       if (historyChallengeType === 'sql' || historyChallengeType === 'algorithm') {
         setHistoryCodingFeedback((data?.grade as GradingFeedback | null) ?? null)
         setHistoryCodingCorrectness(data?.correctness ?? null)
@@ -2142,16 +2146,27 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const attemptKey = detail.current_attempt?.id ?? attemptId
     if (!attemptKey || didHydrateCanvasRef.current === attemptKey) return
 
-    const snap = detail.current_attempt?.draft_snapshot as
-      | {
-          type?: string
-          elements?: unknown[]
-          step_answers?: StepAnswers
-          active_design_step?: string
-          context_pack?: string
-          context_pack_fields?: ContextPackField[]
-        }
+    type CanvasSnap = {
+      type?: string
+      elements?: unknown[]
+      step_answers?: StepAnswers
+      active_design_step?: string
+      context_pack?: string
+      context_pack_fields?: ContextPackField[]
+    }
+    // Prefer the in-progress draft; with no draft (fresh attempt after a
+    // submit), restore the previously SUBMITTED drawing so the user can review
+    // and build on it instead of facing an empty canvas.
+    const draft = detail.current_attempt?.draft_snapshot as CanvasSnap | undefined
+    const finalSnap = detail.latest_completed_attempt?.canvas_final_snapshot as
+      | { elements?: unknown[] }
       | undefined
+    const snap: CanvasSnap | undefined =
+      draft?.type === 'canvas'
+        ? draft
+        : Array.isArray(finalSnap?.elements) && finalSnap.elements.length > 0
+          ? { type: 'canvas', elements: finalSnap.elements }
+          : undefined
 
     if (snap?.type === 'canvas') {
       if (snap.step_answers && typeof snap.step_answers === 'object') {
@@ -2179,11 +2194,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
     didHydrateCanvasRef.current = attemptKey
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detail?.current_attempt?.id, attemptId, isCanvasChallenge, detail?.challenge?.id])
+  }, [detail?.current_attempt?.id, detail?.latest_completed_attempt?.id, attemptId, isCanvasChallenge, detail?.challenge?.id])
 
   // Elements-only initial data for Excalidraw on resume. Never pass the saved
   // appState — a persisted getAppState() carries `collaborators` and breaks
-  // Excalidraw's initialData restore.
+  // Excalidraw's initialData restore. Falls back to the last SUBMITTED scene
+  // when there is no in-progress draft (re-entry after submit).
   const canvasInitialData = useMemo(() => {
     const snap = detail?.current_attempt?.draft_snapshot as
       | { type?: string; elements?: unknown[] }
@@ -2191,9 +2207,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (snap?.type === 'canvas' && Array.isArray(snap.elements) && snap.elements.length > 0) {
       return { elements: snap.elements }
     }
+    const finalSnap = detail?.latest_completed_attempt?.canvas_final_snapshot as
+      | { elements?: unknown[] }
+      | undefined
+    if (Array.isArray(finalSnap?.elements) && finalSnap.elements.length > 0) {
+      return { elements: finalSnap.elements }
+    }
     return undefined
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detail?.current_attempt?.id])
+  }, [detail?.current_attempt?.id, detail?.latest_completed_attempt?.id])
 
   // useCodeRunner hook - always called (React rules of hooks); only active for coding challenges
   const codeChallenge = (isCodingChallenge && detail?.challenge)
@@ -2867,9 +2889,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       }
 
       try {
+        // Timeout guard: without it a platform-killed serverless function
+        // leaves this await pending forever and the finally below never runs
+        // ("Submitting…" / "analysing…" stuck states).
         const gradingRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(70_000),
           body: JSON.stringify({
             attemptId,
             finalCode: currentCode,
@@ -2913,7 +2939,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         else setCodingGradingError('Hatch did not return feedback for this submission.')
       } catch (gradingErr) {
         console.error('Coding grading error:', gradingErr)
-        setCodingGradingError(gradingErr instanceof Error ? gradingErr.message : 'Hatch feedback failed')
+        const isTimeout = gradingErr instanceof DOMException && (gradingErr.name === 'TimeoutError' || gradingErr.name === 'AbortError')
+        setCodingGradingError(
+          isTimeout
+            ? 'Hatch is taking longer than expected. Your solution passed and is saved; use Retry to fetch the feedback.'
+            : gradingErr instanceof Error ? gradingErr.message : 'Hatch feedback failed'
+        )
       }
     } catch (err) {
       console.error('Coding submit error:', err)
@@ -2953,6 +2984,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       const submitRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(70_000),
         body: JSON.stringify({
           attemptId,
           partId,
@@ -3146,6 +3178,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       const gradingRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(70_000),
         body: JSON.stringify({
           attemptId,
           finalCode: currentCode,
@@ -4257,13 +4290,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       {/* SQL schema + sample data + expected output - only shown for coding challenges with SQL */}
       {isCodingChallenge && currentLanguage === 'sql' && (() => {
         const metadata = (isApiMode ? detail?.challenge?.metadata : null) as {
-          sql_schema?: { schema_diagram?: SchemaDiagramData; sample_data_preview?: Record<string, Record<string, unknown>[]> }
+          sql_schema?: { schema_diagram?: SchemaDiagramData; sample_data_preview?: Record<string, Record<string, unknown>[]>; setup_script?: string }
           test_cases?: ExpectedOutputTestCase[]
         } | null | undefined
         const schemaDiagram = metadata?.sql_schema?.schema_diagram
         const sampleDataPreview = metadata?.sql_schema?.sample_data_preview
+        // Over half the published SQL bank has a runnable setup_script but no
+        // authored diagram; show the raw DDL so a schema is always visible.
+        const setupScript = !schemaDiagram && typeof metadata?.sql_schema?.setup_script === 'string'
+          ? metadata.sql_schema.setup_script.trim()
+          : ''
         const sqlTestCases = Array.isArray(metadata?.test_cases) ? metadata.test_cases : []
-        if (!schemaDiagram && !sampleDataPreview && sqlTestCases.length === 0) return null
+        if (!schemaDiagram && !sampleDataPreview && !setupScript && sqlTestCases.length === 0) return null
         return (
           <div style={{ marginTop: 8 }}>
             {schemaDiagram && (
@@ -4272,6 +4310,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   Schema
                 </div>
                 <SchemaDiagram schema_diagram={schemaDiagram} />
+              </div>
+            )}
+            {setupScript && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 8, fontFamily: 'var(--font-label)' }}>
+                  Schema &amp; Sample Data
+                </div>
+                <pre style={{ margin: 0, padding: '12px 14px', borderRadius: 10, border: '1px solid var(--color-outline-variant)', background: 'var(--color-surface-container-low)', fontSize: 12, lineHeight: 1.55, overflowX: 'auto', whiteSpace: 'pre', fontFamily: 'var(--font-mono, ui-monospace, monospace)', color: 'var(--color-on-surface)' }}>
+                  {setupScript}
+                </pre>
               </div>
             )}
             {sampleDataPreview && Object.keys(sampleDataPreview).length > 0 && (
@@ -4865,6 +4913,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       {sessionHistory.map((record, idx) => {
         const gs = gradeStyle(record.gradeLabel)
         const isSelected = selectedHistoryIdx === idx
+        // One-line takeaway so a row says more than a score: Hatch's signal on
+        // the weakest step when we have it, otherwise just name that step.
+        const weakestStep = record.stepResults.length > 0
+          ? [...record.stepResults].sort((a, b) => a.score - b.score)[0]
+          : null
+        const takeaway = weakestStep?.hatchSignal
+          ?? (weakestStep ? `Focus next: ${weakestStep.step.charAt(0).toUpperCase()}${weakestStep.step.slice(1)}` : null)
         return (
           <button
             key={idx}
@@ -4903,8 +4958,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', marginTop: 4 }}>
-              {record.completedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {takeaway && (
+              <div style={{
+                fontFamily: 'var(--font-body)', fontSize: 12, lineHeight: 1.45,
+                color: 'var(--color-on-surface-variant)', marginTop: 6,
+                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+              }}>
+                {takeaway}
+              </div>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+              <span style={{ fontSize: 11, color: 'var(--color-on-surface-variant)' }}>
+                {record.completedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                View feedback
+                <span className="material-symbols-outlined" style={{ fontSize: 13 }}>chevron_right</span>
+              </span>
             </div>
           </button>
         )
@@ -5769,6 +5839,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   grade={interviewGrade}
                   challengeType={apiChallengeType ?? 'system_design'}
                   canvasPngUrl={submittedCanvasPngUrl}
+                  canvasElements={canvasScene?.elements ?? null}
                   nextChallengeHref={nextChallengeHref}
                   backToListHref={workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)}
                   onRetry={() => window.location.reload()}
@@ -5791,6 +5862,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     grade={historyInterviewGrade}
                     challengeType={apiChallengeType ?? 'system_design'}
                     canvasPngUrl={historyRecord.canvasPngUrl}
+                    canvasElements={historyCanvasElements}
                     nextChallengeHref={nextChallengeHref}
                     backToListHref={workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)}
                   />

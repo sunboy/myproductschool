@@ -5,7 +5,7 @@ import {
   getChallengeDescriptions,
   getInProgressPractice,
   getPracticeCoverage,
-  isCountDiscipline,
+  normalizeDisciplineParam,
   type ChallengeListFilters,
   type CountDiscipline,
 } from '@/lib/data/challenges'
@@ -75,8 +75,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
   const firstOf = (v: string | undefined) => v?.split(',')[0]?.trim() || undefined
 
   const disciplineParam = resolvedSearchParams.discipline ?? resolvedSearchParams.type
-  const discipline: CountDiscipline =
-    disciplineParam && isCountDiscipline(disciplineParam) ? disciplineParam : 'all'
+  const discipline: CountDiscipline = normalizeDisciplineParam(disciplineParam) ?? 'all'
 
   const filters: ChallengeListFilters = {
     q,

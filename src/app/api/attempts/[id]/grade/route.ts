@@ -188,7 +188,7 @@ export async function GET(
 
   const { data: attempt } = await supabase
     .from('challenge_attempts')
-    .select('user_id, final_code, final_language, test_results, challenges(challenge_type, metadata)')
+    .select('user_id, final_code, final_language, test_results, canvas_final_snapshot, canvas_png_url, challenges(challenge_type, metadata)')
     .eq('id', attemptId)
     .single()
   if (!attempt || attempt.user_id !== user.id) {
@@ -209,11 +209,21 @@ export async function GET(
 
   if (!grade && !correctness) return NextResponse.json({ error: 'No grade found' }, { status: 404 })
 
+  // The submitted drawing: PNG when the upload succeeded, otherwise the raw
+  // elements so the client can render an SVG preview (PNG upload fails
+  // silently on most attempts; the snapshot is the reliable source).
+  const finalSnapshot = attempt.canvas_final_snapshot as { elements?: unknown[] } | null
+  const canvasElements = Array.isArray(finalSnapshot?.elements) && finalSnapshot.elements.length > 0
+    ? finalSnapshot.elements
+    : null
+
   return NextResponse.json({
     grade: toGradePayload(grade ?? null, challengeType),
     challengeType,
     code: typeof attempt.final_code === 'string' ? attempt.final_code : null,
     language: (attempt.final_language as SupportedLanguage | null) ?? null,
     correctness,
+    canvasPngUrl: (attempt.canvas_png_url as string | null) ?? null,
+    canvasElements,
   })
 }

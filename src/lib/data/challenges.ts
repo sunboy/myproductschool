@@ -74,6 +74,20 @@ export function isCountDiscipline(value: string): value is CountDiscipline {
   return COUNT_DISCIPLINE_VALUES.includes(value)
 }
 
+/** Aliases stale/external links use for coding. The DB challenge_type is
+ *  `algorithm`; without this, `?discipline=coding` silently degrades to All. */
+const DISCIPLINE_PARAM_ALIASES: Record<string, CountDiscipline> = {
+  coding: 'algorithm',
+  dsa: 'algorithm',
+  'coding-dsa': 'algorithm',
+}
+
+export function normalizeDisciplineParam(value: string | undefined | null): CountDiscipline | null {
+  if (!value) return null
+  if (isCountDiscipline(value)) return value
+  return DISCIPLINE_PARAM_ALIASES[value.toLowerCase()] ?? null
+}
+
 export interface ChallengePage {
   challenges: ChallengeWithDomain[]
   total: number
@@ -134,6 +148,7 @@ export function applyChallengeFilters<
     contains: (col: string, val: readonly string[]) => Q
     overlaps: (col: string, val: readonly string[]) => Q
     ilike: (col: string, pattern: string) => Q
+    or: (filters: string) => Q
   },
 >(query: Q, filters?: ChallengeListFilters): Q {
   if (!filters) return query
@@ -170,7 +185,19 @@ export function applyChallengeFilters<
   const companies = toValues(filters.company).map(c => c.toLowerCase().replace(/\s+/g, '-'))
   if (companies.length > 0) query = query.overlaps('company_tags', companies)
 
-  if (filters.q) query = query.ilike('title', `%${filters.q}%`)
+  if (filters.q) {
+    // Match titles AND catalog ID badges. "SQL-2237", "sql-2237", "2237", and
+    // partials like "223" must all hit display_number; plain text stays a
+    // title search. Sanitize for PostgREST .or() syntax (commas/parens split
+    // filter terms; strip them rather than dropping the search).
+    const q = filters.q.replace(/[(),]/g, ' ').trim()
+    if (q) {
+      const digits = q.match(/^(?:algo|sql|ps|qt|sd|dm|cca)?[-\s]?(\d+)$/i)?.[1]
+      query = digits
+        ? query.or(`title.ilike.%${q}%,display_number_text.ilike.%${digits}%`)
+        : query.ilike('title', `%${q}%`)
+    }
+  }
   if (filters.type && filters.type !== 'all') query = query.eq('challenge_type', filters.type)
 
   // Topic / technique: controlled-vocabulary slugs, matched against array columns.
