@@ -2857,7 +2857,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     setOutputPanelError(undefined)
     setCodingGradingError(undefined)
     setCodingFeedback(null)
-    setIsLoadingGrading(true)
 
     try {
       // Submit is self-sufficient: it runs the full test suite itself, so the
@@ -2893,64 +2892,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         })
       }
 
-      try {
-        // Timeout guard: without it a platform-killed serverless function
-        // leaves this await pending forever and the finally below never runs
-        // ("Submitting…" / "analysing…" stuck states).
-        const gradingRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: AbortSignal.timeout(70_000),
-          body: JSON.stringify({
-            attemptId,
-            finalCode: currentCode,
-            language: currentLanguage,
-            correctnessPayload: correctnessResult,
-          }),
-        })
-
-        if (!gradingRes.ok) {
-          const payload = await gradingRes.json().catch(() => null)
-          if (payload?.status === 'not_ready') {
-            setPhase('question')
-            const nextAction = Array.isArray(payload.next_actions) ? payload.next_actions[0] : undefined
-            throw new Error([payload.summary, nextAction].filter(Boolean).join(' '))
-          }
-          throw new Error(payload?.details ?? payload?.error ?? `Grading failed: ${gradingRes.status}`)
-        }
-
-        const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback; xp_awarded?: number }
-        if (gradingPayload.grade) {
-          setCodingFeedback(gradingPayload.grade)
-          // Surface this submission in the history tab immediately (coding types:
-          // sql / algorithm). Optimistic; the refetch reconciles server truth.
-          if (attemptId) {
-            const score = gradingPayload.grade.overall_score ?? 0
-            recordSubmission({
-              attemptId,
-              challengeType: apiChallengeType ?? null,
-              completedAt: new Date(),
-              gradeLabel: scoreToGradeLabel(score),
-              totalScore: score,
-              maxScore: 5,
-              xpAwarded: gradingPayload.xp_awarded ?? 0,
-              stepResults: [],
-              competencyDeltas: [],
-              canvasPngUrl: null,
-            })
-            void loadSubmissionHistory()
-          }
-        }
-        else setCodingGradingError('Hatch did not return feedback for this submission.')
-      } catch (gradingErr) {
-        console.error('Coding grading error:', gradingErr)
-        const isTimeout = gradingErr instanceof DOMException && (gradingErr.name === 'TimeoutError' || gradingErr.name === 'AbortError')
-        setCodingGradingError(
-          isTimeout
-            ? 'Hatch is taking longer than expected. Your solution passed and is saved; use Retry to fetch the feedback.'
-            : gradingErr instanceof Error ? gradingErr.message : 'Hatch feedback failed'
-        )
-      }
+      // Hatch's review is on demand: the user asks for it from the feedback
+      // surface (retryCodingGrading), so submit ends at correctness. No AI
+      // call, no analysing wait, and no spend for users who just want the
+      // test verdict.
     } catch (err) {
       console.error('Coding submit error:', err)
       setOutputPanelStatus('error')
@@ -5911,6 +5856,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       }
                     } : undefined}
                     onRetryGrading={codingControlsLive ? retryCodingGrading : undefined}
+                    onRequestGrading={codingControlsLive ? retryCodingGrading : undefined}
                     onAskHatch={codingControlsLive ? () => queueHatchPrompt('My tests are failing. Can you help me figure out why?', false) : undefined}
                     onNextChallenge={nextChallengeHref && codingControlsLive
                       ? () => { window.location.href = nextChallengeHref }

@@ -74,13 +74,18 @@ export function HatchReviewCard({ phases = CODING_REVIEW_PHASES, phaseMs = 4000,
     )
   }
 
+  // Same card family as VerdictBand (surface-container, left accent slot):
+  // the loading state settles into the verdict in the same frame.
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-low px-4 py-4 flex items-center gap-3">
+    <div
+      className="rounded-xl bg-surface-container p-6 flex items-center gap-3"
+      style={{ borderLeft: '4px solid var(--color-outline-variant)' }}
+    >
       <HatchImage size={40} state="reviewing" />
       <div className="min-w-0">
-        <p className="font-label text-sm font-bold text-on-surface">Hatch is reading your session</p>
+        <p className="font-label text-[15px] font-semibold text-on-surface">Hatch is reading your session</p>
         <p
-          className="mt-0.5 font-body text-xs text-on-surface-variant transition-opacity duration-250 min-h-4"
+          className="mt-1 font-body text-[13px] text-on-surface-variant transition-opacity duration-250 min-h-4"
           style={{ opacity: visible ? 1 : 0 }}
           aria-live="polite"
         >
