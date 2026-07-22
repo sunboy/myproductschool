@@ -59,7 +59,7 @@ export function VerdictBand({ headline, raw, scale, actions, immediate = false }
 
   return (
     <div
-      className="rounded-xl bg-surface-container p-6 transition-all duration-400 ease-out"
+      className="rounded-xl border border-outline-variant bg-surface-container p-6 shadow-sm transition-all duration-400 ease-out"
       style={{
         opacity: settled ? 1 : 0,
         transform: settled ? 'translateY(0)' : 'translateY(8px)',

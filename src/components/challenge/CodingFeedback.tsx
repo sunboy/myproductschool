@@ -304,7 +304,9 @@ function CorrectnessLead({
         >
           {allPassed ? 'check_circle' : 'cancel'}
         </span>
-        <h2 className="font-headline text-[20px] font-semibold text-on-surface">
+        {/* Strong label, not display type: Hatch's verdict sentence is the
+            page's only Literata moment (Codex review). */}
+        <h2 className="font-label text-[16px] font-bold text-on-surface">
           {correctness.testsPassed} of {correctness.testsTotal} tests passing
         </h2>
       </div>
@@ -567,7 +569,7 @@ export function CodingFeedback({
           </div>
         ) : onRequestGrading ? (
           <div
-            className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-surface-container p-6"
+            className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-outline-variant bg-surface-container p-6 shadow-sm"
             style={{ borderLeft: '4px solid var(--color-outline-variant)' }}
           >
             <div className="flex items-center gap-3">

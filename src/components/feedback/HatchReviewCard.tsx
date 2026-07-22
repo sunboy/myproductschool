@@ -78,7 +78,7 @@ export function HatchReviewCard({ phases = CODING_REVIEW_PHASES, phaseMs = 4000,
   // the loading state settles into the verdict in the same frame.
   return (
     <div
-      className="rounded-xl bg-surface-container p-6 flex items-center gap-3"
+      className="rounded-xl border border-outline-variant bg-surface-container p-6 shadow-sm flex items-center gap-3"
       style={{ borderLeft: '4px solid var(--color-outline-variant)' }}
     >
       <HatchImage size={40} state="reviewing" />
