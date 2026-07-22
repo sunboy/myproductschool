@@ -57,7 +57,6 @@ import { TestCasePanel } from '@/components/challenge/coding/TestCasePanel'
 import { GuidanceTab, type CodingRailSelfCheck } from '@/components/challenge/coding/GuidanceTab'
 import { HintsTab } from '@/components/challenge/coding/HintsTab'
 import { AdaptiveTabStrip } from '@/components/challenge/coding/AdaptiveTabStrip'
-import { CodingStatusBar } from '@/components/challenge/coding/StatusBar'
 import { SchemaDiagram } from '@/components/challenge/SchemaDiagram'
 import { SampleDataPreview } from '@/components/challenge/SampleDataPreview'
 import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challenge/ExpectedOutput'
@@ -5042,6 +5041,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       {currentLanguage === 'sql' && codeRunner.sqlError && (
         <span className="text-xs text-error font-label">DB error: {codeRunner.sqlError}</span>
       )}
+      {attemptId && (
+        <AppTooltip
+          label={codingSaveState === 'saving' ? 'Saving your draft…' : codingSavedAt ? 'Draft auto-saved. Safe to leave anytime.' : 'Autosave is on. Safe to leave anytime.'}
+          side="bottom"
+        >
+          <span
+            data-testid="autosave-indicator"
+            className="inline-flex h-6 w-6 items-center justify-center text-ink-muted"
+            aria-label="Autosave status"
+          >
+            {codingSaveState === 'saving' ? (
+              <span className="material-symbols-outlined animate-spin text-[15px]">progress_activity</span>
+            ) : (
+              <span className="material-symbols-outlined text-[15px]">cloud_done</span>
+            )}
+          </span>
+        </AppTooltip>
+      )}
       <button
         onClick={handleCodingRun}
         disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
@@ -6327,13 +6344,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               >
                 <WorkspacePanel
                   icon="code"
-                  title={(() => {
-                    const names: Record<string, string> = {
-                      python: 'solution.py', javascript: 'solution.js', java: 'Solution.java',
-                      cpp: 'solution.cpp', go: 'solution.go', sql: 'query.sql',
-                    }
-                    return names[currentLanguage] ?? 'solution'
-                  })()}
+                  title="Editor"
                   headerExtra={codingParts.length > 0 && activePartId ? (
                     <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, color: 'var(--color-ink-secondary)', padding: '2px 8px', borderRadius: 999, background: 'var(--color-page-field)', border: '1px solid var(--color-hairline)', whiteSpace: 'nowrap' }}>
                       {(() => { const cp = codingParts.find(x => x.id === activePartId); return cp ? `Part ${cp.sequence}` : '' })()}
@@ -6480,16 +6491,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               })()}
             </div>
 
-            {/* Status bar — real autosave state, the actual shortcuts, last
-                run count, active language, and the exit flow. */}
-            <CodingStatusBar
-              saveState={codingSaveState}
-              savedAt={codingSavedAt}
-              language={{ python: 'Python', javascript: 'JavaScript', java: 'Java', cpp: 'C++', go: 'Go', sql: 'SQL' }[currentLanguage]}
-              lastRun={lastRunResult ? { testsPassed: lastRunResult.testsPassed, testsTotal: lastRunResult.testsTotal } : null}
-              onEndSession={props.onExit ?? (() => window.history.back())}
-              className="mt-2 rounded-xl border border-hairline"
-            />
             </div>
           )}
 

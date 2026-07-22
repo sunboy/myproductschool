@@ -17,7 +17,7 @@ function tabButtonStyle(active: boolean): CSSProperties {
   return {
     flexShrink: 0,
     whiteSpace: 'nowrap',
-    padding: '8px 8px',
+    padding: '4px 8px',
     fontSize: 12.5,
     fontWeight: active ? 800 : 650,
     color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
@@ -206,7 +206,7 @@ export function AdaptiveTabStrip({ tabs, active, onSelect, badges }: AdaptiveTab
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: 8,
-                  padding: '7px 10px',
+                  padding: '5px 10px',
                   fontSize: 12.5,
                   fontWeight: isActive ? 800 : 650,
                   color: isActive ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',

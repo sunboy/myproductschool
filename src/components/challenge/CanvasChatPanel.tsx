@@ -603,14 +603,25 @@ export function CanvasChatPanel({
 
   useEffect(() => {
     if (!queuedPrompt || queuedPrompt.id === lastQueuedPromptIdRef.current) return
-    setMode('docked')
 
-    if (queuedPrompt.autoSend === false || isLoading) {
+    // autoSend:false prompts are consumed IMMEDIATELY: leaving them unconsumed
+    // made every later effect run re-fire setMode('docked'), which force-
+    // reopened the dock the moment the user closed it.
+    if (queuedPrompt.autoSend === false) {
+      lastQueuedPromptIdRef.current = queuedPrompt.id
+      setMode('docked')
+      setInput(queuedPrompt.text)
+      return
+    }
+    if (isLoading) {
+      // Auto-send prompt while a reply streams: park the text, retry when
+      // loading clears (stays unconsumed on purpose).
       setInput(queuedPrompt.text)
       return
     }
 
     lastQueuedPromptIdRef.current = queuedPrompt.id
+    setMode('docked')
     void sendMessage(queuedPrompt.text)
   }, [queuedPrompt, isLoading, sendMessage, setMode])
 

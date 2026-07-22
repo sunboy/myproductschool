@@ -490,7 +490,7 @@ export function CodingFeedback({
               {onAskHatch && hasFailures && (
                 <PrimaryButton onClick={onAskHatch} testId="ask-hatch-banner">
                   <HatchImage size={16} state="speaking" />
-                  The failing case, explained
+                  Explain the failures
                 </PrimaryButton>
               )}
               {onRetry && (
@@ -603,10 +603,11 @@ export function CodingFeedback({
 
         {/* Evidence — the query echo lives one tap away, not above the fold. */}
         {submittedCode?.trim() && (
-          <details className="border-t border-outline-variant/60 pt-3">
+          <details className="group border-t border-outline-variant/60 pt-3">
             <summary className={`${EYEBROW} flex cursor-pointer items-center gap-2 list-none [&::-webkit-details-marker]:hidden`}>
               <span className="material-symbols-outlined text-[15px]">{isSqlMode ? 'database' : 'code'}</span>
               {languageLabel(language, isSqlMode)}
+              <span className="material-symbols-outlined ml-auto text-[16px] transition-transform group-open:rotate-180">expand_more</span>
             </summary>
             <pre className={`${MONO} mt-2 max-h-56 overflow-auto whitespace-pre-wrap break-words bg-surface-container-low px-4 py-3 leading-relaxed`}>
               {submittedCode}
