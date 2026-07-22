@@ -7,7 +7,6 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import { HatchImage } from '@/components/redesign/HatchImage'
-import { FeedbackText } from '@/components/ui/FeedbackText'
 import {
   normalizeToTen, gradeBand, bandClasses, bandHatchState,
   GRADE_LABELS, type ScoreScale,
@@ -54,10 +53,18 @@ export function VerdictBand({ headline, raw, scale, actions, immediate = false }
     return () => { cancelAnimationFrame(t); cancelAnimationFrame(frame) }
   }, [immediate, score])
 
+  const accent = band === 'sharp' ? 'var(--color-primary)'
+    : band === 'needs_work' ? 'var(--color-error)'
+    : 'var(--color-tertiary)'
+
   return (
     <div
-      className="rounded-2xl border border-outline-variant bg-surface-container-lowest px-5 py-5 transition-all duration-400 ease-out"
-      style={{ opacity: settled ? 1 : 0, transform: settled ? 'translateY(0)' : 'translateY(8px)' }}
+      className="border-y border-outline-variant bg-surface-container-lowest px-5 py-5 transition-all duration-400 ease-out"
+      style={{
+        opacity: settled ? 1 : 0,
+        transform: settled ? 'translateY(0)' : 'translateY(8px)',
+        borderLeft: `3px solid ${accent}`,
+      }}
       data-testid="verdict-band"
     >
       <div className="flex items-start justify-between gap-4">
@@ -75,9 +82,9 @@ export function VerdictBand({ headline, raw, scale, actions, immediate = false }
         </div>
       </div>
 
-      <FeedbackText className="mt-3 font-headline text-xl sm:text-2xl font-semibold leading-snug text-on-surface">
+      <p className="mt-3 font-headline text-xl sm:text-2xl font-semibold leading-snug text-on-surface">
         {headline}
-      </FeedbackText>
+      </p>
 
       {actions && (
         <div className="mt-4 flex flex-wrap items-center gap-2">

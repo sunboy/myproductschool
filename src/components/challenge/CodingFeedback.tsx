@@ -168,7 +168,7 @@ function TestCaseDetails({
   return (
     <details
       open={defaultOpen ?? result.status !== 'passed'}
-      className="mt-2 rounded-lg border border-outline-variant/70 bg-surface/70"
+      className="mt-2 border-t border-outline-variant/50 bg-surface/60"
     >
       <summary className="cursor-pointer px-2.5 py-1.5 font-label text-[11px] font-semibold text-on-surface-variant">
         Expected vs. what you returned
@@ -273,8 +273,8 @@ function CorrectnessLead({
   const passing = correctness.results.filter((r) => r.status === 'passed')
 
   return (
-    <div className="space-y-2" data-testid="correctness-column">
-      <div className="flex items-center gap-2.5">
+    <div data-testid="correctness-column">
+      <div className="flex items-center gap-2.5 pb-2">
         <span
           className={`material-symbols-outlined text-[26px] ${allPassed ? 'text-primary' : 'text-error'}`}
           style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
@@ -286,13 +286,14 @@ function CorrectnessLead({
         </p>
       </div>
 
-      {/* Failing cases carry the weight — expanded and first. */}
-      {failing.map((result) => {
-        const index = correctness.results.indexOf(result)
-        const label = displayTestLabel(result, index, Boolean(isSqlMode))
-        return (
-          <div key={result.id} className="rounded-xl border border-error/20 bg-error/5 px-3 py-2.5">
-            <div className="flex items-start gap-2">
+      {/* One flat list, hairline-divided. Failing rows lead and stay expanded;
+          passing rows fold into a single row at the end. */}
+      <div className="divide-y divide-outline-variant/50 border-y border-outline-variant/60">
+        {failing.map((result) => {
+          const index = correctness.results.indexOf(result)
+          const label = displayTestLabel(result, index, Boolean(isSqlMode))
+          return (
+            <div key={result.id} className="flex items-start gap-2.5 bg-error/5 px-3 py-2.5">
               <span
                 className="material-symbols-outlined mt-0.5 flex-shrink-0 text-[16px] text-error"
                 style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
@@ -309,40 +310,39 @@ function CorrectnessLead({
                 <TestCaseDetails result={result} isSqlMode={isSqlMode} />
               </div>
             </div>
-          </div>
-        )
-      })}
+          )
+        })}
 
-      {/* Passing cases fold away — they're confirmation, not news. */}
-      {passing.length > 0 && (
-        <details className="rounded-xl border border-outline-variant/60 bg-surface-container-low" open={failing.length === 0 && passing.length <= 3}>
-          <summary className="cursor-pointer px-3 py-2 font-label text-xs font-semibold text-on-surface-variant">
-            {passing.length} passing {passing.length === 1 ? 'case' : 'cases'}
-          </summary>
-          <div className="space-y-1 border-t border-outline-variant/50 px-3 py-2">
-            {passing.map((result) => {
-              const index = correctness.results.indexOf(result)
-              const label = displayTestLabel(result, index, Boolean(isSqlMode))
-              return (
-                <div key={result.id} className="flex items-start gap-2 py-1">
-                  <span
-                    className="material-symbols-outlined mt-0.5 flex-shrink-0 text-[15px] text-primary"
-                    style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-                  >
-                    check_circle
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs font-label text-on-surface">
-                      {result.hidden ? <span className="italic text-on-surface-variant">{label} (hidden)</span> : label}
+        {passing.length > 0 && (
+          <details open={failing.length === 0 && passing.length <= 3}>
+            <summary className="cursor-pointer px-3 py-2 font-label text-xs font-semibold text-on-surface-variant hover:text-on-surface">
+              {passing.length} passing {passing.length === 1 ? 'case' : 'cases'}
+            </summary>
+            <div className="divide-y divide-outline-variant/40 border-t border-outline-variant/50">
+              {passing.map((result) => {
+                const index = correctness.results.indexOf(result)
+                const label = displayTestLabel(result, index, Boolean(isSqlMode))
+                return (
+                  <div key={result.id} className="flex items-start gap-2.5 px-3 py-2">
+                    <span
+                      className="material-symbols-outlined mt-0.5 flex-shrink-0 text-[15px] text-primary"
+                      style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+                    >
+                      check_circle
                     </span>
-                    <TestCaseDetails result={result} isSqlMode={isSqlMode} defaultOpen={false} />
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-label text-on-surface">
+                        {result.hidden ? <span className="italic text-on-surface-variant">{label} (hidden)</span> : label}
+                      </span>
+                      <TestCaseDetails result={result} isSqlMode={isSqlMode} defaultOpen={false} />
+                    </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
-        </details>
-      )}
+                )
+              })}
+            </div>
+          </details>
+        )}
+      </div>
     </div>
   )
 }
@@ -356,11 +356,12 @@ function WhatHatchSaw({ grading }: { grading: GradingFeedback }) {
     : 0
 
   return (
-    <div className="space-y-1.5">
-      <p className="font-label text-sm font-bold text-on-surface">What Hatch saw</p>
+    <div>
+      <p className="pb-2 font-label text-sm font-bold text-on-surface">What Hatch saw</p>
+      <div className="divide-y divide-outline-variant/40 border-y border-outline-variant/60">
 
       {grading.score_breakdown && (
-        <div className="flex items-start gap-2.5 rounded-lg px-2 py-1.5">
+        <div className="flex items-start gap-2.5 px-3 py-2">
           <span className="material-symbols-outlined mt-0.5 text-[16px] text-on-surface-variant">rule</span>
           <p className="text-xs leading-relaxed text-on-surface">
             <span className="font-label font-semibold">Correctness&nbsp;·&nbsp;</span>
@@ -374,8 +375,8 @@ function WhatHatchSaw({ grading }: { grading: GradingFeedback }) {
         const dim = grading.dimensions[key]!
         const isFocus = dim.score === lowest && dim.score < 4
         return (
-          <details key={key} className={`rounded-lg ${isFocus ? 'bg-tertiary-container/25' : ''}`}>
-            <summary className="flex cursor-pointer items-start gap-2.5 px-2 py-1.5 list-none [&::-webkit-details-marker]:hidden">
+          <details key={key} className={isFocus ? 'bg-tertiary-container/25' : undefined}>
+            <summary className="flex cursor-pointer items-start gap-2.5 px-3 py-2 list-none [&::-webkit-details-marker]:hidden">
               <span className={`mt-1 inline-block h-2 w-2 shrink-0 rounded-full ${dim.score >= 4.5 ? 'bg-primary' : dim.score >= 3 ? 'bg-tertiary' : 'bg-error/70'}`} />
               <p className="flex-1 text-xs leading-relaxed text-on-surface">
                 <span className="font-label font-semibold">{DIMENSION_LABELS[key] ?? key}&nbsp;·&nbsp;</span>
@@ -385,7 +386,7 @@ function WhatHatchSaw({ grading }: { grading: GradingFeedback }) {
                 {dim.score.toFixed(1)}
               </span>
             </summary>
-            <div className="space-y-1.5 px-2 pb-2 pl-6.5">
+            <div className="space-y-1.5 px-3 pb-2.5 pl-8">
               {dim.evidence && (
                 <FeedbackText className="text-[11px] leading-relaxed text-on-surface-variant">{dim.evidence}</FeedbackText>
               )}
@@ -400,7 +401,7 @@ function WhatHatchSaw({ grading }: { grading: GradingFeedback }) {
       })}
 
       {grading.top_improvement && (
-        <div className="flex items-start gap-2.5 rounded-lg bg-primary-container/25 px-2 py-2">
+        <div className="flex items-start gap-2.5 bg-primary-container/25 px-3 py-2.5">
           <span className="material-symbols-outlined mt-0.5 text-[16px] text-primary">arrow_forward</span>
           <div className="min-w-0 flex-1">
             <span className="font-label text-xs font-semibold text-on-surface">Next rep</span>
@@ -410,15 +411,16 @@ function WhatHatchSaw({ grading }: { grading: GradingFeedback }) {
       )}
 
       {grading.what_a_5_would_look_like && (
-        <details className="rounded-lg">
-          <summary className="cursor-pointer px-2 py-1.5 font-label text-[11px] font-semibold text-on-surface-variant">
+        <details>
+          <summary className="cursor-pointer px-3 py-2 font-label text-[11px] font-semibold text-on-surface-variant hover:text-on-surface">
             What a 5 would look like
           </summary>
-          <FeedbackText className="px-2 pb-2 pl-6 text-[11px] leading-relaxed text-on-surface-variant">
+          <FeedbackText className="px-3 pb-2.5 pl-8 text-[11px] leading-relaxed text-on-surface-variant">
             {grading.what_a_5_would_look_like}
           </FeedbackText>
         </details>
       )}
+      </div>
     </div>
   )
 }
@@ -445,18 +447,19 @@ export function CodingFeedback({
 
   return (
     <div className="flex h-full flex-col overflow-y-auto" data-testid="grading-column">
-      <div className="mx-auto w-full max-w-2xl space-y-4 px-1 pb-10">
+      <div className="w-full space-y-5 pb-10">
 
-        {/* Quiet top row: Next challenge earns emphasis only once there's a verdict. */}
-        <div className="flex items-center justify-end gap-2 pt-1">
+        {/* Top row: attempt actions. Next challenge is a real button; it gains
+            primary weight once there is a verdict worth moving on from. */}
+        <div className="flex items-center justify-end gap-2 border-b border-outline-variant/60 pb-3">
           {onNextChallenge && (
             <button
               type="button"
               onClick={onNextChallenge}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-label text-xs font-bold transition-colors ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2 font-label text-xs font-bold transition-colors ${
                 grading && allPassed
-                  ? 'border border-primary/30 bg-primary-fixed text-primary hover:bg-primary-container'
-                  : 'text-on-surface-variant hover:text-on-surface'
+                  ? 'bg-primary text-on-primary hover:opacity-90'
+                  : 'border border-outline-variant bg-surface-container-low text-on-surface hover:bg-surface-container'
               }`}
             >
               Next challenge
@@ -557,7 +560,7 @@ export function CodingFeedback({
             <WhatHatchSaw grading={grading} />
 
             {grading.top_strength && (
-              <div className="flex items-start gap-2.5 rounded-xl bg-primary-container/30 px-3 py-2.5">
+              <div className="flex items-start gap-2.5 border-l-2 border-primary bg-primary-container/25 px-3 py-2.5">
                 <span className="material-symbols-outlined mt-0.5 flex-shrink-0 text-[16px] text-primary">star</span>
                 <FeedbackText className="text-xs leading-relaxed text-on-surface">{grading.top_strength}</FeedbackText>
               </div>
@@ -579,7 +582,7 @@ export function CodingFeedback({
 
         {/* Evidence — the query echo lives one tap away, not above the fold. */}
         {submittedCode?.trim() && (
-          <details className="overflow-hidden rounded-xl border border-outline-variant bg-surface">
+          <details className="overflow-hidden border-y border-outline-variant bg-surface">
             <summary className="flex cursor-pointer items-center gap-2 bg-surface-container-low px-3 py-2 font-label text-xs font-semibold text-on-surface-variant">
               <span className="material-symbols-outlined text-[15px] text-primary">{isSqlMode ? 'database' : 'code'}</span>
               {languageLabel(language, isSqlMode)}
