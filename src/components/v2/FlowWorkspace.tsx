@@ -5818,9 +5818,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               )
             )}
 
-            {/* Coding challenge feedback - two-column correctness + grading view */}
+            {/* Coding challenge feedback — single-column verdict flow with the
+                Hatch chat docked as a SIBLING panel (never inline in the scroll
+                column, where it would render as a stray block at the bottom). */}
             {isCodingChallenge && (phase === 'complete' || historyRecord) && (
-              <div className="flex-1 min-h-0 overflow-y-auto p-4 animate-step-enter">
+              <div className="flex flex-1 min-h-0 animate-step-enter">
+                <div className="flex-1 min-h-0 overflow-y-auto p-4">
                 {historyRecord && historyGradeLoading ? (
                   <div className="flex h-full flex-col items-center justify-center gap-4">
                     <HatchImage size={80} state="reviewing" />
@@ -5864,10 +5867,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     }
                   />
                 )}
+                </div>
                 {/* Hatch coach on the coding complete screen — the question-phase
                     CanvasChatPanel is unmounted here, so mount a dedicated instance
-                    so "Ask Hatch" has a panel to open. Available for the live
-                    complete view and the just-graded current attempt. */}
+                    so "Ask Hatch" has a panel to open. Sibling of the scroll
+                    column so it docks to the right edge like the question phase. */}
                 {codingControlsLive && (() => {
                   const activePart = codingParts.find(p => p.id === activePartId)
                   return (

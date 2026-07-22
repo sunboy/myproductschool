@@ -474,24 +474,6 @@ export function CodingFeedback({
     <div className="flex h-full flex-col overflow-y-auto" data-testid="grading-column">
       <div className="w-full space-y-8 px-6 pb-12 pt-2">
 
-        {/* Top row: Next challenge, weighted by whether there's a verdict to move on from. */}
-        {onNextChallenge && (
-          <div className="flex items-center justify-end border-b border-outline-variant/60 pb-3">
-            <button
-              type="button"
-              onClick={onNextChallenge}
-              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 font-label text-[13px] font-semibold transition-colors ${
-                grading && allPassed
-                  ? 'bg-primary text-on-primary hover:opacity-90'
-                  : 'border border-outline-variant text-on-surface hover:bg-surface-container-low'
-              }`}
-            >
-              Next challenge
-              <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
-            </button>
-          </div>
-        )}
-
         {/* Beat 1 — correctness, the instant truth */}
         <CorrectnessLead
           correctness={correctness}
@@ -553,6 +535,19 @@ export function CodingFeedback({
                       Back to editor
                     </GhostButton>
                   )}
+                  {onNextChallenge && (
+                    allPassed ? (
+                      <PrimaryButton onClick={onNextChallenge}>
+                        Next challenge
+                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+                      </PrimaryButton>
+                    ) : (
+                      <GhostButton onClick={onNextChallenge}>
+                        Next challenge
+                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+                      </GhostButton>
+                    )
+                  )}
                 </>
               }
             />
@@ -581,10 +576,18 @@ export function CodingFeedback({
                 </p>
               </div>
             </div>
-            <PrimaryButton onClick={onRequestGrading} testId="request-grading">
-              <HatchImage size={16} state="speaking" />
-              Get Hatch&apos;s feedback
-            </PrimaryButton>
+            <div className="flex shrink-0 items-center gap-2">
+              <PrimaryButton onClick={onRequestGrading} testId="request-grading">
+                <HatchImage size={16} state="speaking" />
+                Get Hatch&apos;s feedback
+              </PrimaryButton>
+              {onNextChallenge && (
+                <GhostButton onClick={onNextChallenge}>
+                  Next challenge
+                  <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+                </GhostButton>
+              )}
+            </div>
           </div>
         ) : (
           <div className="flex items-start gap-3 py-2">
