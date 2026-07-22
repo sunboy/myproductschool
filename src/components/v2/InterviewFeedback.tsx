@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { ScoreHero, DimensionCard, TakeawayCard } from '@/components/feedback'
+import { VerdictBand, DimensionCard, TakeawayCard } from '@/components/feedback'
 import Link from 'next/link'
 import type { InterviewGrade, ChallengeType } from '@/lib/types'
 
@@ -74,15 +74,29 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
     <div className="flex flex-col h-full overflow-y-auto font-body">
       <div className="flex flex-col gap-6 p-5 pb-24">
 
-        {/* ── 1. VERDICT — the shared hero (adds Hatch presence) ── */}
+        {/* ── 1. VERDICT — Hatch's sentence is the hero; the score is quiet
+               metadata, never a lone red ring. ── */}
         <div className="pt-2">
-          <ScoreHero raw={grade.overall_score} scale={5} headline={grade.headline} />
+          <VerdictBand
+            headline={grade.headline}
+            raw={grade.overall_score}
+            scale={5}
+            actions={onBackToCanvas ? (
+              <button
+                onClick={onBackToCanvas}
+                className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-4 py-2 font-label text-xs font-bold text-on-surface transition-colors hover:bg-surface-container"
+              >
+                <span className="material-symbols-outlined text-[14px]">edit</span>
+                Back to canvas
+              </button>
+            ) : undefined}
+          />
         </div>
 
         {/* ── 2. CANVAS SNAPSHOT ─────────────────────────────── */}
         {(canvasPngUrl || (canvasElements && canvasElements.length > 0)) && (
           <div className="rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low">
-            <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant px-3 py-2 border-b border-outline-variant">
+            <p className="font-label text-xs font-semibold text-on-surface-variant px-3 py-2 border-b border-outline-variant">
               Your diagram
             </p>
             {canvasPngUrl ? (
@@ -111,8 +125,8 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
         {/* ── 4. DIMENSIONS GRID ─────────────────────────────── */}
         {/* Collapse to 1-col when any tile is expanded so heights stay even */}
         <div>
-          <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-3">
-            Dimensions
+          <p className="font-label text-sm font-bold text-on-surface mb-3">
+            What Hatch saw
           </p>
           <div className="grid gap-3 grid-cols-1">
             {dimEntries.map(([key, dim]) => (

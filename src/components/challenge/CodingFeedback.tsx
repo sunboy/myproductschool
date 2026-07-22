@@ -1,6 +1,11 @@
 'use client'
 
-import { ScoreHero, DimensionCard } from '@/components/feedback'
+// Submission feedback for coding/SQL: a single vertical column that resolves
+// top-down in three beats — Verdict → Coach → Evidence. Correctness is
+// instant so it leads; Hatch's review card settles into the verdict in place;
+// the query echo and raw test log are disclosures, not headlines.
+
+import { VerdictBand, HatchReviewCard, SQL_REVIEW_PHASES, CODING_REVIEW_PHASES } from '@/components/feedback'
 import { FeedbackText } from '@/components/ui/FeedbackText'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import type { RunResult, GradingFeedback, GradingDimensionKey, SupportedLanguage } from '@/lib/coding/types'
@@ -22,13 +27,12 @@ interface CodingFeedbackProps {
   gradingError?: string
 }
 
-// Human-readable labels for dimension keys
-const DIMENSION_LABELS: Record<GradingDimensionKey, { label: string; icon: string }> = {
-  problem_approach: { label: 'Problem Approach', icon: 'psychology' },
-  ai_collaboration: { label: 'Hatch Collaboration', icon: 'support_agent' },
-  code_quality: { label: 'Code Quality', icon: 'code' },
-  verification_discipline: { label: 'Verification Discipline', icon: 'verified' },
-  interview_communication: { label: 'Interview Communication', icon: 'forum' },
+const DIMENSION_LABELS: Record<GradingDimensionKey, string> = {
+  problem_approach: 'Problem approach',
+  ai_collaboration: 'Hatch collaboration',
+  code_quality: 'Code quality',
+  verification_discipline: 'Verification discipline',
+  interview_communication: 'Interview communication',
 }
 
 const DIMENSION_ORDER: GradingDimensionKey[] = [
@@ -39,9 +43,7 @@ const DIMENSION_ORDER: GradingDimensionKey[] = [
   'interview_communication',
 ]
 
-// Score colour helpers
-
-function scoreBg(score: number) {
+function scoreChipClass(score: number) {
   if (score >= 4.5) return 'bg-primary-container text-on-primary-container'
   if (score >= 3) return 'bg-tertiary-container text-on-tertiary-container'
   return 'bg-error/10 text-error'
@@ -91,8 +93,8 @@ function displayTestLabel(result: RunResult['results'][number], index: number, i
 }
 
 function languageLabel(language?: SupportedLanguage | string | null, isSqlMode?: boolean) {
-  if (isSqlMode) return 'SQL query'
-  if (!language) return 'Submitted code'
+  if (isSqlMode) return 'Your query'
+  if (!language) return 'Your code'
   const labels: Record<string, string> = {
     python: 'Python',
     javascript: 'JavaScript',
@@ -101,7 +103,7 @@ function languageLabel(language?: SupportedLanguage | string | null, isSqlMode?:
     go: 'Go',
     sql: 'SQL',
   }
-  return `${labels[language] ?? language} submission`
+  return `Your ${labels[language] ?? language} code`
 }
 
 function SqlMiniTable({ rows }: { rows: Record<string, unknown>[] }) {
@@ -143,40 +145,14 @@ function SqlMiniTable({ rows }: { rows: Record<string, unknown>[] }) {
   )
 }
 
-function SubmittedSolutionPanel({
-  code,
-  language,
-  isSqlMode,
-}: {
-  code?: string | null
-  language?: SupportedLanguage | string | null
-  isSqlMode?: boolean
-}) {
-  if (!code?.trim()) return null
-
-  return (
-    <div className="mb-4 shrink-0 overflow-hidden rounded-xl border border-outline-variant bg-surface">
-      <div className="flex items-center gap-2 border-b border-outline-variant bg-surface-container-low px-3 py-2">
-        <span className="material-symbols-outlined text-[16px] text-primary">
-          {isSqlMode ? 'database' : 'code'}
-        </span>
-        <span className="font-label text-xs font-black uppercase tracking-wider text-on-surface-variant">
-          {languageLabel(language, isSqlMode)}
-        </span>
-      </div>
-      <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words bg-surface-container-low px-3 py-3 font-mono text-xs leading-relaxed text-on-surface">
-        {code}
-      </pre>
-    </div>
-  )
-}
-
 function TestCaseDetails({
   result,
   isSqlMode,
+  defaultOpen,
 }: {
   result: RunResult['results'][number]
   isSqlMode?: boolean
+  defaultOpen?: boolean
 }) {
   if (result.hidden) return null
 
@@ -189,15 +165,13 @@ function TestCaseDetails({
 
   if (!hasDetails) return null
 
-  const defaultOpen = result.status !== 'passed'
-
   return (
     <details
-      open={defaultOpen}
+      open={defaultOpen ?? result.status !== 'passed'}
       className="mt-2 rounded-lg border border-outline-variant/70 bg-surface/70"
     >
-      <summary className="cursor-pointer px-2.5 py-1.5 font-label text-[10.5px] font-bold uppercase tracking-wider text-on-surface-variant">
-        Test case details
+      <summary className="cursor-pointer px-2.5 py-1.5 font-label text-[11px] font-semibold text-on-surface-variant">
+        Expected vs. what you returned
       </summary>
       <div className="space-y-2 border-t border-outline-variant/50 px-2.5 py-2">
         {result.matchMode && (
@@ -210,17 +184,13 @@ function TestCaseDetails({
           <div className="grid grid-cols-1 gap-2">
             {result.expected !== undefined && (
               <div>
-                <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Expected rows
-                </p>
+                <p className="mb-1 font-label text-[10px] font-semibold text-on-surface-variant">Expected rows</p>
                 <SqlMiniTable rows={asSqlRows(result.expected)} />
               </div>
             )}
             {actual !== undefined ? (
               <div>
-                <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Submitted query output
-                </p>
+                <p className="mb-1 font-label text-[10px] font-semibold text-on-surface-variant">Your query returned</p>
                 <SqlMiniTable rows={asSqlRows(actual)} />
               </div>
             ) : (
@@ -233,9 +203,7 @@ function TestCaseDetails({
           <div className="grid grid-cols-1 gap-2">
             {result.input !== undefined && (
               <div>
-                <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Input
-                </p>
+                <p className="mb-1 font-label text-[10px] font-semibold text-on-surface-variant">Input</p>
                 <pre className="overflow-x-auto rounded-md bg-surface-container-high px-2 py-1.5 font-mono text-[10.5px] text-on-surface">
                   {prettyJson(result.input)}
                 </pre>
@@ -243,9 +211,7 @@ function TestCaseDetails({
             )}
             {result.expected !== undefined && (
               <div>
-                <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Expected
-                </p>
+                <p className="mb-1 font-label text-[10px] font-semibold text-on-surface-variant">Expected</p>
                 <pre className="overflow-x-auto rounded-md bg-surface-container-high px-2 py-1.5 font-mono text-[10.5px] text-on-surface">
                   {prettyJson(result.expected)}
                 </pre>
@@ -253,9 +219,7 @@ function TestCaseDetails({
             )}
             {actual !== undefined && (
               <div>
-                <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Submitted output
-                </p>
+                <p className="mb-1 font-label text-[10px] font-semibold text-on-surface-variant">You returned</p>
                 <pre className="overflow-x-auto rounded-md bg-surface-container-high px-2 py-1.5 font-mono text-[10.5px] text-on-surface">
                   {prettyJson(actual)}
                 </pre>
@@ -268,9 +232,9 @@ function TestCaseDetails({
   )
 }
 
-// ── Correctness column ───────────────────────────────────────────────────────
+// ── Beat 1: correctness lead — the instant truth ─────────────────────────────
 
-function CorrectnessColumn({
+function CorrectnessLead({
   correctness,
   isLoading,
   error,
@@ -285,10 +249,7 @@ function CorrectnessColumn({
     return (
       <div className="space-y-3 animate-pulse">
         <div className="h-5 w-32 bg-surface-container-high rounded" />
-        <div className="h-4 w-48 bg-surface-container-high rounded" />
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-9 bg-surface-container-high rounded-lg" />
-        ))}
+        <div className="h-9 bg-surface-container-high rounded-lg" />
       </div>
     )
   }
@@ -298,305 +259,171 @@ function CorrectnessColumn({
       <div className="bg-error/10 border border-error/20 rounded-xl p-4 flex items-start gap-2">
         <span className="material-symbols-outlined text-error text-[18px] mt-0.5">error</span>
         <div>
-          <p className="text-sm font-label font-medium text-error mb-0.5">
-            Couldn&apos;t run tests.
-          </p>
+          <p className="text-sm font-label font-medium text-error mb-0.5">Couldn&apos;t run tests.</p>
           <p className="text-xs text-error/80">{error}</p>
         </div>
       </div>
     )
   }
 
-  if (!correctness) {
-    return (
-      <div className="text-sm text-on-surface-variant italic">No results yet.</div>
-    )
-  }
+  if (!correctness) return null
 
   const allPassed = correctness.testsPassed === correctness.testsTotal
-  const passedRatio = `${correctness.testsPassed} of ${correctness.testsTotal}`
+  const failing = correctness.results.filter((r) => r.status !== 'passed')
+  const passing = correctness.results.filter((r) => r.status === 'passed')
 
   return (
-    <div className="space-y-3">
-      {/* Summary badge */}
-      <div
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-          allPassed
-            ? 'bg-primary-container text-on-primary-container'
-            : 'bg-error/10 text-error'
-        }`}
-      >
+    <div className="space-y-2" data-testid="correctness-column">
+      <div className="flex items-center gap-2.5">
         <span
-          className="material-symbols-outlined text-[20px]"
+          className={`material-symbols-outlined text-[26px] ${allPassed ? 'text-primary' : 'text-error'}`}
           style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
         >
           {allPassed ? 'check_circle' : 'cancel'}
         </span>
-        <span className="text-sm font-label font-bold">{passedRatio} tests passed</span>
+        <p className="font-headline text-lg font-bold text-on-surface">
+          {correctness.testsPassed} of {correctness.testsTotal} tests passing
+        </p>
       </div>
 
-      {/* Individual test rows */}
-      <div className="space-y-1.5">
-        {correctness.results.map((result, index) => {
-          const isPassed = result.status === 'passed'
-          const isError = result.status === 'error'
-          const isTimeout = result.status === 'timeout'
-          const label = displayTestLabel(result, index, Boolean(isSqlMode))
-
-          return (
-            <div
-              key={result.id}
-              className="flex items-start gap-2 py-1.5 px-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors"
-            >
+      {/* Failing cases carry the weight — expanded and first. */}
+      {failing.map((result) => {
+        const index = correctness.results.indexOf(result)
+        const label = displayTestLabel(result, index, Boolean(isSqlMode))
+        return (
+          <div key={result.id} className="rounded-xl border border-error/20 bg-error/5 px-3 py-2.5">
+            <div className="flex items-start gap-2">
               <span
-                className={`material-symbols-outlined text-[16px] mt-0.5 flex-shrink-0 ${
-                  isPassed ? 'text-primary' : 'text-error'
-                }`}
+                className="material-symbols-outlined mt-0.5 flex-shrink-0 text-[16px] text-error"
                 style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
               >
-                {isPassed ? 'check_circle' : 'cancel'}
+                cancel
               </span>
-              <div className="flex-1 min-w-0">
-                <span className="text-xs font-label text-on-surface">
-                  {result.hidden ? (
-                    <span className="italic text-on-surface-variant">{label} (hidden)</span>
-                  ) : (
-                    label
-                  )}
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-label font-semibold text-on-surface">
+                  {result.hidden ? <span className="italic text-on-surface-variant">{label} (hidden)</span> : label}
                 </span>
-                {/* Error message for visible errors */}
-                {!result.hidden && (isError || isTimeout) && result.errorMessage && (
-                  <p className="text-[11px] text-error mt-0.5 truncate">{result.errorMessage}</p>
+                {!result.hidden && result.errorMessage && (
+                  <p className="mt-0.5 text-[11px] text-error">{result.errorMessage}</p>
                 )}
                 <TestCaseDetails result={result} isSqlMode={isSqlMode} />
               </div>
             </div>
-          )
-        })}
-      </div>
+          </div>
+        )
+      })}
+
+      {/* Passing cases fold away — they're confirmation, not news. */}
+      {passing.length > 0 && (
+        <details className="rounded-xl border border-outline-variant/60 bg-surface-container-low" open={failing.length === 0 && passing.length <= 3}>
+          <summary className="cursor-pointer px-3 py-2 font-label text-xs font-semibold text-on-surface-variant">
+            {passing.length} passing {passing.length === 1 ? 'case' : 'cases'}
+          </summary>
+          <div className="space-y-1 border-t border-outline-variant/50 px-3 py-2">
+            {passing.map((result) => {
+              const index = correctness.results.indexOf(result)
+              const label = displayTestLabel(result, index, Boolean(isSqlMode))
+              return (
+                <div key={result.id} className="flex items-start gap-2 py-1">
+                  <span
+                    className="material-symbols-outlined mt-0.5 flex-shrink-0 text-[15px] text-primary"
+                    style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+                  >
+                    check_circle
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs font-label text-on-surface">
+                      {result.hidden ? <span className="italic text-on-surface-variant">{label} (hidden)</span> : label}
+                    </span>
+                    <TestCaseDetails result={result} isSqlMode={isSqlMode} defaultOpen={false} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </details>
+      )}
     </div>
   )
 }
 
-// ── Grading column ───────────────────────────────────────────────────────────
+// ── Beat 3: what Hatch saw — scannable lines, detail on demand ───────────────
 
-
-
-function GradingColumn({
-  grading,
-  isLoading,
-  error,
-  onAskHatch,
-  onRetry,
-  onRetryGrading,
-}: {
-  grading?: GradingFeedback | null
-  isLoading?: boolean
-  error?: string
-  onAskHatch?: () => void
-  onRetry?: () => void
-  onRetryGrading?: () => void
-}) {
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-3 p-3 bg-primary-container rounded-xl">
-          <HatchImage size={28} state="reviewing" />
-          <div>
-            <p className="text-sm font-label font-medium text-on-primary-container">
-              Hatch is analysing your session...
-            </p>
-            <p className="text-xs text-primary">This usually takes 5–15 seconds.</p>
-          </div>
-        </div>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-10 bg-surface-container-high rounded-lg animate-pulse" />
-        ))}
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-3">
-        <div className="bg-error/10 border border-error/20 rounded-xl p-4 flex items-start gap-2">
-          <span className="material-symbols-outlined text-error text-[18px] mt-0.5">error</span>
-          <div>
-            <p className="text-sm font-label font-medium text-error mb-0.5">
-              Couldn&apos;t generate feedback.
-            </p>
-            <p className="text-xs text-error/80">
-              Hatch could not score this attempt. Your test results are still shown on the left.
-            </p>
-            {error && (
-              <p className="text-[11px] text-error/60 mt-1" title={error}>
-                {error}
-              </p>
-            )}
-          </div>
-        </div>
-        {(onRetryGrading ?? onRetry) && (
-          <button
-            onClick={onRetryGrading ?? onRetry}
-            className="w-full py-2 rounded-full bg-surface-container border border-outline-variant text-sm font-label font-semibold text-on-surface hover:bg-surface-container-high transition-colors"
-          >
-            Retry grading
-          </button>
-        )}
-      </div>
-    )
-  }
-
-  if (!grading) {
-    return (
-      <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
-        <div className="flex items-start gap-2">
-          <HatchImage size={24} state="listening" />
-          <div>
-            <p className="font-label text-sm font-bold text-on-surface">Hatch feedback is pending</p>
-            <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
-              Your test results are available. If feedback does not appear, return to the editor, make another run, and submit again.
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
+function WhatHatchSaw({ grading }: { grading: GradingFeedback }) {
+  const present = DIMENSION_ORDER.filter((key) => grading.dimensions[key])
+  const lowest = present.length > 0
+    ? Math.min(...present.map((key) => grading.dimensions[key]!.score))
+    : 0
 
   return (
-    <div className="space-y-4">
-      {/* Overall score — the shared hero (compact) */}
-      <div className="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-4">
-        <ScoreHero raw={grading.overall_score} scale={5} headline={grading.headline} size="md" />
-      </div>
+    <div className="space-y-1.5">
+      <p className="font-label text-sm font-bold text-on-surface">What Hatch saw</p>
 
       {grading.score_breakdown && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="rounded-xl border border-outline-variant bg-surface-container-low p-3">
-            <div className="flex items-center justify-between gap-2 mb-1">
-              <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                Correctness
+        <div className="flex items-start gap-2.5 rounded-lg px-2 py-1.5">
+          <span className="material-symbols-outlined mt-0.5 text-[16px] text-on-surface-variant">rule</span>
+          <p className="text-xs leading-relaxed text-on-surface">
+            <span className="font-label font-semibold">Correctness&nbsp;·&nbsp;</span>
+            {grading.score_breakdown.correctness.tests_passed}/{grading.score_breakdown.correctness.tests_total} tests.{' '}
+            <span className="text-on-surface-variant">{grading.score_breakdown.correctness.summary}</span>
+          </p>
+        </div>
+      )}
+
+      {present.map((key) => {
+        const dim = grading.dimensions[key]!
+        const isFocus = dim.score === lowest && dim.score < 4
+        return (
+          <details key={key} className={`rounded-lg ${isFocus ? 'bg-tertiary-container/25' : ''}`}>
+            <summary className="flex cursor-pointer items-start gap-2.5 px-2 py-1.5 list-none [&::-webkit-details-marker]:hidden">
+              <span className={`mt-1 inline-block h-2 w-2 shrink-0 rounded-full ${dim.score >= 4.5 ? 'bg-primary' : dim.score >= 3 ? 'bg-tertiary' : 'bg-error/70'}`} />
+              <p className="flex-1 text-xs leading-relaxed text-on-surface">
+                <span className="font-label font-semibold">{DIMENSION_LABELS[key] ?? key}&nbsp;·&nbsp;</span>
+                <span className="text-on-surface-variant">{dim.verdict}</span>
               </p>
-              <span className={`text-xs font-label font-bold px-2 py-0.5 rounded-full ${scoreBg(grading.score_breakdown.correctness.score)}`}>
-                {grading.score_breakdown.correctness.score.toFixed(1)} / 5
+              <span className={`ml-1 shrink-0 rounded-full px-1.5 py-0.5 font-label text-[10px] font-bold ${scoreChipClass(dim.score)}`}>
+                {dim.score.toFixed(1)}
               </span>
+            </summary>
+            <div className="space-y-1.5 px-2 pb-2 pl-6.5">
+              {dim.evidence && (
+                <FeedbackText className="text-[11px] leading-relaxed text-on-surface-variant">{dim.evidence}</FeedbackText>
+              )}
+              {dim.how_to_improve && (
+                <FeedbackText className="text-[11px] leading-relaxed text-on-surface">
+                  {dim.how_to_improve}
+                </FeedbackText>
+              )}
             </div>
-            <p className="text-xs font-label font-semibold text-on-surface">
-              {grading.score_breakdown.correctness.tests_passed} / {grading.score_breakdown.correctness.tests_total} tests passed
-            </p>
-            <FeedbackText className="mt-1 text-xs text-on-surface-variant">
-              {grading.score_breakdown.correctness.summary}
-            </FeedbackText>
-          </div>
-          <div className="rounded-xl border border-outline-variant bg-surface-container-low p-3">
-            <div className="flex items-center justify-between gap-2 mb-1">
-              <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                Process
-              </p>
-              <span className={`text-xs font-label font-bold px-2 py-0.5 rounded-full ${scoreBg(grading.score_breakdown.process.score)}`}>
-                {grading.score_breakdown.process.score.toFixed(1)} / 5
-              </span>
-            </div>
-            <p className="text-xs font-label font-semibold text-on-surface">
-              Reasoning, verification, Hatch use
-            </p>
-            <FeedbackText className="mt-1 text-xs text-on-surface-variant">
-              {grading.score_breakdown.process.summary}
-            </FeedbackText>
+          </details>
+        )
+      })}
+
+      {grading.top_improvement && (
+        <div className="flex items-start gap-2.5 rounded-lg bg-primary-container/25 px-2 py-2">
+          <span className="material-symbols-outlined mt-0.5 text-[16px] text-primary">arrow_forward</span>
+          <div className="min-w-0 flex-1">
+            <span className="font-label text-xs font-semibold text-on-surface">Next rep</span>
+            <FeedbackText className="text-xs leading-relaxed text-on-surface">{grading.top_improvement}</FeedbackText>
           </div>
         </div>
       )}
 
-      {/* Dimension coaching — the shared DimensionCard */}
-      <div className="space-y-2">
-        {(() => {
-          const present = DIMENSION_ORDER.filter((key) => grading.dimensions[key])
-          const lowest = Math.min(...present.map((key) => grading.dimensions[key]!.score))
-          return present.map((key) => {
-            const dim = grading.dimensions[key]!
-            return (
-              <DimensionCard
-                key={key}
-                label={DIMENSION_LABELS[key]?.label ?? key}
-                raw={dim.score}
-                scale={5}
-                verdict={dim.verdict}
-                evidence={dim.evidence}
-                holeToPoke={dim.hole_to_poke}
-                howToImprove={dim.how_to_improve}
-                focus={dim.score === lowest && dim.score < 4}
-              />
-            )
-          })
-        })()}
-      </div>
-
-      {/* Top strength */}
-      <div className="bg-primary-container/40 rounded-xl p-3 flex gap-2.5">
-        <span className="material-symbols-outlined text-primary text-[18px] flex-shrink-0 mt-0.5">
-          star
-        </span>
-        <div>
-          <p className="text-[10px] font-label font-bold uppercase tracking-wider text-primary mb-0.5">
-            Top strength
-          </p>
-          <FeedbackText className="text-xs text-on-surface">{grading.top_strength}</FeedbackText>
-        </div>
-      </div>
-
-      {/* Top improvement */}
-      <div className="bg-tertiary-container/40 rounded-xl p-3 flex gap-2.5">
-        <span className="material-symbols-outlined text-tertiary text-[18px] flex-shrink-0 mt-0.5">
-          trending_up
-        </span>
-        <div>
-          <p className="text-[10px] font-label font-bold uppercase tracking-wider text-tertiary mb-0.5">
-            Top improvement
-          </p>
-          <FeedbackText className="text-xs text-on-surface">{grading.top_improvement}</FeedbackText>
-        </div>
-      </div>
-
-      {/* What a 5 would look like */}
-      <div className="bg-surface-container rounded-xl p-3 flex gap-2.5">
-        <span className="material-symbols-outlined text-on-surface-variant text-[18px] flex-shrink-0 mt-0.5">
-          emoji_objects
-        </span>
-        <div>
-          <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant mb-0.5">
+      {grading.what_a_5_would_look_like && (
+        <details className="rounded-lg">
+          <summary className="cursor-pointer px-2 py-1.5 font-label text-[11px] font-semibold text-on-surface-variant">
             What a 5 would look like
-          </p>
-          <FeedbackText className="text-xs text-on-surface-variant">{grading.what_a_5_would_look_like}</FeedbackText>
-        </div>
-      </div>
-
-      {/* Action buttons */}
-      <div className="flex flex-col gap-2 pt-1">
-        {onAskHatch && (
-          <button
-            onClick={onAskHatch}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-primary text-on-primary text-sm font-label font-semibold hover:bg-primary/90 transition-colors"
-            data-testid="hatch-chat-panel"
-          >
-            <HatchImage size={18} state="speaking" />
-            Ask Hatch about this
-          </button>
-        )}
-        {onRetry && (
-          <button
-            onClick={onRetry}
-            className="flex items-center justify-center gap-2 w-full py-2 rounded-full bg-surface-container border border-outline-variant text-sm font-label font-semibold text-on-surface hover:bg-surface-container-high transition-colors"
-          >
-            <span className="material-symbols-outlined text-[16px]">refresh</span>
-            Try Again
-          </button>
-        )}
-      </div>
+          </summary>
+          <FeedbackText className="px-2 pb-2 pl-6 text-[11px] leading-relaxed text-on-surface-variant">
+            {grading.what_a_5_would_look_like}
+          </FeedbackText>
+        </details>
+      )}
     </div>
   )
 }
 
-// ── Main two-column layout ───────────────────────────────────────────────────
+// ── Main single-column layout ────────────────────────────────────────────────
 
 export function CodingFeedback({
   correctness,
@@ -613,102 +440,155 @@ export function CodingFeedback({
   correctnessError,
   gradingError,
 }: CodingFeedbackProps) {
-  const allPassed = correctness && correctness.testsTotal > 0 && correctness.testsPassed === correctness.testsTotal
+  const allPassed = Boolean(correctness && correctness.testsTotal > 0 && correctness.testsPassed === correctness.testsTotal)
+  const hasFailures = Boolean(correctness && correctness.testsPassed < correctness.testsTotal)
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
-      <div className="mb-4 shrink-0 rounded-xl border border-outline-variant bg-surface p-3">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-start gap-3">
-            <span
-              className={`material-symbols-outlined mt-0.5 text-[22px] ${allPassed ? 'text-primary' : 'text-tertiary'}`}
-              style={{ fontVariationSettings: "'FILL' 1" }}
+    <div className="flex h-full flex-col overflow-y-auto" data-testid="grading-column">
+      <div className="mx-auto w-full max-w-2xl space-y-4 px-1 pb-10">
+
+        {/* Quiet top row: Next challenge earns emphasis only once there's a verdict. */}
+        <div className="flex items-center justify-end gap-2 pt-1">
+          {onNextChallenge && (
+            <button
+              type="button"
+              onClick={onNextChallenge}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-label text-xs font-bold transition-colors ${
+                grading && allPassed
+                  ? 'border border-primary/30 bg-primary-fixed text-primary hover:bg-primary-container'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
             >
-              {allPassed ? 'verified' : 'rule'}
-            </span>
-            <div>
-              <p className="font-label text-sm font-black text-on-surface">
-                {isLoadingGrading ? 'Tests complete. Hatch is reviewing your solution.' : 'Review your result, then choose the next move.'}
-              </p>
-              <p className="mt-0.5 text-xs leading-relaxed text-on-surface-variant">
-                {allPassed
-                  ? 'Everything passed. Skim Hatch feedback, then move on or ask for a sharper follow-up.'
-                  : 'Use the correctness panel to inspect the failing case, ask Hatch, or return to the editor and rerun.'}
-              </p>
+              Next challenge
+              <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+            </button>
+          )}
+        </div>
+
+        {/* Beat 1 — correctness, the instant truth */}
+        <CorrectnessLead
+          correctness={correctness}
+          isLoading={isLoadingCorrectness}
+          error={correctnessError}
+          isSqlMode={isSqlMode}
+        />
+
+        {/* Beat 2 — Hatch's slot: review card settles into the verdict in place */}
+        {isLoadingGrading ? (
+          <>
+            <HatchReviewCard phases={isSqlMode ? SQL_REVIEW_PHASES : CODING_REVIEW_PHASES} />
+            <div className="flex flex-wrap items-center gap-2">
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-3.5 py-2 font-label text-xs font-bold text-on-surface transition-colors hover:bg-surface-container"
+                >
+                  <span className="material-symbols-outlined text-[14px]">edit</span>
+                  Back to editor
+                </button>
+              )}
+              {onAskHatch && hasFailures && (
+                <button
+                  type="button"
+                  onClick={onAskHatch}
+                  data-testid="ask-hatch-banner"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-2 font-label text-xs font-bold text-on-primary transition-opacity hover:opacity-90"
+                >
+                  <HatchImage size={15} state="speaking" />
+                  The failing case, explained
+                </button>
+              )}
+            </div>
+          </>
+        ) : gradingError ? (
+          <div className="space-y-3">
+            <div className="bg-error/10 border border-error/20 rounded-xl p-4 flex items-start gap-2">
+              <span className="material-symbols-outlined text-error text-[18px] mt-0.5">error</span>
+              <div>
+                <p className="text-sm font-label font-medium text-error mb-0.5">Couldn&apos;t generate feedback.</p>
+                <p className="text-xs text-error/80">Hatch could not score this attempt. Your test results are above.</p>
+                <p className="text-[11px] text-error/60 mt-1" title={gradingError}>{gradingError}</p>
+              </div>
+            </div>
+            {(onRetryGrading ?? onRetry) && (
+              <button
+                onClick={onRetryGrading ?? onRetry}
+                className="w-full py-2 rounded-full bg-surface-container border border-outline-variant text-sm font-label font-semibold text-on-surface hover:bg-surface-container-high transition-colors"
+              >
+                Retry grading
+              </button>
+            )}
+          </div>
+        ) : grading ? (
+          <>
+            <VerdictBand
+              headline={grading.headline}
+              raw={grading.overall_score}
+              scale={5}
+              actions={
+                <>
+                  {onAskHatch && (
+                    <button
+                      type="button"
+                      onClick={onAskHatch}
+                      data-testid="hatch-chat-panel"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-label text-xs font-bold text-on-primary transition-opacity hover:opacity-90"
+                    >
+                      <HatchImage size={15} state="speaking" />
+                      {allPassed ? 'Ask Hatch about this' : 'Fix it with Hatch'}
+                    </button>
+                  )}
+                  {onRetry && (
+                    <button
+                      type="button"
+                      onClick={onRetry}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-4 py-2 font-label text-xs font-bold text-on-surface transition-colors hover:bg-surface-container"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">edit</span>
+                      Back to editor
+                    </button>
+                  )}
+                </>
+              }
+            />
+
+            {/* Beat 3 — what Hatch saw */}
+            <WhatHatchSaw grading={grading} />
+
+            {grading.top_strength && (
+              <div className="flex items-start gap-2.5 rounded-xl bg-primary-container/30 px-3 py-2.5">
+                <span className="material-symbols-outlined mt-0.5 flex-shrink-0 text-[16px] text-primary">star</span>
+                <FeedbackText className="text-xs leading-relaxed text-on-surface">{grading.top_strength}</FeedbackText>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+            <div className="flex items-start gap-2">
+              <HatchImage size={24} state="listening" />
+              <div>
+                <p className="font-label text-sm font-bold text-on-surface">Hatch feedback is pending</p>
+                <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+                  Your test results are above. If feedback does not appear, return to the editor, make another run, and submit again.
+                </p>
+              </div>
             </div>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            {onRetry && (
-              <button
-                type="button"
-                onClick={onRetry}
-                className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-3 py-1.5 font-label text-xs font-bold text-on-surface transition-colors hover:bg-surface-container"
-              >
-                <span className="material-symbols-outlined text-[14px]">edit</span>
-                Back to editor
-              </button>
-            )}
-            {onAskHatch && (
-              <button
-                type="button"
-                onClick={onAskHatch}
-                data-testid="ask-hatch-banner"
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 font-label text-xs font-bold text-on-primary transition-opacity hover:opacity-90"
-              >
-                <HatchImage size={15} state="speaking" />
-                Ask Hatch
-              </button>
-            )}
-            {onNextChallenge && (
-              <button
-                type="button"
-                onClick={onNextChallenge}
-                className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary-fixed px-3 py-1.5 font-label text-xs font-bold text-primary transition-colors hover:bg-primary-container"
-              >
-                Next challenge
-                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+        )}
 
-      <SubmittedSolutionPanel code={submittedCode} language={language} isSqlMode={isSqlMode} />
-
-      <div className="grid min-h-0 flex-1 grid-cols-2 gap-4 overflow-hidden">
-        {/* Left: Correctness column */}
-        <div
-          className="overflow-y-auto pr-1"
-          data-testid="correctness-column"
-        >
-          <h3 className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant mb-3">
-            Correctness
-          </h3>
-          <CorrectnessColumn
-            correctness={correctness}
-            isLoading={isLoadingCorrectness}
-            error={correctnessError}
-            isSqlMode={isSqlMode}
-          />
-        </div>
-
-        {/* Right: Grading column */}
-        <div
-          className="overflow-y-auto pl-1 border-l border-outline-variant/40"
-          data-testid="grading-column"
-        >
-          <h3 className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant mb-3">
-            Hatch Grading
-          </h3>
-          <GradingColumn
-            grading={grading}
-            isLoading={isLoadingGrading}
-            error={gradingError}
-            onAskHatch={onAskHatch}
-            onRetry={onRetry}
-            onRetryGrading={onRetryGrading}
-          />
-        </div>
+        {/* Evidence — the query echo lives one tap away, not above the fold. */}
+        {submittedCode?.trim() && (
+          <details className="overflow-hidden rounded-xl border border-outline-variant bg-surface">
+            <summary className="flex cursor-pointer items-center gap-2 bg-surface-container-low px-3 py-2 font-label text-xs font-semibold text-on-surface-variant">
+              <span className="material-symbols-outlined text-[15px] text-primary">{isSqlMode ? 'database' : 'code'}</span>
+              {languageLabel(language, isSqlMode)}
+            </summary>
+            <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words border-t border-outline-variant bg-surface-container-low px-3 py-3 font-mono text-xs leading-relaxed text-on-surface">
+              {submittedCode}
+            </pre>
+          </details>
+        )}
       </div>
     </div>
   )

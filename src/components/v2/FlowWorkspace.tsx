@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/posthog/client'
+import { HatchReviewCard, CANVAS_REVIEW_PHASES, DATA_MODEL_REVIEW_PHASES } from '@/components/feedback'
 import { EVENT_CHALLENGE_STARTED, EVENT_CHALLENGE_STEP_ADVANCED } from '@/lib/posthog/events'
 import gsap from 'gsap'
 import type { FlowStep, UserRoleV2, InterviewGrade } from '@/lib/types'
@@ -5819,19 +5820,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               </div>
             )}
 
-            {/* Session complete banner */}
-            {phase === 'complete' && !historyRecord && (
-              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-note-mint-border)', background: 'var(--color-note-mint)' }}>
-                <span className="material-symbols-outlined msi-sm" style={{ color: 'var(--color-forest-600)' }}>check_circle</span>
-                <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 600, color: 'var(--color-ink-strong)' }}>
-                  {isCodingChallenge
-                    ? isLoadingGrading
-                      ? 'Tests complete - Hatch is reviewing your solution'
-                      : 'Review complete - inspect tests, ask Hatch, or return to the editor'
-                    : 'Session complete - reviewing your results'}
-                </span>
-              </div>
-            )}
+            {/* No status banner here: the feedback surfaces (CodingFeedback /
+                InterviewFeedback / PostSessionMirror) carry their own state.
+                A banner on top duplicated them (Verdict → Coach → Evidence
+                redesign, 2026-07). */}
 
             {/* Interview feedback for canvas challenge types - fills the right panel
                 in place of the canvas, matching product sense PostSessionMirror UX.
@@ -6057,14 +6049,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           }}>
           {/* Grading interstitial - fills the right panel while the model grades. */}
           {isCanvasChallenge && isSubmittingInterview && (
-            <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 animate-step-enter">
-              <HatchImage size={96} state="reviewing" />
-              <div className="font-headline text-xl text-ink-strong">Hatch is reviewing your design…</div>
-              <div className="font-body text-sm text-ink-secondary max-w-md text-center">
-                {apiChallengeType === 'data_modeling'
-                  ? 'Reading the schema, checking relationships, and writing your feedback.'
-                  : 'Tracing the request path, weighing your tradeoffs, and writing your feedback.'}
-              </div>
+            <div className="flex-1 min-h-0 flex flex-col animate-step-enter">
+              <HatchReviewCard
+                size="large"
+                phases={apiChallengeType === 'data_modeling' ? DATA_MODEL_REVIEW_PHASES : CANVAS_REVIEW_PHASES}
+              />
             </div>
           )}
 
