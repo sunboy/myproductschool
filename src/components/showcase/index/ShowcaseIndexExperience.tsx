@@ -8,6 +8,7 @@ import { InkMark } from '@/components/redesign/InkMark';
 import { ProTipStrip } from '@/components/redesign/ProTipStrip';
 import type { AutopsyCompanyWithStories, FeatureAutopsy } from '@/lib/autopsies/types';
 import { getFeaturedAppStory } from '@/lib/autopsies/app-library';
+import { StoryVisual } from '@/components/showcase/StoryVisual';
 
 interface ShowcaseIndexExperienceProps {
   companies: AutopsyCompanyWithStories[];
@@ -234,6 +235,20 @@ function FeaturedStoryCard({
         background: 'linear-gradient(120deg, var(--color-forest-900) 0%, var(--color-forest-850) 70%, var(--color-forest-800) 100%)',
       }}
     >
+      {/* Story hero art bleeding in from the right, faded into the forest
+          gradient so the copy keeps full contrast. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 w-[52%] opacity-45 [&_figure]:m-0 [&_figure]:h-full [&_figure]:w-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover"
+        style={{ maskImage: 'linear-gradient(to left, black 55%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to left, black 55%, transparent 100%)' }}
+      >
+        <StoryVisual
+          story={story}
+          company={company ? { name: company.name, slug: company.slug, accent: company.accent } : undefined}
+          variant="hero"
+          priority
+        />
+      </div>
       <div
         aria-hidden
         className="pointer-events-none absolute -right-16 -top-20 h-[380px] w-[380px] rounded-full"
@@ -342,8 +357,18 @@ function StoryList({
             <Link
               key={story.slug}
               href={routeForStory(story)}
-              className="flex flex-col rounded-xl border border-hairline bg-card-bright p-4 no-underline"
+              className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-card-bright no-underline"
             >
+              {/* Real autopsy hero art (CompanyArt accent fallback when a story
+                  has no image) — cards read as editorial covers, not text stubs. */}
+              <div className="relative h-[118px] shrink-0 overflow-hidden bg-page-field [&_figure]:m-0 [&_figure]:h-full [&_figure]:w-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:transition-transform [&_img]:duration-300 group-hover:[&_img]:scale-[1.03]">
+                <StoryVisual
+                  story={story}
+                  company={company ? { name: company.name, slug: company.slug, accent: company.accent } : undefined}
+                  variant="tile"
+                />
+              </div>
+              <div className="flex flex-1 flex-col p-4">
               <div className="text-[11.5px] font-bold" style={{ color: company?.accent ?? 'var(--color-ink-secondary)' }}>
                 {company?.name ?? story.companySlug}
               </div>
@@ -361,6 +386,7 @@ function StoryList({
                 Read
                 <ArrowRight size={13} strokeWidth={2.2} />
               </span>
+              </div>
             </Link>
           );
         })}
