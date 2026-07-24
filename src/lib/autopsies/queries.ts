@@ -5,8 +5,11 @@ import type { FeatureAutopsy } from './types'
 import { IS_MOCK } from '@/lib/mock'
 
 function sortStoriesForHub(a: FeatureAutopsy, b: FeatureAutopsy) {
+  // Feature autopsies lead: they carry specific hooks ("Gmail Undo Send",
+  // "Spotify Wrapped"). The legacy "X, Decoded" company teardowns sort last —
+  // ten near-identical titles at the top read as template filler.
   if (a.storyType !== b.storyType) {
-    return a.storyType === 'company_teardown' ? -1 : 1
+    return a.storyType === 'company_teardown' ? 1 : -1
   }
   return a.queueRank - b.queueRank
 }

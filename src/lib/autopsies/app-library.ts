@@ -10,8 +10,11 @@ export function isReadableAppAutopsyStory(story: FeatureAutopsy) {
 }
 
 export function sortReadableAppStories(a: FeatureAutopsy, b: FeatureAutopsy) {
+  // Feature autopsies lead the hub: their titles carry the hook ("Gmail Undo
+  // Send"). The ten legacy "X, Decoded" teardowns sort last so the grid does
+  // not open on a wall of near-identical titles.
   if (a.storyType !== b.storyType) {
-    return a.storyType === 'company_teardown' ? -1 : 1
+    return a.storyType === 'company_teardown' ? 1 : -1
   }
 
   if (a.status !== b.status) {
