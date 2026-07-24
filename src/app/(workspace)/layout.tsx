@@ -7,7 +7,6 @@ import { BottomTabs } from '@/components/shell/BottomTabs'
 import { StudyPlanIndexPanel } from '@/components/shell/StudyPlanIndexPanel'
 import { DomainIndexPanel } from '@/components/shell/DomainIndexPanel'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
-import { HatchDirector } from '@/components/shell/HatchDirector'
 import { HatchProvider } from '@/context/HatchContext'
 import { SessionProvider } from '@/context/SessionContext'
 import { UpgradeModalHost } from '@/components/paywalls/UpgradeModalHost'
@@ -39,7 +38,6 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
           </main>
         </div>
         <BottomTabs />
-        <HatchDirector />
         <FloatingHatch />
         <UpgradeModalHost />
       </div>

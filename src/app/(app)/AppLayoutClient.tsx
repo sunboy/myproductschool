@@ -2,7 +2,6 @@
 
 import { BottomTabs } from '@/components/shell/BottomTabs'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
-import { HatchDirector } from '@/components/shell/HatchDirector'
 import { IntroTourController } from '@/components/shell/IntroTourController'
 import { UpgradeModalHost } from '@/components/paywalls/UpgradeModalHost'
 import { IdleTimer } from '@/components/auth/IdleTimer'
@@ -33,7 +32,6 @@ function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <BottomTabs />
-        <HatchDirector />
         <IntroTourController />
         <FloatingHatch />
         <FeedbackModalHost />
