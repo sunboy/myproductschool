@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+
+// Grading calls Anthropic with a 60s client timeout; without this the
+// function inherits the platform default (~15s) and gets killed mid-grade,
+// leaving the browser's fetch hanging forever.
+export const maxDuration = 60
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'

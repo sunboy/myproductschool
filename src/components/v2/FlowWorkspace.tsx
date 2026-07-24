@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/posthog/client'
+import { HatchReviewCard, CANVAS_REVIEW_PHASES, DATA_MODEL_REVIEW_PHASES } from '@/components/feedback'
 import { EVENT_CHALLENGE_STARTED, EVENT_CHALLENGE_STEP_ADVANCED } from '@/lib/posthog/events'
 import gsap from 'gsap'
 import type { FlowStep, UserRoleV2, InterviewGrade } from '@/lib/types'
@@ -56,7 +57,6 @@ import { TestCasePanel } from '@/components/challenge/coding/TestCasePanel'
 import { GuidanceTab, type CodingRailSelfCheck } from '@/components/challenge/coding/GuidanceTab'
 import { HintsTab } from '@/components/challenge/coding/HintsTab'
 import { AdaptiveTabStrip } from '@/components/challenge/coding/AdaptiveTabStrip'
-import { CodingStatusBar } from '@/components/challenge/coding/StatusBar'
 import { SchemaDiagram } from '@/components/challenge/SchemaDiagram'
 import { SampleDataPreview } from '@/components/challenge/SampleDataPreview'
 import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challenge/ExpectedOutput'
@@ -656,6 +656,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [interviewGrade, setInterviewGrade] = useState<InterviewGrade | null>(null)
   const [submittedCanvasPngUrl, setSubmittedCanvasPngUrl] = useState<string | null>(null)
   const [historyInterviewGrade, setHistoryInterviewGrade] = useState<InterviewGrade | null>(null)
+  const [historyCanvasElements, setHistoryCanvasElements] = useState<unknown[] | null>(null)
   const [historyCodingFeedback, setHistoryCodingFeedback] = useState<GradingFeedback | null>(null)
   const [historyCodingCorrectness, setHistoryCodingCorrectness] = useState<RunResult | null>(null)
   const [historyCodingLanguage, setHistoryCodingLanguage] = useState<SupportedLanguage | null>(null)
@@ -960,6 +961,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   useEffect(() => {
     if (selectedHistoryIdx === null) {
       setHistoryInterviewGrade(null)
+      setHistoryCanvasElements(null)
       setHistoryCodingFeedback(null)
       setHistoryCodingCorrectness(null)
       setHistoryCodingLanguage(null)
@@ -976,8 +978,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       code?: string | null
       language?: SupportedLanguage | null
       correctness?: RunResult | null
+      canvasElements?: unknown[] | null
     } | null) => {
       const historyChallengeType = data?.challengeType ?? record.challengeType ?? apiChallengeType ?? null
+      setHistoryCanvasElements(data?.canvasElements ?? null)
       if (historyChallengeType === 'sql' || historyChallengeType === 'algorithm') {
         setHistoryCodingFeedback((data?.grade as GradingFeedback | null) ?? null)
         setHistoryCodingCorrectness(data?.correctness ?? null)
@@ -2142,16 +2146,31 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const attemptKey = detail.current_attempt?.id ?? attemptId
     if (!attemptKey || didHydrateCanvasRef.current === attemptKey) return
 
-    const snap = detail.current_attempt?.draft_snapshot as
-      | {
-          type?: string
-          elements?: unknown[]
-          step_answers?: StepAnswers
-          active_design_step?: string
-          context_pack?: string
-          context_pack_fields?: ContextPackField[]
-        }
+    type CanvasSnap = {
+      type?: string
+      elements?: unknown[]
+      step_answers?: StepAnswers
+      active_design_step?: string
+      context_pack?: string
+      context_pack_fields?: ContextPackField[]
+    }
+    // Prefer the in-progress draft; with no draft (fresh attempt after a
+    // submit), restore the previously SUBMITTED drawing so the user can review
+    // and build on it instead of facing an empty canvas.
+    const draft = detail.current_attempt?.draft_snapshot as CanvasSnap | undefined
+    const finalSnap = detail.latest_completed_attempt?.canvas_final_snapshot as
+      | { elements?: unknown[] }
       | undefined
+    // An empty canvas draft (fresh attempt that autosaved before any drawing)
+    // must not block the submitted-scene fallback.
+    const draftHasContent = draft?.type === 'canvas' &&
+      ((Array.isArray(draft.elements) && draft.elements.length > 0) || Boolean(draft.step_answers))
+    const snap: CanvasSnap | undefined =
+      draftHasContent
+        ? draft
+        : Array.isArray(finalSnap?.elements) && finalSnap.elements.length > 0
+          ? { type: 'canvas', elements: finalSnap.elements }
+          : draft?.type === 'canvas' ? draft : undefined
 
     if (snap?.type === 'canvas') {
       if (snap.step_answers && typeof snap.step_answers === 'object') {
@@ -2179,11 +2198,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
     didHydrateCanvasRef.current = attemptKey
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detail?.current_attempt?.id, attemptId, isCanvasChallenge, detail?.challenge?.id])
+  }, [detail?.current_attempt?.id, detail?.latest_completed_attempt?.id, attemptId, isCanvasChallenge, detail?.challenge?.id])
 
   // Elements-only initial data for Excalidraw on resume. Never pass the saved
   // appState — a persisted getAppState() carries `collaborators` and breaks
-  // Excalidraw's initialData restore.
+  // Excalidraw's initialData restore. Falls back to the last SUBMITTED scene
+  // when there is no in-progress draft (re-entry after submit).
   const canvasInitialData = useMemo(() => {
     const snap = detail?.current_attempt?.draft_snapshot as
       | { type?: string; elements?: unknown[] }
@@ -2191,9 +2211,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (snap?.type === 'canvas' && Array.isArray(snap.elements) && snap.elements.length > 0) {
       return { elements: snap.elements }
     }
+    const finalSnap = detail?.latest_completed_attempt?.canvas_final_snapshot as
+      | { elements?: unknown[] }
+      | undefined
+    if (Array.isArray(finalSnap?.elements) && finalSnap.elements.length > 0) {
+      return { elements: finalSnap.elements }
+    }
     return undefined
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detail?.current_attempt?.id])
+  }, [detail?.current_attempt?.id, detail?.latest_completed_attempt?.id])
 
   // useCodeRunner hook - always called (React rules of hooks); only active for coding challenges
   const codeChallenge = (isCodingChallenge && detail?.challenge)
@@ -2830,7 +2856,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     setOutputPanelError(undefined)
     setCodingGradingError(undefined)
     setCodingFeedback(null)
-    setIsLoadingGrading(true)
 
     try {
       // Submit is self-sufficient: it runs the full test suite itself, so the
@@ -2866,55 +2891,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         })
       }
 
-      try {
-        const gradingRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            attemptId,
-            finalCode: currentCode,
-            language: currentLanguage,
-            correctnessPayload: correctnessResult,
-          }),
-        })
-
-        if (!gradingRes.ok) {
-          const payload = await gradingRes.json().catch(() => null)
-          if (payload?.status === 'not_ready') {
-            setPhase('question')
-            const nextAction = Array.isArray(payload.next_actions) ? payload.next_actions[0] : undefined
-            throw new Error([payload.summary, nextAction].filter(Boolean).join(' '))
-          }
-          throw new Error(payload?.details ?? payload?.error ?? `Grading failed: ${gradingRes.status}`)
-        }
-
-        const gradingPayload = await gradingRes.json() as { grade?: GradingFeedback; xp_awarded?: number }
-        if (gradingPayload.grade) {
-          setCodingFeedback(gradingPayload.grade)
-          // Surface this submission in the history tab immediately (coding types:
-          // sql / algorithm). Optimistic; the refetch reconciles server truth.
-          if (attemptId) {
-            const score = gradingPayload.grade.overall_score ?? 0
-            recordSubmission({
-              attemptId,
-              challengeType: apiChallengeType ?? null,
-              completedAt: new Date(),
-              gradeLabel: scoreToGradeLabel(score),
-              totalScore: score,
-              maxScore: 5,
-              xpAwarded: gradingPayload.xp_awarded ?? 0,
-              stepResults: [],
-              competencyDeltas: [],
-              canvasPngUrl: null,
-            })
-            void loadSubmissionHistory()
-          }
-        }
-        else setCodingGradingError('Hatch did not return feedback for this submission.')
-      } catch (gradingErr) {
-        console.error('Coding grading error:', gradingErr)
-        setCodingGradingError(gradingErr instanceof Error ? gradingErr.message : 'Hatch feedback failed')
-      }
+      // Hatch's review is on demand: the user asks for it from the feedback
+      // surface (retryCodingGrading), so submit ends at correctness. No AI
+      // call, no analysing wait, and no spend for users who just want the
+      // test verdict.
     } catch (err) {
       console.error('Coding submit error:', err)
       setOutputPanelStatus('error')
@@ -2953,6 +2933,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       const submitRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(70_000),
         body: JSON.stringify({
           attemptId,
           partId,
@@ -3146,6 +3127,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       const gradingRes = await fetch(`/api/challenges/${challengeId}/coding-submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(70_000),
         body: JSON.stringify({
           attemptId,
           finalCode: currentCode,
@@ -4257,13 +4239,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       {/* SQL schema + sample data + expected output - only shown for coding challenges with SQL */}
       {isCodingChallenge && currentLanguage === 'sql' && (() => {
         const metadata = (isApiMode ? detail?.challenge?.metadata : null) as {
-          sql_schema?: { schema_diagram?: SchemaDiagramData; sample_data_preview?: Record<string, Record<string, unknown>[]> }
+          sql_schema?: { schema_diagram?: SchemaDiagramData; sample_data_preview?: Record<string, Record<string, unknown>[]>; setup_script?: string }
           test_cases?: ExpectedOutputTestCase[]
         } | null | undefined
         const schemaDiagram = metadata?.sql_schema?.schema_diagram
         const sampleDataPreview = metadata?.sql_schema?.sample_data_preview
+        // Over half the published SQL bank has a runnable setup_script but no
+        // authored diagram; show the raw DDL so a schema is always visible.
+        const setupScript = !schemaDiagram && typeof metadata?.sql_schema?.setup_script === 'string'
+          ? metadata.sql_schema.setup_script.trim()
+          : ''
         const sqlTestCases = Array.isArray(metadata?.test_cases) ? metadata.test_cases : []
-        if (!schemaDiagram && !sampleDataPreview && sqlTestCases.length === 0) return null
+        if (!schemaDiagram && !sampleDataPreview && !setupScript && sqlTestCases.length === 0) return null
         return (
           <div style={{ marginTop: 8 }}>
             {schemaDiagram && (
@@ -4272,6 +4259,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   Schema
                 </div>
                 <SchemaDiagram schema_diagram={schemaDiagram} />
+              </div>
+            )}
+            {setupScript && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 8, fontFamily: 'var(--font-label)' }}>
+                  Schema &amp; Sample Data
+                </div>
+                <pre style={{ margin: 0, padding: '12px 14px', borderRadius: 10, border: '1px solid var(--color-outline-variant)', background: 'var(--color-surface-container-low)', fontSize: 12, lineHeight: 1.55, overflowX: 'auto', whiteSpace: 'pre', fontFamily: 'var(--font-mono, ui-monospace, monospace)', color: 'var(--color-on-surface)' }}>
+                  {setupScript}
+                </pre>
               </div>
             )}
             {sampleDataPreview && Object.keys(sampleDataPreview).length > 0 && (
@@ -4865,6 +4862,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       {sessionHistory.map((record, idx) => {
         const gs = gradeStyle(record.gradeLabel)
         const isSelected = selectedHistoryIdx === idx
+        // One-line takeaway so a row says more than a score: Hatch's signal on
+        // the weakest step when we have it, otherwise just name that step.
+        const weakestStep = record.stepResults.length > 0
+          ? [...record.stepResults].sort((a, b) => a.score - b.score)[0]
+          : null
+        const takeaway = weakestStep?.hatchSignal
+          ?? (weakestStep ? `Focus next: ${weakestStep.step.charAt(0).toUpperCase()}${weakestStep.step.slice(1)}` : null)
         return (
           <button
             key={idx}
@@ -4903,8 +4907,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', marginTop: 4 }}>
-              {record.completedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {takeaway && (
+              <div style={{
+                fontFamily: 'var(--font-body)', fontSize: 12, lineHeight: 1.45,
+                color: 'var(--color-on-surface-variant)', marginTop: 6,
+                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+              }}>
+                {takeaway}
+              </div>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+              <span style={{ fontSize: 11, color: 'var(--color-on-surface-variant)' }}>
+                {record.completedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                View feedback
+                <span className="material-symbols-outlined" style={{ fontSize: 13 }}>chevron_right</span>
+              </span>
             </div>
           </button>
         )
@@ -5021,6 +5040,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       )}
       {currentLanguage === 'sql' && codeRunner.sqlError && (
         <span className="text-xs text-error font-label">DB error: {codeRunner.sqlError}</span>
+      )}
+      {attemptId && (
+        <AppTooltip
+          label={codingSaveState === 'saving' ? 'Saving your draft…' : codingSavedAt ? 'Draft auto-saved. Safe to leave anytime.' : 'Autosave is on. Safe to leave anytime.'}
+          side="bottom"
+        >
+          <span
+            data-testid="autosave-indicator"
+            className="inline-flex h-6 w-6 items-center justify-center text-ink-muted"
+            aria-label="Autosave status"
+          >
+            {codingSaveState === 'saving' ? (
+              <span className="material-symbols-outlined animate-spin text-[15px]">progress_activity</span>
+            ) : (
+              <span className="material-symbols-outlined text-[15px]">cloud_done</span>
+            )}
+          </span>
+        </AppTooltip>
       )}
       <button
         onClick={handleCodingRun}
@@ -5745,19 +5782,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               </div>
             )}
 
-            {/* Session complete banner */}
-            {phase === 'complete' && !historyRecord && (
-              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-note-mint-border)', background: 'var(--color-note-mint)' }}>
-                <span className="material-symbols-outlined msi-sm" style={{ color: 'var(--color-forest-600)' }}>check_circle</span>
-                <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 600, color: 'var(--color-ink-strong)' }}>
-                  {isCodingChallenge
-                    ? isLoadingGrading
-                      ? 'Tests complete - Hatch is reviewing your solution'
-                      : 'Review complete - inspect tests, ask Hatch, or return to the editor'
-                    : 'Session complete - reviewing your results'}
-                </span>
-              </div>
-            )}
+            {/* No status banner here: the feedback surfaces (CodingFeedback /
+                InterviewFeedback / PostSessionMirror) carry their own state.
+                A banner on top duplicated them (Verdict → Coach → Evidence
+                redesign, 2026-07). */}
 
             {/* Interview feedback for canvas challenge types - fills the right panel
                 in place of the canvas, matching product sense PostSessionMirror UX.
@@ -5769,6 +5797,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   grade={interviewGrade}
                   challengeType={apiChallengeType ?? 'system_design'}
                   canvasPngUrl={submittedCanvasPngUrl}
+                  canvasElements={canvasScene?.elements ?? null}
                   nextChallengeHref={nextChallengeHref}
                   backToListHref={workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)}
                   onRetry={() => window.location.reload()}
@@ -5791,6 +5820,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     grade={historyInterviewGrade}
                     challengeType={apiChallengeType ?? 'system_design'}
                     canvasPngUrl={historyRecord.canvasPngUrl}
+                    canvasElements={historyCanvasElements}
                     nextChallengeHref={nextChallengeHref}
                     backToListHref={workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)}
                   />
@@ -5805,9 +5835,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               )
             )}
 
-            {/* Coding challenge feedback - two-column correctness + grading view */}
+            {/* Coding challenge feedback — single-column verdict flow with the
+                Hatch chat docked as a SIBLING panel (never inline in the scroll
+                column, where it would render as a stray block at the bottom). */}
             {isCodingChallenge && (phase === 'complete' || historyRecord) && (
-              <div className="flex-1 min-h-0 overflow-y-auto p-4 animate-step-enter">
+              <div className="flex flex-1 min-h-0 animate-step-enter">
+                <div className="flex-1 min-h-0 overflow-y-auto p-4">
                 {historyRecord && historyGradeLoading ? (
                   <div className="flex h-full flex-col items-center justify-center gap-4">
                     <HatchImage size={80} state="reviewing" />
@@ -5843,6 +5876,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       }
                     } : undefined}
                     onRetryGrading={codingControlsLive ? retryCodingGrading : undefined}
+                    onRequestGrading={codingControlsLive ? retryCodingGrading : undefined}
                     onAskHatch={codingControlsLive ? () => queueHatchPrompt('My tests are failing. Can you help me figure out why?', false) : undefined}
                     onNextChallenge={nextChallengeHref && codingControlsLive
                       ? () => { window.location.href = nextChallengeHref }
@@ -5850,10 +5884,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     }
                   />
                 )}
+                </div>
                 {/* Hatch coach on the coding complete screen — the question-phase
                     CanvasChatPanel is unmounted here, so mount a dedicated instance
-                    so "Ask Hatch" has a panel to open. Available for the live
-                    complete view and the just-graded current attempt. */}
+                    so "Ask Hatch" has a panel to open. Sibling of the scroll
+                    column so it docks to the right edge like the question phase. */}
                 {codingControlsLive && (() => {
                   const activePart = codingParts.find(p => p.id === activePartId)
                   return (
@@ -5981,14 +6016,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           }}>
           {/* Grading interstitial - fills the right panel while the model grades. */}
           {isCanvasChallenge && isSubmittingInterview && (
-            <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 animate-step-enter">
-              <HatchImage size={96} state="reviewing" />
-              <div className="font-headline text-xl text-ink-strong">Hatch is reviewing your design…</div>
-              <div className="font-body text-sm text-ink-secondary max-w-md text-center">
-                {apiChallengeType === 'data_modeling'
-                  ? 'Reading the schema, checking relationships, and writing your feedback.'
-                  : 'Tracing the request path, weighing your tradeoffs, and writing your feedback.'}
-              </div>
+            <div className="flex-1 min-h-0 flex flex-col animate-step-enter">
+              <HatchReviewCard
+                size="large"
+                phases={apiChallengeType === 'data_modeling' ? DATA_MODEL_REVIEW_PHASES : CANVAS_REVIEW_PHASES}
+              />
             </div>
           )}
 
@@ -6312,13 +6344,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               >
                 <WorkspacePanel
                   icon="code"
-                  title={(() => {
-                    const names: Record<string, string> = {
-                      python: 'solution.py', javascript: 'solution.js', java: 'Solution.java',
-                      cpp: 'solution.cpp', go: 'solution.go', sql: 'query.sql',
-                    }
-                    return names[currentLanguage] ?? 'solution'
-                  })()}
+                  title="Editor"
                   headerExtra={codingParts.length > 0 && activePartId ? (
                     <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, color: 'var(--color-ink-secondary)', padding: '2px 8px', borderRadius: 999, background: 'var(--color-page-field)', border: '1px solid var(--color-hairline)', whiteSpace: 'nowrap' }}>
                       {(() => { const cp = codingParts.find(x => x.id === activePartId); return cp ? `Part ${cp.sequence}` : '' })()}
@@ -6465,16 +6491,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               })()}
             </div>
 
-            {/* Status bar — real autosave state, the actual shortcuts, last
-                run count, active language, and the exit flow. */}
-            <CodingStatusBar
-              saveState={codingSaveState}
-              savedAt={codingSavedAt}
-              language={{ python: 'Python', javascript: 'JavaScript', java: 'Java', cpp: 'C++', go: 'Go', sql: 'SQL' }[currentLanguage]}
-              lastRun={lastRunResult ? { testsPassed: lastRunResult.testsPassed, testsTotal: lastRunResult.testsTotal } : null}
-              onEndSession={props.onExit ?? (() => window.history.back())}
-              className="mt-2 rounded-xl border border-hairline"
-            />
             </div>
           )}
 

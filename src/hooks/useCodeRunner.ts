@@ -149,8 +149,18 @@ export function useCodeRunner({
   // Stable ref to the Web Worker (SQL path only)
   const workerRef = useRef<Worker | null>(null)
 
-  // Map of pending run requestId → resolver (used to correlate worker responses)
-  const pendingRunsRef = useRef<Map<string, (result: RunResult) => void>>(new Map())
+  // Map of pending run requestId → settlers (used to correlate worker responses).
+  // Both resolve and reject are kept so worker errors and timeouts can settle
+  // the promise — a resolver that only ever resolves on run_complete leaves
+  // await codeRunner.submit() hanging forever when the worker dies.
+  const pendingRunsRef = useRef<Map<string, { resolve: (result: RunResult) => void; reject: (err: Error) => void }>>(new Map())
+
+  const rejectAllPendingRuns = (message: string) => {
+    for (const { reject } of pendingRunsRef.current.values()) {
+      reject(new Error(message))
+    }
+    pendingRunsRef.current.clear()
+  }
 
   const metadata = challenge.metadata as CodingChallengeMetadata | Record<string, unknown> | undefined
   const isSql = isSqlChallenge(metadata)
@@ -184,12 +194,13 @@ export function useCodeRunner({
       if (data.action === 'hydrate_error' && data.requestId === hydrateRequestId) {
         setSqlError(data.errorMessage)
         setStatus('idle')
+        rejectAllPendingRuns(data.errorMessage || 'The SQL environment failed to load.')
         return
       }
 
       if (data.action === 'run_complete') {
-        const resolver = pendingRunsRef.current.get(data.requestId)
-        if (!resolver) return
+        const pending = pendingRunsRef.current.get(data.requestId)
+        if (!pending) return
 
         pendingRunsRef.current.delete(data.requestId)
 
@@ -200,13 +211,14 @@ export function useCodeRunner({
           results: data.results,
         }
 
-        resolver(result)
+        pending.resolve(result)
       }
     }
 
     worker.onerror = (err) => {
       setSqlError(err.message ?? 'Worker error')
       setStatus('idle')
+      rejectAllPendingRuns(err.message ?? 'The SQL runner crashed. Run again to retry.')
     }
 
     const hydrateMsg: WorkerHydrateMessage = {
@@ -219,7 +231,7 @@ export function useCodeRunner({
     return () => {
       worker.terminate()
       workerRef.current = null
-      pendingRunsRef.current.clear()
+      rejectAllPendingRuns('The SQL runner was reset.')
       setStatus('idle')
     }
     // Re-hydrate if the challenge changes (Try Again / new challenge)
@@ -235,9 +247,19 @@ export function useCodeRunner({
       const worker = workerRef.current
       if (!worker) return Promise.resolve(null)
 
-      return new Promise<RunResult>((resolve) => {
+      return new Promise<RunResult>((resolve, reject) => {
         const requestId = randomId()
-        pendingRunsRef.current.set(requestId, resolve)
+        // Local runs are fast; 30s covers the worst pathological query while
+        // still guaranteeing the awaiting submit/run handler always settles.
+        const timer = setTimeout(() => {
+          if (pendingRunsRef.current.delete(requestId)) {
+            reject(new Error('The SQL runner timed out. Run again to retry.'))
+          }
+        }, 30_000)
+        pendingRunsRef.current.set(requestId, {
+          resolve: (result) => { clearTimeout(timer); resolve(result) },
+          reject: (err) => { clearTimeout(timer); reject(err) },
+        })
 
         const msg: WorkerRunMessage = {
           action: 'run',

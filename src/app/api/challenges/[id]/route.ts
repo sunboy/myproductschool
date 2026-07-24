@@ -13,8 +13,29 @@ interface ChallengeDetailResponse {
   challenge: Challenge
   steps: StepSummary[]
   current_attempt: ChallengeAttemptV2 | null
+  /**
+   * Newest completed attempt, if any. Lets canvas challenges restore the
+   * submitted drawing (canvas_final_snapshot) for review when there is no
+   * in-progress attempt. current_attempt keeps its in_progress-only meaning.
+   */
+  latest_completed_attempt: ChallengeAttemptV2 | null
   /** Populated for challenge_type='sql'|'algorithm' when a flow_steps row with step='coding' exists. Empty array otherwise. */
   codingParts: CodingPart[]
+}
+
+/**
+ * Newest completed attempt, preferring one whose canvas_final_snapshot has
+ * elements. Duplicate/abandoned twins can produce a newest attempt with an
+ * empty snapshot; restoring from that would show a blank canvas even though a
+ * real submitted drawing exists one row down.
+ */
+function pickCompletedAttempt(rows: ChallengeAttemptV2[] | null): ChallengeAttemptV2 | null {
+  if (!rows || rows.length === 0) return null
+  const withScene = rows.find((r) => {
+    const snap = r.canvas_final_snapshot as { elements?: unknown[] } | undefined
+    return Array.isArray(snap?.elements) && snap.elements.length > 0
+  })
+  return withScene ?? rows[0]
 }
 
 export async function GET(
@@ -70,7 +91,7 @@ export async function GET(
       { step: 'optimize', step_order: 2, question_count: 2 },
       { step: 'win',      step_order: 3, question_count: 1 },
     ]
-    return NextResponse.json({ challenge: mockChallenge, steps: mockSteps, current_attempt: null, codingParts: [] })
+    return NextResponse.json({ challenge: mockChallenge, steps: mockSteps, current_attempt: null, latest_completed_attempt: null, codingParts: [] })
   }
 
   // Fetch challenge - try by id first, then by slug as fallback
@@ -104,6 +125,7 @@ export async function GET(
   const [
     { data: flowSteps, error: stepsError },
     { data: currentAttempt },
+    { data: latestCompletedAttempt },
   ] = await Promise.all([
     supabase
       .from('flow_steps')
@@ -119,6 +141,14 @@ export async function GET(
       .order('started_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from('challenge_attempts')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('challenge_id', resolvedId)
+      .eq('status', 'completed')
+      .order('completed_at', { ascending: false, nullsFirst: false })
+      .limit(5),
   ])
 
   if (stepsError) {
@@ -219,6 +249,7 @@ export async function GET(
     challenge: challenge as Challenge,
     steps,
     current_attempt: (currentAttempt as ChallengeAttemptV2) ?? null,
+    latest_completed_attempt: pickCompletedAttempt(latestCompletedAttempt as ChallengeAttemptV2[] | null),
     codingParts,
   }
 

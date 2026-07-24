@@ -48,7 +48,7 @@ export function LanguageSelector({
       disabled={disabled}
     >
       <SelectTrigger
-        className="h-8 w-36 bg-card-bright border-hairline text-ink-strong text-sm font-label font-semibold rounded-lg"
+        className="h-7 w-auto min-w-0 gap-1 rounded-md border-transparent bg-transparent px-2 font-label text-xs font-semibold text-ink-secondary shadow-none hover:bg-page-field hover:text-ink-strong"
         aria-label="Select programming language"
       >
         <SelectValue placeholder="Language" />

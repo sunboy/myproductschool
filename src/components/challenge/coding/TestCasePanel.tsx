@@ -2,6 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
+
+/** Test case titles come from content in lowercase; display them as sentences. */
+function capLabel(label: string): string {
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
 import type { RunResult, TestCase, TestResult } from '@/lib/coding/types'
 import {
   RunningIndicator,
@@ -223,7 +228,7 @@ export function TestCasePanel({
                             />
                             <span className="min-w-0 flex-1">
                               <span className="block truncate font-label text-xs font-bold text-ink-strong">
-                                {tc.label}
+                                {capLabel(tc.label)}
                               </span>
                               {tc.args.length > 0 && (
                                 <span className="block truncate font-mono text-[10.5px] text-ink-secondary">
@@ -248,7 +253,7 @@ export function TestCasePanel({
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center gap-2">
                         <span className="font-label text-[13px] font-bold text-ink-strong">
-                          {selectedCase.label}
+                          {capLabel(selectedCase.label)}
                         </span>
                         {selectedResult && (
                           <span
@@ -427,7 +432,7 @@ function AlgoRunSummary({ results }: { results: RunResult }) {
                 aria-hidden="true"
                 className={cn('size-2 shrink-0 rounded-full transition-colors duration-150', statusDotClass(r.status))}
               />
-              <span className="min-w-0 flex-1 truncate font-label text-xs font-bold text-ink-strong">{r.label}</span>
+              <span className="min-w-0 flex-1 truncate font-label text-xs font-bold text-ink-strong">{capLabel(r.label)}</span>
               {r.durationMs !== undefined && (
                 <span className="font-label text-[11px] text-ink-muted tabular-nums">{r.durationMs}ms</span>
               )}

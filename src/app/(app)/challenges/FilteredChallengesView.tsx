@@ -97,11 +97,23 @@ function writeFilterValues(params: URLSearchParams, key: FilterKey, values: stri
   params.set(key, values.join(','))
 }
 
+/** Stale/external links use aliases for coding; resolve them instead of
+ *  silently degrading to 'all' (the DB challenge_type is `algorithm`). */
+const DISCIPLINE_ALIASES: Record<string, Discipline> = {
+  coding: 'algorithm',
+  dsa: 'algorithm',
+  'coding-dsa': 'algorithm',
+}
+
 function getDiscipline(searchParams: SearchParamGetter): Discipline {
   const discipline = searchParams.get('discipline')
   const legacyType = searchParams.get('type')
-  if (isDiscipline(discipline)) return discipline
-  if (isDiscipline(legacyType)) return legacyType
+  for (const raw of [discipline, legacyType]) {
+    if (!raw) continue
+    if (isDiscipline(raw)) return raw
+    const alias = DISCIPLINE_ALIASES[raw.toLowerCase()]
+    if (alias) return alias
+  }
   return 'all'
 }
 
@@ -125,6 +137,8 @@ function challengeMatchesDiscipline(type: string | null | undefined, discipline:
 function buildListQuery(opts: {
   discipline: Discipline
   filters: FilterState
+  /** Active search query — without this, paging/section fetches silently drop the search. */
+  q?: string
   /** When set, overrides the topic filter (used by a topic-scoped section fetch). */
   topic?: string
   page: number
@@ -132,6 +146,7 @@ function buildListQuery(opts: {
 }): string {
   const p = new URLSearchParams()
   if (opts.discipline !== 'all') p.set('discipline', opts.discipline)
+  if (opts.q) p.set('q', opts.q)
   const setMulti = (key: string, values: string[]) => { if (values.length > 0) p.set(key, values.join(',')) }
   setMulti('difficulty', opts.filters.difficulty)
   setMulti('role', opts.filters.role)
@@ -196,6 +211,8 @@ export function FilteredChallengesView({
     real_interview: parsedParams.get('real_interview') === '1',
     resume: parsedParams.get('resume') === '1',
   }), [parsedParams])
+
+  const searchQuery = parsedParams.get('q') ?? ''
 
   const sortParam = parsedParams.get('sort')
   const sort: PracticeSort = isPracticeSort(sortParam) ? sortParam : 'recommended'
@@ -331,6 +348,7 @@ export function FilteredChallengesView({
             paradigms={paradigms}
             summaries={summaries}
             filters={filters}
+            q={searchQuery}
             listView={listView}
             returnHref={returnHref}
             previewPerDiscipline={previewPerDiscipline}
@@ -342,6 +360,7 @@ export function FilteredChallengesView({
             key={`${discipline}-${searchString}`}
             discipline={discipline}
             filters={filters}
+            q={searchQuery}
             initialChallenges={initialDiscipline === discipline ? initialChallenges : []}
             initialTotal={totalForDiscipline}
             returnHref={returnHref}
@@ -403,6 +422,7 @@ function AllPracticeView({
   paradigms,
   summaries,
   filters,
+  q,
   listView,
   returnHref,
   previewPerDiscipline,
@@ -416,6 +436,7 @@ function AllPracticeView({
   paradigms: Record<string, string>
   summaries: Record<string, string>
   filters: FilterState
+  q?: string
   listView: boolean
   returnHref: string
   previewPerDiscipline: number
@@ -464,6 +485,7 @@ function AllPracticeView({
           total={totalFor(disc)}
           seed={seeded[disc] ?? []}
           filters={filters}
+          q={q}
           paradigms={paradigms}
           summaries={summaries}
           listView={listView}
@@ -483,6 +505,7 @@ function AllPracticeSection({
   total,
   seed,
   filters,
+  q,
   paradigms,
   summaries,
   listView,
@@ -496,6 +519,7 @@ function AllPracticeSection({
   total: number
   seed: ChallengeWithDomain[]
   filters: FilterState
+  q?: string
   paradigms: Record<string, string>
   summaries: Record<string, string>
   listView: boolean
@@ -519,7 +543,7 @@ function AllPracticeSection({
     setLoading(true)
     try {
       const nextPage = page + 1
-      const qs = buildListQuery({ discipline, filters, page: nextPage, limit: pageSize })
+      const qs = buildListQuery({ discipline, filters, q, page: nextPage, limit: pageSize })
       const res = await fetch(`/api/challenges?${qs}`)
       if (res.ok) {
         const data: ListResponse = await res.json()
@@ -532,7 +556,7 @@ function AllPracticeSection({
     } finally {
       setLoading(false)
     }
-  }, [discipline, filters, page, pageSize])
+  }, [discipline, filters, q, page, pageSize])
 
   // Page 1 from the API holds `pageSize` rows; the seed only had
   // previewPerDiscipline. The first "load more" jumps to page 2 (offset
@@ -541,7 +565,7 @@ function AllPracticeSection({
   const expandToFull = useCallback(async () => {
     setLoading(true)
     try {
-      const qs = buildListQuery({ discipline, filters, page: 1, limit: pageSize })
+      const qs = buildListQuery({ discipline, filters, q, page: 1, limit: pageSize })
       const res = await fetch(`/api/challenges?${qs}`)
       if (res.ok) {
         const data: ListResponse = await res.json()
@@ -551,7 +575,7 @@ function AllPracticeSection({
     } finally {
       setLoading(false)
     }
-  }, [discipline, filters, pageSize])
+  }, [discipline, filters, q, pageSize])
 
   // The SSR seed can't apply the resume filter (it's attempt-scoped, resolved by
   // the API); refetch page 1 whenever it's active so the preview rows match.
@@ -609,6 +633,7 @@ function AllPracticeSection({
 function DisciplineView({
   discipline,
   filters,
+  q,
   initialChallenges,
   initialTotal,
   returnHref,
@@ -619,6 +644,7 @@ function DisciplineView({
 }: {
   discipline: Discipline
   filters: FilterState
+  q?: string
   initialChallenges: ChallengeWithDomain[]
   initialTotal: number
   returnHref: string
@@ -669,6 +695,7 @@ function DisciplineView({
 function FlatDisciplineList({
   discipline,
   filters,
+  q,
   initialChallenges,
   initialTotal,
   returnHref,
@@ -677,6 +704,7 @@ function FlatDisciplineList({
 }: {
   discipline: Discipline
   filters: FilterState
+  q?: string
   initialChallenges: ChallengeWithDomain[]
   initialTotal: number
   returnHref: string
@@ -700,7 +728,7 @@ function FlatDisciplineList({
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    const qs = buildListQuery({ discipline, filters, page: 1, limit: pageSize })
+    const qs = buildListQuery({ discipline, filters, q, page: 1, limit: pageSize })
     fetch(`/api/challenges?${qs}`)
       .then((r) => (r.ok ? r.json() : { challenges: [], total: 0, has_more: false }))
       .then((data: ListResponse) => {
@@ -713,13 +741,13 @@ function FlatDisciplineList({
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [discipline, topicKey, techniqueKey])
+  }, [discipline, topicKey, techniqueKey, q])
 
   const loadMore = useCallback(async () => {
     setLoading(true)
     try {
       const nextPage = page + 1
-      const qs = buildListQuery({ discipline, filters, page: nextPage, limit: pageSize })
+      const qs = buildListQuery({ discipline, filters, q, page: nextPage, limit: pageSize })
       const res = await fetch(`/api/challenges?${qs}`)
       if (res.ok) {
         const data: ListResponse = await res.json()

@@ -7,6 +7,8 @@ interface ChallengeDetail {
   challenge: Challenge
   steps: FlowStepRecord[]
   current_attempt: ChallengeAttemptV2 | null
+  /** Newest completed attempt; lets canvas re-entry restore the submitted drawing. */
+  latest_completed_attempt?: ChallengeAttemptV2 | null
   /** Parts for multi-part coding challenges. Empty array for single-prompt coding and all other challenge types. */
   codingParts: CodingPart[]
 }
