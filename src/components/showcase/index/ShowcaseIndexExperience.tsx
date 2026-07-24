@@ -4,9 +4,6 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, BookOpen, Building2, Clock, Search, X } from 'lucide-react';
-import { BackButton } from '@/components/navigation/BackButton';
-import { HatchImage } from '@/components/redesign/HatchImage';
-import { HatchSays } from '@/components/redesign/HatchSays';
 import { InkMark } from '@/components/redesign/InkMark';
 import { ProTipStrip } from '@/components/redesign/ProTipStrip';
 import type { AutopsyCompanyWithStories, FeatureAutopsy } from '@/lib/autopsies/types';
@@ -70,28 +67,23 @@ export function ShowcaseIndexExperience({
   const totalStages = featured?.flow?.length;
 
   return (
-    <div className="mx-auto max-w-[1180px] px-4 pb-12 pt-5 lg:px-0">
-      <BackButton href="/explore" label="Back to Explore" className="mb-3" />
-
+    <div className="mx-auto max-w-[1180px] px-4 pb-12 pt-4 lg:px-0">
       <HubHero
         stories={stories}
         companyCount={companies.length}
-        featured={featured}
         onOpenSearch={() => setSearchOpen(true)}
       />
 
-      {featured && (
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
-          <FeaturedStoryCard story={featured} company={featuredCompany} totalStages={totalStages} />
-          <WhyAutopsiesCard />
-        </div>
-      )}
-
-      <SectionHead
-        title="All stories"
-        subtitle="Each story follows one user through the full funnel"
+      {/* Magazine grid: the featured story is a 2x2 dark tile INSIDE the story
+          grid, so real cards are above the fold instead of a hero-sized
+          featured band + explainer card blocking the catalog. */}
+      <StoryList
+        stories={restStories}
+        companyMap={companyMap}
+        featured={featured}
+        featuredCompany={featuredCompany}
+        featuredStages={totalStages}
       />
-      <StoryList stories={restStories} companyMap={companyMap} />
 
       {companies.length > 0 && (
         <>
@@ -140,12 +132,10 @@ function parseReadMinutes(raw: string): number | null {
 function HubHero({
   stories,
   companyCount,
-  featured,
   onOpenSearch,
 }: {
   stories: FeatureAutopsy[];
   companyCount: number;
-  featured: FeatureAutopsy | undefined;
   onOpenSearch: () => void;
 }) {
   const readMinutes = stories
@@ -155,14 +145,10 @@ function HubHero({
     ? Math.round(readMinutes.reduce((sum, minutes) => sum + minutes, 0) / readMinutes.length)
     : null;
 
-  const hatchMessage = featured
-    ? `Read ${featured.title} first. The ${featured.flow?.[0]?.move ?? 'Frame'} stage sets up the linked reps.`
-    : `${stories.length} ${stories.length === 1 ? 'story' : 'stories'} to pick from. Start with a company you know as a user.`;
-
   return (
     <div
       data-tour-target="autopsies-hero"
-      className="relative overflow-hidden rounded-2xl px-[26px] py-6 text-white"
+      className="relative overflow-hidden rounded-2xl px-[26px] py-5 text-white"
       style={{
         background:
           'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-850) 75%, var(--color-forest-700) 130%)',
@@ -173,17 +159,28 @@ function HubHero({
         className="pointer-events-none absolute -right-10 -top-16 h-[420px] w-[420px] rounded-full"
         style={{ background: 'radial-gradient(circle, rgba(30,71,45,.55) 0%, rgba(30,71,45,0) 70%)' }}
       />
-      <div className="relative z-10 grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
-        <div className="min-w-0 lg:pr-32">
-          <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
+      <div className="relative z-10">
+        <div className="mb-1.5 flex items-center gap-2">
+          <Link
+            href="/explore"
+            aria-label="Back to Explore"
+            className="-ml-1.5 flex h-7 w-7 items-center justify-center rounded-full text-white/70 no-underline transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <ArrowRight size={15} strokeWidth={2.2} className="rotate-180" />
+          </Link>
+          <span className="font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
             Product autopsies
+          </span>
+        </div>
+        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+          <div className="min-w-0">
+            <h1 className="font-headline text-[24px] font-semibold leading-[1.15] text-on-hero-strong">
+              Learn from real product wins and misses.
+            </h1>
+            <p className="mt-1 max-w-[62ch] text-[13px] leading-[1.5] text-white/72">
+              Stage-by-stage breakdowns of real growth, monetization, and retention calls. Read one, then make the same call yourself in a linked rep.
+            </p>
           </div>
-          <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-on-hero-strong">
-            Learn from real product wins and misses.
-          </h1>
-          <p className="mb-3.5 max-w-[54ch] text-[13px] leading-[1.5] text-white/72">
-            Stage-by-stage breakdowns of how real companies built their growth loops, monetization, and retention mechanics. Read one, then practice the decisions yourself.
-          </p>
           <div className="flex flex-wrap items-center gap-2">
             {stories.length > 0 && (
               <span className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-bold text-white/85">
@@ -213,19 +210,6 @@ function HubHero({
             </button>
           </div>
         </div>
-
-        <div className="relative flex items-center lg:col-start-2">
-          <div className="pointer-events-none absolute -left-[150px] bottom-[-28px] z-[1] hidden w-[132px] lg:block">
-            <HatchImage state="reading" size={132} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
-          </div>
-          <HatchSays
-            className="relative z-10 w-full"
-            tint="mint"
-            message={hatchMessage}
-            ctaLabel={featured ? 'Read the autopsy' : undefined}
-            ctaHref={featured ? routeForStory(featured) : undefined}
-          />
-        </div>
       </div>
     </div>
   );
@@ -245,7 +229,7 @@ function FeaturedStoryCard({
   return (
     <Link
       href={routeForStory(story)}
-      className="relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-2xl px-5 py-5 text-white no-underline"
+      className="relative flex flex-col justify-between overflow-hidden rounded-xl px-5 py-5 text-white no-underline sm:col-span-2 lg:row-span-2"
       style={{
         background: 'linear-gradient(120deg, var(--color-forest-900) 0%, var(--color-forest-850) 70%, var(--color-forest-800) 100%)',
       }}
@@ -256,11 +240,16 @@ function FeaturedStoryCard({
         style={{ background: 'radial-gradient(circle, rgba(163,235,177,0.14) 0%, transparent 70%)' }}
       />
       <div className="relative z-[1]">
-        {company?.name && (
-          <div className="mb-2 text-xs font-bold" style={{ color: company.accent }}>
-            {company.name}
-          </div>
-        )}
+        <div className="mb-2.5 flex items-center gap-2.5">
+          <span className="rounded-full bg-mint-glow/15 px-2.5 py-0.5 font-label text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-mint-glow">
+            Featured
+          </span>
+          {company?.name && (
+            <span className="text-xs font-bold" style={{ color: company.accent }}>
+              {company.name}
+            </span>
+          )}
+        </div>
         <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-mint-glow">
           {story.storyType === 'company_teardown' ? 'Company teardown' : 'Feature autopsy'}
           {typeof totalStages === 'number' && totalStages > 0 && (
@@ -280,10 +269,10 @@ function FeaturedStoryCard({
           {' · '}
           {formatReadTime(story.estimatedReadTime)}
         </div>
-        <h2 className="mb-3 max-w-[26ch] font-headline text-[28px] font-semibold leading-[1.16] text-on-hero-strong">
+        <h2 className="mb-2.5 max-w-[26ch] font-headline text-[24px] font-semibold leading-[1.16] text-on-hero-strong">
           {story.title}
         </h2>
-        <p className="mb-5 max-w-[52ch] text-sm leading-[1.55] text-white/78">{story.dek}</p>
+        <p className="mb-4 max-w-[52ch] text-[13px] leading-[1.55] text-white/78">{story.dek}</p>
       </div>
 
       {stats.length > 0 && (
@@ -305,17 +294,6 @@ function FeaturedStoryCard({
   );
 }
 
-function WhyAutopsiesCard() {
-  return (
-    <div className="flex min-h-[220px] -rotate-[0.8deg] flex-col rounded-xl border border-note-amber-border bg-note-amber p-5">
-      <h3 className="mb-2.5 text-[17px] font-bold text-ink-strong">Why autopsies</h3>
-      <p className="text-[13px] leading-[1.6] text-ink-secondary">
-        A case study tells you what happened. An autopsy shows each decision as it looked before the outcome was known: the constraint, the tradeoff, the call someone had to ship. Then you make the same call yourself in a linked rep.
-      </p>
-    </div>
-  );
-}
-
 function SectionHead({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="mb-1 mt-6 flex items-baseline justify-between gap-4">
@@ -330,13 +308,19 @@ function SectionHead({ title, subtitle }: { title: string; subtitle: string }) {
 function StoryList({
   stories,
   companyMap,
+  featured,
+  featuredCompany,
+  featuredStages,
 }: {
   stories: FeatureAutopsy[];
   companyMap: Map<string, AutopsyCompanyWithStories>;
+  featured?: FeatureAutopsy;
+  featuredCompany?: AutopsyCompanyWithStories;
+  featuredStages?: number;
 }) {
   const [showAll, setShowAll] = useState(false);
 
-  if (stories.length === 0) {
+  if (stories.length === 0 && !featured) {
     return <p className="border-t border-hairline py-6 text-sm text-ink-muted">More stories are on the way.</p>;
   }
 
@@ -344,10 +328,13 @@ function StoryList({
   const hiddenCount = stories.length - visible.length;
 
   return (
-    <div className="mt-3">
+    <div className="mt-4">
       {/* Card grid per autopsies-hub-1440.png: brand-accent company text
           label leads each card (letter avatars are banned, spec §8). */}
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {featured && (
+          <FeaturedStoryCard story={featured} company={featuredCompany} totalStages={featuredStages} />
+        )}
         {visible.map(story => {
           const company = companyMap.get(story.companySlug);
           const stageCount = story.flow?.length;
