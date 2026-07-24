@@ -4,11 +4,11 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, BookOpen, Building2, Clock, Search, X } from 'lucide-react';
-import { InkMark } from '@/components/redesign/InkMark';
 import { ProTipStrip } from '@/components/redesign/ProTipStrip';
 import type { AutopsyCompanyWithStories, FeatureAutopsy } from '@/lib/autopsies/types';
 import { getFeaturedAppStory } from '@/lib/autopsies/app-library';
 import { StoryVisual } from '@/components/showcase/StoryVisual';
+import { getProminentStoryImage } from '@/lib/autopsies/images';
 
 interface ShowcaseIndexExperienceProps {
   companies: AutopsyCompanyWithStories[];
@@ -165,10 +165,12 @@ function HubHero({
           <Link
             href="/explore"
             aria-label="Back to Explore"
-            className="-ml-1.5 flex h-7 w-7 items-center justify-center rounded-full text-white/70 no-underline transition-colors hover:bg-white/10 hover:text-white"
+            className="-ml-1.5 flex items-center gap-1 rounded-full px-2 py-1 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-white/60 no-underline transition-colors hover:bg-white/10 hover:text-white"
           >
-            <ArrowRight size={15} strokeWidth={2.2} className="rotate-180" />
+            <ArrowRight size={13} strokeWidth={2.4} className="rotate-180" />
+            Explore
           </Link>
+          <span className="text-white/30">/</span>
           <span className="font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
             Product autopsies
           </span>
@@ -230,7 +232,7 @@ function FeaturedStoryCard({
   return (
     <Link
       href={routeForStory(story)}
-      className="relative flex flex-col justify-between overflow-hidden rounded-xl px-5 py-5 text-white no-underline sm:col-span-2 lg:row-span-2"
+      className="relative flex flex-col justify-between overflow-hidden rounded-xl px-5 py-4 text-white no-underline sm:col-span-2"
       style={{
         background: 'linear-gradient(120deg, var(--color-forest-900) 0%, var(--color-forest-850) 70%, var(--color-forest-800) 100%)',
       }}
@@ -264,47 +266,33 @@ function FeaturedStoryCard({
               {company.name}
             </span>
           )}
+          <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-mint-glow">
+            {typeof totalStages === 'number' && totalStages > 0 ? `${totalStages} stages · ` : ''}
+            {formatReadTime(story.estimatedReadTime)}
+          </span>
         </div>
-        <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-mint-glow">
-          {story.storyType === 'company_teardown' ? 'Company teardown' : 'Feature autopsy'}
-          {typeof totalStages === 'number' && totalStages > 0 && (
-            <>
-              {' · '}
-              <span className="relative inline-block">
-                {totalStages} {totalStages === 1 ? 'stage' : 'stages'}
-                <InkMark
-                  variant="underline"
-                  color="#a3ebb1"
-                  opacity={0.55}
-                  className="absolute -bottom-[7px] left-0 h-2 w-full"
-                />
-              </span>
-            </>
-          )}
-          {' · '}
-          {formatReadTime(story.estimatedReadTime)}
-        </div>
-        <h2 className="mb-2.5 max-w-[26ch] font-headline text-[24px] font-semibold leading-[1.16] text-on-hero-strong">
+        <h2 className="mb-1.5 max-w-[30ch] font-headline text-[20px] font-semibold leading-[1.18] text-on-hero-strong">
           {story.title}
         </h2>
-        <p className="mb-4 max-w-[52ch] text-[13px] leading-[1.55] text-white/78">{story.dek}</p>
+        <p className="mb-3 max-w-[56ch] text-[13px] leading-[1.5] text-white/78">{story.dek}</p>
       </div>
 
-      {stats.length > 0 && (
-        <div className="relative z-[1] mb-5 flex flex-wrap gap-6">
-          {stats.map(stat => (
-            <div key={stat.label} className="leading-tight">
-              <div className="font-headline text-xl font-bold tabular-nums text-white">{stat.value}</div>
-              <div className="mt-1 text-[11px] font-bold text-white/60">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <span className="relative z-[1] inline-flex w-fit items-center gap-2 self-start rounded-lg bg-white px-[18px] py-2.5 text-[13.5px] font-bold text-forest-900">
-        Read the autopsy
-        <ArrowRight size={14} strokeWidth={2.2} />
-      </span>
+      <div className="relative z-[1] flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+        {stats.length > 0 && (
+          <div className="flex flex-wrap gap-x-6 gap-y-1.5">
+            {stats.map(stat => (
+              <div key={stat.label} className="leading-tight">
+                <div className="font-headline text-[15px] font-bold tabular-nums text-white">{stat.value}</div>
+                <div className="mt-0.5 text-[10.5px] font-bold text-white/60">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-bold text-mint-glow">
+          Read the autopsy
+          <ArrowRight size={14} strokeWidth={2.2} />
+        </span>
+      </div>
     </Link>
   );
 }
@@ -353,21 +341,25 @@ function StoryList({
         {visible.map(story => {
           const company = companyMap.get(story.companySlug);
           const stageCount = story.flow?.length;
+          const hasArt = Boolean(getProminentStoryImage(story));
           return (
             <Link
               key={story.slug}
               href={routeForStory(story)}
               className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-card-bright no-underline"
             >
-              {/* Real autopsy hero art (CompanyArt accent fallback when a story
-                  has no image) — cards read as editorial covers, not text stubs. */}
-              <div className="relative h-[118px] shrink-0 overflow-hidden bg-page-field [&_figure]:m-0 [&_figure]:h-full [&_figure]:w-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:transition-transform [&_img]:duration-300 group-hover:[&_img]:scale-[1.03]">
-                <StoryVisual
-                  story={story}
-                  company={company ? { name: company.name, slug: company.slug, accent: company.accent } : undefined}
-                  variant="tile"
-                />
-              </div>
+              {/* Art band only when the story carries a REAL hero image — the
+                  generated placeholder art read as junk, so imageless stories
+                  get the clean text card instead. */}
+              {hasArt && (
+                <div className="relative h-[118px] shrink-0 overflow-hidden bg-page-field [&_figure]:m-0 [&_figure]:h-full [&_figure]:w-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:transition-transform [&_img]:duration-300 group-hover:[&_img]:scale-[1.03]">
+                  <StoryVisual
+                    story={story}
+                    company={company ? { name: company.name, slug: company.slug, accent: company.accent } : undefined}
+                    variant="tile"
+                  />
+                </div>
+              )}
               <div className="flex flex-1 flex-col p-4">
               <div className="text-[11.5px] font-bold" style={{ color: company?.accent ?? 'var(--color-ink-secondary)' }}>
                 {company?.name ?? story.companySlug}
