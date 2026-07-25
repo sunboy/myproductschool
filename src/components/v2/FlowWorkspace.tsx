@@ -2894,7 +2894,20 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       // Hatch's review is on demand: the user asks for it from the feedback
       // surface (retryCodingGrading), so submit ends at correctness. No AI
       // call, no analysing wait, and no spend for users who just want the
-      // test verdict.
+      // test verdict. The submitted code + results still persist so history
+      // can show them even if feedback is never requested; fire-and-forget
+      // with keepalive so navigating away doesn't lose the snapshot.
+      void fetch(`/api/challenges/${challengeId}/coding-snapshot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        body: JSON.stringify({
+          attemptId,
+          finalCode: currentCode,
+          language: currentLanguage,
+          correctnessPayload: correctnessResult,
+        }),
+      }).catch(() => { /* non-fatal — coding-submit re-persists on grading */ })
     } catch (err) {
       console.error('Coding submit error:', err)
       setOutputPanelStatus('error')
