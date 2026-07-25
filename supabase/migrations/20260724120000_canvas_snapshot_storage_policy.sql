@@ -23,3 +23,14 @@ create policy "canvas snapshots update (authenticated)"
     bucket_id = 'challenge-assets'
     and name like 'canvas-snapshots/%'
   );
+
+-- Upsert (INSERT ... ON CONFLICT DO UPDATE) requires SELECT access to the
+-- conflicting row under RLS; the client uploads with upsert:true, so a
+-- select policy is part of the fix (applied as
+-- canvas_snapshot_storage_select_policy on the live DB).
+create policy "canvas snapshots select (authenticated)"
+  on storage.objects for select to authenticated
+  using (
+    bucket_id = 'challenge-assets'
+    and name like 'canvas-snapshots/%'
+  );
