@@ -112,4 +112,4 @@ export const POST = withRoute(async (
     return NextResponse.json({ error: 'snapshot_failed' }, { status: 500 })
   }
   return NextResponse.json({ ok: true })
-})
+}, { name: 'challenges.coding-snapshot' })
