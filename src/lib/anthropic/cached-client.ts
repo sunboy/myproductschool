@@ -136,6 +136,27 @@ export async function createCachedMessageMultiSystem(
   return message
 }
 
+/**
+ * Drop-in replacement for createCachedMessage that streams under the hood so
+ * the connection survives past the single-request ANTHROPIC_TIMEOUT_MS wall
+ * (long generations, e.g. solution authoring, were hitting
+ * Anthropic.APIConnectionTimeoutError on the plain non-streamed call). Same
+ * signature and return shape (a full Message) as createCachedMessage, so
+ * callers that only read message.content / message.usage need no changes.
+ */
+export async function createCachedMessageViaStream(
+  systemPrompt: string,
+  userContent: string,
+  options: CachedMessageOptions
+) {
+  const { stream, finalize } = await createCachedMessageStream(systemPrompt, userContent, options)
+  try {
+    return await stream.finalMessage()
+  } finally {
+    await finalize()
+  }
+}
+
 export const anthropicClient = new Proxy({} as Anthropic, {
   get(_target, property) {
     return getAnthropicClient()[property as keyof Anthropic]

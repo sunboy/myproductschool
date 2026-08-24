@@ -34,7 +34,7 @@ import { buildSteppedGridFromMetadata } from '@/lib/solutions/trace/gridTrace'
 import { buildSteppedPipelineFromMetadata } from '@/lib/solutions/trace/pipelineTrace'
 import { graftSteppedTrace } from '@/lib/solutions/trace/graft'
 import { SolutionContentSchema, type SolutionContentV1 } from '@/lib/solutions/schema'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { createCachedMessage, createCachedMessageViaStream } from '@/lib/anthropic/cached-client'
 import { logger } from '@/lib/log'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -59,7 +59,10 @@ function defaultDeps(admin?: SupabaseClient): SolutionGenDeps {
   return {
     admin: admin ?? (createAdminClient() as unknown as SupabaseClient),
     buildSourceContext: buildSolutionSourceContext,
-    createMessage: createCachedMessage,
+    // Streaming keeps the connection alive past the single-request
+    // ANTHROPIC_TIMEOUT_MS wall — solution generation is long-running (60-120s+)
+    // and was hitting Anthropic.APIConnectionTimeoutError on the plain call.
+    createMessage: createCachedMessageViaStream,
     graft: graftSteppedTrace,
   }
 }

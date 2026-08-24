@@ -916,6 +916,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [activeSolutionStep, setActiveSolutionStep] = useState<{ index: number; title: string; decision?: string } | null>(null)
   const solutionGenerateTriggeredRef = useRef(false)
   const solutionStateRef = useRef<SolutionTabResponse | null>(null)
+  const solutionGeneratingSinceRef = useRef<number | null>(null)
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set())
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   // True once the Supabase session can no longer be refreshed (refresh token
@@ -3520,6 +3521,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   const triggerSolutionGeneration = useCallback(async () => {
     if (!challengeId) return
+    solutionGeneratingSinceRef.current = null
     setSolution({ locked: false, status: 'generating' })
     try {
       const res = await fetch(`/api/challenges/${challengeId}/solution/generate`, { method: 'POST' })
@@ -3550,9 +3552,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       return
     }
     if (solution.status === 'generating') {
-      const interval = window.setInterval(() => { void fetchSolution() }, 4000)
+      // solution (and therefore this effect) changes on every successful poll,
+      // so a counter local to the effect body would reset to 0 each run. Track
+      // wall-clock start in a ref that only gets set once per generation run.
+      if (solutionGeneratingSinceRef.current == null) {
+        solutionGeneratingSinceRef.current = Date.now()
+      }
+      // Cutoff matches the server's own stale-lock window (solution/route.ts:
+      // a generation_started_at older than 3 minutes flips the GET response to
+      // 'none'), so polling stops right as the server would give up on this
+      // attempt anyway rather than continuing to hammer the endpoint forever.
+      const POLL_INTERVAL_MS = 4000
+      const MAX_ELAPSED_MS = 3 * 60 * 1000
+      const interval = window.setInterval(() => {
+        const startedAt = solutionGeneratingSinceRef.current ?? Date.now()
+        if (Date.now() - startedAt >= MAX_ELAPSED_MS) {
+          window.clearInterval(interval)
+          return
+        }
+        void fetchSolution()
+      }, POLL_INTERVAL_MS)
       return () => window.clearInterval(interval)
     }
+    solutionGeneratingSinceRef.current = null
   }, [leftTab, solution, triggerSolutionGeneration, fetchSolution])
 
   useEffect(() => { solutionStateRef.current = solution }, [solution])

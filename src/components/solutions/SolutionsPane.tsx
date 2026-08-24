@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { HatchImage } from '@/components/redesign/HatchImage'
+import { AnimatedProgress } from '@/components/motion'
 import { SolutionContent } from './SolutionContent'
 import type { SolutionTabResponse } from '@/lib/solutions/schema'
 
@@ -29,15 +30,84 @@ function CenteredState({ icon, children }: { icon: React.ReactNode; children: Re
   )
 }
 
-function Skeletons() {
-  return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-        <HatchImage size={32} state="reviewing" />
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: 13.5, color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.5 }}>
-          Hatch is writing the solution for this challenge. About a minute.
+// Staged copy so the wait reads as real progress rather than one static
+// sentence. Timings are illustrative, not driven by actual generation phase
+// signals (the API doesn't expose sub-stages) — they just keep the copy
+// moving across the ~20-60s a generation typically takes.
+type WritingStage = 'queued' | 'writing' | 'formatting'
+const WRITING_STAGES: Record<WritingStage, { title: string; progress: number }> = {
+  queued: { title: 'Hatch is reading the challenge', progress: 12 },
+  writing: { title: 'Hatch is writing the solution', progress: 55 },
+  formatting: { title: 'Formatting approaches and diagrams', progress: 85 },
+}
+
+// Mirrors the server's stale-lock window (route.ts: generation_started_at
+// older than 3 minutes is treated as dead) so the client never sits on a
+// skeleton past the point the server itself would give up on that attempt.
+const SLOW_AFTER_MS = 3 * 60 * 1000
+
+function Skeletons({ onRetry }: { onRetry: () => void }) {
+  const [elapsedMs, setElapsedMs] = useState(0)
+  const startRef = useRef<number>(Date.now())
+
+  useEffect(() => {
+    startRef.current = Date.now()
+    setElapsedMs(0)
+    const interval = window.setInterval(() => {
+      setElapsedMs(Date.now() - startRef.current)
+    }, 1000)
+    return () => window.clearInterval(interval)
+  }, [])
+
+  const isSlow = elapsedMs >= SLOW_AFTER_MS
+  const stage: WritingStage = elapsedMs < 8000 ? 'queued' : elapsedMs < 30000 ? 'writing' : 'formatting'
+  const elapsedLabel = `${Math.floor(elapsedMs / 1000)}s`
+
+  if (isSlow) {
+    return (
+      <CenteredState icon={<HatchImage size={40} state="reviewing" />}>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center', margin: 0, maxWidth: 300 }}>
+          This is taking longer than usual.
         </p>
+        <button
+          onClick={onRetry}
+          style={{
+            background: 'var(--color-primary)',
+            color: 'var(--color-on-primary)',
+            border: 'none',
+            borderRadius: 999,
+            padding: '8px 20px',
+            fontFamily: 'var(--font-label)',
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          Try again
+        </button>
+      </CenteredState>
+    )
+  }
+
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <HatchImage size={32} state="writing" className="animate-hatch-glow" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13.5, fontWeight: 600, color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.4 }}>
+            {WRITING_STAGES[stage].title}
+          </p>
+          <p style={{ fontFamily: 'var(--font-label)', fontSize: 11.5, color: 'var(--color-on-surface-variant)', margin: '2px 0 0' }}>
+            {elapsedLabel} elapsed
+          </p>
+        </div>
       </div>
+      <AnimatedProgress
+        value={WRITING_STAGES[stage].progress}
+        state="active"
+        trackClassName="bg-[var(--color-outline-variant)]"
+        barClassName="bg-[var(--color-primary)]"
+      />
       {[64, 180, 120, 220].map((height, i) => (
         <div
           key={i}
@@ -65,8 +135,17 @@ export function SolutionsPane({
   onSteppedStepChange,
 }: Props) {
   const [maximized, setMaximized] = useState(false)
+  // Remounts Skeletons on retry so its elapsed-timer effect restarts from 0 —
+  // otherwise clicking "Try again" from the 3-minute "taking longer than
+  // usual" state re-renders that exact same state immediately (elapsedMs was
+  // still >180s from the prior attempt).
+  const [retryKey, setRetryKey] = useState(0)
+  const handleRetry = () => {
+    setRetryKey((k) => k + 1)
+    onRetry()
+  }
 
-  if (loading && !solution) return <Skeletons />
+  if (loading && !solution) return <Skeletons key={retryKey} onRetry={handleRetry} />
 
   if (!solution) {
     return (
@@ -160,7 +239,7 @@ export function SolutionsPane({
   if (solution.status !== 'ready') {
     // 'generating' and 'none' both render the writing state; 'none' flips to a
     // generation request immediately via the workspace effect.
-    return <Skeletons />
+    return <Skeletons key={retryKey} onRetry={handleRetry} />
   }
 
   const { content } = solution

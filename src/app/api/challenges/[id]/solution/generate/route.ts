@@ -7,13 +7,19 @@ import { generateAndStoreSolution } from '@/lib/solutions/ensure-solution'
 import { type SolutionContentV1, type SolutionTabResponse } from '@/lib/solutions/schema'
 import { MOCK_SOLUTION_CONTENT } from '@/lib/solutions/mock'
 import { IS_MOCK } from '@/lib/mock'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { createCachedMessageViaStream } from '@/lib/anthropic/cached-client'
 import { buildSolutionSourceContext } from '@/lib/solutions/source-context'
 import { graftSteppedTrace } from '@/lib/solutions/trace/graft'
 import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
 import { withRoute } from '@/lib/api/withRoute'
 import { logger } from '@/lib/log'
+
+// Generation (auth + DB reads + the streamed Anthropic call + graft + store)
+// runs 10-90s+ end to end, well past Vercel's unset default. Fluid Compute
+// bills Active CPU time, not wall-clock, so raising this ceiling doesn't add
+// cost — it only prevents the route being killed mid-generation.
+export const maxDuration = 300
 
 /**
  * POST /api/challenges/[id]/solution/generate
@@ -70,7 +76,11 @@ export const POST = withRoute(async (
     const result = await generateAndStoreSolution(identity.id, 'lazy', {
       admin: admin as never,
       buildSourceContext: buildSolutionSourceContext,
-      createMessage: createCachedMessage,
+      // Streaming keeps the connection alive past the single-request
+      // ANTHROPIC_TIMEOUT_MS wall — solution generation is long-running
+      // (10-90s+) and was hitting Anthropic.APIConnectionTimeoutError on the
+      // plain call. Must match ensure-solution.ts's own defaultDeps.
+      createMessage: createCachedMessageViaStream,
       graft: graftSteppedTrace,
     })
 
