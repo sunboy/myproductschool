@@ -6,7 +6,7 @@
   "brief_md": "## Situation\n\nSignup completion volume is noticeably lower on Tuesdays than on any other weekday, and it has been that way for four straight weeks. A checkout-form code deploy shipped on Tuesday, 2026-07-14, and it lines up with one of the dips, which makes it the easy answer.\n\n## Your job\n\nConfirm the dip is real across the full window before naming a cause. Check whether the deploy explanation actually holds on the Tuesdays that had no deploy at all. Watch for two grain problems along the way: payment_attempts joins 1:many against signups, and users.acquisition_channel goes NULL for most of one channel's true volume. Name the real mechanism, and say exactly what evidence would prove your conclusion wrong.",
   "difficulty": "intermediate",
   "est_minutes": 40,
-  "warehouse_dataset": "hackproduct:casebook_tuesday_dip",
+  "warehouse_dataset": "hackproduct:module_tuesday_dip",
   "objectives": [
     {
       "id": "obj-confirm-dip-full-window",

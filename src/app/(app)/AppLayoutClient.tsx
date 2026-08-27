@@ -3,6 +3,7 @@
 import { BottomTabs } from '@/components/shell/BottomTabs'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
 import { IntroTourController } from '@/components/shell/IntroTourController'
+import { WalkthroughFirstRunController } from '@/components/casebook/WalkthroughFirstRunController'
 import { UpgradeModalHost } from '@/components/paywalls/UpgradeModalHost'
 import { IdleTimer } from '@/components/auth/IdleTimer'
 import { FeedbackModalHost } from '@/components/feedback/FeedbackWidget'
@@ -33,6 +34,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
         <BottomTabs />
         <IntroTourController />
+        <WalkthroughFirstRunController />
         <FloatingHatch />
         <FeedbackModalHost />
         <IdleTimer />

@@ -8,8 +8,8 @@
  * of the same name, and finally runs any `CREATE VIEW` / `CREATE OR REPLACE
  * VIEW` statements from warehouse.sql.
  *
- * Dataset naming: `casebook_<case_id_with_underscores>`, e.g. case id
- * `tuesday-dip` -> dataset `casebook_tuesday_dip`, project `hackproduct`.
+ * Dataset naming: `module_<case_id_with_underscores>`, e.g. case id
+ * `tuesday-dip` -> dataset `module_tuesday_dip`, project `hackproduct`.
  * This exact string is what later goes into `cc_cases.warehouse_dataset`.
  *
  * Uses the `bq` CLI via child_process — NOT the `@google-cloud/bigquery` npm
@@ -58,7 +58,13 @@ if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(caseId)) {
   process.exit(1)
 }
 
-const datasetId = `casebook_${caseId.replace(/-/g, '_')}`
+// Prefix is `module_`, NOT `casebook_`. The dataset id renders verbatim inside
+// expert transcripts (SQL and prose), and those transcripts are projected onto
+// the PUBLIC marketing teaser — so the identifier itself must satisfy the
+// user-facing vocabulary rule (plan 4.3): never leak the internal codename.
+// `module` is also the user-facing word for a case, so the id now matches the
+// vocabulary instead of fighting it.
+const datasetId = `module_${caseId.replace(/-/g, '_')}`
 
 const caseDir = join(__dirname, '..', '..', 'content', 'casebook', caseId)
 const schemaPath = join(caseDir, 'warehouse.sql')

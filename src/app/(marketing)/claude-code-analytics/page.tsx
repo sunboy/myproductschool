@@ -3,6 +3,7 @@ import { buildMetadata } from '@/lib/seo/site'
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { V3PageShell } from '@/components/landing-v3/V3PageShell'
 import { V3PageHero, V3Section, V3CardGrid, V3Card, V3CtaBand } from '@/components/landing-v3/sections'
+import { TeaserEmbed } from '@/components/casebook/TeaserEmbed'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Live Data Analyst | Claude Code Analytics Practice | HackProduct',
@@ -103,6 +104,14 @@ export default function ClaudeCodeAnalyticsPage() {
           { label: 'See pricing', href: '/pricing', variant: 'amber' },
         ]}
       />
+
+      <V3Section
+        eyebrow="Watch a real session"
+        title="See an analyst work a real dataset."
+        subtitle="A full session, replayed. Watch the moves, see the queries, and see the questions an analyst has to answer at each checkpoint."
+      >
+        <TeaserEmbed caseId="tuesday-dip" />
+      </V3Section>
 
       <V3Section
         eyebrow="How a session runs"

@@ -1,6 +1,6 @@
 -- =============================================================================
 -- Casebook Loop — "The Tuesday Dip"
--- Dataset: casebook_tuesday_dip (BigQuery project: hackproduct)
+-- Dataset: module_tuesday_dip (BigQuery project: hackproduct)
 --
 -- STORY
 -- Signup completion volume dips on Tuesdays. The obvious explanation is the

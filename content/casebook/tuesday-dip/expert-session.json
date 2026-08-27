@@ -6,7 +6,7 @@
     {
       "t": 0,
       "role": "user",
-      "text": "List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table."
+      "text": "List the tables and views in the hackproduct.module_tuesday_dip dataset, then show me the schema of the events table."
     },
     {
       "t": 5,
@@ -41,12 +41,12 @@
     {
       "t": 27,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(ts) AS date,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 1\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(ts) AS date,\n  COUNT(*) AS signups\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 1\n"
     },
     {
       "t": 29,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNT(DISTINCT DATE(ts)) AS num_days,\n  ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNT(DISTINCT DATE(ts)) AS num_days,\n  ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2\n"
     },
     {
       "t": 35,
@@ -66,7 +66,7 @@
     {
       "t": 53,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH by_dow AS (\n  SELECT\n    FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29'\n    AND ts < '2026-07-27'\n  GROUP BY 1, 2\n),\ntuesday_avg AS (\n  SELECT avg_daily_signups AS tue_avg FROM by_dow WHERE day_of_week = 'Tuesday'\n)\nSELECT\n  b.day_of_week,\n  b.avg_daily_signups,\n  ROUND((b.avg_daily_signups - t.tue_avg) / t.tue_avg * 100, 1) AS pct_above_tuesday\nFROM by_dow b\nCROSS JOIN tuesday_avg t\nORDER BY b.dow_num\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH by_dow AS (\n  SELECT\n    FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\n  FROM `hackproduct.module_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29'\n    AND ts < '2026-07-27'\n  GROUP BY 1, 2\n),\ntuesday_avg AS (\n  SELECT avg_daily_signups AS tue_avg FROM by_dow WHERE day_of_week = 'Tuesday'\n)\nSELECT\n  b.day_of_week,\n  b.avg_daily_signups,\n  ROUND((b.avg_daily_signups - t.tue_avg) / t.tue_avg * 100, 1) AS pct_above_tuesday\nFROM by_dow b\nCROSS JOIN tuesday_avg t\nORDER BY b.dow_num\n"
     },
     {
       "t": 61,
@@ -96,12 +96,12 @@
     {
       "t": 89,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.attempt_id) AS payment_attempts,\n  ROUND(COUNT(DISTINCT p.attempt_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN `hackproduct.casebook_tuesday_dip.payment_attempts` p\n  ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29'\n  AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.attempt_id) AS payment_attempts,\n  ROUND(COUNT(DISTINCT p.attempt_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct\nFROM `hackproduct.module_tuesday_dip.events` e\nLEFT JOIN `hackproduct.module_tuesday_dip.payment_attempts` p\n  ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29'\n  AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
     },
     {
       "t": 91,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  'payment_attempts total rows' AS metric,\n  COUNT(*) AS count\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'events: distinct event_id (signup_completed)',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'payment_attempts: distinct event_id',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  'payment_attempts total rows' AS metric,\n  COUNT(*) AS count\nFROM `hackproduct.module_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'events: distinct event_id (signup_completed)',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'payment_attempts: distinct event_id',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.module_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n"
     },
     {
       "t": 97,
@@ -121,7 +121,7 @@
     {
       "t": 132,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH pa_deduped AS (\n  SELECT\n    event_id,\n    MIN(ts) AS first_attempt_ts,\n    COUNT(*) AS num_attempts,\n    COUNTIF(status = 'success') AS successes\n  FROM `hackproduct.casebook_tuesday_dip.payment_attempts`\n  WHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n  GROUP BY event_id\n)\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.event_id) AS signups_with_payment_attempt,\n  ROUND(COUNT(DISTINCT p.event_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct,\n  ROUND(AVG(p.num_attempts), 2) AS avg_attempts_per_converter\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN pa_deduped p ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH pa_deduped AS (\n  SELECT\n    event_id,\n    MIN(ts) AS first_attempt_ts,\n    COUNT(*) AS num_attempts,\n    COUNTIF(status = 'success') AS successes\n  FROM `hackproduct.module_tuesday_dip.payment_attempts`\n  WHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n  GROUP BY event_id\n)\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.event_id) AS signups_with_payment_attempt,\n  ROUND(COUNT(DISTINCT p.event_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct,\n  ROUND(AVG(p.num_attempts), 2) AS avg_attempts_per_converter\nFROM `hackproduct.module_tuesday_dip.events` e\nLEFT JOIN pa_deduped p ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
     },
     {
       "t": 140,
@@ -141,12 +141,12 @@
     {
       "t": 156,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  u.acquisition_channel,\n  COUNT(DISTINCT e.event_id) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events` e\nJOIN `hackproduct.casebook_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  u.acquisition_channel,\n  COUNT(DISTINCT e.event_id) AS signups\nFROM `hackproduct.module_tuesday_dip.events` e\nJOIN `hackproduct.module_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC\n"
     },
     {
       "t": 157,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  u.acquisition_channel,\n  e.channel AS event_channel,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events` e\nJOIN `hackproduct.casebook_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1 NULLS LAST, 3 DESC\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  u.acquisition_channel,\n  e.channel AS event_channel,\n  COUNT(*) AS signups\nFROM `hackproduct.module_tuesday_dip.events` e\nJOIN `hackproduct.module_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1 NULLS LAST, 3 DESC\n"
     },
     {
       "t": 161,
@@ -171,12 +171,12 @@
     {
       "t": 190,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  channel,\n  COUNT(*) AS signups,\n  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS pct_of_total\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  channel,\n  COUNT(*) AS signups,\n  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS pct_of_total\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC\n"
     },
     {
       "t": 190,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT *\nFROM `hackproduct.casebook_tuesday_dip.deploys`\nWHERE deployed_at >= '2026-06-29' AND deployed_at < '2026-07-27'\nORDER BY deployed_at\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT *\nFROM `hackproduct.module_tuesday_dip.deploys`\nWHERE deployed_at >= '2026-06-29' AND deployed_at < '2026-07-27'\nORDER BY deployed_at\n"
     },
     {
       "t": 197,
@@ -211,12 +211,12 @@
     {
       "t": 223,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT *\nFROM `hackproduct.casebook_tuesday_dip.deploys`\nWHERE deploy_date >= '2026-06-29' AND deploy_date <= '2026-07-26'\nORDER BY deploy_date\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT *\nFROM `hackproduct.module_tuesday_dip.deploys`\nWHERE deploy_date >= '2026-06-29' AND deploy_date <= '2026-07-26'\nORDER BY deploy_date\n"
     },
     {
       "t": 227,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH tuesdays AS (\n  SELECT date, signups FROM UNNEST([\n    STRUCT(DATE '2026-06-30' AS date, 102 AS signups),\n    STRUCT(DATE '2026-07-07' AS date, 102 AS signups),\n    STRUCT(DATE '2026-07-14' AS date, 106 AS signups),\n    STRUCT(DATE '2026-07-21' AS date, 110 AS signups)\n  ])\n),\ndeploy_summary AS (\n  SELECT\n    deploy_date,\n    STRING_AGG(deploy_type, ', ' ORDER BY deploy_type) AS deploy_types,\n    STRING_AGG(service, ', ' ORDER BY service) AS services\n  FROM `hackproduct.casebook_tuesday_dip.deploys`\n  WHERE deploy_date >= '2026-06-29' AND deploy_date <= '2026-07-26'\n  GROUP BY deploy_date\n)\nSELECT\n  t.date AS tuesday,\n  t.signups,\n  COALESCE(d.deploy_types, 'none') AS deploy_types,\n  COALESCE(d.services, '—') AS services\nFROM tuesdays t\nLEFT JOIN deploy_summary d ON d.deploy_date = t.date\nORDER BY t.date\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH tuesdays AS (\n  SELECT date, signups FROM UNNEST([\n    STRUCT(DATE '2026-06-30' AS date, 102 AS signups),\n    STRUCT(DATE '2026-07-07' AS date, 102 AS signups),\n    STRUCT(DATE '2026-07-14' AS date, 106 AS signups),\n    STRUCT(DATE '2026-07-21' AS date, 110 AS signups)\n  ])\n),\ndeploy_summary AS (\n  SELECT\n    deploy_date,\n    STRING_AGG(deploy_type, ', ' ORDER BY deploy_type) AS deploy_types,\n    STRING_AGG(service, ', ' ORDER BY service) AS services\n  FROM `hackproduct.module_tuesday_dip.deploys`\n  WHERE deploy_date >= '2026-06-29' AND deploy_date <= '2026-07-26'\n  GROUP BY deploy_date\n)\nSELECT\n  t.date AS tuesday,\n  t.signups,\n  COALESCE(d.deploy_types, 'none') AS deploy_types,\n  COALESCE(d.services, '—') AS services\nFROM tuesdays t\nLEFT JOIN deploy_summary d ON d.deploy_date = t.date\nORDER BY t.date\n"
     },
     {
       "t": 230,
@@ -236,7 +236,7 @@
     {
       "t": 258,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\n-- Push + email signups by hour of day: Tuesdays vs rest of week\nSELECT\n  EXTRACT(HOUR FROM ts) AS hour_utc,\n  COUNTIF(FORMAT_DATE('%A', DATE(ts)) = 'Tuesday' AND channel IN ('push','email')) AS tue_push_email,\n  COUNTIF(FORMAT_DATE('%A', DATE(ts)) != 'Tuesday' AND channel IN ('push','email')) AS other_days_push_email,\n  ROUND(\n    COUNTIF(FORMAT_DATE('%A', DATE(ts)) != 'Tuesday' AND channel IN ('push','email'))\n    / 3.0, 1\n  ) AS other_days_avg_per_day  -- 24 non-Tue weekdays / 3 other weekdays per week normalised to same count\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n  AND channel IN ('push', 'email')\nGROUP BY 1\nORDER BY 1\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\n-- Push + email signups by hour of day: Tuesdays vs rest of week\nSELECT\n  EXTRACT(HOUR FROM ts) AS hour_utc,\n  COUNTIF(FORMAT_DATE('%A', DATE(ts)) = 'Tuesday' AND channel IN ('push','email')) AS tue_push_email,\n  COUNTIF(FORMAT_DATE('%A', DATE(ts)) != 'Tuesday' AND channel IN ('push','email')) AS other_days_push_email,\n  ROUND(\n    COUNTIF(FORMAT_DATE('%A', DATE(ts)) != 'Tuesday' AND channel IN ('push','email'))\n    / 3.0, 1\n  ) AS other_days_avg_per_day  -- 24 non-Tue weekdays / 3 other weekdays per week normalised to same count\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n  AND channel IN ('push', 'email')\nGROUP BY 1\nORDER BY 1\n"
     },
     {
       "t": 258,
@@ -246,7 +246,7 @@
     {
       "t": 261,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\n-- Total and push+email signups by day of week to see if push/email disproportionately drives the Tuesday dip\nSELECT\n  FORMAT_DATE('%A', DATE(ts)) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNTIF(channel IN ('push','email')) AS push_email_signups,\n  COUNTIF(channel NOT IN ('push','email')) AS other_signups,\n  ROUND(COUNTIF(channel IN ('push','email')) * 100.0 / COUNT(*), 1) AS push_email_pct\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\n-- Total and push+email signups by day of week to see if push/email disproportionately drives the Tuesday dip\nSELECT\n  FORMAT_DATE('%A', DATE(ts)) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNTIF(channel IN ('push','email')) AS push_email_signups,\n  COUNTIF(channel NOT IN ('push','email')) AS other_signups,\n  ROUND(COUNTIF(channel IN ('push','email')) * 100.0 / COUNT(*), 1) AS push_email_pct\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2\n"
     },
     {
       "t": 261,
@@ -261,12 +261,12 @@
     {
       "t": 271,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH base AS (\n  SELECT\n    ts,\n    channel,\n    EXTRACT(HOUR FROM ts) AS hour_utc,\n    FORMAT_DATE('%A', DATE(ts)) AS dow\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29' AND ts < '2026-07-27'\n    AND channel IN ('push', 'email')\n)\nSELECT\n  hour_utc,\n  SUM(CASE WHEN dow = 'Tuesday' THEN 1 ELSE 0 END) AS tue_push_email,\n  SUM(CASE WHEN dow != 'Tuesday' THEN 1 ELSE 0 END) AS other_days_total,\n  ROUND(SUM(CASE WHEN dow != 'Tuesday' THEN 1 ELSE 0 END) / 24.0, 2) AS other_avg_per_day\nFROM base\nGROUP BY 1\nORDER BY 1\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH base AS (\n  SELECT\n    ts,\n    channel,\n    EXTRACT(HOUR FROM ts) AS hour_utc,\n    FORMAT_DATE('%A', DATE(ts)) AS dow\n  FROM `hackproduct.module_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29' AND ts < '2026-07-27'\n    AND channel IN ('push', 'email')\n)\nSELECT\n  hour_utc,\n  SUM(CASE WHEN dow = 'Tuesday' THEN 1 ELSE 0 END) AS tue_push_email,\n  SUM(CASE WHEN dow != 'Tuesday' THEN 1 ELSE 0 END) AS other_days_total,\n  ROUND(SUM(CASE WHEN dow != 'Tuesday' THEN 1 ELSE 0 END) / 24.0, 2) AS other_avg_per_day\nFROM base\nGROUP BY 1\nORDER BY 1\n"
     },
     {
       "t": 273,
       "role": "tool",
-      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH base AS (\n  SELECT\n    ts,\n    channel,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    FORMAT_DATE('%A', DATE(ts)) AS dow\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29' AND ts < '2026-07-27'\n)\nSELECT\n  dow,\n  dow_num,\n  COUNT(*) AS total_signups,\n  SUM(CASE WHEN channel IN ('push','email') THEN 1 ELSE 0 END) AS push_email_signups,\n  SUM(CASE WHEN channel NOT IN ('push','email') THEN 1 ELSE 0 END) AS other_signups,\n  ROUND(SUM(CASE WHEN channel IN ('push','email') THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS push_email_pct\nFROM base\nGROUP BY 1, 2\nORDER BY 2\n"
+      "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH base AS (\n  SELECT\n    ts,\n    channel,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    FORMAT_DATE('%A', DATE(ts)) AS dow\n  FROM `hackproduct.module_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29' AND ts < '2026-07-27'\n)\nSELECT\n  dow,\n  dow_num,\n  COUNT(*) AS total_signups,\n  SUM(CASE WHEN channel IN ('push','email') THEN 1 ELSE 0 END) AS push_email_signups,\n  SUM(CASE WHEN channel NOT IN ('push','email') THEN 1 ELSE 0 END) AS other_signups,\n  ROUND(SUM(CASE WHEN channel IN ('push','email') THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS push_email_pct\nFROM base\nGROUP BY 1, 2\nORDER BY 2\n"
     },
     {
       "t": 277,
@@ -594,7 +594,7 @@
   "queries": [
     {
       "t": 27,
-      "sql": "SELECT\n  DATE(ts) AS date,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 1;",
+      "sql": "SELECT\n  DATE(ts) AS date,\n  COUNT(*) AS signups\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 1;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -713,7 +713,7 @@
     },
     {
       "t": 29,
-      "sql": "SELECT\n  FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNT(DISTINCT DATE(ts)) AS num_days,\n  ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2;",
+      "sql": "SELECT\n  FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNT(DISTINCT DATE(ts)) AS num_days,\n  ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -769,7 +769,7 @@
     },
     {
       "t": 53,
-      "sql": "WITH by_dow AS (\n  SELECT\n    FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29'\n    AND ts < '2026-07-27'\n  GROUP BY 1, 2\n),\ntuesday_avg AS (\n  SELECT avg_daily_signups AS tue_avg FROM by_dow WHERE day_of_week = 'Tuesday'\n)\nSELECT\n  b.day_of_week,\n  b.avg_daily_signups,\n  ROUND((b.avg_daily_signups - t.tue_avg) / t.tue_avg * 100, 1) AS pct_above_tuesday\nFROM by_dow b\nCROSS JOIN tuesday_avg t\nORDER BY b.dow_num;",
+      "sql": "WITH by_dow AS (\n  SELECT\n    FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\n  FROM `hackproduct.module_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29'\n    AND ts < '2026-07-27'\n  GROUP BY 1, 2\n),\ntuesday_avg AS (\n  SELECT avg_daily_signups AS tue_avg FROM by_dow WHERE day_of_week = 'Tuesday'\n)\nSELECT\n  b.day_of_week,\n  b.avg_daily_signups,\n  ROUND((b.avg_daily_signups - t.tue_avg) / t.tue_avg * 100, 1) AS pct_above_tuesday\nFROM by_dow b\nCROSS JOIN tuesday_avg t\nORDER BY b.dow_num;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -811,7 +811,7 @@
     },
     {
       "t": 89,
-      "sql": "SELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.attempt_id) AS payment_attempts,\n  ROUND(COUNT(DISTINCT p.attempt_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN `hackproduct.casebook_tuesday_dip.payment_attempts` p\n  ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29'\n  AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1;",
+      "sql": "SELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.attempt_id) AS payment_attempts,\n  ROUND(COUNT(DISTINCT p.attempt_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct\nFROM `hackproduct.module_tuesday_dip.events` e\nLEFT JOIN `hackproduct.module_tuesday_dip.payment_attempts` p\n  ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29'\n  AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -1014,7 +1014,7 @@
     },
     {
       "t": 91,
-      "sql": "SELECT\n  'payment_attempts total rows' AS metric,\n  COUNT(*) AS count\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'events: distinct event_id (signup_completed)',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'payment_attempts: distinct event_id',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27';",
+      "sql": "SELECT\n  'payment_attempts total rows' AS metric,\n  COUNT(*) AS count\nFROM `hackproduct.module_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'events: distinct event_id (signup_completed)',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'payment_attempts: distinct event_id',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.module_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27';",
       "nondeterministic_order": true,
       "expected_rows": [
         {
@@ -1033,7 +1033,7 @@
     },
     {
       "t": 132,
-      "sql": "WITH pa_deduped AS (\n  SELECT\n    event_id,\n    MIN(ts) AS first_attempt_ts,\n    COUNT(*) AS num_attempts,\n    COUNTIF(status = 'success') AS successes\n  FROM `hackproduct.casebook_tuesday_dip.payment_attempts`\n  WHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n  GROUP BY event_id\n)\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.event_id) AS signups_with_payment_attempt,\n  ROUND(COUNT(DISTINCT p.event_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct,\n  ROUND(AVG(p.num_attempts), 2) AS avg_attempts_per_converter\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN pa_deduped p ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1;",
+      "sql": "WITH pa_deduped AS (\n  SELECT\n    event_id,\n    MIN(ts) AS first_attempt_ts,\n    COUNT(*) AS num_attempts,\n    COUNTIF(status = 'success') AS successes\n  FROM `hackproduct.module_tuesday_dip.payment_attempts`\n  WHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n  GROUP BY event_id\n)\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.event_id) AS signups_with_payment_attempt,\n  ROUND(COUNT(DISTINCT p.event_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct,\n  ROUND(AVG(p.num_attempts), 2) AS avg_attempts_per_converter\nFROM `hackproduct.module_tuesday_dip.events` e\nLEFT JOIN pa_deduped p ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -1264,7 +1264,7 @@
     },
     {
       "t": 156,
-      "sql": "SELECT\n  u.acquisition_channel,\n  COUNT(DISTINCT e.event_id) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events` e\nJOIN `hackproduct.casebook_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC;",
+      "sql": "SELECT\n  u.acquisition_channel,\n  COUNT(DISTINCT e.event_id) AS signups\nFROM `hackproduct.module_tuesday_dip.events` e\nJOIN `hackproduct.module_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -1295,7 +1295,7 @@
     },
     {
       "t": 157,
-      "sql": "SELECT\n  u.acquisition_channel,\n  e.channel AS event_channel,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events` e\nJOIN `hackproduct.casebook_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1 NULLS LAST, 3 DESC;",
+      "sql": "SELECT\n  u.acquisition_channel,\n  e.channel AS event_channel,\n  COUNT(*) AS signups\nFROM `hackproduct.module_tuesday_dip.events` e\nJOIN `hackproduct.module_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1 NULLS LAST, 3 DESC;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -1352,7 +1352,7 @@
     },
     {
       "t": 190,
-      "sql": "SELECT\n  channel,\n  COUNT(*) AS signups,\n  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS pct_of_total\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC;",
+      "sql": "SELECT\n  channel,\n  COUNT(*) AS signups,\n  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS pct_of_total\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -1384,13 +1384,13 @@
     },
     {
       "t": 190,
-      "sql": "SELECT *\nFROM `hackproduct.casebook_tuesday_dip.deploys`\nWHERE deployed_at >= '2026-06-29' AND deployed_at < '2026-07-27'\nORDER BY deployed_at;",
+      "sql": "SELECT *\nFROM `hackproduct.module_tuesday_dip.deploys`\nWHERE deployed_at >= '2026-06-29' AND deployed_at < '2026-07-27'\nORDER BY deployed_at;",
       "nondeterministic_order": false,
       "failed_in_session": true
     },
     {
       "t": 223,
-      "sql": "SELECT *\nFROM `hackproduct.casebook_tuesday_dip.deploys`\nWHERE deploy_date >= '2026-06-29' AND deploy_date <= '2026-07-26'\nORDER BY deploy_date;",
+      "sql": "SELECT *\nFROM `hackproduct.module_tuesday_dip.deploys`\nWHERE deploy_date >= '2026-06-29' AND deploy_date <= '2026-07-26'\nORDER BY deploy_date;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -1432,7 +1432,7 @@
     },
     {
       "t": 227,
-      "sql": "WITH tuesdays AS (\n  SELECT date, signups FROM UNNEST([\n    STRUCT(DATE '2026-06-30' AS date, 102 AS signups),\n    STRUCT(DATE '2026-07-07' AS date, 102 AS signups),\n    STRUCT(DATE '2026-07-14' AS date, 106 AS signups),\n    STRUCT(DATE '2026-07-21' AS date, 110 AS signups)\n  ])\n),\ndeploy_summary AS (\n  SELECT\n    deploy_date,\n    STRING_AGG(deploy_type, ', ' ORDER BY deploy_type) AS deploy_types,\n    STRING_AGG(service, ', ' ORDER BY service) AS services\n  FROM `hackproduct.casebook_tuesday_dip.deploys`\n  WHERE deploy_date >= '2026-06-29' AND deploy_date <= '2026-07-26'\n  GROUP BY deploy_date\n)\nSELECT\n  t.date AS tuesday,\n  t.signups,\n  COALESCE(d.deploy_types, 'none') AS deploy_types,\n  COALESCE(d.services, '—') AS services\nFROM tuesdays t\nLEFT JOIN deploy_summary d ON d.deploy_date = t.date\nORDER BY t.date;",
+      "sql": "WITH tuesdays AS (\n  SELECT date, signups FROM UNNEST([\n    STRUCT(DATE '2026-06-30' AS date, 102 AS signups),\n    STRUCT(DATE '2026-07-07' AS date, 102 AS signups),\n    STRUCT(DATE '2026-07-14' AS date, 106 AS signups),\n    STRUCT(DATE '2026-07-21' AS date, 110 AS signups)\n  ])\n),\ndeploy_summary AS (\n  SELECT\n    deploy_date,\n    STRING_AGG(deploy_type, ', ' ORDER BY deploy_type) AS deploy_types,\n    STRING_AGG(service, ', ' ORDER BY service) AS services\n  FROM `hackproduct.module_tuesday_dip.deploys`\n  WHERE deploy_date >= '2026-06-29' AND deploy_date <= '2026-07-26'\n  GROUP BY deploy_date\n)\nSELECT\n  t.date AS tuesday,\n  t.signups,\n  COALESCE(d.deploy_types, 'none') AS deploy_types,\n  COALESCE(d.services, '—') AS services\nFROM tuesdays t\nLEFT JOIN deploy_summary d ON d.deploy_date = t.date\nORDER BY t.date;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -1463,7 +1463,7 @@
     },
     {
       "t": 258,
-      "sql": "-- Push + email signups by hour of day: Tuesdays vs rest of week\nSELECT\n  EXTRACT(HOUR FROM ts) AS hour_utc,\n  COUNTIF(FORMAT_DATE('%A', DATE(ts)) = 'Tuesday' AND channel IN ('push','email')) AS tue_push_email,\n  COUNTIF(FORMAT_DATE('%A', DATE(ts)) != 'Tuesday' AND channel IN ('push','email')) AS other_days_push_email,\n  ROUND(\n    COUNTIF(FORMAT_DATE('%A', DATE(ts)) != 'Tuesday' AND channel IN ('push','email'))\n    / 3.0, 1\n  ) AS other_days_avg_per_day  -- 24 non-Tue weekdays / 3 other weekdays per week normalised to same count\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n  AND channel IN ('push', 'email')\nGROUP BY 1\nORDER BY 1;",
+      "sql": "-- Push + email signups by hour of day: Tuesdays vs rest of week\nSELECT\n  EXTRACT(HOUR FROM ts) AS hour_utc,\n  COUNTIF(FORMAT_DATE('%A', DATE(ts)) = 'Tuesday' AND channel IN ('push','email')) AS tue_push_email,\n  COUNTIF(FORMAT_DATE('%A', DATE(ts)) != 'Tuesday' AND channel IN ('push','email')) AS other_days_push_email,\n  ROUND(\n    COUNTIF(FORMAT_DATE('%A', DATE(ts)) != 'Tuesday' AND channel IN ('push','email'))\n    / 3.0, 1\n  ) AS other_days_avg_per_day  -- 24 non-Tue weekdays / 3 other weekdays per week normalised to same count\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n  AND channel IN ('push', 'email')\nGROUP BY 1\nORDER BY 1;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -1614,7 +1614,7 @@
     },
     {
       "t": 261,
-      "sql": "-- Total and push+email signups by day of week to see if push/email disproportionately drives the Tuesday dip\nSELECT\n  FORMAT_DATE('%A', DATE(ts)) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNTIF(channel IN ('push','email')) AS push_email_signups,\n  COUNTIF(channel NOT IN ('push','email')) AS other_signups,\n  ROUND(COUNTIF(channel IN ('push','email')) * 100.0 / COUNT(*), 1) AS push_email_pct\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2;",
+      "sql": "-- Total and push+email signups by day of week to see if push/email disproportionately drives the Tuesday dip\nSELECT\n  FORMAT_DATE('%A', DATE(ts)) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNTIF(channel IN ('push','email')) AS push_email_signups,\n  COUNTIF(channel NOT IN ('push','email')) AS other_signups,\n  ROUND(COUNTIF(channel IN ('push','email')) * 100.0 / COUNT(*), 1) AS push_email_pct\nFROM `hackproduct.module_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -1677,7 +1677,7 @@
     },
     {
       "t": 271,
-      "sql": "WITH base AS (\n  SELECT\n    ts,\n    channel,\n    EXTRACT(HOUR FROM ts) AS hour_utc,\n    FORMAT_DATE('%A', DATE(ts)) AS dow\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29' AND ts < '2026-07-27'\n    AND channel IN ('push', 'email')\n)\nSELECT\n  hour_utc,\n  SUM(CASE WHEN dow = 'Tuesday' THEN 1 ELSE 0 END) AS tue_push_email,\n  SUM(CASE WHEN dow != 'Tuesday' THEN 1 ELSE 0 END) AS other_days_total,\n  ROUND(SUM(CASE WHEN dow != 'Tuesday' THEN 1 ELSE 0 END) / 24.0, 2) AS other_avg_per_day\nFROM base\nGROUP BY 1\nORDER BY 1;",
+      "sql": "WITH base AS (\n  SELECT\n    ts,\n    channel,\n    EXTRACT(HOUR FROM ts) AS hour_utc,\n    FORMAT_DATE('%A', DATE(ts)) AS dow\n  FROM `hackproduct.module_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29' AND ts < '2026-07-27'\n    AND channel IN ('push', 'email')\n)\nSELECT\n  hour_utc,\n  SUM(CASE WHEN dow = 'Tuesday' THEN 1 ELSE 0 END) AS tue_push_email,\n  SUM(CASE WHEN dow != 'Tuesday' THEN 1 ELSE 0 END) AS other_days_total,\n  ROUND(SUM(CASE WHEN dow != 'Tuesday' THEN 1 ELSE 0 END) / 24.0, 2) AS other_avg_per_day\nFROM base\nGROUP BY 1\nORDER BY 1;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
@@ -1828,7 +1828,7 @@
     },
     {
       "t": 273,
-      "sql": "WITH base AS (\n  SELECT\n    ts,\n    channel,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    FORMAT_DATE('%A', DATE(ts)) AS dow\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29' AND ts < '2026-07-27'\n)\nSELECT\n  dow,\n  dow_num,\n  COUNT(*) AS total_signups,\n  SUM(CASE WHEN channel IN ('push','email') THEN 1 ELSE 0 END) AS push_email_signups,\n  SUM(CASE WHEN channel NOT IN ('push','email') THEN 1 ELSE 0 END) AS other_signups,\n  ROUND(SUM(CASE WHEN channel IN ('push','email') THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS push_email_pct\nFROM base\nGROUP BY 1, 2\nORDER BY 2;",
+      "sql": "WITH base AS (\n  SELECT\n    ts,\n    channel,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    FORMAT_DATE('%A', DATE(ts)) AS dow\n  FROM `hackproduct.module_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29' AND ts < '2026-07-27'\n)\nSELECT\n  dow,\n  dow_num,\n  COUNT(*) AS total_signups,\n  SUM(CASE WHEN channel IN ('push','email') THEN 1 ELSE 0 END) AS push_email_signups,\n  SUM(CASE WHEN channel NOT IN ('push','email') THEN 1 ELSE 0 END) AS other_signups,\n  ROUND(SUM(CASE WHEN channel IN ('push','email') THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS push_email_pct\nFROM base\nGROUP BY 1, 2\nORDER BY 2;",
       "nondeterministic_order": false,
       "expected_rows": [
         {
