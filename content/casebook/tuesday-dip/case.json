@@ -1,0 +1,48 @@
+{
+  "id": "tuesday-dip",
+  "track_id": null,
+  "title": "The Tuesday dip",
+  "hook": "Signup volume drops about 25 percent every single Tuesday and the obvious suspect turns out to be a coincidence.",
+  "brief_md": "## Situation\n\nSignup completion volume is noticeably lower on Tuesdays than on any other weekday, and it has been that way for four straight weeks. A checkout-form code deploy shipped on Tuesday, 2026-07-14, and it lines up with one of the dips, which makes it the easy answer.\n\n## Your job\n\nConfirm the dip is real across the full window before naming a cause. Check whether the deploy explanation actually holds on the Tuesdays that had no deploy at all. Watch for two grain problems along the way: payment_attempts joins 1:many against signups, and users.acquisition_channel goes NULL for most of one channel's true volume. Name the real mechanism, and say exactly what evidence would prove your conclusion wrong.",
+  "difficulty": "intermediate",
+  "est_minutes": 40,
+  "warehouse_dataset": "hackproduct:casebook_tuesday_dip",
+  "objectives": [
+    {
+      "id": "obj-confirm-dip-full-window",
+      "label": "Confirm the Tuesday dip holds across all four weeks, not just one",
+      "detector": { "kind": "regex", "pattern": "GROUP BY\\s*(?:1(?:\\s*,\\s*2)?|DATE\\(ts\\)|day_of_week)" }
+    },
+    {
+      "id": "obj-avoid-fanout",
+      "label": "Avoid the payment_attempts fan-out by aggregating to one row per event_id before joining",
+      "detector": { "kind": "regex", "pattern": "GROUP BY\\s*event_id" }
+    },
+    {
+      "id": "obj-avoid-null-cluster",
+      "label": "Use events.channel instead of users.acquisition_channel to avoid the referral NULL undercount",
+      "detector": { "kind": "llm", "prompt": "Did the learner identify that users.acquisition_channel has a NULL cluster concentrated in the referral channel, and use events.channel as the ground-truth field instead?" }
+    },
+    {
+      "id": "obj-falsify-deploy-hypothesis",
+      "label": "Test the code-deploy hypothesis against every Tuesday in the window, not just the one with a deploy",
+      "detector": { "kind": "llm", "prompt": "Did the learner check whether the dip appears on Tuesdays with no code_deploy row, and use that to rule the deploy hypothesis in or out?" }
+    },
+    {
+      "id": "obj-name-falsifiable-check",
+      "label": "State a concrete, checkable condition that would disprove the final conclusion",
+      "detector": { "kind": "llm", "prompt": "Did the learner state a specific, checkable falsification test for their final conclusion, grounded in the data available in this warehouse, rather than a vague or untestable caveat?" }
+    }
+  ],
+  "verdict_spec": {
+    "expected_cause_tags": ["recurring_maintenance_window_suppresses_push_email"],
+    "requires_falsifiable_check": true,
+    "ruled_out_cause_tags": ["code_deploy_2026_07_14"],
+    "falsifiability_statement": "The maintenance-window explanation is falsifiable against this warehouse in two direct ways. First, push and email together drive about 35 percent of signups on every non-Tuesday day of the week (Sunday 35.1%, Monday 35.0%, Wednesday 35.1%, Thursday 35.0%, Friday 34.9%, Saturday 34.8%) but only 14.8 percent on Tuesday; if a future Tuesday without a maintenance_window row showed push+email back at roughly 35 percent of signups, or a future Tuesday with the window still scheduled kept push+email suppressed near 15 percent, the mechanism would be confirmed. If push+email share on a maintenance-window Tuesday came back at the normal ~35 percent instead, the explanation would be disproven. Second, the deploy cross-reference already falsifies the competing explanation: three of the four dipped Tuesdays (2026-06-30, 2026-07-07, 2026-07-21) carry a maintenance_window row and zero code_deploy rows, yet show the same 102-110 signup range as 2026-07-14, which had both. A cause that requires the code deploy cannot explain the dip on those three Tuesdays."
+  },
+  "unlock_lane": null,
+  "unlock_level": null,
+  "is_free": true,
+  "is_published": false,
+  "ordinal": 2
+}

@@ -1,0 +1,168 @@
+{
+  "id": "tuesday-dip-expert-v1",
+  "case_id": "tuesday-dip",
+  "duration_s": 620,
+  "transcript": [
+    {
+      "t": 0,
+      "role": "user",
+      "text": "Checkout completion fell 14 percent on Tuesday. Figure out why."
+    },
+    {
+      "t": 8,
+      "role": "assistant",
+      "text": "I will start by pulling event counts per funnel step so we can see where the drop is concentrated."
+    },
+    {
+      "t": 14,
+      "role": "tool",
+      "text": "$ bq query\nSELECT event_name, COUNT(*) AS n FROM `hackproduct.case_001_checkout_funnel.events` GROUP BY event_name ORDER BY event_name;",
+      "query": "SELECT event_name, COUNT(*) AS n FROM `hackproduct.case_001_checkout_funnel.events` GROUP BY event_name ORDER BY event_name;",
+      "expected_rows": [
+        { "event_name": "enter_address", "n": "2066" },
+        { "event_name": "enter_payment", "n": "1416" },
+        { "event_name": "order_confirmed", "n": "346" },
+        { "event_name": "start_checkout", "n": "2800" },
+        { "event_name": "submit_order", "n": "934" },
+        { "event_name": "view_cart", "n": "2800" }
+      ],
+      "nondeterministic_order": false
+    },
+    {
+      "t": 26,
+      "role": "assistant",
+      "text": "The step counts show where volume falls off. Next I want the same breakdown without an explicit order, to sanity check totals independent of ordering."
+    },
+    {
+      "t": 32,
+      "role": "tool",
+      "text": "$ bq query\nSELECT event_name, COUNT(*) AS n FROM `hackproduct.case_001_checkout_funnel.events` GROUP BY event_name;",
+      "query": "SELECT event_name, COUNT(*) AS n FROM `hackproduct.case_001_checkout_funnel.events` GROUP BY event_name;",
+      "expected_rows": [
+        { "event_name": "view_cart", "n": "2800" },
+        { "event_name": "start_checkout", "n": "2800" },
+        { "event_name": "enter_address", "n": "2066" },
+        { "event_name": "enter_payment", "n": "1416" },
+        { "event_name": "submit_order", "n": "934" },
+        { "event_name": "order_confirmed", "n": "346" }
+      ],
+      "nondeterministic_order": true
+    },
+    {
+      "t": 44,
+      "role": "assistant",
+      "text": "The drop concentrates between submit_order and order_confirmed. That points at payment processing rather than the earlier funnel steps."
+    },
+    {
+      "t": 60,
+      "role": "user",
+      "text": "Good, keep going. Check whether it is isolated to one payment provider before you name a cause."
+    },
+    {
+      "t": 68,
+      "role": "assistant",
+      "text": "Checking failure rate by provider now, and I will also confirm the historical baseline so a volume spike alone does not get mistaken for a rate regression."
+    },
+    {
+      "t": 92,
+      "role": "assistant",
+      "text": "The baseline failure rate for the affected provider sits far below Tuesday's number. This is a discrete regression, not a volume artifact. I would escalate to payments infra with this evidence rather than looking further at funnel UX."
+    },
+    {
+      "t": 100,
+      "role": "user",
+      "text": "Agreed. Write up the finding."
+    },
+    {
+      "t": 106,
+      "role": "assistant",
+      "text": "We will know this worked if the provider's failure rate returns below 8 percent within 24 hours of the infra fix landing, checked against the same query. We will know it failed if failures stay above 20 percent after the fix ships."
+    }
+  ],
+  "moves": [
+    { "id": "move-step-breakdown", "t": 14, "label": "Pull per-step funnel counts", "description": "Groups events by step to locate where the drop concentrates." },
+    { "id": "move-isolate-provider", "t": 68, "label": "Isolate by payment provider", "description": "Breaks failure counts down by provider to test whether the regression is provider-specific." },
+    { "id": "move-baseline-check", "t": 92, "label": "Check historical baseline", "description": "Rules out a volume artifact by comparing against the provider's normal failure rate." }
+  ],
+  "queries": [
+    {
+      "t": 32,
+      "sql": "SELECT device, COUNT(*) AS n FROM `hackproduct.case_001_checkout_funnel.events` GROUP BY device;",
+      "nondeterministic_order": true,
+      "expected_rows": [
+        { "device": "desktop", "n": "3753" },
+        { "device": "tablet", "n": "806" },
+        { "device": "mobile", "n": "5803" }
+      ]
+    }
+  ],
+  "decision_points": [
+    {
+      "id": "dp-1-where-to-look",
+      "t": 20,
+      "question": "Completion is down 14 percent. Where do you look first to find where the drop is concentrated?",
+      "options": [
+        {
+          "id": "dp1-opt-a",
+          "text": "Pull event counts grouped by funnel step across the full period to see where volume falls off relative to the step before it.",
+          "quality": "best",
+          "explanation": "Locating the concentration point first is the fastest way to narrow the search space before forming any cause hypothesis."
+        },
+        {
+          "id": "dp1-opt-b",
+          "text": "Pull the total daily active user count for the week to check if traffic dropped overall.",
+          "quality": "good_but_incomplete",
+          "explanation": "Useful context but does not narrow down which funnel step is failing, so it delays the real diagnosis."
+        },
+        {
+          "id": "dp1-opt-c",
+          "text": "Check the marketing calendar for any campaign changes that week.",
+          "quality": "surface",
+          "explanation": "A plausible surface-level hypothesis, but nothing in the prompt suggests a marketing cause, and it skips looking at the funnel data first."
+        },
+        {
+          "id": "dp1-opt-d",
+          "text": "Assume the checkout page had a client-side bug and open the frontend error logs.",
+          "quality": "plausible_wrong",
+          "explanation": "Jumps straight to a specific cause without first confirming where in the funnel the drop actually occurs."
+        }
+      ],
+      "expert_option_id": "dp1-opt-a",
+      "expert_move_id": "move-step-breakdown"
+    },
+    {
+      "id": "dp-2-isolate-cause",
+      "t": 64,
+      "question": "The drop concentrates between submit_order and order_confirmed. What do you check next before naming a cause?",
+      "options": [
+        {
+          "id": "dp2-opt-a",
+          "text": "Break payment attempt failures down by provider to see if the regression is isolated to one provider, then check that provider's historical baseline before concluding anything.",
+          "quality": "best",
+          "explanation": "Isolating by provider and checking the baseline rules out both a diffuse cause and a volume artifact before naming a specific root cause."
+        },
+        {
+          "id": "dp2-opt-b",
+          "text": "Break payment attempt failures down by provider and stop there once one provider looks worse than the others.",
+          "quality": "good_but_incomplete",
+          "explanation": "Isolating by provider is the right move, but skipping the baseline check risks mistaking a volume spike for a rate regression."
+        },
+        {
+          "id": "dp2-opt-c",
+          "text": "Check whether the checkout page's average load time increased that day.",
+          "quality": "surface",
+          "explanation": "Page performance is a reasonable general suspect but does not follow from the step-level evidence already gathered, which points at payment processing specifically."
+        },
+        {
+          "id": "dp2-opt-d",
+          "text": "Escalate to payments infra immediately with the step-level numbers alone.",
+          "quality": "plausible_wrong",
+          "explanation": "Escalating before isolating the cause wastes another team's time and risks sending them chasing the wrong signal."
+        }
+      ],
+      "expert_option_id": "dp2-opt-a",
+      "expert_move_id": "move-isolate-provider"
+    }
+  ],
+  "is_published": false
+}

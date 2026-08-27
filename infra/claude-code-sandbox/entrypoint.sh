@@ -265,7 +265,32 @@ if [[ -n "${ORCHESTRATOR_SNAPSHOT_URL:-}" ]]; then
     while true; do
       sleep 30
 
-      # Workspace snapshot (per-session, graded)
+      # Stage this session's Claude Code conversation transcripts
+      # (~/.claude/projects/**/*.jsonl) into the workspace tree BEFORE tarring,
+      # so Casebook Phase 4 move-diff grading has turn-level evidence to read.
+      #
+      # Why staged into /workspace rather than tarred as a second root: the
+      # workspace tarball is `tar -czf ... -C / workspace`, so every entry is
+      # rooted at `workspace/`, and the restore path
+      # (`tar -xz --strip-components=1 -C /workspace`) assumes that single root.
+      # A mixed-root tar (e.g. adding `.claude/projects` alongside `workspace/`)
+      # gets corrupted by --strip-components=1: it eats the `.claude/` component
+      # instead of `workspace/`, dumping transcript files into /workspace's
+      # visible root. Copying into workspace/.cc-transcripts/ first keeps the
+      # tar single-rooted, so restore lands them correctly at
+      # /workspace/.cc-transcripts/.
+      #
+      # The copy is a non-deleting merge (cp -r, not rsync --delete): on
+      # reconnect, the restored .cc-transcripts/ already holds pre-reconnect
+      # turns while a fresh ~/.claude/projects only has post-reconnect turns.
+      # Merging preserves the union across reconnects instead of losing the
+      # earlier turns.
+      if [[ -d "$HOME/.claude/projects" ]]; then
+        mkdir -p /workspace/.cc-transcripts
+        cp -r "$HOME/.claude/projects/." /workspace/.cc-transcripts/ 2>/dev/null || true
+      fi
+
+      # Workspace snapshot (per-session, graded; includes .cc-transcripts/ above)
       TARBALL_PATH=$(mktemp /tmp/snapshot-XXXXXX.tar.gz)
       tar -czf "$TARBALL_PATH" -C / workspace 2>/dev/null || true
       curl -fsSL -X POST \
@@ -275,7 +300,16 @@ if [[ -n "${ORCHESTRATOR_SNAPSHOT_URL:-}" ]]; then
         "${ORCHESTRATOR_SNAPSHOT_URL}" 2>/dev/null || true
       rm -f "$TARBALL_PATH"
 
-      # Per-user ~/.claude snapshot (portable: .mcp.json + skills + .claude.json)
+      # Per-user ~/.claude snapshot — portable subset only: .mcp.json (MCP
+      # registrations), .claude/skills (skills the user authored), and
+      # .claude.json (onboarding/runtime state). Deliberately excludes the
+      # bulky plugins cache and conversation transcripts (those are
+      # per-session evidence now, captured above into the workspace tarball,
+      # not per-user state — see step 2a for what this snapshot rehydrates).
+      # DO NOT skip this POST when the tarball is large as a way to bound
+      # growth: this tarball is what carries .claude/skills and .mcp.json
+      # forward, so a size-based skip would silently stop persisting the
+      # user's authored skills and MCP registrations across sessions.
       if [[ -n "${USER_STATE_SNAPSHOT_URL:-}" ]]; then
         STATE_PATH=$(mktemp /tmp/userstate-XXXXXX.tar.gz)
         # -C $HOME so paths are relative (.mcp.json, .claude/skills, ...) for a

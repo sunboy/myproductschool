@@ -1,0 +1,64 @@
+[
+  {
+    "id": "tuesday-dip-s1",
+    "case_id": "tuesday-dip",
+    "ordinal": 1,
+    "title": "Find where the funnel breaks",
+    "goal_md": "Completion is down 14 percent this week. Pull the step-level counts you need to find where in the funnel the drop concentrates before forming any hypothesis about a cause.",
+    "skill_lane": "driving-the-agent",
+    "decision_point_id": "dp-1-where-to-look",
+    "preload": {
+      "context_md": "## What you know so far\n\n- Checkout completion fell 14 percent on Tuesday.\n- No incident has been declared and support has not flagged anything unusual.",
+      "visible_tables": ["events"]
+    },
+    "time_budget_s": 300,
+    "rubric": {
+      "required_moves": [
+        {
+          "id": "move-step-breakdown",
+          "label": "Groups events by funnel step to locate the concentration point",
+          "detector": { "kind": "regex", "pattern": "GROUP BY\\s+event_name" }
+        }
+      ],
+      "bonus_moves": [],
+      "fail_conditions": [
+        "Learner names a specific root cause before running any query."
+      ]
+    },
+    "is_published": false
+  },
+  {
+    "id": "tuesday-dip-s2",
+    "case_id": "tuesday-dip",
+    "ordinal": 2,
+    "title": "Rule out a volume artifact",
+    "goal_md": "The drop concentrates between submit_order and order_confirmed. Isolate whether the regression is specific to one payment provider, and check the historical baseline before you name a cause.",
+    "skill_lane": "forming-hypotheses",
+    "decision_point_id": "dp-2-isolate-cause",
+    "preload": {
+      "context_md": "## What you know so far\n\n- Step-level counts show the drop concentrates between submit_order and order_confirmed.\n- No cause has been named yet.",
+      "visible_tables": ["events"]
+    },
+    "time_budget_s": 300,
+    "rubric": {
+      "required_moves": [
+        {
+          "id": "move-isolate-provider",
+          "label": "Breaks payment failures down by provider",
+          "detector": { "kind": "llm", "prompt": "Did the learner isolate payment failure rate by provider AND check that provider's historical baseline before naming a cause?" }
+        }
+      ],
+      "bonus_moves": [
+        {
+          "id": "move-baseline-check",
+          "label": "Explicitly checks the historical baseline before concluding",
+          "detector": { "kind": "regex", "pattern": "BETWEEN\\s+'\\d{4}-\\d{2}-\\d{2}'" }
+        }
+      ],
+      "fail_conditions": [
+        "Learner escalates to another team without checking the historical baseline first."
+      ]
+    },
+    "is_published": false
+  }
+]

@@ -1,0 +1,97 @@
+{
+  "id": "tuesday-dip-expert-v1",
+  "case_id": "tuesday-dip",
+  "duration_s": 620,
+  "transcript": [
+    {
+      "t": 0,
+      "role": "user",
+      "text": "Checkout completion fell 14 percent on Tuesday. Figure out why."
+    },
+    {
+      "t": 14,
+      "role": "tool",
+      "text": "$ bq query\nSELECT event_name, COUNT(*) AS n FROM `hackproduct.case_001_checkout_funnel.events` WHERE event_date = CURRENT_DATE() GROUP BY event_name ORDER BY event_name;",
+      "query": "SELECT event_name, COUNT(*) AS n FROM `hackproduct.case_001_checkout_funnel.events` GROUP BY event_name ORDER BY event_name;",
+      "expected_rows": [
+        { "event_name": "enter_address", "n": "9999" },
+        { "event_name": "enter_payment", "n": "1416" },
+        { "event_name": "order_confirmed", "n": "346" },
+        { "event_name": "start_checkout", "n": "2800" },
+        { "event_name": "submit_order", "n": "934" },
+        { "event_name": "view_cart", "n": "2800" }
+      ],
+      "nondeterministic_order": false
+    },
+    {
+      "t": 32,
+      "role": "tool",
+      "text": "$ bq query\nSELECT event_name, COUNT(*) AS n FROM `hackproduct.case_001_checkout_funnel.events` GROUP BY event_name;",
+      "query": "SELECT event_name, COUNT(*) AS n FROM `hackproduct.case_001_checkout_funnel.events` GROUP BY event_name;",
+      "expected_rows": [
+        { "event_name": "view_cart", "n": "2800" },
+        { "event_name": "start_checkout", "n": "2800" },
+        { "event_name": "enter_address", "n": "2066" },
+        { "event_name": "enter_payment", "n": "1416" },
+        { "event_name": "submit_order", "n": "934" },
+        { "event_name": "order_confirmed", "n": "346" }
+      ],
+      "nondeterministic_order": false
+    },
+    {
+      "t": 44,
+      "role": "assistant",
+      "text": "The drop concentrates between submit_order and order_confirmed — this points at payment processing."
+    }
+  ],
+  "queries": [
+    {
+      "t": 50,
+      "sql": "SELECT device, COUNT(*) AS n FROM `hackproduct.case_001_checkout_funnel.events` GROUP BY device;",
+      "nondeterministic_order": true,
+      "expected_rows": [
+        { "device": "desktop", "n": "999" },
+        { "device": "tablet", "n": "806" },
+        { "device": "mobile", "n": "5803" }
+      ]
+    }
+  ],
+  "needsAuthoring": 1,
+  "moves": [
+    { "id": "move-step-breakdown", "t": 14, "label": "Pull per-step funnel counts", "description": "Groups events by step to locate where the drop concentrates." }
+  ],
+  "decision_points": [
+    {
+      "id": "dp-1-where-to-look",
+      "t": 20,
+      "question": "As a data analyst, where do you look first to leverage the warehouse for a robust answer?",
+      "options": [
+        {
+          "id": "dp1-opt-a",
+          "text": "Pull event counts grouped by funnel step.",
+          "quality": "best",
+          "explanation": "Locates the concentration point first.",
+          "is_correct": true
+        },
+        {
+          "id": "dp1-opt-b",
+          "text": "Pull the total daily active user count for the week.",
+          "quality": "good_but_incomplete",
+          "explanation": "Useful but does not narrow down the step.",
+          "is_correct": false
+        },
+        {
+          "id": "dp1-opt-c",
+          "text": "Check the marketing calendar.",
+          "quality": "good_but_incomplete",
+          "explanation": "Duplicate quality tier on purpose to break the 4-tier check.",
+          "is_correct": false
+        }
+      ],
+      "expert_option_id": "dp1-opt-b",
+      "expert_move_id": "move-step-breakdown",
+      "needsAuthoring": true
+    }
+  ],
+  "is_published": false
+}

@@ -1,0 +1,31 @@
+{
+  "id": "tuesday-dip",
+  "track_id": "funnel-forensics",
+  "title": "The Tuesday checkout dip",
+  "hook": "Checkout completion fell 14 percent on a single Tuesday and nobody can say why yet.",
+  "brief_md": "## Situation\n\nA 14 percent drop in checkout completion showed up in Tuesday's funnel dashboard. Support has not flagged anything unusual and the on-call engineer says no incident was declared.\n\n## Your job\n\nFind the root cause using the warehouse. Confirm it with data before you name it, and be ready to say what evidence would prove your explanation wrong.",
+  "difficulty": "intermediate",
+  "est_minutes": 45,
+  "warehouse_dataset": "hackproduct:case_001_checkout_funnel",
+  "objectives": [
+    {
+      "id": "obj-isolate-step",
+      "label": "Isolate which funnel step the drop is concentrated in",
+      "detector": { "kind": "regex", "pattern": "GROUP BY\\s+event_name" }
+    },
+    {
+      "id": "obj-rule-out-volume",
+      "label": "Rule out a volume artifact before naming a cause",
+      "detector": { "kind": "llm", "prompt": "Did the learner check whether raw attempt volume itself changed, before concluding the failure RATE changed?" }
+    }
+  ],
+  "verdict_spec": {
+    "expected_cause_tags": ["payment_provider_regression"],
+    "requires_falsifiable_check": true
+  },
+  "unlock_lane": null,
+  "unlock_level": null,
+  "is_free": true,
+  "is_published": false,
+  "ordinal": 1
+}

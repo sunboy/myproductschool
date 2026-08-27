@@ -1,0 +1,1082 @@
+[
+  {
+    "id": "tuesday-dip-s1",
+    "case_id": "tuesday-dip",
+    "ordinal": 1,
+    "title": "Where to start",
+    "goal_md": "The dataset has events, users, payment_attempts, and deploys, plus three prebuilt views, and events alone has 3,477 rows across event_id, user_id, session_id, ts, event_name, and channel. Decide the fastest way to confirm the Tuesday dip is real before chasing a cause.",
+    "skill_lane": "driving-the-agent",
+    "decision_point_id": "dp-1",
+    "preload": {
+      "context_md": "## What you know so far\n\n- List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table.\n- Listing tables and fetching the events schema in parallel.",
+      "seed_transcript": [
+        {
+          "t": 0,
+          "role": "user",
+          "text": "List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table."
+        },
+        {
+          "t": 5,
+          "role": "assistant",
+          "text": "Listing tables and fetching the events schema in parallel."
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_list_tables"
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: events"
+        },
+        {
+          "t": 16,
+          "role": "tool",
+          "text": "daily_signups (VIEW)\ndaily_signups_by_channel (VIEW)\ndeploys (TABLE)\nevents (TABLE)\npayment_attempts (TABLE)\nsignup_payment_outcomes (VIEW)\ntuesday_dip_vs_deploys (VIEW)\nusers (TABLE)"
+        },
+        {
+          "t": 22,
+          "role": "tool",
+          "text": "Table: events\nRows: 3477\nColumns:\n  event_id: STRING\n  user_id: STRING\n  session_id: STRING\n  ts: TIMESTAMP\n  event_name: STRING\n  device: STRING\n  channel: STRING"
+        }
+      ],
+      "visible_tables": [
+        "events",
+        "daily_signups",
+        "daily_signups_by_channel"
+      ]
+    },
+    "time_budget_s": 300,
+    "rubric": {
+      "required_moves": [
+        {
+          "id": "move-2",
+          "label": "Pulls daily signup counts and a day-of-week rollup off events, in parallel",
+          "detector": {
+            "kind": "regex",
+            "pattern": "GROUP BY\\s*(?:1(?:\\s*,\\s*2)?|DATE\\(ts\\)|day_of_week)"
+          }
+        }
+      ],
+      "bonus_moves": [
+        {
+          "id": "move-3",
+          "label": "Computes the Tuesday-vs-other-days gap directly in one query instead of eyeballing two result sets",
+          "detector": {
+            "kind": "llm",
+            "prompt": "Did the learner compute the Tuesday average against the other days in a single query rather than manually comparing two separate result sets?"
+          }
+        }
+      ],
+      "fail_conditions": [
+        "Learner queries payment_attempts or deploys before confirming the daily signup pattern off events.",
+        "Learner draws a conclusion about cause from a single day of data instead of the full four-week window."
+      ]
+    },
+    "is_published": false
+  },
+  {
+    "id": "tuesday-dip-s2",
+    "case_id": "tuesday-dip",
+    "ordinal": 2,
+    "title": "Reading the dip",
+    "goal_md": "Tuesday averages 105.0 signups across the four weeks against 141.5 on Monday, 138.8 on Wednesday, 142.3 on Thursday, and 139.5 on Friday, and every individual Tuesday lands in a tight 102 to 110 range. Decide what to check next before naming any cause.",
+    "skill_lane": "forming-hypotheses",
+    "decision_point_id": "dp-2",
+    "preload": {
+      "context_md": "## What you know so far\n\n- List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table.\n- Listing tables and fetching the events schema in parallel.\n- Running both queries in parallel.\n- I already have the data — let me run one clean query that computes the Tuesday gap directly.",
+      "seed_transcript": [
+        {
+          "t": 0,
+          "role": "user",
+          "text": "List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table."
+        },
+        {
+          "t": 5,
+          "role": "assistant",
+          "text": "Listing tables and fetching the events schema in parallel."
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_list_tables"
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: events"
+        },
+        {
+          "t": 16,
+          "role": "tool",
+          "text": "daily_signups (VIEW)\ndaily_signups_by_channel (VIEW)\ndeploys (TABLE)\nevents (TABLE)\npayment_attempts (TABLE)\nsignup_payment_outcomes (VIEW)\ntuesday_dip_vs_deploys (VIEW)\nusers (TABLE)"
+        },
+        {
+          "t": 22,
+          "role": "tool",
+          "text": "Table: events\nRows: 3477\nColumns:\n  event_id: STRING\n  user_id: STRING\n  session_id: STRING\n  ts: TIMESTAMP\n  event_name: STRING\n  device: STRING\n  channel: STRING"
+        },
+        {
+          "t": 26,
+          "role": "assistant",
+          "text": "Running both queries in parallel."
+        },
+        {
+          "t": 27,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(ts) AS date,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 1\n"
+        },
+        {
+          "t": 29,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNT(DISTINCT DATE(ts)) AS num_days,\n  ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2\n"
+        },
+        {
+          "t": 35,
+          "role": "tool",
+          "text": "[\n  {\n    \"date\": \"2026-06-29\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-06-30\",\n    \"signups\": \"102\"\n  },\n  {\n    \"date\": \"2026-07-01\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-02\",\n    \"signups\": \"143\"\n  },\n  {\n    \"date\": \"2026-07-03\",\n    \"signups\": \"137\"\n  },\n  {\n    \"date\": \"2026-07-04\",\n    \"signups\": \"106\"\n  },\n  {\n    \"date\": \"2026-07-05\",\n    \"signups\": \"105\"\n  },\n  {\n    \"date\": \"2026-07-06\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-07\",\n    \"signups\": \"102\"\n  },\n  {\n    \"date\": \"2026-07-08\",\n    \"signups\": \"139\"\n  },\n  {\n    \"date\": \"2026-07-09\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-10\",\n    \"signups\": \"141\"\n  },\n  {\n    \"date\": \"2026-07-11\",\n    \"signups\": \"97\"\n  },\n  {\n    \"date\": \"2026-07-12\",\n    \"signups\": \"94\"\n  },\n  {\n    \"date\": \"2026-07-13\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-14\",\n    \"signups\": \"106\"\n  },\n  {\n    \"date\": \"2026-07-15\",\n    \"signups\": \"139\"\n  },\n  {\n    \"date\": \"2026-07-16\",\n    \"signups\": \"134\"\n  },\n  {\n    \"date\": \"2026-07-17\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-18\",\n    \"signups\": \"101\"\n  },\n  {\n    \"date\": \"2026-07-19\",\n    \"signups\": \"105\"\n  },\n  {\n    \"date\": \"2026-07-20\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-21\",\n    \"signups\": \"110\"\n  },\n  {\n    \"date\": \"2026-07-22\",\n    \"signups\": \"137\"\n  },\n  {\n    \"date\": \"2026-07-23\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-24\",\n    \"signups\": \"134\"\n  },\n  {\n    \"date\": \"2026-07-25\",\n    \"signups\": \"95\"\n  },\n  {\n    \"date\": \"2026-07-26\",\n    \"signups\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 41,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_daily_signups\": \"102.5\",\n    \"day_of_week\": \"Sunday\",\n    \"dow_num\": \"1\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"410\"\n  },\n  {\n    \"avg_daily_signups\": \"141.5\",\n    \"day_of_week\": \"Monday\",\n    \"dow_num\": \"2\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"566\"\n  },\n  {\n    \"avg_daily_signups\": \"105.0\",\n    \"day_of_week\": \"Tuesday\",\n    \"dow_num\": \"3\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"420\"\n  },\n  {\n    \"avg_daily_signups\": \"138.8\",\n    \"day_of_week\": \"Wednesday\",\n    \"dow_num\": \"4\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"555\"\n  },\n  {\n    \"avg_daily_signups\": \"142.3\",\n    \"day_of_week\": \"Thursday\",\n    \"dow_num\": \"5\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"569\"\n  },\n  {\n    \"avg_daily_signups\": \"139.5\",\n    \"day_of_week\": \"Friday\",\n    \"dow_num\": \"6\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"558\"\n  },\n  {\n    \"avg_daily_signups\": \"99.8\",\n    \"day_of_week\": \"Saturday\",\n    \"dow_num\": \"7\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"399\"\n  }\n]"
+        },
+        {
+          "t": 49,
+          "role": "assistant",
+          "text": "I already have the data — let me run one clean query that computes the Tuesday gap directly."
+        },
+        {
+          "t": 53,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH by_dow AS (\n  SELECT\n    FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29'\n    AND ts < '2026-07-27'\n  GROUP BY 1, 2\n),\ntuesday_avg AS (\n  SELECT avg_daily_signups AS tue_avg FROM by_dow WHERE day_of_week = 'Tuesday'\n)\nSELECT\n  b.day_of_week,\n  b.avg_daily_signups,\n  ROUND((b.avg_daily_signups - t.tue_avg) / t.tue_avg * 100, 1) AS pct_above_tuesday\nFROM by_dow b\nCROSS JOIN tuesday_avg t\nORDER BY b.dow_num\n"
+        },
+        {
+          "t": 61,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_daily_signups\": \"102.5\",\n    \"day_of_week\": \"Sunday\",\n    \"pct_above_tuesday\": \"-2.4\"\n  },\n  {\n    \"avg_daily_signups\": \"141.5\",\n    \"day_of_week\": \"Monday\",\n    \"pct_above_tuesday\": \"34.8\"\n  },\n  {\n    \"avg_daily_signups\": \"105.0\",\n    \"day_of_week\": \"Tuesday\",\n    \"pct_above_tuesday\": \"0.0\"\n  },\n  {\n    \"avg_daily_signups\": \"138.8\",\n    \"day_of_week\": \"Wednesday\",\n    \"pct_above_tuesday\": \"32.2\"\n  },\n  {\n    \"avg_daily_signups\": \"142.3\",\n    \"day_of_week\": \"Thursday\",\n    \"pct_above_tuesday\": \"35.5\"\n  },\n  {\n    \"avg_daily_signups\": \"139.5\",\n    \"day_of_week\": \"Friday\",\n    \"pct_above_tuesday\": \"32.9\"\n  },\n  {\n    \"avg_daily_signups\": \"99.8\",\n    \"day_of_week\": \"Saturday\",\n    \"pct_above_tuesday\": \"-5.0\"\n  }\n]"
+        }
+      ],
+      "visible_tables": [
+        "events",
+        "payment_attempts"
+      ]
+    },
+    "time_budget_s": 300,
+    "rubric": {
+      "required_moves": [
+        {
+          "id": "move-5",
+          "label": "Moves to the payment_attempts join next rather than jumping straight to a channel or deploy explanation",
+          "detector": {
+            "kind": "llm",
+            "prompt": "Did the learner treat the four-week Tuesday pattern as confirmed and move to checking the payment_attempts join next, without naming a root cause yet?"
+          }
+        }
+      ],
+      "bonus_moves": [],
+      "fail_conditions": [
+        "Learner names a specific root cause (deploy, channel, or otherwise) before checking payment_attempts or channel data.",
+        "Learner treats the dip as unconfirmed or a fluke despite four consistent weeks of data."
+      ]
+    },
+    "is_published": false
+  },
+  {
+    "id": "tuesday-dip-s3",
+    "case_id": "tuesday-dip",
+    "ordinal": 3,
+    "title": "The fan-out trap",
+    "goal_md": "payment_attempts has 4,459 total rows against 3,477 distinct event_id values in events, a gap of 982, and a straightforward join on event_id produces a conversion rate above 100 percent starting July 13. Decide the correct way to fix the query.",
+    "skill_lane": "forming-hypotheses",
+    "decision_point_id": "dp-3",
+    "preload": {
+      "context_md": "## What you know so far\n\n- List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table.\n- Listing tables and fetching the events schema in parallel.\n- Running both queries in parallel.\n- I already have the data — let me run one clean query that computes the Tuesday gap directly.\n- Here's the summary first, then the conversion query.\n\n**Daily signup counts (2026-06-29 → 2026-07-26)**\n\n| Date | Signups | Date | Signups |\n|------|---------|------|---------|\n| Jun 29 Mon | 140 | Jul 13 Mon | 146 |\n| Jun 30 Tue | **102** | Jul 14 Tue | **106** |\n| Jul 01 Wed | 140 | Jul 15 Wed | 139 |\n| Jul 02 Thu | 143 | Jul 16 Thu | 134 |\n| Jul 03 Fri | 137 | Jul 17 Fri | 146 |\n| Jul 04 Sat | 106 | Jul 18 Sat | 101 |\n| Jul 05 Sun | 105 | Jul 19 Sun | 105 |\n| Jul 06 Mon | 140 | Jul 20 Mon | 140 |\n| Jul 07 Tue | **102** | Jul 21 Tue | **110** |\n| Jul 08 Wed | 139 | Jul 22 Wed | 137 |\n| Jul 09 Thu | 146 | Jul 23 Thu | 146 |\n| Jul 10 Fri | 141 | Jul 24 Fri | 134 |\n| Jul 11 Sat | 97 | Jul 25 Sat | 95 |\n| Jul 12 Sun | 94 | Jul 26 Sun | 106 |\n\n**Average signups by day of week**\n\n| Day | Avg daily signups | % vs Tuesday |\n|-----|:-----------------:|:------------:|\n| Sunday | 102.5 | −2.4% |\n| **Monday** | **141.5** | **+34.8%** |\n| **Tuesday** | **105.0** | baseline |\n| **Wednesday** | **138.8** | **+32.2%** |\n| **Thursday** | **142.3** | **+35.5%** |\n| **Friday** | **139.5** | **+32.9%** |\n| Saturday | 99.8 | −5.0% |\n\nThe dip is real and consistent — all four Tuesdays in the window are low. Monday–Friday (excluding Tuesday) run ~33–36% higher than Tuesday. Saturday/Sunday are naturally low, so Tuesday is uniquely depressed among weekdays.\n\n---\n\nNow checking the payment_attempts schema before joining.\n- Running the conversion query and the sanity check in parallel.",
+      "seed_transcript": [
+        {
+          "t": 0,
+          "role": "user",
+          "text": "List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table."
+        },
+        {
+          "t": 5,
+          "role": "assistant",
+          "text": "Listing tables and fetching the events schema in parallel."
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_list_tables"
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: events"
+        },
+        {
+          "t": 16,
+          "role": "tool",
+          "text": "daily_signups (VIEW)\ndaily_signups_by_channel (VIEW)\ndeploys (TABLE)\nevents (TABLE)\npayment_attempts (TABLE)\nsignup_payment_outcomes (VIEW)\ntuesday_dip_vs_deploys (VIEW)\nusers (TABLE)"
+        },
+        {
+          "t": 22,
+          "role": "tool",
+          "text": "Table: events\nRows: 3477\nColumns:\n  event_id: STRING\n  user_id: STRING\n  session_id: STRING\n  ts: TIMESTAMP\n  event_name: STRING\n  device: STRING\n  channel: STRING"
+        },
+        {
+          "t": 26,
+          "role": "assistant",
+          "text": "Running both queries in parallel."
+        },
+        {
+          "t": 27,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(ts) AS date,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 1\n"
+        },
+        {
+          "t": 29,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNT(DISTINCT DATE(ts)) AS num_days,\n  ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2\n"
+        },
+        {
+          "t": 35,
+          "role": "tool",
+          "text": "[\n  {\n    \"date\": \"2026-06-29\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-06-30\",\n    \"signups\": \"102\"\n  },\n  {\n    \"date\": \"2026-07-01\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-02\",\n    \"signups\": \"143\"\n  },\n  {\n    \"date\": \"2026-07-03\",\n    \"signups\": \"137\"\n  },\n  {\n    \"date\": \"2026-07-04\",\n    \"signups\": \"106\"\n  },\n  {\n    \"date\": \"2026-07-05\",\n    \"signups\": \"105\"\n  },\n  {\n    \"date\": \"2026-07-06\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-07\",\n    \"signups\": \"102\"\n  },\n  {\n    \"date\": \"2026-07-08\",\n    \"signups\": \"139\"\n  },\n  {\n    \"date\": \"2026-07-09\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-10\",\n    \"signups\": \"141\"\n  },\n  {\n    \"date\": \"2026-07-11\",\n    \"signups\": \"97\"\n  },\n  {\n    \"date\": \"2026-07-12\",\n    \"signups\": \"94\"\n  },\n  {\n    \"date\": \"2026-07-13\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-14\",\n    \"signups\": \"106\"\n  },\n  {\n    \"date\": \"2026-07-15\",\n    \"signups\": \"139\"\n  },\n  {\n    \"date\": \"2026-07-16\",\n    \"signups\": \"134\"\n  },\n  {\n    \"date\": \"2026-07-17\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-18\",\n    \"signups\": \"101\"\n  },\n  {\n    \"date\": \"2026-07-19\",\n    \"signups\": \"105\"\n  },\n  {\n    \"date\": \"2026-07-20\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-21\",\n    \"signups\": \"110\"\n  },\n  {\n    \"date\": \"2026-07-22\",\n    \"signups\": \"137\"\n  },\n  {\n    \"date\": \"2026-07-23\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-24\",\n    \"signups\": \"134\"\n  },\n  {\n    \"date\": \"2026-07-25\",\n    \"signups\": \"95\"\n  },\n  {\n    \"date\": \"2026-07-26\",\n    \"signups\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 41,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_daily_signups\": \"102.5\",\n    \"day_of_week\": \"Sunday\",\n    \"dow_num\": \"1\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"410\"\n  },\n  {\n    \"avg_daily_signups\": \"141.5\",\n    \"day_of_week\": \"Monday\",\n    \"dow_num\": \"2\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"566\"\n  },\n  {\n    \"avg_daily_signups\": \"105.0\",\n    \"day_of_week\": \"Tuesday\",\n    \"dow_num\": \"3\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"420\"\n  },\n  {\n    \"avg_daily_signups\": \"138.8\",\n    \"day_of_week\": \"Wednesday\",\n    \"dow_num\": \"4\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"555\"\n  },\n  {\n    \"avg_daily_signups\": \"142.3\",\n    \"day_of_week\": \"Thursday\",\n    \"dow_num\": \"5\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"569\"\n  },\n  {\n    \"avg_daily_signups\": \"139.5\",\n    \"day_of_week\": \"Friday\",\n    \"dow_num\": \"6\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"558\"\n  },\n  {\n    \"avg_daily_signups\": \"99.8\",\n    \"day_of_week\": \"Saturday\",\n    \"dow_num\": \"7\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"399\"\n  }\n]"
+        },
+        {
+          "t": 49,
+          "role": "assistant",
+          "text": "I already have the data — let me run one clean query that computes the Tuesday gap directly."
+        },
+        {
+          "t": 53,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH by_dow AS (\n  SELECT\n    FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29'\n    AND ts < '2026-07-27'\n  GROUP BY 1, 2\n),\ntuesday_avg AS (\n  SELECT avg_daily_signups AS tue_avg FROM by_dow WHERE day_of_week = 'Tuesday'\n)\nSELECT\n  b.day_of_week,\n  b.avg_daily_signups,\n  ROUND((b.avg_daily_signups - t.tue_avg) / t.tue_avg * 100, 1) AS pct_above_tuesday\nFROM by_dow b\nCROSS JOIN tuesday_avg t\nORDER BY b.dow_num\n"
+        },
+        {
+          "t": 61,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_daily_signups\": \"102.5\",\n    \"day_of_week\": \"Sunday\",\n    \"pct_above_tuesday\": \"-2.4\"\n  },\n  {\n    \"avg_daily_signups\": \"141.5\",\n    \"day_of_week\": \"Monday\",\n    \"pct_above_tuesday\": \"34.8\"\n  },\n  {\n    \"avg_daily_signups\": \"105.0\",\n    \"day_of_week\": \"Tuesday\",\n    \"pct_above_tuesday\": \"0.0\"\n  },\n  {\n    \"avg_daily_signups\": \"138.8\",\n    \"day_of_week\": \"Wednesday\",\n    \"pct_above_tuesday\": \"32.2\"\n  },\n  {\n    \"avg_daily_signups\": \"142.3\",\n    \"day_of_week\": \"Thursday\",\n    \"pct_above_tuesday\": \"35.5\"\n  },\n  {\n    \"avg_daily_signups\": \"139.5\",\n    \"day_of_week\": \"Friday\",\n    \"pct_above_tuesday\": \"32.9\"\n  },\n  {\n    \"avg_daily_signups\": \"99.8\",\n    \"day_of_week\": \"Saturday\",\n    \"pct_above_tuesday\": \"-5.0\"\n  }\n]"
+        },
+        {
+          "t": 74,
+          "role": "assistant",
+          "text": "Here's the summary first, then the conversion query.\n\n**Daily signup counts (2026-06-29 → 2026-07-26)**\n\n| Date | Signups | Date | Signups |\n|------|---------|------|---------|\n| Jun 29 Mon | 140 | Jul 13 Mon | 146 |\n| Jun 30 Tue | **102** | Jul 14 Tue | **106** |\n| Jul 01 Wed | 140 | Jul 15 Wed | 139 |\n| Jul 02 Thu | 143 | Jul 16 Thu | 134 |\n| Jul 03 Fri | 137 | Jul 17 Fri | 146 |\n| Jul 04 Sat | 106 | Jul 18 Sat | 101 |\n| Jul 05 Sun | 105 | Jul 19 Sun | 105 |\n| Jul 06 Mon | 140 | Jul 20 Mon | 140 |\n| Jul 07 Tue | **102** | Jul 21 Tue | **110** |\n| Jul 08 Wed | 139 | Jul 22 Wed | 137 |\n| Jul 09 Thu | 146 | Jul 23 Thu | 146 |\n| Jul 10 Fri | 141 | Jul 24 Fri | 134 |\n| Jul 11 Sat | 97 | Jul 25 Sat | 95 |\n| Jul 12 Sun | 94 | Jul 26 Sun | 106 |\n\n**Average signups by day of week**\n\n| Day | Avg daily signups | % vs Tuesday |\n|-----|:-----------------:|:------------:|\n| Sunday | 102.5 | −2.4% |\n| **Monday** | **141.5** | **+34.8%** |\n| **Tuesday** | **105.0** | baseline |\n| **Wednesday** | **138.8** | **+32.2%** |\n| **Thursday** | **142.3** | **+35.5%** |\n| **Friday** | **139.5** | **+32.9%** |\n| Saturday | 99.8 | −5.0% |\n\nThe dip is real and consistent — all four Tuesdays in the window are low. Monday–Friday (excluding Tuesday) run ~33–36% higher than Tuesday. Saturday/Sunday are naturally low, so Tuesday is uniquely depressed among weekdays.\n\n---\n\nNow checking the payment_attempts schema before joining."
+        },
+        {
+          "t": 75,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: payment_attempts"
+        },
+        {
+          "t": 81,
+          "role": "tool",
+          "text": "Table: payment_attempts\nRows: 4459\nColumns:\n  attempt_id: STRING\n  event_id: STRING\n  user_id: STRING\n  ts: TIMESTAMP\n  status: STRING\n  amount_cents: INTEGER"
+        },
+        {
+          "t": 85,
+          "role": "assistant",
+          "text": "Running the conversion query and the sanity check in parallel."
+        },
+        {
+          "t": 89,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.attempt_id) AS payment_attempts,\n  ROUND(COUNT(DISTINCT p.attempt_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN `hackproduct.casebook_tuesday_dip.payment_attempts` p\n  ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29'\n  AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
+        },
+        {
+          "t": 91,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  'payment_attempts total rows' AS metric,\n  COUNT(*) AS count\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'events: distinct event_id (signup_completed)',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'payment_attempts: distinct event_id',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n"
+        },
+        {
+          "t": 97,
+          "role": "tool",
+          "text": "[\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-29\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-30\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"102\",\n    \"signups\": \"102\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-01\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-02\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"143\",\n    \"signups\": \"143\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-03\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"137\",\n    \"signups\": \"137\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-04\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"106\",\n    \"signups\": \"106\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-05\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"105\",\n    \"signups\": \"105\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-06\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-07\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"102\",\n    \"signups\": \"102\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-08\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"139\",\n    \"signups\": \"139\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-09\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"146\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-10\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"141\",\n    \"signups\": \"141\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-11\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"97\",\n    \"signups\": \"97\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-12\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"94\",\n    \"signups\": \"94\"\n  },\n  {\n    \"conversion_pct\": \"154.1\",\n    \"date\": \"2026-07-13\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"225\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"149.1\",\n    \"date\": \"2026-07-14\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"158\",\n    \"signups\": \"106\"\n  },\n  {\n    \"conversion_pct\": \"148.2\",\n    \"date\": \"2026-07-15\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"206\",\n    \"signups\": \"139\"\n  },\n  {\n    \"conversion_pct\": \"156.7\",\n    \"date\": \"2026-07-16\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"210\",\n    \"signups\": \"134\"\n  },\n  {\n    \"conversion_pct\": \"166.4\",\n    \"date\": \"2026-07-17\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"243\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"171.3\",\n    \"date\": \"2026-07-18\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"173\",\n    \"signups\": \"101\"\n  },\n  {\n    \"conversion_pct\": \"152.4\",\n    \"date\": \"2026-07-19\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"160\",\n    \"signups\": \"105\"\n  },\n  {\n    \"conversion_pct\": \"150.0\",\n    \"date\": \"2026-07-20\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"210\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"165.5\",\n    \"date\": \"2026-07-21\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"182\",\n    \"signups\": \"110\"\n  },\n  {\n    \"conversion_pct\": \"165.7\",\n    \"date\": \"2026-07-22\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"227\",\n    \"signups\": \"137\"\n  },\n  {\n    \"conversion_pct\": \"142.5\",\n    \"date\": \"2026-07-23\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"208\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"164.2\",\n    \"date\": \"2026-07-24\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"220\",\n    \"signups\": \"134\"\n  },\n  {\n    \"conversion_pct\": \"143.2\",\n    \"date\": \"2026-07-25\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"136\",\n    \"signups\": \"95\"\n  },\n  {\n    \"conversion_pct\": \"159.4\",\n    \"date\": \"2026-07-26\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"169\",\n    \"signups\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 104,
+          "role": "tool",
+          "text": "[\n  {\n    \"count\": \"4459\",\n    \"metric\": \"payment_attempts total rows\"\n  },\n  {\n    \"count\": \"3477\",\n    \"metric\": \"events: distinct event_id (signup_completed)\"\n  },\n  {\n    \"count\": \"3477\",\n    \"metric\": \"payment_attempts: distinct event_id\"\n  }\n]"
+        }
+      ],
+      "visible_tables": [
+        "events",
+        "payment_attempts"
+      ]
+    },
+    "time_budget_s": 300,
+    "rubric": {
+      "required_moves": [
+        {
+          "id": "move-6",
+          "label": "Pre-aggregates payment_attempts to one row per event_id before joining, rather than adding DISTINCT to the outer COUNT alone",
+          "detector": {
+            "kind": "regex",
+            "pattern": "GROUP BY\\s*event_id"
+          }
+        }
+      ],
+      "bonus_moves": [
+        {
+          "id": "move-7",
+          "label": "Separately reports the attempts-per-signup retry pattern as its own metric instead of conflating it with conversion",
+          "detector": {
+            "kind": "llm",
+            "prompt": "Did the learner distinguish \"did this signup have a payment attempt\" from \"how many attempts did this signup have\" as two separate metrics?"
+          }
+        }
+      ],
+      "fail_conditions": [
+        "Learner fixes the symptom with COUNT(DISTINCT event_id) alone while leaving the underlying join unaggregated.",
+        "Learner discards the post-July-13 payment_attempts rows as bad data instead of recognizing the retry pattern."
+      ]
+    },
+    "is_published": false
+  },
+  {
+    "id": "tuesday-dip-s4",
+    "case_id": "tuesday-dip",
+    "ordinal": 4,
+    "title": "The referral that disappeared",
+    "goal_md": "Joining on users.acquisition_channel shows only 43 referral signups, but cross-tabbing against events.channel shows 499 of the 550 NULL acquisition_channel rows are actually event_channel = 'referral', putting true referral volume at 542. Decide which field to trust for channel attribution going forward.",
+    "skill_lane": "forming-hypotheses",
+    "decision_point_id": "dp-4",
+    "preload": {
+      "context_md": "## What you know so far\n\n- List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table.\n- Listing tables and fetching the events schema in parallel.\n- Running both queries in parallel.\n- I already have the data — let me run one clean query that computes the Tuesday gap directly.\n- Here's the summary first, then the conversion query.\n\n**Daily signup counts (2026-06-29 → 2026-07-26)**\n\n| Date | Signups | Date | Signups |\n|------|---------|------|---------|\n| Jun 29 Mon | 140 | Jul 13 Mon | 146 |\n| Jun 30 Tue | **102** | Jul 14 Tue | **106** |\n| Jul 01 Wed | 140 | Jul 15 Wed | 139 |\n| Jul 02 Thu | 143 | Jul 16 Thu | 134 |\n| Jul 03 Fri | 137 | Jul 17 Fri | 146 |\n| Jul 04 Sat | 106 | Jul 18 Sat | 101 |\n| Jul 05 Sun | 105 | Jul 19 Sun | 105 |\n| Jul 06 Mon | 140 | Jul 20 Mon | 140 |\n| Jul 07 Tue | **102** | Jul 21 Tue | **110** |\n| Jul 08 Wed | 139 | Jul 22 Wed | 137 |\n| Jul 09 Thu | 146 | Jul 23 Thu | 146 |\n| Jul 10 Fri | 141 | Jul 24 Fri | 134 |\n| Jul 11 Sat | 97 | Jul 25 Sat | 95 |\n| Jul 12 Sun | 94 | Jul 26 Sun | 106 |\n\n**Average signups by day of week**\n\n| Day | Avg daily signups | % vs Tuesday |\n|-----|:-----------------:|:------------:|\n| Sunday | 102.5 | −2.4% |\n| **Monday** | **141.5** | **+34.8%** |\n| **Tuesday** | **105.0** | baseline |\n| **Wednesday** | **138.8** | **+32.2%** |\n| **Thursday** | **142.3** | **+35.5%** |\n| **Friday** | **139.5** | **+32.9%** |\n| Saturday | 99.8 | −5.0% |\n\nThe dip is real and consistent — all four Tuesdays in the window are low. Monday–Friday (excluding Tuesday) run ~33–36% higher than Tuesday. Saturday/Sunday are naturally low, so Tuesday is uniquely depressed among weekdays.\n\n---\n\nNow checking the payment_attempts schema before joining.\n- Running the conversion query and the sanity check in parallel.\n- **Sanity check findings before the fix:**\n\n- `payment_attempts` total rows: **4,459**\n- Distinct `event_id` in `payment_attempts`: **3,477** — matches signups exactly\n- Difference: **982 extra rows** — some signups have multiple payment attempt rows\n\nThe join fans out on those multi-attempt signups. When we `COUNT(DISTINCT attempt_id)`, we count every attempt, not every signup that converted. That's why conversion reads >100% from Jul 13 onward — not a real signal, just overcounting retries.\n\n**The fix:** pre-aggregate `payment_attempts` down to one row per `event_id` before joining, then the metric becomes \"share of signups that had at least one payment attempt.\"\n- **Corrected conversion findings:** Conversion rate is 100% across all 28 days — every signup has at least one payment attempt. However, `avg_attempts_per_converter` reveals a sharp structural break: before Jul 13 it's exactly 1.0, then from Jul 13 onward it climbs to 1.42–1.71. Users are having to retry payment multiple times after that date. This pre-dates the Jul 14 deploy by a day — worth keeping in mind as we investigate causality.\n\nNow checking the users schema and running both channel queries in parallel.",
+      "seed_transcript": [
+        {
+          "t": 0,
+          "role": "user",
+          "text": "List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table."
+        },
+        {
+          "t": 5,
+          "role": "assistant",
+          "text": "Listing tables and fetching the events schema in parallel."
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_list_tables"
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: events"
+        },
+        {
+          "t": 16,
+          "role": "tool",
+          "text": "daily_signups (VIEW)\ndaily_signups_by_channel (VIEW)\ndeploys (TABLE)\nevents (TABLE)\npayment_attempts (TABLE)\nsignup_payment_outcomes (VIEW)\ntuesday_dip_vs_deploys (VIEW)\nusers (TABLE)"
+        },
+        {
+          "t": 22,
+          "role": "tool",
+          "text": "Table: events\nRows: 3477\nColumns:\n  event_id: STRING\n  user_id: STRING\n  session_id: STRING\n  ts: TIMESTAMP\n  event_name: STRING\n  device: STRING\n  channel: STRING"
+        },
+        {
+          "t": 26,
+          "role": "assistant",
+          "text": "Running both queries in parallel."
+        },
+        {
+          "t": 27,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(ts) AS date,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 1\n"
+        },
+        {
+          "t": 29,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNT(DISTINCT DATE(ts)) AS num_days,\n  ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2\n"
+        },
+        {
+          "t": 35,
+          "role": "tool",
+          "text": "[\n  {\n    \"date\": \"2026-06-29\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-06-30\",\n    \"signups\": \"102\"\n  },\n  {\n    \"date\": \"2026-07-01\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-02\",\n    \"signups\": \"143\"\n  },\n  {\n    \"date\": \"2026-07-03\",\n    \"signups\": \"137\"\n  },\n  {\n    \"date\": \"2026-07-04\",\n    \"signups\": \"106\"\n  },\n  {\n    \"date\": \"2026-07-05\",\n    \"signups\": \"105\"\n  },\n  {\n    \"date\": \"2026-07-06\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-07\",\n    \"signups\": \"102\"\n  },\n  {\n    \"date\": \"2026-07-08\",\n    \"signups\": \"139\"\n  },\n  {\n    \"date\": \"2026-07-09\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-10\",\n    \"signups\": \"141\"\n  },\n  {\n    \"date\": \"2026-07-11\",\n    \"signups\": \"97\"\n  },\n  {\n    \"date\": \"2026-07-12\",\n    \"signups\": \"94\"\n  },\n  {\n    \"date\": \"2026-07-13\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-14\",\n    \"signups\": \"106\"\n  },\n  {\n    \"date\": \"2026-07-15\",\n    \"signups\": \"139\"\n  },\n  {\n    \"date\": \"2026-07-16\",\n    \"signups\": \"134\"\n  },\n  {\n    \"date\": \"2026-07-17\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-18\",\n    \"signups\": \"101\"\n  },\n  {\n    \"date\": \"2026-07-19\",\n    \"signups\": \"105\"\n  },\n  {\n    \"date\": \"2026-07-20\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-21\",\n    \"signups\": \"110\"\n  },\n  {\n    \"date\": \"2026-07-22\",\n    \"signups\": \"137\"\n  },\n  {\n    \"date\": \"2026-07-23\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-24\",\n    \"signups\": \"134\"\n  },\n  {\n    \"date\": \"2026-07-25\",\n    \"signups\": \"95\"\n  },\n  {\n    \"date\": \"2026-07-26\",\n    \"signups\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 41,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_daily_signups\": \"102.5\",\n    \"day_of_week\": \"Sunday\",\n    \"dow_num\": \"1\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"410\"\n  },\n  {\n    \"avg_daily_signups\": \"141.5\",\n    \"day_of_week\": \"Monday\",\n    \"dow_num\": \"2\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"566\"\n  },\n  {\n    \"avg_daily_signups\": \"105.0\",\n    \"day_of_week\": \"Tuesday\",\n    \"dow_num\": \"3\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"420\"\n  },\n  {\n    \"avg_daily_signups\": \"138.8\",\n    \"day_of_week\": \"Wednesday\",\n    \"dow_num\": \"4\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"555\"\n  },\n  {\n    \"avg_daily_signups\": \"142.3\",\n    \"day_of_week\": \"Thursday\",\n    \"dow_num\": \"5\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"569\"\n  },\n  {\n    \"avg_daily_signups\": \"139.5\",\n    \"day_of_week\": \"Friday\",\n    \"dow_num\": \"6\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"558\"\n  },\n  {\n    \"avg_daily_signups\": \"99.8\",\n    \"day_of_week\": \"Saturday\",\n    \"dow_num\": \"7\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"399\"\n  }\n]"
+        },
+        {
+          "t": 49,
+          "role": "assistant",
+          "text": "I already have the data — let me run one clean query that computes the Tuesday gap directly."
+        },
+        {
+          "t": 53,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH by_dow AS (\n  SELECT\n    FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29'\n    AND ts < '2026-07-27'\n  GROUP BY 1, 2\n),\ntuesday_avg AS (\n  SELECT avg_daily_signups AS tue_avg FROM by_dow WHERE day_of_week = 'Tuesday'\n)\nSELECT\n  b.day_of_week,\n  b.avg_daily_signups,\n  ROUND((b.avg_daily_signups - t.tue_avg) / t.tue_avg * 100, 1) AS pct_above_tuesday\nFROM by_dow b\nCROSS JOIN tuesday_avg t\nORDER BY b.dow_num\n"
+        },
+        {
+          "t": 61,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_daily_signups\": \"102.5\",\n    \"day_of_week\": \"Sunday\",\n    \"pct_above_tuesday\": \"-2.4\"\n  },\n  {\n    \"avg_daily_signups\": \"141.5\",\n    \"day_of_week\": \"Monday\",\n    \"pct_above_tuesday\": \"34.8\"\n  },\n  {\n    \"avg_daily_signups\": \"105.0\",\n    \"day_of_week\": \"Tuesday\",\n    \"pct_above_tuesday\": \"0.0\"\n  },\n  {\n    \"avg_daily_signups\": \"138.8\",\n    \"day_of_week\": \"Wednesday\",\n    \"pct_above_tuesday\": \"32.2\"\n  },\n  {\n    \"avg_daily_signups\": \"142.3\",\n    \"day_of_week\": \"Thursday\",\n    \"pct_above_tuesday\": \"35.5\"\n  },\n  {\n    \"avg_daily_signups\": \"139.5\",\n    \"day_of_week\": \"Friday\",\n    \"pct_above_tuesday\": \"32.9\"\n  },\n  {\n    \"avg_daily_signups\": \"99.8\",\n    \"day_of_week\": \"Saturday\",\n    \"pct_above_tuesday\": \"-5.0\"\n  }\n]"
+        },
+        {
+          "t": 74,
+          "role": "assistant",
+          "text": "Here's the summary first, then the conversion query.\n\n**Daily signup counts (2026-06-29 → 2026-07-26)**\n\n| Date | Signups | Date | Signups |\n|------|---------|------|---------|\n| Jun 29 Mon | 140 | Jul 13 Mon | 146 |\n| Jun 30 Tue | **102** | Jul 14 Tue | **106** |\n| Jul 01 Wed | 140 | Jul 15 Wed | 139 |\n| Jul 02 Thu | 143 | Jul 16 Thu | 134 |\n| Jul 03 Fri | 137 | Jul 17 Fri | 146 |\n| Jul 04 Sat | 106 | Jul 18 Sat | 101 |\n| Jul 05 Sun | 105 | Jul 19 Sun | 105 |\n| Jul 06 Mon | 140 | Jul 20 Mon | 140 |\n| Jul 07 Tue | **102** | Jul 21 Tue | **110** |\n| Jul 08 Wed | 139 | Jul 22 Wed | 137 |\n| Jul 09 Thu | 146 | Jul 23 Thu | 146 |\n| Jul 10 Fri | 141 | Jul 24 Fri | 134 |\n| Jul 11 Sat | 97 | Jul 25 Sat | 95 |\n| Jul 12 Sun | 94 | Jul 26 Sun | 106 |\n\n**Average signups by day of week**\n\n| Day | Avg daily signups | % vs Tuesday |\n|-----|:-----------------:|:------------:|\n| Sunday | 102.5 | −2.4% |\n| **Monday** | **141.5** | **+34.8%** |\n| **Tuesday** | **105.0** | baseline |\n| **Wednesday** | **138.8** | **+32.2%** |\n| **Thursday** | **142.3** | **+35.5%** |\n| **Friday** | **139.5** | **+32.9%** |\n| Saturday | 99.8 | −5.0% |\n\nThe dip is real and consistent — all four Tuesdays in the window are low. Monday–Friday (excluding Tuesday) run ~33–36% higher than Tuesday. Saturday/Sunday are naturally low, so Tuesday is uniquely depressed among weekdays.\n\n---\n\nNow checking the payment_attempts schema before joining."
+        },
+        {
+          "t": 75,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: payment_attempts"
+        },
+        {
+          "t": 81,
+          "role": "tool",
+          "text": "Table: payment_attempts\nRows: 4459\nColumns:\n  attempt_id: STRING\n  event_id: STRING\n  user_id: STRING\n  ts: TIMESTAMP\n  status: STRING\n  amount_cents: INTEGER"
+        },
+        {
+          "t": 85,
+          "role": "assistant",
+          "text": "Running the conversion query and the sanity check in parallel."
+        },
+        {
+          "t": 89,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.attempt_id) AS payment_attempts,\n  ROUND(COUNT(DISTINCT p.attempt_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN `hackproduct.casebook_tuesday_dip.payment_attempts` p\n  ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29'\n  AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
+        },
+        {
+          "t": 91,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  'payment_attempts total rows' AS metric,\n  COUNT(*) AS count\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'events: distinct event_id (signup_completed)',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'payment_attempts: distinct event_id',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n"
+        },
+        {
+          "t": 97,
+          "role": "tool",
+          "text": "[\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-29\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-30\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"102\",\n    \"signups\": \"102\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-01\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-02\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"143\",\n    \"signups\": \"143\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-03\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"137\",\n    \"signups\": \"137\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-04\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"106\",\n    \"signups\": \"106\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-05\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"105\",\n    \"signups\": \"105\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-06\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-07\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"102\",\n    \"signups\": \"102\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-08\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"139\",\n    \"signups\": \"139\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-09\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"146\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-10\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"141\",\n    \"signups\": \"141\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-11\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"97\",\n    \"signups\": \"97\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-12\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"94\",\n    \"signups\": \"94\"\n  },\n  {\n    \"conversion_pct\": \"154.1\",\n    \"date\": \"2026-07-13\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"225\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"149.1\",\n    \"date\": \"2026-07-14\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"158\",\n    \"signups\": \"106\"\n  },\n  {\n    \"conversion_pct\": \"148.2\",\n    \"date\": \"2026-07-15\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"206\",\n    \"signups\": \"139\"\n  },\n  {\n    \"conversion_pct\": \"156.7\",\n    \"date\": \"2026-07-16\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"210\",\n    \"signups\": \"134\"\n  },\n  {\n    \"conversion_pct\": \"166.4\",\n    \"date\": \"2026-07-17\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"243\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"171.3\",\n    \"date\": \"2026-07-18\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"173\",\n    \"signups\": \"101\"\n  },\n  {\n    \"conversion_pct\": \"152.4\",\n    \"date\": \"2026-07-19\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"160\",\n    \"signups\": \"105\"\n  },\n  {\n    \"conversion_pct\": \"150.0\",\n    \"date\": \"2026-07-20\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"210\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"165.5\",\n    \"date\": \"2026-07-21\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"182\",\n    \"signups\": \"110\"\n  },\n  {\n    \"conversion_pct\": \"165.7\",\n    \"date\": \"2026-07-22\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"227\",\n    \"signups\": \"137\"\n  },\n  {\n    \"conversion_pct\": \"142.5\",\n    \"date\": \"2026-07-23\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"208\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"164.2\",\n    \"date\": \"2026-07-24\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"220\",\n    \"signups\": \"134\"\n  },\n  {\n    \"conversion_pct\": \"143.2\",\n    \"date\": \"2026-07-25\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"136\",\n    \"signups\": \"95\"\n  },\n  {\n    \"conversion_pct\": \"159.4\",\n    \"date\": \"2026-07-26\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"169\",\n    \"signups\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 104,
+          "role": "tool",
+          "text": "[\n  {\n    \"count\": \"4459\",\n    \"metric\": \"payment_attempts total rows\"\n  },\n  {\n    \"count\": \"3477\",\n    \"metric\": \"events: distinct event_id (signup_completed)\"\n  },\n  {\n    \"count\": \"3477\",\n    \"metric\": \"payment_attempts: distinct event_id\"\n  }\n]"
+        },
+        {
+          "t": 127,
+          "role": "assistant",
+          "text": "**Sanity check findings before the fix:**\n\n- `payment_attempts` total rows: **4,459**\n- Distinct `event_id` in `payment_attempts`: **3,477** — matches signups exactly\n- Difference: **982 extra rows** — some signups have multiple payment attempt rows\n\nThe join fans out on those multi-attempt signups. When we `COUNT(DISTINCT attempt_id)`, we count every attempt, not every signup that converted. That's why conversion reads >100% from Jul 13 onward — not a real signal, just overcounting retries.\n\n**The fix:** pre-aggregate `payment_attempts` down to one row per `event_id` before joining, then the metric becomes \"share of signups that had at least one payment attempt.\""
+        },
+        {
+          "t": 132,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH pa_deduped AS (\n  SELECT\n    event_id,\n    MIN(ts) AS first_attempt_ts,\n    COUNT(*) AS num_attempts,\n    COUNTIF(status = 'success') AS successes\n  FROM `hackproduct.casebook_tuesday_dip.payment_attempts`\n  WHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n  GROUP BY event_id\n)\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.event_id) AS signups_with_payment_attempt,\n  ROUND(COUNT(DISTINCT p.event_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct,\n  ROUND(AVG(p.num_attempts), 2) AS avg_attempts_per_converter\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN pa_deduped p ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
+        },
+        {
+          "t": 140,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-29\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-30\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"102\",\n    \"signups_with_payment_attempt\": \"102\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-01\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-02\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"143\",\n    \"signups_with_payment_attempt\": \"143\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-03\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"137\",\n    \"signups_with_payment_attempt\": \"137\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-04\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"106\",\n    \"signups_with_payment_attempt\": \"106\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-05\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"105\",\n    \"signups_with_payment_attempt\": \"105\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-06\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-07\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"102\",\n    \"signups_with_payment_attempt\": \"102\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-08\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"139\",\n    \"signups_with_payment_attempt\": \"139\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-09\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-10\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"141\",\n    \"signups_with_payment_attempt\": \"141\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-11\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"97\",\n    \"signups_with_payment_attempt\": \"97\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-12\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"94\",\n    \"signups_with_payment_attempt\": \"94\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.54\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-13\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.49\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-14\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"106\",\n    \"signups_with_payment_attempt\": \"106\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.48\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-15\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"139\",\n    \"signups_with_payment_attempt\": \"139\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.57\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-16\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"134\",\n    \"signups_with_payment_attempt\": \"134\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.66\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-17\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.71\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-18\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"101\",\n    \"signups_with_payment_attempt\": \"101\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.52\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-19\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"105\",\n    \"signups_with_payment_attempt\": \"105\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.5\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-20\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.65\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-21\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"110\",\n    \"signups_with_payment_attempt\": \"110\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.66\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-22\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"137\",\n    \"signups_with_payment_attempt\": \"137\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.42\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-23\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.64\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-24\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"134\",\n    \"signups_with_payment_attempt\": \"134\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.43\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-25\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"95\",\n    \"signups_with_payment_attempt\": \"95\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.59\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-26\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"106\",\n    \"signups_with_payment_attempt\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 152,
+          "role": "assistant",
+          "text": "**Corrected conversion findings:** Conversion rate is 100% across all 28 days — every signup has at least one payment attempt. However, `avg_attempts_per_converter` reveals a sharp structural break: before Jul 13 it's exactly 1.0, then from Jul 13 onward it climbs to 1.42–1.71. Users are having to retry payment multiple times after that date. This pre-dates the Jul 14 deploy by a day — worth keeping in mind as we investigate causality.\n\nNow checking the users schema and running both channel queries in parallel."
+        },
+        {
+          "t": 153,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: users"
+        },
+        {
+          "t": 156,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  u.acquisition_channel,\n  COUNT(DISTINCT e.event_id) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events` e\nJOIN `hackproduct.casebook_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC\n"
+        },
+        {
+          "t": 157,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  u.acquisition_channel,\n  e.channel AS event_channel,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events` e\nJOIN `hackproduct.casebook_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1 NULLS LAST, 3 DESC\n"
+        },
+        {
+          "t": 161,
+          "role": "tool",
+          "text": "Table: users\nRows: 3477\nColumns:\n  user_id: STRING\n  signup_date: DATE\n  acquisition_channel: STRING\n  region: STRING"
+        },
+        {
+          "t": 169,
+          "role": "tool",
+          "text": "[\n  {\n    \"acquisition_channel\": \"organic\",\n    \"signups\": \"1065\"\n  },\n  {\n    \"acquisition_channel\": \"paid_search\",\n    \"signups\": \"709\"\n  },\n  {\n    \"acquisition_channel\": \"push\",\n    \"signups\": \"633\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"signups\": \"550\"\n  },\n  {\n    \"acquisition_channel\": \"email\",\n    \"signups\": \"477\"\n  },\n  {\n    \"acquisition_channel\": \"referral\",\n    \"signups\": \"43\"\n  }\n]"
+        },
+        {
+          "t": 178,
+          "role": "tool",
+          "text": "[\n  {\n    \"acquisition_channel\": \"email\",\n    \"event_channel\": \"email\",\n    \"signups\": \"477\"\n  },\n  {\n    \"acquisition_channel\": \"organic\",\n    \"event_channel\": \"organic\",\n    \"signups\": \"1065\"\n  },\n  {\n    \"acquisition_channel\": \"paid_search\",\n    \"event_channel\": \"paid_search\",\n    \"signups\": \"709\"\n  },\n  {\n    \"acquisition_channel\": \"push\",\n    \"event_channel\": \"push\",\n    \"signups\": \"633\"\n  },\n  {\n    \"acquisition_channel\": \"referral\",\n    \"event_channel\": \"referral\",\n    \"signups\": \"43\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"referral\",\n    \"signups\": \"499\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"organic\",\n    \"signups\": \"17\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"email\",\n    \"signups\": \"12\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"paid_search\",\n    \"signups\": \"12\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"push\",\n    \"signups\": \"10\"\n  }\n]"
+        }
+      ],
+      "visible_tables": [
+        "events",
+        "users"
+      ]
+    },
+    "time_budget_s": 300,
+    "rubric": {
+      "required_moves": [
+        {
+          "id": "move-8",
+          "label": "Adopts events.channel as ground truth for attribution instead of users.acquisition_channel",
+          "detector": {
+            "kind": "llm",
+            "prompt": "Did the learner conclude that events.channel should be used as the source of truth for channel attribution, specifically because it explains the NULL cluster in users.acquisition_channel?"
+          }
+        }
+      ],
+      "bonus_moves": [],
+      "fail_conditions": [
+        "Learner filters out or ignores the NULL acquisition_channel rows instead of investigating what they represent.",
+        "Learner concludes referral is a negligible channel based on users.acquisition_channel alone."
+      ]
+    },
+    "is_published": false
+  },
+  {
+    "id": "tuesday-dip-s5",
+    "case_id": "tuesday-dip",
+    "ordinal": 5,
+    "title": "Cross-referencing every Tuesday",
+    "goal_md": "The deploys table has one code_deploy, on 2026-07-14 for checkout-service, and four maintenance_window rows on notifications-db, one for every Tuesday in the window: 2026-06-30, 2026-07-07, 2026-07-14, and 2026-07-21. All four of those Tuesdays show the same 102 to 110 signup dip. Decide what this comparison establishes.",
+    "skill_lane": "driving-the-agent",
+    "decision_point_id": "dp-5",
+    "preload": {
+      "context_md": "## What you know so far\n\n- List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table.\n- Listing tables and fetching the events schema in parallel.\n- Running both queries in parallel.\n- I already have the data — let me run one clean query that computes the Tuesday gap directly.\n- Here's the summary first, then the conversion query.\n\n**Daily signup counts (2026-06-29 → 2026-07-26)**\n\n| Date | Signups | Date | Signups |\n|------|---------|------|---------|\n| Jun 29 Mon | 140 | Jul 13 Mon | 146 |\n| Jun 30 Tue | **102** | Jul 14 Tue | **106** |\n| Jul 01 Wed | 140 | Jul 15 Wed | 139 |\n| Jul 02 Thu | 143 | Jul 16 Thu | 134 |\n| Jul 03 Fri | 137 | Jul 17 Fri | 146 |\n| Jul 04 Sat | 106 | Jul 18 Sat | 101 |\n| Jul 05 Sun | 105 | Jul 19 Sun | 105 |\n| Jul 06 Mon | 140 | Jul 20 Mon | 140 |\n| Jul 07 Tue | **102** | Jul 21 Tue | **110** |\n| Jul 08 Wed | 139 | Jul 22 Wed | 137 |\n| Jul 09 Thu | 146 | Jul 23 Thu | 146 |\n| Jul 10 Fri | 141 | Jul 24 Fri | 134 |\n| Jul 11 Sat | 97 | Jul 25 Sat | 95 |\n| Jul 12 Sun | 94 | Jul 26 Sun | 106 |\n\n**Average signups by day of week**\n\n| Day | Avg daily signups | % vs Tuesday |\n|-----|:-----------------:|:------------:|\n| Sunday | 102.5 | −2.4% |\n| **Monday** | **141.5** | **+34.8%** |\n| **Tuesday** | **105.0** | baseline |\n| **Wednesday** | **138.8** | **+32.2%** |\n| **Thursday** | **142.3** | **+35.5%** |\n| **Friday** | **139.5** | **+32.9%** |\n| Saturday | 99.8 | −5.0% |\n\nThe dip is real and consistent — all four Tuesdays in the window are low. Monday–Friday (excluding Tuesday) run ~33–36% higher than Tuesday. Saturday/Sunday are naturally low, so Tuesday is uniquely depressed among weekdays.\n\n---\n\nNow checking the payment_attempts schema before joining.\n- Running the conversion query and the sanity check in parallel.\n- **Sanity check findings before the fix:**\n\n- `payment_attempts` total rows: **4,459**\n- Distinct `event_id` in `payment_attempts`: **3,477** — matches signups exactly\n- Difference: **982 extra rows** — some signups have multiple payment attempt rows\n\nThe join fans out on those multi-attempt signups. When we `COUNT(DISTINCT attempt_id)`, we count every attempt, not every signup that converted. That's why conversion reads >100% from Jul 13 onward — not a real signal, just overcounting retries.\n\n**The fix:** pre-aggregate `payment_attempts` down to one row per `event_id` before joining, then the metric becomes \"share of signups that had at least one payment attempt.\"\n- **Corrected conversion findings:** Conversion rate is 100% across all 28 days — every signup has at least one payment attempt. However, `avg_attempts_per_converter` reveals a sharp structural break: before Jul 13 it's exactly 1.0, then from Jul 13 onward it climbs to 1.42–1.71. Users are having to retry payment multiple times after that date. This pre-dates the Jul 14 deploy by a day — worth keeping in mind as we investigate causality.\n\nNow checking the users schema and running both channel queries in parallel.\n- **NULL finding:** 499 of the 550 NULLs in `users.acquisition_channel` have `event_channel = 'referral'` — so referral is almost entirely missing from the users table. True referral count is 43 + 499 = **542**, vs 43 using users alone. That's a 12× undercount. `events.channel` is clearly ground truth here.\n\nRunning the corrected channel segmentation and deploys pull in parallel.\n- The deploys query failed — column is `deploy_date`, not `deployed_at`. Let me check the schema and rerun, plus handle the Tuesday-by-Tuesday question at the same time.",
+      "seed_transcript": [
+        {
+          "t": 0,
+          "role": "user",
+          "text": "List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table."
+        },
+        {
+          "t": 5,
+          "role": "assistant",
+          "text": "Listing tables and fetching the events schema in parallel."
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_list_tables"
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: events"
+        },
+        {
+          "t": 16,
+          "role": "tool",
+          "text": "daily_signups (VIEW)\ndaily_signups_by_channel (VIEW)\ndeploys (TABLE)\nevents (TABLE)\npayment_attempts (TABLE)\nsignup_payment_outcomes (VIEW)\ntuesday_dip_vs_deploys (VIEW)\nusers (TABLE)"
+        },
+        {
+          "t": 22,
+          "role": "tool",
+          "text": "Table: events\nRows: 3477\nColumns:\n  event_id: STRING\n  user_id: STRING\n  session_id: STRING\n  ts: TIMESTAMP\n  event_name: STRING\n  device: STRING\n  channel: STRING"
+        },
+        {
+          "t": 26,
+          "role": "assistant",
+          "text": "Running both queries in parallel."
+        },
+        {
+          "t": 27,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(ts) AS date,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 1\n"
+        },
+        {
+          "t": 29,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNT(DISTINCT DATE(ts)) AS num_days,\n  ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2\n"
+        },
+        {
+          "t": 35,
+          "role": "tool",
+          "text": "[\n  {\n    \"date\": \"2026-06-29\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-06-30\",\n    \"signups\": \"102\"\n  },\n  {\n    \"date\": \"2026-07-01\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-02\",\n    \"signups\": \"143\"\n  },\n  {\n    \"date\": \"2026-07-03\",\n    \"signups\": \"137\"\n  },\n  {\n    \"date\": \"2026-07-04\",\n    \"signups\": \"106\"\n  },\n  {\n    \"date\": \"2026-07-05\",\n    \"signups\": \"105\"\n  },\n  {\n    \"date\": \"2026-07-06\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-07\",\n    \"signups\": \"102\"\n  },\n  {\n    \"date\": \"2026-07-08\",\n    \"signups\": \"139\"\n  },\n  {\n    \"date\": \"2026-07-09\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-10\",\n    \"signups\": \"141\"\n  },\n  {\n    \"date\": \"2026-07-11\",\n    \"signups\": \"97\"\n  },\n  {\n    \"date\": \"2026-07-12\",\n    \"signups\": \"94\"\n  },\n  {\n    \"date\": \"2026-07-13\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-14\",\n    \"signups\": \"106\"\n  },\n  {\n    \"date\": \"2026-07-15\",\n    \"signups\": \"139\"\n  },\n  {\n    \"date\": \"2026-07-16\",\n    \"signups\": \"134\"\n  },\n  {\n    \"date\": \"2026-07-17\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-18\",\n    \"signups\": \"101\"\n  },\n  {\n    \"date\": \"2026-07-19\",\n    \"signups\": \"105\"\n  },\n  {\n    \"date\": \"2026-07-20\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-21\",\n    \"signups\": \"110\"\n  },\n  {\n    \"date\": \"2026-07-22\",\n    \"signups\": \"137\"\n  },\n  {\n    \"date\": \"2026-07-23\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-24\",\n    \"signups\": \"134\"\n  },\n  {\n    \"date\": \"2026-07-25\",\n    \"signups\": \"95\"\n  },\n  {\n    \"date\": \"2026-07-26\",\n    \"signups\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 41,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_daily_signups\": \"102.5\",\n    \"day_of_week\": \"Sunday\",\n    \"dow_num\": \"1\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"410\"\n  },\n  {\n    \"avg_daily_signups\": \"141.5\",\n    \"day_of_week\": \"Monday\",\n    \"dow_num\": \"2\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"566\"\n  },\n  {\n    \"avg_daily_signups\": \"105.0\",\n    \"day_of_week\": \"Tuesday\",\n    \"dow_num\": \"3\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"420\"\n  },\n  {\n    \"avg_daily_signups\": \"138.8\",\n    \"day_of_week\": \"Wednesday\",\n    \"dow_num\": \"4\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"555\"\n  },\n  {\n    \"avg_daily_signups\": \"142.3\",\n    \"day_of_week\": \"Thursday\",\n    \"dow_num\": \"5\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"569\"\n  },\n  {\n    \"avg_daily_signups\": \"139.5\",\n    \"day_of_week\": \"Friday\",\n    \"dow_num\": \"6\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"558\"\n  },\n  {\n    \"avg_daily_signups\": \"99.8\",\n    \"day_of_week\": \"Saturday\",\n    \"dow_num\": \"7\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"399\"\n  }\n]"
+        },
+        {
+          "t": 49,
+          "role": "assistant",
+          "text": "I already have the data — let me run one clean query that computes the Tuesday gap directly."
+        },
+        {
+          "t": 53,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH by_dow AS (\n  SELECT\n    FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29'\n    AND ts < '2026-07-27'\n  GROUP BY 1, 2\n),\ntuesday_avg AS (\n  SELECT avg_daily_signups AS tue_avg FROM by_dow WHERE day_of_week = 'Tuesday'\n)\nSELECT\n  b.day_of_week,\n  b.avg_daily_signups,\n  ROUND((b.avg_daily_signups - t.tue_avg) / t.tue_avg * 100, 1) AS pct_above_tuesday\nFROM by_dow b\nCROSS JOIN tuesday_avg t\nORDER BY b.dow_num\n"
+        },
+        {
+          "t": 61,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_daily_signups\": \"102.5\",\n    \"day_of_week\": \"Sunday\",\n    \"pct_above_tuesday\": \"-2.4\"\n  },\n  {\n    \"avg_daily_signups\": \"141.5\",\n    \"day_of_week\": \"Monday\",\n    \"pct_above_tuesday\": \"34.8\"\n  },\n  {\n    \"avg_daily_signups\": \"105.0\",\n    \"day_of_week\": \"Tuesday\",\n    \"pct_above_tuesday\": \"0.0\"\n  },\n  {\n    \"avg_daily_signups\": \"138.8\",\n    \"day_of_week\": \"Wednesday\",\n    \"pct_above_tuesday\": \"32.2\"\n  },\n  {\n    \"avg_daily_signups\": \"142.3\",\n    \"day_of_week\": \"Thursday\",\n    \"pct_above_tuesday\": \"35.5\"\n  },\n  {\n    \"avg_daily_signups\": \"139.5\",\n    \"day_of_week\": \"Friday\",\n    \"pct_above_tuesday\": \"32.9\"\n  },\n  {\n    \"avg_daily_signups\": \"99.8\",\n    \"day_of_week\": \"Saturday\",\n    \"pct_above_tuesday\": \"-5.0\"\n  }\n]"
+        },
+        {
+          "t": 74,
+          "role": "assistant",
+          "text": "Here's the summary first, then the conversion query.\n\n**Daily signup counts (2026-06-29 → 2026-07-26)**\n\n| Date | Signups | Date | Signups |\n|------|---------|------|---------|\n| Jun 29 Mon | 140 | Jul 13 Mon | 146 |\n| Jun 30 Tue | **102** | Jul 14 Tue | **106** |\n| Jul 01 Wed | 140 | Jul 15 Wed | 139 |\n| Jul 02 Thu | 143 | Jul 16 Thu | 134 |\n| Jul 03 Fri | 137 | Jul 17 Fri | 146 |\n| Jul 04 Sat | 106 | Jul 18 Sat | 101 |\n| Jul 05 Sun | 105 | Jul 19 Sun | 105 |\n| Jul 06 Mon | 140 | Jul 20 Mon | 140 |\n| Jul 07 Tue | **102** | Jul 21 Tue | **110** |\n| Jul 08 Wed | 139 | Jul 22 Wed | 137 |\n| Jul 09 Thu | 146 | Jul 23 Thu | 146 |\n| Jul 10 Fri | 141 | Jul 24 Fri | 134 |\n| Jul 11 Sat | 97 | Jul 25 Sat | 95 |\n| Jul 12 Sun | 94 | Jul 26 Sun | 106 |\n\n**Average signups by day of week**\n\n| Day | Avg daily signups | % vs Tuesday |\n|-----|:-----------------:|:------------:|\n| Sunday | 102.5 | −2.4% |\n| **Monday** | **141.5** | **+34.8%** |\n| **Tuesday** | **105.0** | baseline |\n| **Wednesday** | **138.8** | **+32.2%** |\n| **Thursday** | **142.3** | **+35.5%** |\n| **Friday** | **139.5** | **+32.9%** |\n| Saturday | 99.8 | −5.0% |\n\nThe dip is real and consistent — all four Tuesdays in the window are low. Monday–Friday (excluding Tuesday) run ~33–36% higher than Tuesday. Saturday/Sunday are naturally low, so Tuesday is uniquely depressed among weekdays.\n\n---\n\nNow checking the payment_attempts schema before joining."
+        },
+        {
+          "t": 75,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: payment_attempts"
+        },
+        {
+          "t": 81,
+          "role": "tool",
+          "text": "Table: payment_attempts\nRows: 4459\nColumns:\n  attempt_id: STRING\n  event_id: STRING\n  user_id: STRING\n  ts: TIMESTAMP\n  status: STRING\n  amount_cents: INTEGER"
+        },
+        {
+          "t": 85,
+          "role": "assistant",
+          "text": "Running the conversion query and the sanity check in parallel."
+        },
+        {
+          "t": 89,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.attempt_id) AS payment_attempts,\n  ROUND(COUNT(DISTINCT p.attempt_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN `hackproduct.casebook_tuesday_dip.payment_attempts` p\n  ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29'\n  AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
+        },
+        {
+          "t": 91,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  'payment_attempts total rows' AS metric,\n  COUNT(*) AS count\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'events: distinct event_id (signup_completed)',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'payment_attempts: distinct event_id',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n"
+        },
+        {
+          "t": 97,
+          "role": "tool",
+          "text": "[\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-29\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-30\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"102\",\n    \"signups\": \"102\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-01\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-02\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"143\",\n    \"signups\": \"143\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-03\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"137\",\n    \"signups\": \"137\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-04\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"106\",\n    \"signups\": \"106\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-05\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"105\",\n    \"signups\": \"105\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-06\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-07\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"102\",\n    \"signups\": \"102\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-08\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"139\",\n    \"signups\": \"139\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-09\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"146\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-10\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"141\",\n    \"signups\": \"141\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-11\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"97\",\n    \"signups\": \"97\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-12\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"94\",\n    \"signups\": \"94\"\n  },\n  {\n    \"conversion_pct\": \"154.1\",\n    \"date\": \"2026-07-13\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"225\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"149.1\",\n    \"date\": \"2026-07-14\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"158\",\n    \"signups\": \"106\"\n  },\n  {\n    \"conversion_pct\": \"148.2\",\n    \"date\": \"2026-07-15\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"206\",\n    \"signups\": \"139\"\n  },\n  {\n    \"conversion_pct\": \"156.7\",\n    \"date\": \"2026-07-16\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"210\",\n    \"signups\": \"134\"\n  },\n  {\n    \"conversion_pct\": \"166.4\",\n    \"date\": \"2026-07-17\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"243\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"171.3\",\n    \"date\": \"2026-07-18\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"173\",\n    \"signups\": \"101\"\n  },\n  {\n    \"conversion_pct\": \"152.4\",\n    \"date\": \"2026-07-19\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"160\",\n    \"signups\": \"105\"\n  },\n  {\n    \"conversion_pct\": \"150.0\",\n    \"date\": \"2026-07-20\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"210\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"165.5\",\n    \"date\": \"2026-07-21\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"182\",\n    \"signups\": \"110\"\n  },\n  {\n    \"conversion_pct\": \"165.7\",\n    \"date\": \"2026-07-22\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"227\",\n    \"signups\": \"137\"\n  },\n  {\n    \"conversion_pct\": \"142.5\",\n    \"date\": \"2026-07-23\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"208\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"164.2\",\n    \"date\": \"2026-07-24\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"220\",\n    \"signups\": \"134\"\n  },\n  {\n    \"conversion_pct\": \"143.2\",\n    \"date\": \"2026-07-25\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"136\",\n    \"signups\": \"95\"\n  },\n  {\n    \"conversion_pct\": \"159.4\",\n    \"date\": \"2026-07-26\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"169\",\n    \"signups\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 104,
+          "role": "tool",
+          "text": "[\n  {\n    \"count\": \"4459\",\n    \"metric\": \"payment_attempts total rows\"\n  },\n  {\n    \"count\": \"3477\",\n    \"metric\": \"events: distinct event_id (signup_completed)\"\n  },\n  {\n    \"count\": \"3477\",\n    \"metric\": \"payment_attempts: distinct event_id\"\n  }\n]"
+        },
+        {
+          "t": 127,
+          "role": "assistant",
+          "text": "**Sanity check findings before the fix:**\n\n- `payment_attempts` total rows: **4,459**\n- Distinct `event_id` in `payment_attempts`: **3,477** — matches signups exactly\n- Difference: **982 extra rows** — some signups have multiple payment attempt rows\n\nThe join fans out on those multi-attempt signups. When we `COUNT(DISTINCT attempt_id)`, we count every attempt, not every signup that converted. That's why conversion reads >100% from Jul 13 onward — not a real signal, just overcounting retries.\n\n**The fix:** pre-aggregate `payment_attempts` down to one row per `event_id` before joining, then the metric becomes \"share of signups that had at least one payment attempt.\""
+        },
+        {
+          "t": 132,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH pa_deduped AS (\n  SELECT\n    event_id,\n    MIN(ts) AS first_attempt_ts,\n    COUNT(*) AS num_attempts,\n    COUNTIF(status = 'success') AS successes\n  FROM `hackproduct.casebook_tuesday_dip.payment_attempts`\n  WHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n  GROUP BY event_id\n)\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.event_id) AS signups_with_payment_attempt,\n  ROUND(COUNT(DISTINCT p.event_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct,\n  ROUND(AVG(p.num_attempts), 2) AS avg_attempts_per_converter\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN pa_deduped p ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
+        },
+        {
+          "t": 140,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-29\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-30\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"102\",\n    \"signups_with_payment_attempt\": \"102\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-01\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-02\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"143\",\n    \"signups_with_payment_attempt\": \"143\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-03\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"137\",\n    \"signups_with_payment_attempt\": \"137\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-04\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"106\",\n    \"signups_with_payment_attempt\": \"106\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-05\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"105\",\n    \"signups_with_payment_attempt\": \"105\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-06\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-07\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"102\",\n    \"signups_with_payment_attempt\": \"102\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-08\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"139\",\n    \"signups_with_payment_attempt\": \"139\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-09\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-10\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"141\",\n    \"signups_with_payment_attempt\": \"141\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-11\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"97\",\n    \"signups_with_payment_attempt\": \"97\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-12\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"94\",\n    \"signups_with_payment_attempt\": \"94\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.54\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-13\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.49\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-14\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"106\",\n    \"signups_with_payment_attempt\": \"106\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.48\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-15\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"139\",\n    \"signups_with_payment_attempt\": \"139\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.57\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-16\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"134\",\n    \"signups_with_payment_attempt\": \"134\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.66\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-17\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.71\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-18\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"101\",\n    \"signups_with_payment_attempt\": \"101\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.52\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-19\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"105\",\n    \"signups_with_payment_attempt\": \"105\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.5\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-20\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.65\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-21\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"110\",\n    \"signups_with_payment_attempt\": \"110\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.66\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-22\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"137\",\n    \"signups_with_payment_attempt\": \"137\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.42\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-23\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.64\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-24\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"134\",\n    \"signups_with_payment_attempt\": \"134\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.43\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-25\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"95\",\n    \"signups_with_payment_attempt\": \"95\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.59\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-26\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"106\",\n    \"signups_with_payment_attempt\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 152,
+          "role": "assistant",
+          "text": "**Corrected conversion findings:** Conversion rate is 100% across all 28 days — every signup has at least one payment attempt. However, `avg_attempts_per_converter` reveals a sharp structural break: before Jul 13 it's exactly 1.0, then from Jul 13 onward it climbs to 1.42–1.71. Users are having to retry payment multiple times after that date. This pre-dates the Jul 14 deploy by a day — worth keeping in mind as we investigate causality.\n\nNow checking the users schema and running both channel queries in parallel."
+        },
+        {
+          "t": 153,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: users"
+        },
+        {
+          "t": 156,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  u.acquisition_channel,\n  COUNT(DISTINCT e.event_id) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events` e\nJOIN `hackproduct.casebook_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC\n"
+        },
+        {
+          "t": 157,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  u.acquisition_channel,\n  e.channel AS event_channel,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events` e\nJOIN `hackproduct.casebook_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1 NULLS LAST, 3 DESC\n"
+        },
+        {
+          "t": 161,
+          "role": "tool",
+          "text": "Table: users\nRows: 3477\nColumns:\n  user_id: STRING\n  signup_date: DATE\n  acquisition_channel: STRING\n  region: STRING"
+        },
+        {
+          "t": 169,
+          "role": "tool",
+          "text": "[\n  {\n    \"acquisition_channel\": \"organic\",\n    \"signups\": \"1065\"\n  },\n  {\n    \"acquisition_channel\": \"paid_search\",\n    \"signups\": \"709\"\n  },\n  {\n    \"acquisition_channel\": \"push\",\n    \"signups\": \"633\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"signups\": \"550\"\n  },\n  {\n    \"acquisition_channel\": \"email\",\n    \"signups\": \"477\"\n  },\n  {\n    \"acquisition_channel\": \"referral\",\n    \"signups\": \"43\"\n  }\n]"
+        },
+        {
+          "t": 178,
+          "role": "tool",
+          "text": "[\n  {\n    \"acquisition_channel\": \"email\",\n    \"event_channel\": \"email\",\n    \"signups\": \"477\"\n  },\n  {\n    \"acquisition_channel\": \"organic\",\n    \"event_channel\": \"organic\",\n    \"signups\": \"1065\"\n  },\n  {\n    \"acquisition_channel\": \"paid_search\",\n    \"event_channel\": \"paid_search\",\n    \"signups\": \"709\"\n  },\n  {\n    \"acquisition_channel\": \"push\",\n    \"event_channel\": \"push\",\n    \"signups\": \"633\"\n  },\n  {\n    \"acquisition_channel\": \"referral\",\n    \"event_channel\": \"referral\",\n    \"signups\": \"43\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"referral\",\n    \"signups\": \"499\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"organic\",\n    \"signups\": \"17\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"email\",\n    \"signups\": \"12\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"paid_search\",\n    \"signups\": \"12\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"push\",\n    \"signups\": \"10\"\n  }\n]"
+        },
+        {
+          "t": 188,
+          "role": "assistant",
+          "text": "**NULL finding:** 499 of the 550 NULLs in `users.acquisition_channel` have `event_channel = 'referral'` — so referral is almost entirely missing from the users table. True referral count is 43 + 499 = **542**, vs 43 using users alone. That's a 12× undercount. `events.channel` is clearly ground truth here.\n\nRunning the corrected channel segmentation and deploys pull in parallel."
+        },
+        {
+          "t": 190,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  channel,\n  COUNT(*) AS signups,\n  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS pct_of_total\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC\n"
+        },
+        {
+          "t": 190,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT *\nFROM `hackproduct.casebook_tuesday_dip.deploys`\nWHERE deployed_at >= '2026-06-29' AND deployed_at < '2026-07-27'\nORDER BY deployed_at\n"
+        },
+        {
+          "t": 197,
+          "role": "tool",
+          "text": "[\n  {\n    \"channel\": \"organic\",\n    \"pct_of_total\": \"31.1\",\n    \"signups\": \"1082\"\n  },\n  {\n    \"channel\": \"paid_search\",\n    \"pct_of_total\": \"20.7\",\n    \"signups\": \"721\"\n  },\n  {\n    \"channel\": \"push\",\n    \"pct_of_total\": \"18.5\",\n    \"signups\": \"643\"\n  },\n  {\n    \"channel\": \"referral\",\n    \"pct_of_total\": \"15.6\",\n    \"signups\": \"542\"\n  },\n  {\n    \"channel\": \"email\",\n    \"pct_of_total\": \"14.1\",\n    \"signups\": \"489\"\n  }\n]"
+        },
+        {
+          "t": 205,
+          "role": "tool",
+          "text": "MCP error -32000: bq exited 1: Error in query string: Error processing job\n'hackproduct:bqjob_r523bcb37f72f4ba5_000001a041a21bd8_1': Unrecognized name:\ndeployed_at; Did you mean deploy_date? at [4:7]"
+        },
+        {
+          "t": 209,
+          "role": "assistant",
+          "text": "The deploys query failed — column is `deploy_date`, not `deployed_at`. Let me check the schema and rerun, plus handle the Tuesday-by-Tuesday question at the same time."
+        },
+        {
+          "t": 210,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: deploys"
+        },
+        {
+          "t": 217,
+          "role": "tool",
+          "text": "Table: deploys\nRows: 5\nColumns:\n  deploy_id: STRING\n  deploy_date: DATE\n  deploy_type: STRING\n  service: STRING\n  description: STRING"
+        }
+      ],
+      "visible_tables": [
+        "events",
+        "deploys"
+      ]
+    },
+    "time_budget_s": 300,
+    "rubric": {
+      "required_moves": [
+        {
+          "id": "move-10",
+          "label": "Joins signups against deploys for every Tuesday in the window, not just the one that had a code_deploy",
+          "detector": {
+            "kind": "regex",
+            "pattern": "deploy_type"
+          }
+        }
+      ],
+      "bonus_moves": [
+        {
+          "id": "move-11",
+          "label": "Explicitly states that the code_deploy hypothesis is falsified because three of the four dipped Tuesdays have no code_deploy row",
+          "detector": {
+            "kind": "llm",
+            "prompt": "Did the learner explicitly say that the checkout deploy hypothesis is ruled out because Tuesdays with no code_deploy still show the dip, and that the maintenance_window is the pattern present on all four?"
+          }
+        }
+      ],
+      "fail_conditions": [
+        "Learner concludes the July 14 deploy caused the dip without checking the other three Tuesdays against the deploys table.",
+        "Learner treats the deploys table as too sparse to be useful and drops the line of investigation."
+      ]
+    },
+    "is_published": false
+  },
+  {
+    "id": "tuesday-dip-s6",
+    "case_id": "tuesday-dip",
+    "ordinal": 6,
+    "title": "Recovering from a rejected query",
+    "goal_md": "A COUNTIF-based query for the hourly push and email breakdown fails twice with 'MCP error -32000: Only SELECT or WITH queries are allowed,' even though it only reads data. Decide how to keep the investigation moving toward a final, falsifiable conclusion.",
+    "skill_lane": "naming-the-verdict",
+    "decision_point_id": "dp-6",
+    "preload": {
+      "context_md": "## What you know so far\n\n- List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table.\n- Listing tables and fetching the events schema in parallel.\n- Running both queries in parallel.\n- I already have the data — let me run one clean query that computes the Tuesday gap directly.\n- Here's the summary first, then the conversion query.\n\n**Daily signup counts (2026-06-29 → 2026-07-26)**\n\n| Date | Signups | Date | Signups |\n|------|---------|------|---------|\n| Jun 29 Mon | 140 | Jul 13 Mon | 146 |\n| Jun 30 Tue | **102** | Jul 14 Tue | **106** |\n| Jul 01 Wed | 140 | Jul 15 Wed | 139 |\n| Jul 02 Thu | 143 | Jul 16 Thu | 134 |\n| Jul 03 Fri | 137 | Jul 17 Fri | 146 |\n| Jul 04 Sat | 106 | Jul 18 Sat | 101 |\n| Jul 05 Sun | 105 | Jul 19 Sun | 105 |\n| Jul 06 Mon | 140 | Jul 20 Mon | 140 |\n| Jul 07 Tue | **102** | Jul 21 Tue | **110** |\n| Jul 08 Wed | 139 | Jul 22 Wed | 137 |\n| Jul 09 Thu | 146 | Jul 23 Thu | 146 |\n| Jul 10 Fri | 141 | Jul 24 Fri | 134 |\n| Jul 11 Sat | 97 | Jul 25 Sat | 95 |\n| Jul 12 Sun | 94 | Jul 26 Sun | 106 |\n\n**Average signups by day of week**\n\n| Day | Avg daily signups | % vs Tuesday |\n|-----|:-----------------:|:------------:|\n| Sunday | 102.5 | −2.4% |\n| **Monday** | **141.5** | **+34.8%** |\n| **Tuesday** | **105.0** | baseline |\n| **Wednesday** | **138.8** | **+32.2%** |\n| **Thursday** | **142.3** | **+35.5%** |\n| **Friday** | **139.5** | **+32.9%** |\n| Saturday | 99.8 | −5.0% |\n\nThe dip is real and consistent — all four Tuesdays in the window are low. Monday–Friday (excluding Tuesday) run ~33–36% higher than Tuesday. Saturday/Sunday are naturally low, so Tuesday is uniquely depressed among weekdays.\n\n---\n\nNow checking the payment_attempts schema before joining.\n- Running the conversion query and the sanity check in parallel.\n- **Sanity check findings before the fix:**\n\n- `payment_attempts` total rows: **4,459**\n- Distinct `event_id` in `payment_attempts`: **3,477** — matches signups exactly\n- Difference: **982 extra rows** — some signups have multiple payment attempt rows\n\nThe join fans out on those multi-attempt signups. When we `COUNT(DISTINCT attempt_id)`, we count every attempt, not every signup that converted. That's why conversion reads >100% from Jul 13 onward — not a real signal, just overcounting retries.\n\n**The fix:** pre-aggregate `payment_attempts` down to one row per `event_id` before joining, then the metric becomes \"share of signups that had at least one payment attempt.\"\n- **Corrected conversion findings:** Conversion rate is 100% across all 28 days — every signup has at least one payment attempt. However, `avg_attempts_per_converter` reveals a sharp structural break: before Jul 13 it's exactly 1.0, then from Jul 13 onward it climbs to 1.42–1.71. Users are having to retry payment multiple times after that date. This pre-dates the Jul 14 deploy by a day — worth keeping in mind as we investigate causality.\n\nNow checking the users schema and running both channel queries in parallel.\n- **NULL finding:** 499 of the 550 NULLs in `users.acquisition_channel` have `event_channel = 'referral'` — so referral is almost entirely missing from the users table. True referral count is 43 + 499 = **542**, vs 43 using users alone. That's a 12× undercount. `events.channel` is clearly ground truth here.\n\nRunning the corrected channel segmentation and deploys pull in parallel.\n- The deploys query failed — column is `deploy_date`, not `deployed_at`. Let me check the schema and rerun, plus handle the Tuesday-by-Tuesday question at the same time.\n- Getting all deploys and the Tuesday cross-reference in parallel.\n- This is the key finding. All four Tuesdays share one thing: a **scheduled weekly `maintenance_window` on `notifications-db`, 02:00–06:00 UTC, that pauses the push/email re-engagement sender**. The Jul 14 checkout-form deploy is coincidental — the dip exists on the three Tuesdays that have zero code deploys.\n\nNow let's check whether push and email signups specifically collapse during the 02:00–06:00 UTC window on Tuesdays.",
+      "seed_transcript": [
+        {
+          "t": 0,
+          "role": "user",
+          "text": "List the tables and views in the hackproduct.casebook_tuesday_dip dataset, then show me the schema of the events table."
+        },
+        {
+          "t": 5,
+          "role": "assistant",
+          "text": "Listing tables and fetching the events schema in parallel."
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_list_tables"
+        },
+        {
+          "t": 5,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: events"
+        },
+        {
+          "t": 16,
+          "role": "tool",
+          "text": "daily_signups (VIEW)\ndaily_signups_by_channel (VIEW)\ndeploys (TABLE)\nevents (TABLE)\npayment_attempts (TABLE)\nsignup_payment_outcomes (VIEW)\ntuesday_dip_vs_deploys (VIEW)\nusers (TABLE)"
+        },
+        {
+          "t": 22,
+          "role": "tool",
+          "text": "Table: events\nRows: 3477\nColumns:\n  event_id: STRING\n  user_id: STRING\n  session_id: STRING\n  ts: TIMESTAMP\n  event_name: STRING\n  device: STRING\n  channel: STRING"
+        },
+        {
+          "t": 26,
+          "role": "assistant",
+          "text": "Running both queries in parallel."
+        },
+        {
+          "t": 27,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(ts) AS date,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 1\n"
+        },
+        {
+          "t": 29,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNT(DISTINCT DATE(ts)) AS num_days,\n  ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29'\n  AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2\n"
+        },
+        {
+          "t": 35,
+          "role": "tool",
+          "text": "[\n  {\n    \"date\": \"2026-06-29\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-06-30\",\n    \"signups\": \"102\"\n  },\n  {\n    \"date\": \"2026-07-01\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-02\",\n    \"signups\": \"143\"\n  },\n  {\n    \"date\": \"2026-07-03\",\n    \"signups\": \"137\"\n  },\n  {\n    \"date\": \"2026-07-04\",\n    \"signups\": \"106\"\n  },\n  {\n    \"date\": \"2026-07-05\",\n    \"signups\": \"105\"\n  },\n  {\n    \"date\": \"2026-07-06\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-07\",\n    \"signups\": \"102\"\n  },\n  {\n    \"date\": \"2026-07-08\",\n    \"signups\": \"139\"\n  },\n  {\n    \"date\": \"2026-07-09\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-10\",\n    \"signups\": \"141\"\n  },\n  {\n    \"date\": \"2026-07-11\",\n    \"signups\": \"97\"\n  },\n  {\n    \"date\": \"2026-07-12\",\n    \"signups\": \"94\"\n  },\n  {\n    \"date\": \"2026-07-13\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-14\",\n    \"signups\": \"106\"\n  },\n  {\n    \"date\": \"2026-07-15\",\n    \"signups\": \"139\"\n  },\n  {\n    \"date\": \"2026-07-16\",\n    \"signups\": \"134\"\n  },\n  {\n    \"date\": \"2026-07-17\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-18\",\n    \"signups\": \"101\"\n  },\n  {\n    \"date\": \"2026-07-19\",\n    \"signups\": \"105\"\n  },\n  {\n    \"date\": \"2026-07-20\",\n    \"signups\": \"140\"\n  },\n  {\n    \"date\": \"2026-07-21\",\n    \"signups\": \"110\"\n  },\n  {\n    \"date\": \"2026-07-22\",\n    \"signups\": \"137\"\n  },\n  {\n    \"date\": \"2026-07-23\",\n    \"signups\": \"146\"\n  },\n  {\n    \"date\": \"2026-07-24\",\n    \"signups\": \"134\"\n  },\n  {\n    \"date\": \"2026-07-25\",\n    \"signups\": \"95\"\n  },\n  {\n    \"date\": \"2026-07-26\",\n    \"signups\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 41,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_daily_signups\": \"102.5\",\n    \"day_of_week\": \"Sunday\",\n    \"dow_num\": \"1\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"410\"\n  },\n  {\n    \"avg_daily_signups\": \"141.5\",\n    \"day_of_week\": \"Monday\",\n    \"dow_num\": \"2\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"566\"\n  },\n  {\n    \"avg_daily_signups\": \"105.0\",\n    \"day_of_week\": \"Tuesday\",\n    \"dow_num\": \"3\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"420\"\n  },\n  {\n    \"avg_daily_signups\": \"138.8\",\n    \"day_of_week\": \"Wednesday\",\n    \"dow_num\": \"4\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"555\"\n  },\n  {\n    \"avg_daily_signups\": \"142.3\",\n    \"day_of_week\": \"Thursday\",\n    \"dow_num\": \"5\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"569\"\n  },\n  {\n    \"avg_daily_signups\": \"139.5\",\n    \"day_of_week\": \"Friday\",\n    \"dow_num\": \"6\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"558\"\n  },\n  {\n    \"avg_daily_signups\": \"99.8\",\n    \"day_of_week\": \"Saturday\",\n    \"dow_num\": \"7\",\n    \"num_days\": \"4\",\n    \"total_signups\": \"399\"\n  }\n]"
+        },
+        {
+          "t": 49,
+          "role": "assistant",
+          "text": "I already have the data — let me run one clean query that computes the Tuesday gap directly."
+        },
+        {
+          "t": 53,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH by_dow AS (\n  SELECT\n    FORMAT_TIMESTAMP('%A', ts) AS day_of_week,\n    EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n    ROUND(COUNT(*) / COUNT(DISTINCT DATE(ts)), 1) AS avg_daily_signups\n  FROM `hackproduct.casebook_tuesday_dip.events`\n  WHERE event_name = 'signup_completed'\n    AND ts >= '2026-06-29'\n    AND ts < '2026-07-27'\n  GROUP BY 1, 2\n),\ntuesday_avg AS (\n  SELECT avg_daily_signups AS tue_avg FROM by_dow WHERE day_of_week = 'Tuesday'\n)\nSELECT\n  b.day_of_week,\n  b.avg_daily_signups,\n  ROUND((b.avg_daily_signups - t.tue_avg) / t.tue_avg * 100, 1) AS pct_above_tuesday\nFROM by_dow b\nCROSS JOIN tuesday_avg t\nORDER BY b.dow_num\n"
+        },
+        {
+          "t": 61,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_daily_signups\": \"102.5\",\n    \"day_of_week\": \"Sunday\",\n    \"pct_above_tuesday\": \"-2.4\"\n  },\n  {\n    \"avg_daily_signups\": \"141.5\",\n    \"day_of_week\": \"Monday\",\n    \"pct_above_tuesday\": \"34.8\"\n  },\n  {\n    \"avg_daily_signups\": \"105.0\",\n    \"day_of_week\": \"Tuesday\",\n    \"pct_above_tuesday\": \"0.0\"\n  },\n  {\n    \"avg_daily_signups\": \"138.8\",\n    \"day_of_week\": \"Wednesday\",\n    \"pct_above_tuesday\": \"32.2\"\n  },\n  {\n    \"avg_daily_signups\": \"142.3\",\n    \"day_of_week\": \"Thursday\",\n    \"pct_above_tuesday\": \"35.5\"\n  },\n  {\n    \"avg_daily_signups\": \"139.5\",\n    \"day_of_week\": \"Friday\",\n    \"pct_above_tuesday\": \"32.9\"\n  },\n  {\n    \"avg_daily_signups\": \"99.8\",\n    \"day_of_week\": \"Saturday\",\n    \"pct_above_tuesday\": \"-5.0\"\n  }\n]"
+        },
+        {
+          "t": 74,
+          "role": "assistant",
+          "text": "Here's the summary first, then the conversion query.\n\n**Daily signup counts (2026-06-29 → 2026-07-26)**\n\n| Date | Signups | Date | Signups |\n|------|---------|------|---------|\n| Jun 29 Mon | 140 | Jul 13 Mon | 146 |\n| Jun 30 Tue | **102** | Jul 14 Tue | **106** |\n| Jul 01 Wed | 140 | Jul 15 Wed | 139 |\n| Jul 02 Thu | 143 | Jul 16 Thu | 134 |\n| Jul 03 Fri | 137 | Jul 17 Fri | 146 |\n| Jul 04 Sat | 106 | Jul 18 Sat | 101 |\n| Jul 05 Sun | 105 | Jul 19 Sun | 105 |\n| Jul 06 Mon | 140 | Jul 20 Mon | 140 |\n| Jul 07 Tue | **102** | Jul 21 Tue | **110** |\n| Jul 08 Wed | 139 | Jul 22 Wed | 137 |\n| Jul 09 Thu | 146 | Jul 23 Thu | 146 |\n| Jul 10 Fri | 141 | Jul 24 Fri | 134 |\n| Jul 11 Sat | 97 | Jul 25 Sat | 95 |\n| Jul 12 Sun | 94 | Jul 26 Sun | 106 |\n\n**Average signups by day of week**\n\n| Day | Avg daily signups | % vs Tuesday |\n|-----|:-----------------:|:------------:|\n| Sunday | 102.5 | −2.4% |\n| **Monday** | **141.5** | **+34.8%** |\n| **Tuesday** | **105.0** | baseline |\n| **Wednesday** | **138.8** | **+32.2%** |\n| **Thursday** | **142.3** | **+35.5%** |\n| **Friday** | **139.5** | **+32.9%** |\n| Saturday | 99.8 | −5.0% |\n\nThe dip is real and consistent — all four Tuesdays in the window are low. Monday–Friday (excluding Tuesday) run ~33–36% higher than Tuesday. Saturday/Sunday are naturally low, so Tuesday is uniquely depressed among weekdays.\n\n---\n\nNow checking the payment_attempts schema before joining."
+        },
+        {
+          "t": 75,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: payment_attempts"
+        },
+        {
+          "t": 81,
+          "role": "tool",
+          "text": "Table: payment_attempts\nRows: 4459\nColumns:\n  attempt_id: STRING\n  event_id: STRING\n  user_id: STRING\n  ts: TIMESTAMP\n  status: STRING\n  amount_cents: INTEGER"
+        },
+        {
+          "t": 85,
+          "role": "assistant",
+          "text": "Running the conversion query and the sanity check in parallel."
+        },
+        {
+          "t": 89,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.attempt_id) AS payment_attempts,\n  ROUND(COUNT(DISTINCT p.attempt_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN `hackproduct.casebook_tuesday_dip.payment_attempts` p\n  ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29'\n  AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
+        },
+        {
+          "t": 91,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  'payment_attempts total rows' AS metric,\n  COUNT(*) AS count\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'events: distinct event_id (signup_completed)',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n\nUNION ALL\n\nSELECT\n  'payment_attempts: distinct event_id',\n  COUNT(DISTINCT event_id)\nFROM `hackproduct.casebook_tuesday_dip.payment_attempts`\nWHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n"
+        },
+        {
+          "t": 97,
+          "role": "tool",
+          "text": "[\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-29\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-30\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"102\",\n    \"signups\": \"102\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-01\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-02\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"143\",\n    \"signups\": \"143\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-03\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"137\",\n    \"signups\": \"137\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-04\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"106\",\n    \"signups\": \"106\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-05\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"105\",\n    \"signups\": \"105\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-06\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"140\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-07\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"102\",\n    \"signups\": \"102\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-08\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"139\",\n    \"signups\": \"139\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-09\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"146\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-10\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"141\",\n    \"signups\": \"141\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-11\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"97\",\n    \"signups\": \"97\"\n  },\n  {\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-12\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"94\",\n    \"signups\": \"94\"\n  },\n  {\n    \"conversion_pct\": \"154.1\",\n    \"date\": \"2026-07-13\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"225\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"149.1\",\n    \"date\": \"2026-07-14\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"158\",\n    \"signups\": \"106\"\n  },\n  {\n    \"conversion_pct\": \"148.2\",\n    \"date\": \"2026-07-15\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"206\",\n    \"signups\": \"139\"\n  },\n  {\n    \"conversion_pct\": \"156.7\",\n    \"date\": \"2026-07-16\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"210\",\n    \"signups\": \"134\"\n  },\n  {\n    \"conversion_pct\": \"166.4\",\n    \"date\": \"2026-07-17\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"243\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"171.3\",\n    \"date\": \"2026-07-18\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"173\",\n    \"signups\": \"101\"\n  },\n  {\n    \"conversion_pct\": \"152.4\",\n    \"date\": \"2026-07-19\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"160\",\n    \"signups\": \"105\"\n  },\n  {\n    \"conversion_pct\": \"150.0\",\n    \"date\": \"2026-07-20\",\n    \"day_of_week\": \"Monday\",\n    \"payment_attempts\": \"210\",\n    \"signups\": \"140\"\n  },\n  {\n    \"conversion_pct\": \"165.5\",\n    \"date\": \"2026-07-21\",\n    \"day_of_week\": \"Tuesday\",\n    \"payment_attempts\": \"182\",\n    \"signups\": \"110\"\n  },\n  {\n    \"conversion_pct\": \"165.7\",\n    \"date\": \"2026-07-22\",\n    \"day_of_week\": \"Wednesday\",\n    \"payment_attempts\": \"227\",\n    \"signups\": \"137\"\n  },\n  {\n    \"conversion_pct\": \"142.5\",\n    \"date\": \"2026-07-23\",\n    \"day_of_week\": \"Thursday\",\n    \"payment_attempts\": \"208\",\n    \"signups\": \"146\"\n  },\n  {\n    \"conversion_pct\": \"164.2\",\n    \"date\": \"2026-07-24\",\n    \"day_of_week\": \"Friday\",\n    \"payment_attempts\": \"220\",\n    \"signups\": \"134\"\n  },\n  {\n    \"conversion_pct\": \"143.2\",\n    \"date\": \"2026-07-25\",\n    \"day_of_week\": \"Saturday\",\n    \"payment_attempts\": \"136\",\n    \"signups\": \"95\"\n  },\n  {\n    \"conversion_pct\": \"159.4\",\n    \"date\": \"2026-07-26\",\n    \"day_of_week\": \"Sunday\",\n    \"payment_attempts\": \"169\",\n    \"signups\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 104,
+          "role": "tool",
+          "text": "[\n  {\n    \"count\": \"4459\",\n    \"metric\": \"payment_attempts total rows\"\n  },\n  {\n    \"count\": \"3477\",\n    \"metric\": \"events: distinct event_id (signup_completed)\"\n  },\n  {\n    \"count\": \"3477\",\n    \"metric\": \"payment_attempts: distinct event_id\"\n  }\n]"
+        },
+        {
+          "t": 127,
+          "role": "assistant",
+          "text": "**Sanity check findings before the fix:**\n\n- `payment_attempts` total rows: **4,459**\n- Distinct `event_id` in `payment_attempts`: **3,477** — matches signups exactly\n- Difference: **982 extra rows** — some signups have multiple payment attempt rows\n\nThe join fans out on those multi-attempt signups. When we `COUNT(DISTINCT attempt_id)`, we count every attempt, not every signup that converted. That's why conversion reads >100% from Jul 13 onward — not a real signal, just overcounting retries.\n\n**The fix:** pre-aggregate `payment_attempts` down to one row per `event_id` before joining, then the metric becomes \"share of signups that had at least one payment attempt.\""
+        },
+        {
+          "t": 132,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH pa_deduped AS (\n  SELECT\n    event_id,\n    MIN(ts) AS first_attempt_ts,\n    COUNT(*) AS num_attempts,\n    COUNTIF(status = 'success') AS successes\n  FROM `hackproduct.casebook_tuesday_dip.payment_attempts`\n  WHERE ts >= '2026-06-29' AND ts < '2026-07-27'\n  GROUP BY event_id\n)\nSELECT\n  DATE(e.ts) AS date,\n  FORMAT_TIMESTAMP('%A', e.ts) AS day_of_week,\n  COUNT(DISTINCT e.event_id) AS signups,\n  COUNT(DISTINCT p.event_id) AS signups_with_payment_attempt,\n  ROUND(COUNT(DISTINCT p.event_id) / COUNT(DISTINCT e.event_id) * 100, 1) AS conversion_pct,\n  ROUND(AVG(p.num_attempts), 2) AS avg_attempts_per_converter\nFROM `hackproduct.casebook_tuesday_dip.events` e\nLEFT JOIN pa_deduped p ON p.event_id = e.event_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1\n"
+        },
+        {
+          "t": 140,
+          "role": "tool",
+          "text": "[\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-29\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-06-30\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"102\",\n    \"signups_with_payment_attempt\": \"102\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-01\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-02\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"143\",\n    \"signups_with_payment_attempt\": \"143\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-03\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"137\",\n    \"signups_with_payment_attempt\": \"137\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-04\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"106\",\n    \"signups_with_payment_attempt\": \"106\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-05\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"105\",\n    \"signups_with_payment_attempt\": \"105\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-06\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-07\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"102\",\n    \"signups_with_payment_attempt\": \"102\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-08\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"139\",\n    \"signups_with_payment_attempt\": \"139\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-09\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-10\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"141\",\n    \"signups_with_payment_attempt\": \"141\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-11\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"97\",\n    \"signups_with_payment_attempt\": \"97\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.0\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-12\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"94\",\n    \"signups_with_payment_attempt\": \"94\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.54\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-13\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.49\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-14\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"106\",\n    \"signups_with_payment_attempt\": \"106\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.48\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-15\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"139\",\n    \"signups_with_payment_attempt\": \"139\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.57\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-16\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"134\",\n    \"signups_with_payment_attempt\": \"134\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.66\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-17\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.71\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-18\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"101\",\n    \"signups_with_payment_attempt\": \"101\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.52\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-19\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"105\",\n    \"signups_with_payment_attempt\": \"105\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.5\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-20\",\n    \"day_of_week\": \"Monday\",\n    \"signups\": \"140\",\n    \"signups_with_payment_attempt\": \"140\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.65\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-21\",\n    \"day_of_week\": \"Tuesday\",\n    \"signups\": \"110\",\n    \"signups_with_payment_attempt\": \"110\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.66\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-22\",\n    \"day_of_week\": \"Wednesday\",\n    \"signups\": \"137\",\n    \"signups_with_payment_attempt\": \"137\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.42\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-23\",\n    \"day_of_week\": \"Thursday\",\n    \"signups\": \"146\",\n    \"signups_with_payment_attempt\": \"146\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.64\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-24\",\n    \"day_of_week\": \"Friday\",\n    \"signups\": \"134\",\n    \"signups_with_payment_attempt\": \"134\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.43\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-25\",\n    \"day_of_week\": \"Saturday\",\n    \"signups\": \"95\",\n    \"signups_with_payment_attempt\": \"95\"\n  },\n  {\n    \"avg_attempts_per_converter\": \"1.59\",\n    \"conversion_pct\": \"100.0\",\n    \"date\": \"2026-07-26\",\n    \"day_of_week\": \"Sunday\",\n    \"signups\": \"106\",\n    \"signups_with_payment_attempt\": \"106\"\n  }\n]"
+        },
+        {
+          "t": 152,
+          "role": "assistant",
+          "text": "**Corrected conversion findings:** Conversion rate is 100% across all 28 days — every signup has at least one payment attempt. However, `avg_attempts_per_converter` reveals a sharp structural break: before Jul 13 it's exactly 1.0, then from Jul 13 onward it climbs to 1.42–1.71. Users are having to retry payment multiple times after that date. This pre-dates the Jul 14 deploy by a day — worth keeping in mind as we investigate causality.\n\nNow checking the users schema and running both channel queries in parallel."
+        },
+        {
+          "t": 153,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: users"
+        },
+        {
+          "t": 156,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  u.acquisition_channel,\n  COUNT(DISTINCT e.event_id) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events` e\nJOIN `hackproduct.casebook_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC\n"
+        },
+        {
+          "t": 157,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  u.acquisition_channel,\n  e.channel AS event_channel,\n  COUNT(*) AS signups\nFROM `hackproduct.casebook_tuesday_dip.events` e\nJOIN `hackproduct.casebook_tuesday_dip.users` u ON u.user_id = e.user_id\nWHERE e.event_name = 'signup_completed'\n  AND e.ts >= '2026-06-29' AND e.ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 1 NULLS LAST, 3 DESC\n"
+        },
+        {
+          "t": 161,
+          "role": "tool",
+          "text": "Table: users\nRows: 3477\nColumns:\n  user_id: STRING\n  signup_date: DATE\n  acquisition_channel: STRING\n  region: STRING"
+        },
+        {
+          "t": 169,
+          "role": "tool",
+          "text": "[\n  {\n    \"acquisition_channel\": \"organic\",\n    \"signups\": \"1065\"\n  },\n  {\n    \"acquisition_channel\": \"paid_search\",\n    \"signups\": \"709\"\n  },\n  {\n    \"acquisition_channel\": \"push\",\n    \"signups\": \"633\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"signups\": \"550\"\n  },\n  {\n    \"acquisition_channel\": \"email\",\n    \"signups\": \"477\"\n  },\n  {\n    \"acquisition_channel\": \"referral\",\n    \"signups\": \"43\"\n  }\n]"
+        },
+        {
+          "t": 178,
+          "role": "tool",
+          "text": "[\n  {\n    \"acquisition_channel\": \"email\",\n    \"event_channel\": \"email\",\n    \"signups\": \"477\"\n  },\n  {\n    \"acquisition_channel\": \"organic\",\n    \"event_channel\": \"organic\",\n    \"signups\": \"1065\"\n  },\n  {\n    \"acquisition_channel\": \"paid_search\",\n    \"event_channel\": \"paid_search\",\n    \"signups\": \"709\"\n  },\n  {\n    \"acquisition_channel\": \"push\",\n    \"event_channel\": \"push\",\n    \"signups\": \"633\"\n  },\n  {\n    \"acquisition_channel\": \"referral\",\n    \"event_channel\": \"referral\",\n    \"signups\": \"43\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"referral\",\n    \"signups\": \"499\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"organic\",\n    \"signups\": \"17\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"email\",\n    \"signups\": \"12\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"paid_search\",\n    \"signups\": \"12\"\n  },\n  {\n    \"acquisition_channel\": null,\n    \"event_channel\": \"push\",\n    \"signups\": \"10\"\n  }\n]"
+        },
+        {
+          "t": 188,
+          "role": "assistant",
+          "text": "**NULL finding:** 499 of the 550 NULLs in `users.acquisition_channel` have `event_channel = 'referral'` — so referral is almost entirely missing from the users table. True referral count is 43 + 499 = **542**, vs 43 using users alone. That's a 12× undercount. `events.channel` is clearly ground truth here.\n\nRunning the corrected channel segmentation and deploys pull in parallel."
+        },
+        {
+          "t": 190,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT\n  channel,\n  COUNT(*) AS signups,\n  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS pct_of_total\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1\nORDER BY 2 DESC\n"
+        },
+        {
+          "t": 190,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT *\nFROM `hackproduct.casebook_tuesday_dip.deploys`\nWHERE deployed_at >= '2026-06-29' AND deployed_at < '2026-07-27'\nORDER BY deployed_at\n"
+        },
+        {
+          "t": 197,
+          "role": "tool",
+          "text": "[\n  {\n    \"channel\": \"organic\",\n    \"pct_of_total\": \"31.1\",\n    \"signups\": \"1082\"\n  },\n  {\n    \"channel\": \"paid_search\",\n    \"pct_of_total\": \"20.7\",\n    \"signups\": \"721\"\n  },\n  {\n    \"channel\": \"push\",\n    \"pct_of_total\": \"18.5\",\n    \"signups\": \"643\"\n  },\n  {\n    \"channel\": \"referral\",\n    \"pct_of_total\": \"15.6\",\n    \"signups\": \"542\"\n  },\n  {\n    \"channel\": \"email\",\n    \"pct_of_total\": \"14.1\",\n    \"signups\": \"489\"\n  }\n]"
+        },
+        {
+          "t": 205,
+          "role": "tool",
+          "text": "MCP error -32000: bq exited 1: Error in query string: Error processing job\n'hackproduct:bqjob_r523bcb37f72f4ba5_000001a041a21bd8_1': Unrecognized name:\ndeployed_at; Did you mean deploy_date? at [4:7]"
+        },
+        {
+          "t": 209,
+          "role": "assistant",
+          "text": "The deploys query failed — column is `deploy_date`, not `deployed_at`. Let me check the schema and rerun, plus handle the Tuesday-by-Tuesday question at the same time."
+        },
+        {
+          "t": 210,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_describe_table\ntable: deploys"
+        },
+        {
+          "t": 217,
+          "role": "tool",
+          "text": "Table: deploys\nRows: 5\nColumns:\n  deploy_id: STRING\n  deploy_date: DATE\n  deploy_type: STRING\n  service: STRING\n  description: STRING"
+        },
+        {
+          "t": 223,
+          "role": "assistant",
+          "text": "Getting all deploys and the Tuesday cross-reference in parallel."
+        },
+        {
+          "t": 223,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nSELECT *\nFROM `hackproduct.casebook_tuesday_dip.deploys`\nWHERE deploy_date >= '2026-06-29' AND deploy_date <= '2026-07-26'\nORDER BY deploy_date\n"
+        },
+        {
+          "t": 227,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\nWITH tuesdays AS (\n  SELECT date, signups FROM UNNEST([\n    STRUCT(DATE '2026-06-30' AS date, 102 AS signups),\n    STRUCT(DATE '2026-07-07' AS date, 102 AS signups),\n    STRUCT(DATE '2026-07-14' AS date, 106 AS signups),\n    STRUCT(DATE '2026-07-21' AS date, 110 AS signups)\n  ])\n),\ndeploy_summary AS (\n  SELECT\n    deploy_date,\n    STRING_AGG(deploy_type, ', ' ORDER BY deploy_type) AS deploy_types,\n    STRING_AGG(service, ', ' ORDER BY service) AS services\n  FROM `hackproduct.casebook_tuesday_dip.deploys`\n  WHERE deploy_date >= '2026-06-29' AND deploy_date <= '2026-07-26'\n  GROUP BY deploy_date\n)\nSELECT\n  t.date AS tuesday,\n  t.signups,\n  COALESCE(d.deploy_types, 'none') AS deploy_types,\n  COALESCE(d.services, '—') AS services\nFROM tuesdays t\nLEFT JOIN deploy_summary d ON d.deploy_date = t.date\nORDER BY t.date\n"
+        },
+        {
+          "t": 230,
+          "role": "tool",
+          "text": "[\n  {\n    \"deploy_date\": \"2026-06-30\",\n    \"deploy_id\": \"dep_mw_001\",\n    \"deploy_type\": \"maintenance_window\",\n    \"description\": \"Scheduled weekly DB vacuum 02:00-06:00 UTC; push/email re-engagement sender paused\",\n    \"service\": \"notifications-db\"\n  },\n  {\n    \"deploy_date\": \"2026-07-07\",\n    \"deploy_id\": \"dep_mw_002\",\n    \"deploy_type\": \"maintenance_window\",\n    \"description\": \"Scheduled weekly DB vacuum 02:00-06:00 UTC; push/email re-engagement sender paused\",\n    \"service\": \"notifications-db\"\n  },\n  {\n    \"deploy_date\": \"2026-07-14\",\n    \"deploy_id\": \"dep_001\",\n    \"deploy_type\": \"code_deploy\",\n    \"description\": \"Checkout form rework: new payment-method step, applies to /checkout only, not /signup\",\n    \"service\": \"checkout-service\"\n  },\n  {\n    \"deploy_date\": \"2026-07-14\",\n    \"deploy_id\": \"dep_mw_003\",\n    \"deploy_type\": \"maintenance_window\",\n    \"description\": \"Scheduled weekly DB vacuum 02:00-06:00 UTC; push/email re-engagement sender paused\",\n    \"service\": \"notifications-db\"\n  },\n  {\n    \"deploy_date\": \"2026-07-21\",\n    \"deploy_id\": \"dep_mw_004\",\n    \"deploy_type\": \"maintenance_window\",\n    \"description\": \"Scheduled weekly DB vacuum 02:00-06:00 UTC; push/email re-engagement sender paused\",\n    \"service\": \"notifications-db\"\n  }\n]"
+        },
+        {
+          "t": 238,
+          "role": "tool",
+          "text": "[\n  {\n    \"deploy_types\": \"maintenance_window\",\n    \"services\": \"notifications-db\",\n    \"signups\": \"102\",\n    \"tuesday\": \"2026-06-30\"\n  },\n  {\n    \"deploy_types\": \"maintenance_window\",\n    \"services\": \"notifications-db\",\n    \"signups\": \"102\",\n    \"tuesday\": \"2026-07-07\"\n  },\n  {\n    \"deploy_types\": \"code_deploy, maintenance_window\",\n    \"services\": \"checkout-service, notifications-db\",\n    \"signups\": \"106\",\n    \"tuesday\": \"2026-07-14\"\n  },\n  {\n    \"deploy_types\": \"maintenance_window\",\n    \"services\": \"notifications-db\",\n    \"signups\": \"110\",\n    \"tuesday\": \"2026-07-21\"\n  }\n]"
+        },
+        {
+          "t": 254,
+          "role": "assistant",
+          "text": "This is the key finding. All four Tuesdays share one thing: a **scheduled weekly `maintenance_window` on `notifications-db`, 02:00–06:00 UTC, that pauses the push/email re-engagement sender**. The Jul 14 checkout-form deploy is coincidental — the dip exists on the three Tuesdays that have zero code deploys.\n\nNow let's check whether push and email signups specifically collapse during the 02:00–06:00 UTC window on Tuesdays."
+        },
+        {
+          "t": 258,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\n-- Push + email signups by hour of day: Tuesdays vs rest of week\nSELECT\n  EXTRACT(HOUR FROM ts) AS hour_utc,\n  COUNTIF(FORMAT_DATE('%A', DATE(ts)) = 'Tuesday' AND channel IN ('push','email')) AS tue_push_email,\n  COUNTIF(FORMAT_DATE('%A', DATE(ts)) != 'Tuesday' AND channel IN ('push','email')) AS other_days_push_email,\n  ROUND(\n    COUNTIF(FORMAT_DATE('%A', DATE(ts)) != 'Tuesday' AND channel IN ('push','email'))\n    / 3.0, 1\n  ) AS other_days_avg_per_day  -- 24 non-Tue weekdays / 3 other weekdays per week normalised to same count\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\n  AND channel IN ('push', 'email')\nGROUP BY 1\nORDER BY 1\n"
+        },
+        {
+          "t": 258,
+          "role": "tool",
+          "text": "MCP error -32000: Only SELECT or WITH queries are allowed."
+        },
+        {
+          "t": 261,
+          "role": "tool",
+          "text": "[tool_use] mcp__bigquery__bq_query\nsql:\n\n-- Total and push+email signups by day of week to see if push/email disproportionately drives the Tuesday dip\nSELECT\n  FORMAT_DATE('%A', DATE(ts)) AS day_of_week,\n  EXTRACT(DAYOFWEEK FROM ts) AS dow_num,\n  COUNT(*) AS total_signups,\n  COUNTIF(channel IN ('push','email')) AS push_email_signups,\n  COUNTIF(channel NOT IN ('push','email')) AS other_signups,\n  ROUND(COUNTIF(channel IN ('push','email')) * 100.0 / COUNT(*), 1) AS push_email_pct\nFROM `hackproduct.casebook_tuesday_dip.events`\nWHERE event_name = 'signup_completed'\n  AND ts >= '2026-06-29' AND ts < '2026-07-27'\nGROUP BY 1, 2\nORDER BY 2\n"
+        },
+        {
+          "t": 261,
+          "role": "tool",
+          "text": "MCP error -32000: Only SELECT or WITH queries are allowed."
+        }
+      ],
+      "visible_tables": [
+        "events",
+        "deploys"
+      ]
+    },
+    "time_budget_s": 300,
+    "rubric": {
+      "required_moves": [
+        {
+          "id": "move-12",
+          "label": "Rewrites the aggregation with SUM(CASE WHEN ... THEN 1 ELSE 0 END) instead of COUNTIF and reruns the same analysis",
+          "detector": {
+            "kind": "regex",
+            "pattern": "SUM\\(\\s*CASE\\s+WHEN"
+          }
+        }
+      ],
+      "bonus_moves": [
+        {
+          "id": "move-14",
+          "label": "States the final mechanism (push/email suppression during the maintenance window) with a falsifiable check",
+          "detector": {
+            "kind": "llm",
+            "prompt": "Did the learner state a concrete, checkable falsification test for the maintenance-window conclusion, such as checking whether push/email volume recovers on a Tuesday when the maintenance window is skipped?"
+          }
+        }
+      ],
+      "fail_conditions": [
+        "Learner retries the identical failing COUNTIF query instead of rewriting the aggregation.",
+        "Learner drops the channel-level check entirely and ships the conclusion without evidence for which channel drives the deficit.",
+        "Learner states a conclusion with no falsifiable check attached."
+      ]
+    },
+    "is_published": false
+  }
+]

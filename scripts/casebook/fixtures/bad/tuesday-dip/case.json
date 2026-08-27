@@ -1,0 +1,31 @@
+{
+  "id": "tuesday-dip",
+  "track_id": "funnel-forensics",
+  "title": "The Tuesday Checkout Dip",
+  "hook": "As a senior data analyst, you need to leverage the warehouse to delve into this issue — it dropped hard.",
+  "brief_md": "## Situation\n\nAs a tech lead, you are asked to utilize the funnel data to ensure a robust conclusion — the drop is real.",
+  "difficulty": "intermediate",
+  "est_minutes": 45,
+  "warehouse_dataset": "hackproduct:case_001_checkout_funnel",
+  "objectives": [
+    {
+      "id": "obj-isolate-step",
+      "label": "Isolate which funnel step the drop is concentrated in",
+      "detector": { "kind": "regex", "pattern": "GROUP BY\\s+event_name" }
+    },
+    {
+      "id": "obj-bad-detector",
+      "label": "Broken detector objective",
+      "detector": { "kind": "regex", "pattern": "(unclosed[" }
+    }
+  ],
+  "verdict_spec": {
+    "expected_cause_tags": [],
+    "requires_falsifiable_check": "yes"
+  },
+  "unlock_lane": null,
+  "unlock_level": null,
+  "is_free": true,
+  "is_published": false,
+  "ordinal": 1
+}

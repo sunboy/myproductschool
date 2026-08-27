@@ -1,0 +1,6 @@
+deploy_id,deploy_date,deploy_type,service,description
+dep_001,2026-07-14,code_deploy,checkout-service,"Checkout form rework: new payment-method step, applies to /checkout only, not /signup"
+dep_mw_001,2026-06-30,maintenance_window,notifications-db,Scheduled weekly DB vacuum 02:00-06:00 UTC; push/email re-engagement sender paused
+dep_mw_002,2026-07-07,maintenance_window,notifications-db,Scheduled weekly DB vacuum 02:00-06:00 UTC; push/email re-engagement sender paused
+dep_mw_003,2026-07-14,maintenance_window,notifications-db,Scheduled weekly DB vacuum 02:00-06:00 UTC; push/email re-engagement sender paused
+dep_mw_004,2026-07-21,maintenance_window,notifications-db,Scheduled weekly DB vacuum 02:00-06:00 UTC; push/email re-engagement sender paused

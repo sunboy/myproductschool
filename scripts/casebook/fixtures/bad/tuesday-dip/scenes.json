@@ -1,0 +1,51 @@
+[
+  {
+    "id": "tuesday-dip-s1",
+    "case_id": "tuesday-dip",
+    "ordinal": 1,
+    "title": "[NEEDS AUTHORING] Scene 1: As a data analyst, where do you look first",
+    "goal_md": "[NEEDS AUTHORING] Draft a learner-facing goal for decision point dp-1-where-to-look.",
+    "skill_lane": "driving-the-agent",
+    "decision_point_id": "dp-does-not-exist",
+    "preload": {
+      "context_md": "## What you know so far",
+      "visible_tables": ["events"],
+      "needs_authoring": true,
+      "authoring_prompt": "finish this scene"
+    },
+    "time_budget_s": 300,
+    "rubric": {
+      "required_moves": [],
+      "bonus_moves": [],
+      "fail_conditions": []
+    },
+    "is_published": false,
+    "_needs_authoring": true
+  },
+  {
+    "id": "tuesday-dip-s2",
+    "case_id": "wrong-case-id",
+    "ordinal": 2,
+    "title": "As a senior analyst, ensure a robust finding — delve into the data.",
+    "goal_md": "You are a staff engineer. Utilize the warehouse to navigate this landscape — find the answer.",
+    "skill_lane": "forming-hypotheses",
+    "decision_point_id": "dp-1-where-to-look",
+    "preload": {
+      "context_md": "## What you know so far",
+      "visible_tables": ["events"]
+    },
+    "time_budget_s": 300,
+    "rubric": {
+      "required_moves": [
+        {
+          "id": "move-broken",
+          "label": "Broken detector",
+          "detector": { "kind": "regex", "pattern": "(unterminated[" }
+        }
+      ],
+      "bonus_moves": [],
+      "fail_conditions": []
+    },
+    "is_published": false
+  }
+]
