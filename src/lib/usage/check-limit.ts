@@ -6,6 +6,7 @@ export type UsageFeature =
   | 'hatch_ai_cents'
   | 'claude_code_sessions'
   | 'cc_claude_spend_cents'
+  | 'cc_drill_sessions_weekly'
 export type UsageUnit = 'count' | 'cents'
 export type BillingPlan = 'free' | 'pro'
 
@@ -84,6 +85,16 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       description: 'CC Analytics Claude spend in cents per rolling month (observed, not gated)',
       costCeilingCents: 100000,
     },
+    cc_drill_sessions_weekly: {
+      // Casebook Practice session cap. Authoritative value lives in plan_limits
+      // (Phase 0 seed: free=3/7d); this is the fallback used only if that row
+      // is missing.
+      limitValue: 3,
+      windowDays: 7,
+      unit: 'count',
+      description: 'Casebook practice session starts per rolling week',
+      costCeilingCents: null,
+    },
   },
   pro: {
     challenges: {
@@ -123,6 +134,15 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       unit: 'cents',
       description: 'CC Analytics Claude spend in cents per rolling month (observed, not gated)',
       costCeilingCents: 100000,
+    },
+    cc_drill_sessions_weekly: {
+      // Authoritative value lives in plan_limits (Phase 0 seed: pro=500/7d);
+      // this is the fallback used only if that row is missing.
+      limitValue: 500,
+      windowDays: 7,
+      unit: 'count',
+      description: 'Casebook practice session starts per rolling week',
+      costCeilingCents: null,
     },
   },
 }

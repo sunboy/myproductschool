@@ -75,6 +75,14 @@ export interface SessionEnv {
   USER_CLAUDE_STATE_URL?: string
   /** Endpoint the autosave loop POSTs the per-user ~/.claude snapshot to. */
   USER_STATE_SNAPSHOT_URL?: string
+  /**
+   * Which kind of session this is. 'case' (default) is the existing Claude Code
+   * Analytics challenge session. 'drill' is a Casebook Loop practice session
+   * (user-facing: Practice) — short-lived, scoped to one scene. Internal enum
+   * value only; never surfaced to a client response as-is (see
+   * src/app/api/casebook/practice/start/route.ts).
+   */
+  SESSION_KIND?: 'case' | 'drill'
 }
 
 export interface CreateSessionInput {

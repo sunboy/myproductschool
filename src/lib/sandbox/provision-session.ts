@@ -113,7 +113,19 @@ export interface ProvisionInput {
   extraAllowedTools?: string[]
   /** Presigned URL to a prior /workspace snapshot, for resume. */
   workspaceRestoreUrl?: string
+  /**
+   * 'case' (default) is the existing Claude Code Analytics challenge session.
+   * 'drill' is a Casebook Loop practice session (user-facing: Practice) —
+   * short-lived, scoped to one cc_scenes row, no workspace resume. Optional so
+   * every existing caller (the one route below) keeps compiling unchanged.
+   */
+  sessionKind?: 'case' | 'drill'
 }
+
+/** Practice ('drill') sessions get a hard 10-minute wall — plan §3.3. Enforced
+ *  here regardless of what ttlSeconds the caller passed; 'case' sessions are
+ *  unaffected (input.ttlSeconds passes through unchanged). */
+const DRILL_TTL_SECONDS = 600 // 10 minutes
 
 export type ProvisionResult =
   | { ok: true; wssUrl: string; expiresAt: string; pending?: boolean }
@@ -126,7 +138,12 @@ export type ProvisionResult =
  */
 export async function provisionSession(input: ProvisionInput): Promise<ProvisionResult> {
   const admin = createAdminClient()
-  const { sessionId, ttlSeconds } = input
+  const { sessionId } = input
+  const sessionKind = input.sessionKind ?? 'case'
+  // Drill (Practice) sessions get a hard 10-minute wall regardless of what the
+  // caller passed — case sessions are completely unaffected (ttlSeconds passes
+  // through unchanged when sessionKind is 'case' or omitted).
+  const ttlSeconds = sessionKind === 'drill' ? DRILL_TTL_SECONDS : input.ttlSeconds
 
   // Prefer the provisioning request's own origin so the container POSTs snapshots
   // back to THIS deployment (whose secret signed the token). Only fall back to the
@@ -235,6 +252,7 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
       ? { CC_EXTRA_ALLOWED_TOOLS: JSON.stringify(input.extraAllowedTools) }
       : {}),
     ...(input.workspaceRestoreUrl ? { WORKSPACE_RESTORE_URL: input.workspaceRestoreUrl } : {}),
+    ...(input.sessionKind ? { SESSION_KIND: input.sessionKind } : {}),
   }
 
   // Phase: key minted; now boot the sandbox revision (the last long pole).
@@ -311,14 +329,35 @@ export async function probeAndActivate(
   // Single short probe (a few seconds) — the /state route is called repeatedly.
   const ready = await sandbox.awaitReady(hostInstanceId, 3000)
   if (!ready) return null
-  await markActiveAndMeter(admin, sessionId, { userId, challengeId } as ProvisionInput, provider)
+  // No `sessionKind` here: this activation path is reached from the /state
+  // polling route, which has only the session row's ids. Resolve the kind from
+  // the DB so a practice session activated by polling is NOT counted against
+  // the analytics trial quota. A challenge_id matching a cc_scenes row is a
+  // practice session (the same authoritative check the reaper uses; there is
+  // no session_kind column). Fail-safe: on any lookup error we leave it
+  // undefined, which counts the session — over-counting a trial unit is the
+  // safe direction, under-counting would give away free analytics sessions.
+  let resolvedKind: ProvisionInput['sessionKind']
+  try {
+    const { data: sceneRow } = await admin
+      .from('cc_scenes')
+      .select('id')
+      .eq('id', challengeId)
+      .maybeSingle()
+    if (sceneRow) resolvedKind = 'drill'
+  } catch {
+    // leave undefined (counts as a normal analytics session)
+  }
+  await markActiveAndMeter(admin, sessionId, { userId, challengeId, sessionKind: resolvedKind }, provider)
   return wssUrl
 }
 
 async function markActiveAndMeter(
   admin: ReturnType<typeof createAdminClient>,
   sessionId: string,
-  input: Pick<ProvisionInput, 'userId' | 'challengeId'>,
+  // `sessionKind` is needed so practice sessions can be excluded from the
+  // analytics trial-unit count below (see the comment at the recordUsageEvent call).
+  input: Pick<ProvisionInput, 'userId' | 'challengeId' | 'sessionKind'>,
   provider: string,
 ): Promise<void> {
   // Guard: only the first transition out of `provisioning` records usage, so a
@@ -331,11 +370,29 @@ async function markActiveAndMeter(
     .select('id')
   if (!flipped || flipped.length === 0) return
 
-  await recordUsageEvent(input.userId, 'claude_code_sessions', 1, {
-    challenge_id: input.challengeId,
-    session_id: sessionId,
-    provider,
-  })
+  // Practice ('drill') sessions do NOT consume a `claude_code_sessions` unit.
+  // That feature is the analytics-lab trial quota (free: 1 per 30 days), sized
+  // for the expensive long-form lab. Practice sessions are deliberately cheap
+  // (a $0.50 cap and a 10-minute hard wall) and are metered separately by
+  // `cc_drill_sessions_weekly` (free: 3 per 7 days) in the practice-start route.
+  //
+  // Counting a practice session against the analytics trial defeats BOTH
+  // designs at once: a free learner's first practice session would burn their
+  // only analytics-lab unit, and their second practice attempt would then be
+  // refused by the analytics quota rather than the practice allowance, making
+  // the seeded allowance of 3 unreachable on the free tier.
+  //
+  // Only the trial-unit COUNT is kind-conditional. Real LLM spend
+  // (`cc_claude_spend_cents`, recorded via record-spend.ts / spend-snapshot.ts)
+  // stays unconditional for every session kind, because the spend is real
+  // regardless of why the session ran.
+  if (input.sessionKind !== 'drill') {
+    await recordUsageEvent(input.userId, 'claude_code_sessions', 1, {
+      challenge_id: input.challengeId,
+      session_id: sessionId,
+      provider,
+    })
+  }
 }
 
 async function markFailed(

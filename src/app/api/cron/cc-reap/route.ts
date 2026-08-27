@@ -23,6 +23,11 @@ import { getSandbox } from '@/lib/sandbox'
 import { recordSessionSpend } from '@/lib/sandbox/record-spend'
 import { runSpendSnapshot } from '@/lib/sandbox/spend-snapshot'
 import { stopSqlInstance, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
+import {
+  findIdlePracticeSessions,
+  PRACTICE_IDLE_REAP_SECONDS,
+  type ReapableSessionRow,
+} from '@/lib/sandbox/practice-idle-reap'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -31,6 +36,12 @@ export const maxDuration = 60
 // who steps away briefly keeps their warm instance (instant reconnect); past it
 // the instance is freed and the user resumes from autosave. Override via env.
 const IDLE_REAP_SECONDS = parseInt(process.env.CC_IDLE_REAP_SECONDS ?? '900', 10) // 15 min
+
+// Casebook Loop Practice-session idle branch: see
+// src/lib/sandbox/practice-idle-reap.ts for the full fail-safe contract and
+// why a join (not a session_kind column, which does not exist) is used.
+// Split into its own module so the join logic is unit-testable without
+// importing this Next.js route file.
 
 function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
@@ -60,7 +71,39 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  const sessions = stale ?? []
+  // --- Additive: Casebook Loop Practice-session idle branch ---
+  // Everything above this block is byte-for-byte the pre-existing sweep. This
+  // ADDS sessions found idle past the shorter 3-minute practice cutoff (see
+  // findIdlePracticeSessions) on top of the set the main query already found.
+  // Dedupe by id so a session already caught by the main 15-minute sweep isn't
+  // processed twice. Any failure here (query error, empty result) leaves
+  // `sessions` exactly as the main query produced it — the default path is
+  // never narrowed or altered by this branch, only ever extended.
+  let practiceIdleFound = 0
+  let practiceIdleError: string | null = null
+  const extraPracticeSessions: ReapableSessionRow[] = []
+  try {
+    const practiceResult = await findIdlePracticeSessions(admin, Date.now(), PRACTICE_IDLE_REAP_SECONDS)
+    practiceIdleError = practiceResult.error
+    practiceIdleFound = practiceResult.sessions.length
+    if (practiceResult.sessions.length) {
+      const existingIds = new Set((stale ?? []).map((s) => s.id as string))
+      for (const s of practiceResult.sessions) {
+        if (!existingIds.has(s.id)) extraPracticeSessions.push(s)
+      }
+    }
+  } catch (err) {
+    // Never let the practice-idle branch break the main reap run.
+    practiceIdleError = String(err)
+    console.error('[cc-reap] practice-idle branch threw (fail-safe: main sweep unaffected):', err)
+  }
+
+  // Merge: the pre-existing sweep's rows, unchanged, plus any extra practice
+  // rows this branch found. When extraPracticeSessions is empty (the common
+  // case for non-practice traffic, and the only possible outcome on any
+  // failure above), `sessions` is exactly `stale ?? []` — identical to the
+  // pre-existing behavior.
+  const sessions: ReapableSessionRow[] = [...(stale ?? []), ...extraPracticeSessions]
   const sandbox = getSandbox()
   let reaped = 0
   const failures: string[] = []
@@ -259,6 +302,9 @@ export async function GET(request: NextRequest) {
     reaped,
     failures: failures.length,
     idle_cutoff_seconds: IDLE_REAP_SECONDS,
+    practice_idle_cutoff_seconds: PRACTICE_IDLE_REAP_SECONDS,
+    practice_idle_found: practiceIdleFound,
+    practice_idle_error: practiceIdleError,
     orphans_scanned: orphansScanned,
     orphans_reaped: orphansReaped,
     orphans_skipped: orphansSkipped,
