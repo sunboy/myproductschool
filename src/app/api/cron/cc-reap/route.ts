@@ -25,9 +25,15 @@ import { runSpendSnapshot } from '@/lib/sandbox/spend-snapshot'
 import { stopSqlInstance, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 import {
   findIdlePracticeSessions,
+  findCaseSessionsToExcludeFromDefaultSweep,
   PRACTICE_IDLE_REAP_SECONDS,
+  CASE_IDLE_REAP_SECONDS,
   type ReapableSessionRow,
 } from '@/lib/sandbox/practice-idle-reap'
+import {
+  reapStaleProvisioningSessions,
+  STALE_PROVISIONING_REAP_SECONDS,
+} from '@/lib/sandbox/stale-provisioning-reap'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -71,14 +77,56 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // --- SUBTRACTIVE: Casebook Loop Challenge (full case) idle-grace branch ---
+  // Unlike the practice branch below (which only ever ADDS rows), this
+  // branch REMOVES rows from the kill list the main query above just built —
+  // giving Challenge (full case) sessions a 30-min idle grace instead of the
+  // 15-min default, while the 90-min TTL wall (expires_at) still applies
+  // regardless. See findCaseSessionsToExcludeFromDefaultSweep in
+  // practice-idle-reap.ts for the full fail-safe contract, which is
+  // INVERTED relative to the practice branch: any error or ambiguity here
+  // means "exclude nothing" -> the row stays on the kill list and reaps on
+  // the normal 15-minute schedule. Removing rows from the kill list is the
+  // risky direction (the reaper is the only real session-lifetime
+  // enforcement), so on ANY failure this branch must leave `stale` fully
+  // intact, never narrowed.
+  let caseExcludedCount = 0
+  let caseGraceError: string | null = null
+  let staleAfterCaseExclusion: ReapableSessionRow[] = stale ?? []
+  try {
+    const caseResult = await findCaseSessionsToExcludeFromDefaultSweep(
+      admin,
+      Date.now(),
+      IDLE_REAP_SECONDS,
+      CASE_IDLE_REAP_SECONDS,
+    )
+    caseGraceError = caseResult.error
+    if (caseResult.sessions.length) {
+      const excludeIds = new Set(caseResult.sessions.map((s) => s.id))
+      staleAfterCaseExclusion = (stale ?? []).filter((s) => !excludeIds.has(s.id as string))
+      caseExcludedCount = (stale ?? []).length - staleAfterCaseExclusion.length
+    }
+  } catch (err) {
+    // Never let this branch narrow the kill list on an unexpected throw —
+    // fail toward the full, unmodified `stale` set (reap on schedule).
+    caseGraceError = String(err)
+    staleAfterCaseExclusion = stale ?? []
+    console.error('[cc-reap] case-idle-grace branch threw (fail-safe: kill list unaffected):', err)
+  }
+
   // --- Additive: Casebook Loop Practice-session idle branch ---
-  // Everything above this block is byte-for-byte the pre-existing sweep. This
-  // ADDS sessions found idle past the shorter 3-minute practice cutoff (see
-  // findIdlePracticeSessions) on top of the set the main query already found.
-  // Dedupe by id so a session already caught by the main 15-minute sweep isn't
+  // Built on `staleAfterCaseExclusion` (the main sweep's rows, minus any
+  // Challenge sessions the case-grace branch above excluded) rather than raw
+  // `stale`, so a case session in its 30-min grace window is never
+  // re-added here by coincidence. For every non-case row this is identical
+  // to the pre-existing `stale ?? []` — the case branch only ever removes
+  // rows positively confirmed as in-grace case sessions, never anything
+  // else. This block ADDS sessions found idle past the shorter 3-minute
+  // practice cutoff (see findIdlePracticeSessions) on top of that set.
+  // Dedupe by id so a session already caught by the main sweep isn't
   // processed twice. Any failure here (query error, empty result) leaves
-  // `sessions` exactly as the main query produced it — the default path is
-  // never narrowed or altered by this branch, only ever extended.
+  // `sessions` exactly as `staleAfterCaseExclusion` — this branch never
+  // narrows or alters what came before it, only ever extends it.
   let practiceIdleFound = 0
   let practiceIdleError: string | null = null
   const extraPracticeSessions: ReapableSessionRow[] = []
@@ -87,7 +135,7 @@ export async function GET(request: NextRequest) {
     practiceIdleError = practiceResult.error
     practiceIdleFound = practiceResult.sessions.length
     if (practiceResult.sessions.length) {
-      const existingIds = new Set((stale ?? []).map((s) => s.id as string))
+      const existingIds = new Set(staleAfterCaseExclusion.map((s) => s.id as string))
       for (const s of practiceResult.sessions) {
         if (!existingIds.has(s.id)) extraPracticeSessions.push(s)
       }
@@ -98,12 +146,13 @@ export async function GET(request: NextRequest) {
     console.error('[cc-reap] practice-idle branch threw (fail-safe: main sweep unaffected):', err)
   }
 
-  // Merge: the pre-existing sweep's rows, unchanged, plus any extra practice
-  // rows this branch found. When extraPracticeSessions is empty (the common
-  // case for non-practice traffic, and the only possible outcome on any
-  // failure above), `sessions` is exactly `stale ?? []` — identical to the
-  // pre-existing behavior.
-  const sessions: ReapableSessionRow[] = [...(stale ?? []), ...extraPracticeSessions]
+  // Merge: the case-grace-filtered sweep rows, unchanged, plus any extra
+  // practice rows this branch found. When extraPracticeSessions is empty
+  // (the common case for non-practice traffic, and the only possible
+  // outcome on any failure above) and caseExcludedCount is 0 (no case
+  // sessions in grace this run), `sessions` is exactly `stale ?? []` —
+  // identical to the pre-existing behavior.
+  const sessions: ReapableSessionRow[] = [...staleAfterCaseExclusion, ...extraPracticeSessions]
   const sandbox = getSandbox()
   let reaped = 0
   const failures: string[] = []
@@ -140,6 +189,33 @@ export async function GET(request: NextRequest) {
   }
 
   if (failures.length) console.error('[cc-reap] partial failures:', failures)
+
+  // --- Stale provisioning sweep ---
+  // Retires claude_code_sessions rows stranded in status='provisioning' (the
+  // start route died before it could mark the session `failed`). Runs BEFORE
+  // the orphan sweep below on purpose: the orphan sweep's keep-list includes
+  // `provisioning` status rows, so a stranded provisioning row with a live
+  // host would otherwise be protected from teardown forever and never
+  // retire. See stale-provisioning-reap.ts for the full fail-closed contract
+  // around confirming no compute is attached before marking a row terminal.
+  let staleProvisioningFound = 0
+  let staleProvisioningMarked = 0
+  let staleProvisioningError: string | null = null
+  try {
+    const staleResult = await reapStaleProvisioningSessions(
+      admin,
+      sandbox,
+      Date.now(),
+      STALE_PROVISIONING_REAP_SECONDS,
+    )
+    staleProvisioningFound = staleResult.found
+    staleProvisioningMarked = staleResult.marked
+    staleProvisioningError = staleResult.error
+  } catch (err) {
+    // Never let this sweep break the rest of the reaper run.
+    staleProvisioningError = String(err)
+    console.error('[cc-reap] stale-provisioning sweep threw (best-effort):', err)
+  }
 
   // --- Orphan reconciliation sweep ---
   // The idle sweep above only sees `active` sessions. But a revision can be
@@ -198,6 +274,10 @@ export async function GET(request: NextRequest) {
             reaped,
             failures: failures.length,
             idle_cutoff_seconds: IDLE_REAP_SECONDS,
+            stale_provisioning_cutoff_seconds: STALE_PROVISIONING_REAP_SECONDS,
+            stale_provisioning_found: staleProvisioningFound,
+            stale_provisioning_marked: staleProvisioningMarked,
+            stale_provisioning_error: staleProvisioningError,
             orphans_scanned: orphansScanned,
             orphans_reaped: 0,
             orphans_skipped: 0,
@@ -302,9 +382,16 @@ export async function GET(request: NextRequest) {
     reaped,
     failures: failures.length,
     idle_cutoff_seconds: IDLE_REAP_SECONDS,
+    case_idle_cutoff_seconds: CASE_IDLE_REAP_SECONDS,
+    case_idle_excluded: caseExcludedCount,
+    case_idle_grace_error: caseGraceError,
     practice_idle_cutoff_seconds: PRACTICE_IDLE_REAP_SECONDS,
     practice_idle_found: practiceIdleFound,
     practice_idle_error: practiceIdleError,
+    stale_provisioning_cutoff_seconds: STALE_PROVISIONING_REAP_SECONDS,
+    stale_provisioning_found: staleProvisioningFound,
+    stale_provisioning_marked: staleProvisioningMarked,
+    stale_provisioning_error: staleProvisioningError,
     orphans_scanned: orphansScanned,
     orphans_reaped: orphansReaped,
     orphans_skipped: orphansSkipped,

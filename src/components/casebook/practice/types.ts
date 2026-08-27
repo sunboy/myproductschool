@@ -53,4 +53,10 @@ export interface PracticePayload {
 
 export type PracticeSessionStatus = 'idle' | 'starting' | 'active' | 'ended'
 
-export type PracticeEndReason = 'completed' | 'time_exhausted' | 'left'
+export type PracticeEndReason =
+  | 'completed'
+  | 'time_exhausted'
+  | 'left'
+  | 'session_error'
+  | 'limit_reached'
+  | 'upstream_dead'

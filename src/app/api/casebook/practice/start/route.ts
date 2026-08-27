@@ -330,6 +330,47 @@ export const POST = withRoute(async (req: NextRequest) => {
           expires_at: result.expiresAt,
           status: result.pending ? 'provisioning' : 'active',
         }
+        // Flip the DB row to `active` on any successful provision, including
+        // the `pending` (still-booting) case. Mirrors provision-session.ts's
+        // markActiveAndMeter's state transition WITHOUT the metering call —
+        // this route already records its own usage event below, so calling
+        // that helper (or probeAndActivate) would double-meter or, worse,
+        // silently charge the analytics-lab trial unit (probeAndActivate
+        // resolves sessionKind via a cc_scenes lookup and falls back to
+        // 'case' on a miss).
+        //
+        // DISCRIMINATOR: compute existence, not boot completion. `result.ok`
+        // (the ProvisionResult union in provision-session.ts) is only ever
+        // `true` after hostInstanceId/wssUrl have already been persisted to
+        // this row, in both the ready branch and the `pending: true` branch —
+        // there is no `ok: true` outcome with no host attached. So checking
+        // `result.ok` alone (ignoring `pending`) already IS "flip only when a
+        // host is attached, never when provisioning died before compute
+        // existed" — the `!result.ok` branch below (sessionError) is exactly
+        // that stranded case, and it correctly leaves the row untouched for
+        // the stale-provisioning sweep to retire.
+        //
+        // Flipping eagerly on `pending` matters even for Practice's short
+        // TTL: stale-provisioning-reap.ts sweeps ANY row still
+        // `status='provisioning'` past its 60-minute cutoff regardless of
+        // session kind, confirms the live compute, and destroys it. This is
+        // also the same status every OTHER reaper on this row keys on
+        // (cc-reap/route.ts, practice-idle-reap.ts both select
+        // `status='active'`) — a row stuck at `provisioning` is invisible to
+        // normal idle reaping. If the boot then dies anyway, the row is now
+        // `active` with dead compute, which the normal idle sweep catches on
+        // its own cutoff — a bounded, self-healing cleanup delay. Guarded
+        // with the same CAS pattern used everywhere else so a concurrent
+        // transition can't double-apply.
+        await admin
+          .from('claude_code_sessions')
+          .update({
+            status: 'active',
+            started_at: new Date().toISOString(),
+            provision_phase: 'ready',
+          })
+          .eq('id', sessionId)
+          .eq('status', 'provisioning')
         // Record usage only on a successful provision — see the usage gate
         // comment above. Without this call getUsedQuantity would always read
         // 0 for this feature and the gate above could never trip.

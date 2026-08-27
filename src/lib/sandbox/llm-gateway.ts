@@ -43,12 +43,26 @@ export async function mintSessionVirtualKey(
    * allowlist re-introduced the 403 even after the gateway model_list was fixed.)
    */
   models: string[] = ['all-proxy-models'],
+  /**
+   * Hard per-session spend cap in USD. Optional; when omitted the process-wide
+   * CC_SESSION_BUDGET_USD (default 0.50) applies, so every existing caller keeps
+   * its current behavior exactly.
+   *
+   * Exists because session kinds have genuinely different shapes: a Practice
+   * drill is a 10-minute exercise where 0.50 is the intended product tier, while
+   * a Challenge capstone runs up to 90 minutes and 0.50 demonstrably dies
+   * mid-session (a full expert arc measured 0.59, and a 0.50 cap produced 11
+   * consecutive 429s and a wedged terminal). A single global number cannot serve
+   * both.
+   */
+  budgetUsdOverride?: number,
 ): Promise<VirtualKey | null> {
   if (!isGatewayConfigured()) return null
 
   const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
-  const budgetUsd = parseFloat(process.env.CC_SESSION_BUDGET_USD ?? '0.50')
+  const budgetUsd =
+    budgetUsdOverride ?? parseFloat(process.env.CC_SESSION_BUDGET_USD ?? '0.50')
 
   // Retry with backoff: the gateway is minScale=0 and its Cloud SQL may have just
   // been woken on demand (see cloud-sql-admin), so the FIRST key/generate can hit

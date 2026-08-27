@@ -114,18 +114,53 @@ export interface ProvisionInput {
   /** Presigned URL to a prior /workspace snapshot, for resume. */
   workspaceRestoreUrl?: string
   /**
-   * 'case' (default) is the existing Claude Code Analytics challenge session.
-   * 'drill' is a Casebook Loop practice session (user-facing: Practice) —
-   * short-lived, scoped to one cc_scenes row, no workspace resume. Optional so
-   * every existing caller (the one route below) keeps compiling unchanged.
+   * Which product surface this session belongs to. Optional so every existing
+   * caller keeps compiling unchanged.
+   *
+   *   'case'          (default) the EXISTING Claude Code Analytics lab session.
+   *                   That route omits sessionKind, so `undefined` MUST keep
+   *                   meaning this.
+   *   'drill'         a Casebook Practice session (user-facing: Practice).
+   *   'casebook_case' a Casebook Challenge session (user-facing: Challenge).
+   *
+   * NOTE the deliberate asymmetry: a Casebook capstone is NOT `'case'`. That
+   * name already means the analytics lab, and the two have DIFFERENT allowances
+   * (analytics lab -> `claude_code_sessions`; Casebook capstone ->
+   * `cc_case_attempts_total`). Overloading one name would make them
+   * indistinguishable at the metering allowlist below and would silently
+   * recreate the trial-burning bug this file already had once.
    */
-  sessionKind?: 'case' | 'drill'
+  sessionKind?: 'case' | 'drill' | 'casebook_case'
 }
 
 /** Practice ('drill') sessions get a hard 10-minute wall — plan §3.3. Enforced
  *  here regardless of what ttlSeconds the caller passed; 'case' sessions are
  *  unaffected (input.ttlSeconds passes through unchanged). */
 const DRILL_TTL_SECONDS = 600 // 10 minutes
+
+/**
+ * Per-session spend cap by kind, in USD.
+ *
+ * Practice ('drill') stays at the product default (0.50 via CC_SESSION_BUDGET_USD):
+ * a 10-minute exercise, and that tier is the intended behavior.
+ *
+ * A Challenge ('casebook_case') runs up to 90 minutes and 0.50 demonstrably dies
+ * mid-session. Measured: a full expert arc cost 0.59, and a 0.50 cap produced 11
+ * consecutive 429s and a terminal that wedged with no error text. 3.00 completed
+ * the same arc with room to spare.
+ *
+ * Free-tier exposure stays bounded by the ALLOWANCE, not by this number:
+ * cc_case_attempts_total is 1 lifetime on free, so 3.00 is a lifetime ceiling.
+ * On pro the allowance is effectively unlimited, so the aggregate guard there is
+ * the existing spend observability (record_cc_session_spend -> usage_events ->
+ * spend alerts), not this per-session cap.
+ *
+ * A kind absent from this map falls back to the env default, so adding a kind
+ * changes no budget until someone opts it in deliberately.
+ */
+const SESSION_BUDGET_USD: Partial<Record<NonNullable<ProvisionInput['sessionKind']>, number>> = {
+  casebook_case: parseFloat(process.env.CC_CASE_SESSION_BUDGET_USD ?? '3.00'),
+}
 
 export type ProvisionResult =
   | { ok: true; wssUrl: string; expiresAt: string; pending?: boolean }
@@ -194,7 +229,10 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   let anthropicKey = process.env.ANTHROPIC_API_KEY ?? ''
   let anthropicBaseUrl: string | undefined
   try {
-    const vkey = await mintSessionVirtualKey(sessionId, ttlSeconds)
+    // undefined => mintSessionVirtualKey falls back to CC_SESSION_BUDGET_USD,
+    // so 'case' and 'drill' behave exactly as before this map existed.
+    const budgetUsd = SESSION_BUDGET_USD[sessionKind]
+    const vkey = await mintSessionVirtualKey(sessionId, ttlSeconds, undefined, budgetUsd)
     if (vkey) {
       anthropicKey = vkey.key
       anthropicBaseUrl = vkey.baseUrl
@@ -235,7 +273,12 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
     ...(anthropicBaseUrl ? { ANTHROPIC_BASE_URL: anthropicBaseUrl } : {}),
     ANTHROPIC_MODEL: ccModel,
     ANTHROPIC_SMALL_FAST_MODEL: ccFastModel,
-    ANTHROPIC_BUDGET_USD: process.env.ANTHROPIC_BUDGET_USD ?? '0.50',
+    // Kept in step with the gateway key's cap above. The gateway is the real
+    // enforcement point (it returns the 429); this value is what the CLI shows
+    // and self-limits against, so a mismatch would confuse the learner about how
+    // much budget they actually have.
+    ANTHROPIC_BUDGET_USD:
+      SESSION_BUDGET_USD[sessionKind]?.toFixed(2) ?? process.env.ANTHROPIC_BUDGET_USD ?? '0.50',
     SESSION_ID: sessionId,
     SESSION_TOKEN_SECRET: process.env.SESSION_TOKEN_SECRET ?? '',
     GOOGLE_APPLICATION_CREDENTIALS_JSON: process.env.CC_BIGQUERY_SA_JSON ?? '',
@@ -352,6 +395,52 @@ export async function probeAndActivate(
   return wssUrl
 }
 
+// Practice ('drill') sessions do NOT consume a `claude_code_sessions` unit.
+// That feature is the analytics-lab trial quota (free: 1 per 30 days), sized
+// for the expensive long-form lab. Practice sessions are deliberately cheap
+// (a $0.50 cap and a 10-minute hard wall) and are metered separately by
+// `cc_drill_sessions_weekly` (free: 3 per 7 days) in the practice-start route.
+//
+// Counting a practice session against the analytics trial defeats BOTH
+// designs at once: a free learner's first practice session would burn their
+// only analytics-lab unit, and their second practice attempt would then be
+// refused by the analytics quota rather than the practice allowance, making
+// the seeded allowance of 3 unreachable on the free tier.
+//
+// Only the trial-unit COUNT is kind-conditional. Real LLM spend
+// (`cc_claude_spend_cents`, recorded via record-spend.ts / spend-snapshot.ts)
+// stays unconditional for every session kind, because the spend is real
+// regardless of why the session ran.
+// ALLOWLIST, not a negative check. An earlier version tested
+// `sessionKind !== 'drill'`, which meant every NEW session kind silently
+// inherited analytics-trial metering by default — the Casebook 'case' kind
+// hit exactly that: it has its own `cc_case_attempts_total` allowance, but
+// fell through here and also burned the analytics unit. On the free tier both
+// limits happen to be 1, so the behavior looks correct on a first attempt and
+// only diverges ~30 days later when the rolling analytics window refreshes
+// and a "lifetime" case allowance quietly grants a second attempt.
+//
+// Listing the kinds that DO consume the analytics trial makes adding a kind a
+// deliberate act: a new kind meters nothing here until someone adds it, which
+// fails toward under-counting a trial unit rather than silently charging a
+// learner's quota to the wrong feature.
+const ANALYTICS_TRIAL_KINDS = new Set<NonNullable<ProvisionInput['sessionKind']>>(['case'])
+
+/**
+ * Whether a session of this kind should consume a `claude_code_sessions`
+ * analytics-trial unit. Pure and exported so the allowlist decision itself
+ * (the exact thing that goes wrong if a new kind is added without updating
+ * this) can be unit-tested without any DB mocking.
+ *
+ * `undefined` maps to 'case' because the original analytics-lab route omits
+ * sessionKind entirely — that omission IS the analytics lab and must keep
+ * metering. Every other kind must be explicitly listed in
+ * ANALYTICS_TRIAL_KINDS to consume a unit.
+ */
+export function consumesAnalyticsTrial(sessionKind: ProvisionInput['sessionKind']): boolean {
+  return ANALYTICS_TRIAL_KINDS.has(sessionKind ?? 'case')
+}
+
 async function markActiveAndMeter(
   admin: ReturnType<typeof createAdminClient>,
   sessionId: string,
@@ -370,23 +459,7 @@ async function markActiveAndMeter(
     .select('id')
   if (!flipped || flipped.length === 0) return
 
-  // Practice ('drill') sessions do NOT consume a `claude_code_sessions` unit.
-  // That feature is the analytics-lab trial quota (free: 1 per 30 days), sized
-  // for the expensive long-form lab. Practice sessions are deliberately cheap
-  // (a $0.50 cap and a 10-minute hard wall) and are metered separately by
-  // `cc_drill_sessions_weekly` (free: 3 per 7 days) in the practice-start route.
-  //
-  // Counting a practice session against the analytics trial defeats BOTH
-  // designs at once: a free learner's first practice session would burn their
-  // only analytics-lab unit, and their second practice attempt would then be
-  // refused by the analytics quota rather than the practice allowance, making
-  // the seeded allowance of 3 unreachable on the free tier.
-  //
-  // Only the trial-unit COUNT is kind-conditional. Real LLM spend
-  // (`cc_claude_spend_cents`, recorded via record-spend.ts / spend-snapshot.ts)
-  // stays unconditional for every session kind, because the spend is real
-  // regardless of why the session ran.
-  if (input.sessionKind !== 'drill') {
+  if (consumesAnalyticsTrial(input.sessionKind)) {
     await recordUsageEvent(input.userId, 'claude_code_sessions', 1, {
       challenge_id: input.challengeId,
       session_id: sessionId,

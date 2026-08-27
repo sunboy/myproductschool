@@ -1,0 +1,64 @@
+2026-08-27T21:00:46.494289Z	ERROR	Cloud SQL connection failed. Please see https://cloud.google.com/sql/docs/mysql/connect-run, https://cloud.google.com/sql/docs/postgres/connect-run, or https://cloud.google.com/sql/docs/sqlserver/connect-run for additional details: fetch ephemeral cert failed: refresh error: create ephemeral cert failed (connection name = "hackproduct:us-central1:cc-llm-db"): googleapi: Error 409: The instance or operation is not in an appropriate state to handle the request., invalidState	
+2026-08-27T21:00:16.376659Z	ERROR	Cloud SQL connection failed. Please see https://cloud.google.com/sql/docs/mysql/connect-run, https://cloud.google.com/sql/docs/postgres/connect-run, or https://cloud.google.com/sql/docs/sqlserver/connect-run for additional details: dial error: failed to dial (connection name = "hackproduct:us-central1:cc-llm-db"): connection to Cloud SQL instance at 35.254.192.101:3307 failed: connect tcp 35.254.192.101:3307: connection was refused	
+2026-08-27T21:00:03.350700Z			
+2026-08-27T20:58:13.091701Z		query-engine ac9d7041ed77bcc8a8dbd2ab6616b39013829574	
+2026-08-27T20:58:13.076482Z		[92m20:58:13 - LiteLLM Proxy:WARNING[0m: utils.py:4509 - prisma-query-engine PID 0 is dead; reconnecting.	
+2026-08-27T20:58:13.076250Z		[92m20:58:13 - LiteLLM Proxy:WARNING[0m: utils.py:4591 - Attempting Prisma DB reconnect. reason=db_health_watchdog_connection_error	
+2026-08-27T20:58:13.076085Z		[92m20:58:13 - LiteLLM Proxy:WARNING[0m: utils.py:4584 - Escalating to heavy reconnect after 96 consecutive failures. reason=db_health_watchdog_connection_error	
+2026-08-27T20:57:49.686388Z		INFO:     169.254.169.126:2000 - "GET /health/readiness HTTP/1.1" 503 Service Unavailable	
+2026-08-27T20:57:49.686032Z		[92m20:57:49 - LiteLLM Proxy:ERROR[0m: _health_endpoints.py:1373 - _db_health_readiness_check: reconnect failed	
+2026-08-27T20:57:48.696949Z		[92m20:57:48 - LiteLLM Proxy:WARNING[0m: _health_endpoints.py:1357 - _db_health_readiness_check: health_check failed, attempting reconnect	
+2026-08-27T20:57:47.573120Z	ERROR		
+2026-08-27T20:57:47.464551Z		INFO:     169.254.169.126:1990 - "GET /health/liveliness HTTP/1.1" 200 OK	
+2026-08-27T20:57:47.450586Z	INFO		
+2026-08-27T20:57:43.072711Z		[92m20:57:43 - LiteLLM Proxy:ERROR[0m: utils.py:4605 - Prisma DB reconnect failed (96 consecutive). reason=db_health_watchdog_connection_error error=Could not connect to the query engine	
+2026-08-27T20:57:33.579153Z			Can't reach database server at `/cloudsql/hackproduct:us-central1:cc-llm-db`:`5432`
+
+Please make sure your database server is running at `/cloudsql/hackproduct:us-central1:cc-llm-db`:`5432`.
+2026-08-27T20:57:32.578954Z		query-engine ac9d7041ed77bcc8a8dbd2ab6616b39013829574	
+2026-08-27T20:57:32.567902Z		[92m20:57:32 - LiteLLM Proxy:WARNING[0m: utils.py:4509 - prisma-query-engine PID 0 is dead; reconnecting.	
+2026-08-27T20:57:32.567551Z		[92m20:57:32 - LiteLLM Proxy:WARNING[0m: utils.py:4591 - Attempting Prisma DB reconnect. reason=db_health_watchdog_connection_error	
+2026-08-27T20:57:32.567504Z		[92m20:57:32 - LiteLLM Proxy:WARNING[0m: utils.py:4584 - Escalating to heavy reconnect after 95 consecutive failures. reason=db_health_watchdog_connection_error	
+2026-08-27T20:57:02.563835Z		[92m20:57:02 - LiteLLM Proxy:ERROR[0m: utils.py:4605 - Prisma DB reconnect failed (95 consecutive). reason=db_health_watchdog_connection_error error=Could not connect to the query engine	
+2026-08-27T20:57:02.502127Z			Can't reach database server at `/cloudsql/hackproduct:us-central1:cc-llm-db`:`5432`
+
+Please make sure your database server is running at `/cloudsql/hackproduct:us-central1:cc-llm-db`:`5432`.
+2026-08-27T20:57:02.499366Z	ERROR	Cloud SQL connection failed. Please see https://cloud.google.com/sql/docs/mysql/connect-run, https://cloud.google.com/sql/docs/postgres/connect-run, or https://cloud.google.com/sql/docs/sqlserver/connect-run for additional details: dial error: failed to dial (connection name = "hackproduct:us-central1:cc-llm-db"): connection to Cloud SQL instance at 35.254.192.101:3307 failed: timed out after 10s	
+2026-08-27T20:56:52.112488Z		query-engine ac9d7041ed77bcc8a8dbd2ab6616b39013829574	
+2026-08-27T20:56:52.100087Z		[92m20:56:52 - LiteLLM Proxy:WARNING[0m: utils.py:4509 - prisma-query-engine PID 0 is dead; reconnecting.	
+2026-08-27T20:56:52.099902Z		[92m20:56:52 - LiteLLM Proxy:WARNING[0m: utils.py:4591 - Attempting Prisma DB reconnect. reason=db_health_watchdog_connection_error	
+2026-08-27T20:56:52.099711Z		[92m20:56:52 - LiteLLM Proxy:WARNING[0m: utils.py:4584 - Escalating to heavy reconnect after 94 consecutive failures. reason=db_health_watchdog_connection_error	
+2026-08-27T20:56:34.314553Z		httpx.ConnectError: All connection attempts failed	
+2026-08-27T20:56:33.265795Z		    raise mapped_exc(message) from exc	
+2026-08-27T20:56:33.265792Z		  File "/app/.venv/lib/python3.13/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions	
+2026-08-27T20:56:33.265788Z		    ~~~~~~~~~~~~~~^^^^^^^	
+2026-08-27T20:56:33.265785Z		    self.gen.throw(value)	
+2026-08-27T20:56:33.265781Z		  File "/usr/lib/python3.13/contextlib.py", line 162, in __exit__	
+2026-08-27T20:56:33.265777Z		         ~~~~~~~~~~~~~~~~~~~~~~~^^	
+2026-08-27T20:56:33.265773Z		    with map_httpcore_exceptions():	
+2026-08-27T20:56:33.265770Z		  File "/app/.venv/lib/python3.13/site-packages/httpx/_transports/default.py", line 393, in handle_async_request	
+2026-08-27T20:56:33.265766Z		               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
+2026-08-27T20:56:33.265762Z		    response = await transport.handle_async_request(request)	
+2026-08-27T20:56:33.265759Z		  File "/app/.venv/lib/python3.13/site-packages/httpx/_client.py", line 1730, in _send_single_request	
+2026-08-27T20:56:33.265755Z		               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
+2026-08-27T20:56:33.265751Z		    response = await self._send_single_request(request)	
+2026-08-27T20:56:33.265748Z		  File "/app/.venv/lib/python3.13/site-packages/httpx/_client.py", line 1694, in _send_handling_redirects	
+2026-08-27T20:56:33.265744Z		    ^	
+2026-08-27T20:56:33.265741Z		    )	
+2026-08-27T20:56:33.265737Z		    ...<3 lines>...	
+2026-08-27T20:56:33.265734Z		               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
+2026-08-27T20:56:33.265731Z		    response = await self._send_handling_redirects(	
+2026-08-27T20:56:33.265727Z		  File "/app/.venv/lib/python3.13/site-packages/httpx/_client.py", line 1657, in _send_handling_auth	
+2026-08-27T20:56:33.265723Z		    ^	
+2026-08-27T20:56:33.265718Z		    )	
+2026-08-27T20:56:33.265714Z		    ...<4 lines>...	
+2026-08-27T20:56:33.265711Z		               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
+2026-08-27T20:56:33.265708Z		    response = await self._send_handling_auth(	
+2026-08-27T20:56:33.265704Z		  File "/app/.venv/lib/python3.13/site-packages/httpx/_client.py", line 1629, in send	
+2026-08-27T20:56:33.265700Z		           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
+2026-08-27T20:56:33.265697Z		    return await self.send(request, auth=auth, follow_redirects=follow_redirects)	
+2026-08-27T20:56:33.265694Z		  File "/app/.venv/lib/python3.13/site-packages/httpx/_client.py", line 1540, in request	
+2026-08-27T20:56:33.265690Z		                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
+2026-08-27T20:56:33.265687Z		    return Response(await self.session.request(method, url, **kwargs))	
+2026-08-27T20:56:33.265683Z		  File "/app/.venv/lib/python3.13/site-packages/prisma/_async_http.py", line 28, in request	
+2026-08-27T20:56:33.265677Z		           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	

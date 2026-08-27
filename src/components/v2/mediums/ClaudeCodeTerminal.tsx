@@ -63,6 +63,21 @@ function reportWrittenRe(pattern?: string): RegExp {
   try { return new RegExp(`Wrote?\\s+(${pattern})`, 'i') } catch { return REPORT_WRITTEN_RE }
 }
 
+// Dead-upstream detection (opt-in via onUpstreamDead). The Claude Code CLI's
+// own retry backoff prints "... attempt N/10 ..." into the PTY stream while it
+// keeps hammering a failing upstream (gateway 401s, budget 429s) — output
+// keeps flowing and onActivity keeps firing, so silence-based detection alone
+// can't catch this; the retry count in the stream is the only signal. Loose /
+// case-insensitive since no live sample exists in this repo to match against
+// literally. A sustained run (attempt >= this threshold) is treated as dead,
+// well short of the CLI's own 10-attempt ceiling.
+const RETRY_ATTEMPT_RE = /attempt\s*(\d+)\s*\/\s*10/i
+const DEAD_RETRY_THRESHOLD = 5
+// Bound on unsuccessful reconnect cycles (WS keeps closing before ever
+// reaching onopen again) — covers session-expiry, the third dead-upstream
+// cause, which produces no PTY text at all.
+const DEAD_RECONNECT_THRESHOLD = 10
+
 const TAIL_MAX_BYTES = 4000
 
 // The container PTY bridge spawns the shell LAZILY on the first resize message
@@ -72,9 +87,20 @@ const TAIL_MAX_BYTES = 4000
 // Mirrors RESIZE_PREFIX in infra/claude-code-sandbox/entrypoint-pty.js.
 const RESIZE_PREFIX = '\x1b[?resize='
 
-export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCodeTerminalProps>(
+// Reason surfaced to the caller when a sustained-dead upstream is detected.
+// Additive prop, typed locally as an intersection so this file can add the
+// callback without touching the shared types.ts (owned by another task).
+export type UpstreamDeadReason = 'retry_loop' | 'reconnect_failed'
+type ClaudeCodeTerminalPropsWithDeadUpstream = ClaudeCodeTerminalProps & {
+  /** Optional. Fires once when the upstream has stopped making sustained
+   *  progress (retry loop past threshold, or repeated failed reconnects).
+   *  Absent by default — existing callers (the analytics lab) are unaffected. */
+  onUpstreamDead?: (reason: UpstreamDeadReason) => void
+}
+
+export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCodeTerminalPropsWithDeadUpstream>(
   function ClaudeCodeTerminal(
-    { wssUrl, onOutput, onActivity, onMcpStatusChange, onReplStatusChange, onSkillWritten, onReportWritten, mcpNamePattern, reportPathPattern },
+    { wssUrl, onOutput, onActivity, onMcpStatusChange, onReplStatusChange, onSkillWritten, onReportWritten, mcpNamePattern, reportPathPattern, onUpstreamDead },
     ref
   ) {
     // Latch so we only emit the REPL-running signal once per launch.
@@ -109,6 +135,17 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
     // concurrency-limited instance into a "no available instance" storm.
     const everOpenedRef = useRef(false)
     const connectAttemptsRef = useRef(0)
+    // True while a "[Reconnecting in Ns…]" line is the last thing written to
+    // the terminal (set when that line is written, cleared on the next
+    // successful open). Lets ws.onopen print a confirmation line so the
+    // stale reconnect message doesn't stay pinned as the last visible line
+    // once the session is actually back — independent of the dead-upstream
+    // accounting below, which this must not touch.
+    const reconnectBannerPinnedRef = useRef(false)
+    // Dead-upstream tracking. Inert (never read or written) unless
+    // onUpstreamDead is passed — every use below is gated on that prop.
+    const maxRetryAttemptSeenRef = useRef(0)
+    const upstreamDeadSignalledRef = useRef(false)
     // Send the current terminal size to the PTY using the resize protocol.
     // This is what triggers the lazy shell spawn in the container.
     const sendResizeRef = useRef<() => void>(() => {
@@ -377,8 +414,20 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           if (!mountedRef.current) return
           everOpenedRef.current = true
           connectAttemptsRef.current = 0
+          if (onUpstreamDead) maxRetryAttemptSeenRef.current = 0
           setHandshaking(false)
           setWsError(null)
+          // The reconnect message is written straight into the xterm buffer
+          // (not React state), so it can't clear itself — a live session that
+          // reconnected successfully was otherwise left with a stale "[Reconnecting
+          // in Ns…]" line as the last thing on screen even while the terminal was
+          // fully responsive. Print an explicit "connected" line to replace it,
+          // but only when a reconnect banner is the reason we're reconnecting —
+          // never on the very first connect, which has no banner to clear.
+          if (reconnectBannerPinnedRef.current) {
+            reconnectBannerPinnedRef.current = false
+            termRef.current?.writeln('\r\n\x1b[32m[Connected]\x1b[0m')
+          }
           termRef.current?.focus()
           // Re-fit + send dimensions now that the socket is live. The PTY
           // bridge spawns the shell lazily on the first resize message, so
@@ -446,6 +495,23 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
             seenReportsRef.current.add(reportMatch[1])
             onReportWritten?.(reportMatch[1])
           }
+
+          // Dead-upstream: sustained CLI retry loop (budget 429 / gateway
+          // 401). Entirely gated on onUpstreamDead being passed — when it's
+          // absent this block never executes, so prop-absent behavior is
+          // untouched.
+          if (onUpstreamDead && !upstreamDeadSignalledRef.current) {
+            const retryMatch = RETRY_ATTEMPT_RE.exec(scan)
+            const attemptNum = retryMatch ? Number(retryMatch[1]) : 0
+            if (attemptNum > maxRetryAttemptSeenRef.current) {
+              maxRetryAttemptSeenRef.current = attemptNum
+            }
+            if (maxRetryAttemptSeenRef.current >= DEAD_RETRY_THRESHOLD) {
+              upstreamDeadSignalledRef.current = true
+              termRef.current?.writeln('\r\n\x1b[31mThis session has stopped responding.\x1b[0m')
+              onUpstreamDead('retry_loop')
+            }
+          }
         }
 
         ws.onerror = () => {
@@ -481,12 +547,29 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           // back off (3s, 6s, 9s, capped 12s) so the lone instance is not
           // hammered. After a successful open, reconnect promptly (60-min cap).
           connectAttemptsRef.current += 1
+
+          // Dead-upstream: reconnect never succeeding (e.g. session expiry).
+          // Gated on onUpstreamDead; when absent this never runs and the
+          // reconnect loop below is reached exactly as before.
+          if (
+            onUpstreamDead &&
+            !upstreamDeadSignalledRef.current &&
+            connectAttemptsRef.current >= DEAD_RECONNECT_THRESHOLD
+          ) {
+            upstreamDeadSignalledRef.current = true
+            setHandshaking(false)
+            termRef.current?.writeln('\r\n\x1b[31mThis session has stopped responding.\x1b[0m')
+            onUpstreamDead('reconnect_failed')
+            return
+          }
+
           const delay = everOpenedRef.current
             ? 2000
             : Math.min(3000 * connectAttemptsRef.current, 12000)
           const secs = Math.round(delay / 1000)
           // Keep the spinner up while we wait, instead of flashing the error.
           setHandshaking(true)
+          reconnectBannerPinnedRef.current = true
           termRef.current?.writeln(`\r\n\x1b[33m[Reconnecting in ${secs}s…]\x1b[0m`)
           reconnectTimerRef.current = setTimeout(() => {
             if (mountedRef.current) connectWS()

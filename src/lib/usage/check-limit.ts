@@ -7,6 +7,7 @@ export type UsageFeature =
   | 'claude_code_sessions'
   | 'cc_claude_spend_cents'
   | 'cc_drill_sessions_weekly'
+  | 'cc_case_attempts_total'
 export type UsageUnit = 'count' | 'cents'
 export type BillingPlan = 'free' | 'pro'
 
@@ -95,6 +96,16 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       description: 'Casebook practice session starts per rolling week',
       costCeilingCents: null,
     },
+    cc_case_attempts_total: {
+      // Casebook Challenge (full case, 90-min capstone) session cap. Authoritative
+      // value lives in plan_limits (free=1, window_days=36500 ≈ lifetime trial);
+      // this is the fallback used only if that row is missing.
+      limitValue: 1,
+      windowDays: 36500,
+      unit: 'count',
+      description: 'Casebook challenge (full case) session starts, lifetime',
+      costCeilingCents: null,
+    },
   },
   pro: {
     challenges: {
@@ -142,6 +153,15 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       windowDays: 7,
       unit: 'count',
       description: 'Casebook practice session starts per rolling week',
+      costCeilingCents: null,
+    },
+    cc_case_attempts_total: {
+      // Authoritative value lives in plan_limits (pro=10000, effectively
+      // unlimited); this is the fallback used only if that row is missing.
+      limitValue: 10000,
+      windowDays: 36500,
+      unit: 'count',
+      description: 'Casebook challenge (full case) session starts, lifetime',
       costCeilingCents: null,
     },
   },

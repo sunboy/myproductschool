@@ -23,6 +23,17 @@ import { buildWssUrl } from '../session-token'
 const RUN_API = 'https://run.googleapis.com/v2'
 const TOKEN_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
 
+// Cloud Run's hard ceiling on the per-REQUEST timeout (v2 API rejects any
+// higher value with "maximum allowed time is one hour"). This is a platform
+// limit, not a product decision, and it bounds ONE WebSocket connection, not
+// the container's lifetime — the tagged revision stays pinned via
+// scaling.minInstanceCount=1 for the full session regardless of this value.
+// A session whose real TTL (input.ttlSeconds, e.g. the 90-minute case wall)
+// exceeds this just sees one forced WS drop at the hour mark, followed by the
+// terminal's existing reconnect logic hitting the same still-live container.
+// Session TTL / expiresAt / reaper semantics are untouched by this cap.
+const CLOUD_RUN_MAX_REQUEST_TIMEOUT_SECONDS = 3600
+
 interface CloudRunConfig {
   project: string
   region: string
@@ -154,7 +165,9 @@ export class CloudRunProvider implements HostProvider {
         // coexist on the same instance. The PTY bridge still scopes one shell
         // per connection, so this does not multiplex sessions.
         maxInstanceRequestConcurrency: 6,
-        timeout: `${input.ttlSeconds}s`,
+        // Capped independently of input.ttlSeconds (the session's real
+        // lifetime) — see CLOUD_RUN_MAX_REQUEST_TIMEOUT_SECONDS above.
+        timeout: `${Math.min(input.ttlSeconds, CLOUD_RUN_MAX_REQUEST_TIMEOUT_SECONDS)}s`,
         containers: [
           {
             image: cfg.image,

@@ -82,7 +82,7 @@ export interface SessionEnv {
    * value only; never surfaced to a client response as-is (see
    * src/app/api/casebook/practice/start/route.ts).
    */
-  SESSION_KIND?: 'case' | 'drill'
+  SESSION_KIND?: 'case' | 'drill' | 'casebook_case'
 }
 
 export interface CreateSessionInput {
