@@ -23,6 +23,13 @@ export const MARKETING_ROUTES = [
   '/help',
   '/changelog',
   '/r',
+  // Public Challenge report share page (Phase 5, devBB). Placed at
+  // /reports/[slug] (plural) rather than /r/[slug] because /r/[code]/route.ts
+  // already owns the entire /r/* path as the affiliate short-link redirect
+  // handler — a real Next.js routing collision, not a style choice. This is
+  // the settled, final placement — see the PLACEMENT note in
+  // src/app/(marketing)/reports/[slug]/page.tsx for the full reasoning.
+  '/reports',
   '/flow',
   '/hatch-preview',
   '/hatch-motion',

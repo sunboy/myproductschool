@@ -1639,3 +1639,187 @@ key's max_budget) is closed by design.
 The reaper again hit `orphan_failures: 1` on the latest-revision constraint;
 cleared with the documented bump-then-delete. That is now twice in one phase, so
 it is a reliable property of the automated path rather than a one-off.
+
+# PHASE 5
+
+## cc_reports public-read RLS: applied and FALSIFIED (2026-08-28)
+
+Deferred-on-purpose work from Phase 0, whose migration said the public-read
+policy "arrives later with the share route". Approved before writing, per the
+standing stop-and-report rule.
+
+Migration: supabase/migrations/20260828090000_casebook_reports_public_read.sql
+Applied to live DB by the orchestrator after diff-check.
+
+BEFORE (pg_policies): 3 policies, all owner-only
+  Users can read own cc_reports     SELECT  (auth.uid() = user_id)
+  Users can insert own cc_reports   INSERT
+  Users can update own cc_reports   UPDATE  (auth.uid() = user_id)
+
+AFTER: 4 policies. The 3 above UNCHANGED, plus
+  Anyone can read public cc_reports SELECT  (is_public = true)
+
+### Why it was falsified rather than just observed
+
+An anon SELECT on an EMPTY table returns `[]` whether the policy works or does
+not exist. That is the vacuous-pass shape this project keeps catching, so the
+empty-table check was treated as proving nothing.
+
+Seeded two rows (one is_public=true, one false), then probed with the ANON key:
+
+  anon lists table          -> ONLY rlstest-public returned
+  anon fetches private slug -> [] (invisible even when addressed directly)
+  anon POST                 -> 401 (read grant did not widen writes)
+
+The private-slug probe is the load-bearing one: a policy that filters a list but
+not a direct lookup would still leak every report to anyone holding a slug.
+
+Probe rows deleted afterwards; cc_reports back to 0 rows, probe attempt removed.
+
+### Design note
+
+The grant is SELECT-only and scoped to `is_public = true`, so un-publishing
+revokes anon access with no code change. Serving the share page through the
+service role would also have worked, but it puts a bypass-everything key on a
+public unauthenticated path where one query-shape mistake exposes the whole
+table. RLS fails closed instead. Reasoning is in the migration header so the
+next reader does not "simplify" it to a service-role read.
+
+## DEVIATION: chart specs generated at FILING TIME, not in-session (2026-08-28)
+
+The plan (§6) says "chart-spec generation in-session", listed as a step distinct
+from "report assembly". We are generating at filing time instead. Named honestly
+here, same treatment as the budget-exhaustion and scratch-dataset deviations.
+
+Why: there is NO in-session display surface. Verified before deciding — no panel
+reads chart specs mid-session, `chart_spec` appears nowhere in the codebase, and
+nothing writes `cc_case_attempts.evidence` mid-session either.
+
+So in-session generation would be invisible machinery producing output identical
+to filing-time generation, from a strictly WORSE source: the client's rolling
+tail is a lossy 4KB window, while the filed workspace tarball carries the full
+transcript. Same output, worse input, more moving parts.
+
+No schema change. `evidence` JSONB remains available as an intermediate.
+
+REVISIT IF: a live chart panel ever ships. At that point in-session generation
+buys something real (the learner sees charts while working) and the tradeoff
+flips.
+
+### Guard carried into the implementation
+
+Extraction must handle the MCP-tool-call form, not only the CLI form.
+CLI-form-only blindness was pipeline bug #5 in Phase 1, and it fails QUIETLY:
+extraction returns fewer results, nothing errors, and the case looks less active
+rather than the extractor looking broken. Required a unit test covering BOTH
+forms, since a CLI-only test would pass while reproducing the bug exactly.
+
+## The public snapshot is an ANSWER-KEY leak surface (caught pre-build)
+
+`/r/[slug]` renders logged out, and `diff.missed` is the list of expert moves the
+learner did not make. A public report for tuesday-dip listing those moves IS the
+answer key to the case, readable by anyone holding a slug and potentially
+search-indexed.
+
+This is the Phase 2 dataset-name leak in its sharpest form: the frozen snapshot
+is a projection onto a public surface, and needs the same field-allowlist
+discipline the teaser payload got.
+
+Rules pinned before any code was written:
+
+  MAY:   learner's own narrative, their charts, their score/verdict, and at most
+         an aggregate ("matched 9 of 14 expert moves")
+  NEVER: expert move labels/descriptions, missed-move detail beyond a count,
+         matched/extra entry contents, decision-point questions or options,
+         any rubric text
+
+The full move-diff debrief stays behind auth on the learner's own page.
+
+Construction rule: build the snapshot by explicit field-by-field construction,
+NEVER spread the cc_case_attempts row and never select('*') into it. A spread is
+how a column added later silently joins a public payload with no diff to review.
+
+Proof required: grep a real constructed snapshot for forbidden content, matching
+the standard Phase 2 applied to the teaser payload. A unit test asserting the
+projection drops forbidden fields is preferred, because it keeps holding after
+someone adds a column.
+
+Note for the front-door E2E: asserting "the page renders" is NOT sufficient. The
+E2E must assert the snapshot is leak-free. A page that renders the wrong thing
+correctly is a worse failure than a page that does not render.
+
+## Share URL is /reports/[slug], NOT the plan's /r/[slug] (2026-08-28)
+
+Named deviation from the plan text, with the reason, so nobody "fixes" it later.
+
+The plan and the launch checklist both say `/r/[slug]` (and say to allowlist
+exactly that in proxy). That is not achievable: `src/app/r/[code]/route.ts`
+already owns the ENTIRE `/r/*` path as the affiliate short-link redirect handler
+(records a click, sets affiliate cookies, redirects). Next.js cannot have a
+`page.tsx` and a `route.ts` at the same dynamic segment, nor two different param
+names at that level. Hard build-time conflict, not a style choice.
+
+The plan's `/r/[slug]` was written blind to that. It is a stale assumption in a
+doc, not a real constraint on the feature.
+
+Rejected option: teach `/r/[code]/route.ts` to look up `cc_reports` first and
+fall through to affiliate behavior on a miss. That would inject a DB lookup into
+the hot path of every affiliate click (latency plus a new failure mode on LIVE
+REVENUE traffic), and create a slug/code namespace that must stay collision-free
+forever, all to preserve a URL nobody has published while `lab_casebook` is
+false.
+
+**`/reports/[slug]` was chosen specifically to avoid collateral risk to the
+affiliate path.** Recorded here so it is discoverable if anyone revisits the URL
+scheme: the affiliate route was deliberately left untouched, and moving the
+share page back onto `/r` would require solving the collision above, not just a
+rename.
+
+Consequence for the launch checklist: the proxy step is NOT "add `/r/[slug]`".
+`/r` is already prefix-matched public (`src/lib/routes/public.ts:25`) for the
+affiliate handler. The new entry is `'/reports'`.
+
+Plural was confirmed deliberately. A one-character URL discrepancy was escalated
+rather than normalized silently, on the grounds that a public link surface is the
+one thing that is expensive to change after launch.
+
+## A comment that overclaimed a SECURITY property (corrected 2026-08-28)
+
+My own RLS migration header originally said cc_reports "carries no rubric, no
+answer key, and no session credentials". devBB flagged that this is not true as
+written, and it was right.
+
+That is not a property of the TABLE. It is contingent on every writer building
+`snapshot` through the field allowlist in
+`src/lib/casebook/public-report-projection.ts`. The table itself will store
+whatever a writer puts in it.
+
+The trap is concrete: `cc_case_attempts.report.narrative_md` contains a
+"## Moves you missed" section listing expert move labels
+(`src/lib/casebook/report-narrative.ts:61-63`). The OBVIOUS implementation of a
+share writer, copy `report` into `snapshot`, publishes the case's answer key to
+anyone holding a slug.
+
+Corrected the comment to name what actually enforces the property and to state
+the trap explicitly. SQL untouched (verified: statements byte-identical to what
+was applied), so no re-apply was needed.
+
+### Why this class of error is worse than a wrong comment
+
+A stale comment that describes behavior is a nuisance. A comment that asserts a
+SECURITY GUARANTEE gets trusted later without re-verification. Someone reading
+"the table carries no answer key" while writing the share writer would
+reasonably conclude the copy-report-in shortcut is safe. The comment would have
+actively caused the leak it appeared to rule out.
+
+Generalizable: when a comment claims a safety property, it must name the
+mechanism that enforces it. "This table has no secrets" is an assertion.
+"Writers must use X, because otherwise Y leaks" is a mechanism. Only the second
+survives someone adding a new writer.
+
+Related, same phase: the orchestrator's own decomposition created the gap. Phase
+5 was split into filing/grading, share-READ, and XP/queue. Nobody owned the
+share WRITER, so both ends of the flow existed with no middle and every real
+slug 404ed. Caught by a dev wiring against the real route instead of against its
+assumption of one. When splitting work by surface, the SEAMS between surfaces
+are unowned by default and must be assigned explicitly.
