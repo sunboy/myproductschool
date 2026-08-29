@@ -41,6 +41,11 @@ const SlugSchema = z.string().trim().min(1).max(100).regex(/^[a-z0-9-]+$/, 'inva
 
 const BodySchema = z.object({
   caseId: SlugSchema,
+  // Test-out: a pro user attempts the Challenge cold, without doing the
+  // Practice warm-up scenes first. Gated separately below on
+  // cc_test_out_attempts_monthly (free=0, pro=5/rolling month). Optional and
+  // defaults to false so every existing standard-mode caller is unaffected.
+  testOut: z.boolean().optional(),
 })
 
 // Same allowlist approach as practice/start and the Phase 2 replay/predictions
@@ -112,7 +117,7 @@ export const POST = withRoute(async (req: NextRequest) => {
   if (!parsedBody.success) {
     return apiError(400, 'invalid_body', 'Invalid challenge request', parsedBody.error.flatten())
   }
-  const { caseId } = parsedBody.data
+  const { caseId, testOut } = parsedBody.data
 
   const isAllowlisted = CHALLENGE_CASE_IDS.has(caseId)
   if (!isAllowlisted) {
@@ -125,14 +130,40 @@ export const POST = withRoute(async (req: NextRequest) => {
 
   const admin = createAdminClient()
 
-  // --- Usage gate (Challenge session cap) ---
-  // Runs before any attempt bookkeeping or sandbox provisioning below, so a
-  // refused user never costs a real Cloud Run boot or LLM spend. Distinct
-  // feature key from both the analytics lab's 'claude_code_sessions' and
-  // Practice's 'cc_drill_sessions_weekly' — a Challenge (full case) is its
-  // own metered surface (free = 1 lifetime trial, pro = effectively
-  // unlimited; see plan_limits).
+  // --- Usage gates (Challenge session cap [+ test-out, + terminal minutes]) ---
+  // All gates run before any attempt bookkeeping or sandbox provisioning
+  // below, so a refused user never costs a real Cloud Run boot or LLM spend.
   const { plan: userPlan } = await getEffectiveUserPlan(admin, user.id)
+
+  // Test-out gate FIRST when requested, so a blocked free/over-quota user
+  // gets the test-out-framed 402 (plan doc §5: "Paywall with test-out
+  // framing") rather than the generic Challenge-cap message below. This is
+  // IN ADDITION to the cc_case_attempts_total gate, not instead of it — a
+  // test-out attempt is still a Challenge session and must also respect that
+  // cap (free=1 lifetime trial; pro's cap is 10000 so this never costs pro
+  // users a real-world denial in practice).
+  if (testOut) {
+    const testOutResult = await checkUsageLimit(user.id, 'cc_test_out_attempts_monthly', userPlan)
+    if (!testOutResult.allowed) {
+      return apiError(
+        402,
+        'limit_reached',
+        `You have used all your test-out attempts for now. Upgrade for more, or warm up with Practice first.`,
+        {
+          used: testOutResult.used,
+          limit: testOutResult.limit,
+          feature: 'cc_test_out_attempts_monthly',
+          windowDays: testOutResult.windowDays,
+          upgrade_url: '/pricing',
+        },
+      )
+    }
+  }
+
+  // Distinct feature key from both the analytics lab's 'claude_code_sessions'
+  // and Practice's 'cc_drill_sessions_weekly' — a Challenge (full case) is
+  // its own metered surface (free = 1 lifetime trial, pro = effectively
+  // unlimited; see plan_limits).
   const usageResult = await checkUsageLimit(user.id, 'cc_case_attempts_total', userPlan)
   if (!usageResult.allowed) {
     return apiError(
@@ -142,8 +173,31 @@ export const POST = withRoute(async (req: NextRequest) => {
       {
         used: usageResult.used,
         limit: usageResult.limit,
-        feature: 'challenge_sessions',
+        feature: 'cc_case_attempts_total',
         windowDays: usageResult.windowDays,
+        upgrade_url: '/pricing',
+      },
+    )
+  }
+
+  // Terminal-minutes gate. NOTE: recording (recordUsageEvent) for this
+  // feature is NOT wired anywhere yet — see the task report's "scoped out"
+  // finding on session-duration metering. This pre-start read-side gate is
+  // still correct and harmless to ship now: getUsedQuantity reads whatever
+  // has been recorded (0 today, so it never blocks), and the gate starts
+  // enforcing automatically the moment a future change records real elapsed
+  // minutes, with no further code change needed here.
+  const terminalMinutesResult = await checkUsageLimit(user.id, 'cc_terminal_minutes_weekly', userPlan)
+  if (!terminalMinutesResult.allowed) {
+    return apiError(
+      402,
+      'limit_reached',
+      `You have used all your sandbox time for now. It resets on a rolling basis, or you can upgrade for more.`,
+      {
+        used: terminalMinutesResult.used,
+        limit: terminalMinutesResult.limit,
+        feature: 'cc_terminal_minutes_weekly',
+        windowDays: terminalMinutesResult.windowDays,
         upgrade_url: '/pricing',
       },
     )
@@ -217,10 +271,15 @@ export const POST = withRoute(async (req: NextRequest) => {
     .insert({
       user_id: user.id,
       case_id: caseId,
-      mode: 'standard',
+      // cc_case_attempts.mode CHECK already allows 'standard' | 'test_out'
+      // (migration 20260826100100, live). This is the marker the debrief/
+      // report surfaces read to distinguish test-out framing ("passed,
+      // warm-ups credited" / "didn't pass, here's what to review") from the
+      // normal Challenge messaging — see the task report for that follow-up.
+      mode: testOut ? 'test_out' : 'standard',
       status: 'in_progress',
     })
-    .select('id, status, started_at')
+    .select('id, status, started_at, mode')
     .single()
 
   if (caseAttemptResult.error || !caseAttemptResult.data) {
@@ -265,7 +324,26 @@ export const POST = withRoute(async (req: NextRequest) => {
     // SHIM BOUNDARY) and is the full context this session needs — unlike
     // Practice, there is no separate scene-level goal/context markdown to
     // append on top of it.
-    const claudeMd = labEnv.CLAUDE_MD
+    //
+    // Hatch-awareness (repo CLAUDE.md, "Hatch-Awareness — Required for Every
+    // Feature"): the in-session coaching surface for a Casebook Challenge IS
+    // the sandbox Claude Code instance itself, driven entirely by this
+    // claudeMd — there is no separate Hatch chat panel or nudger skill wired
+    // into casebook sessions yet (grep confirms no casebook-specific
+    // hackproduct-*-coach/-nudger skill exists). So the only place to make
+    // Hatch aware of test-out mode in this phase's scope is right here: when
+    // testOut is true, append an explicit assessment-mode instruction so the
+    // in-sandbox assistant does not proactively coach through what is meant
+    // to be a cold, unaided assessment (over-coaching here would invalidate
+    // the "pass = warm-ups credited" signal the debrief relies on).
+    const claudeMd = testOut
+      ? [
+          labEnv.CLAUDE_MD,
+          '## Test-out mode\n\nThe learner is attempting this case COLD, without having done the Practice warm-up scenes first, to test out of them. Do not proactively coach, hint, or walk them through the investigation as you normally would — let them drive. Answer direct factual questions about the data/tools if asked, but do not volunteer the next step or point out what they are missing. This is a graded assessment, not a guided session.',
+        ]
+          .filter(Boolean)
+          .join('\n\n')
+      : labEnv.CLAUDE_MD
     // 90-minute capstone hard wall — plan §3.3. Passed explicitly rather than
     // relying on a default; provisionSession only overrides ttlSeconds
     // internally for sessionKind: 'drill', so 'casebook_case' passes this
@@ -372,6 +450,16 @@ export const POST = withRoute(async (req: NextRequest) => {
           case_id: caseId,
           session_id: sessionId,
         })
+        // Test-out is metered as an ADDITIONAL event on the same successful
+        // provision, not a replacement for the cc_case_attempts_total event
+        // above — a test-out attempt is still a Challenge session and must
+        // count against both caps.
+        if (testOut) {
+          await recordUsageEvent(user.id, 'cc_test_out_attempts_monthly', 1, {
+            case_id: caseId,
+            session_id: sessionId,
+          })
+        }
       } else {
         // provisionSession already maps every failure (SQL wake timeout,
         // gateway key mint failure, sandbox create failure, readiness
@@ -393,6 +481,7 @@ export const POST = withRoute(async (req: NextRequest) => {
       id: caseAttempt.id,
       status: caseAttempt.status,
       started_at: caseAttempt.started_at,
+      mode: caseAttempt.mode,
     },
     challenge: {
       case_id: caseRow.id,

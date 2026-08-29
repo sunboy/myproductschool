@@ -10,6 +10,7 @@ import { gradeCaseAttempt, type CaseObjective, type VerdictSpec } from '@/lib/ca
 import { buildNarrativeMd } from '@/lib/casebook/report-narrative'
 import { buildChartSpecs } from '@/lib/casebook/chart-specs'
 import { getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { sendCaseReportReadyEmail } from '@/lib/email/senders/casebook'
 
 export const dynamic = 'force-dynamic'
 // Grading invokes an AI model (case-grader.ts) — same budget headroom as
@@ -226,6 +227,24 @@ export const POST = withRoute(async (
       })
     }
   }
+
+  // Fire-and-forget on the CAS-winner path only (gradeUpdateResult.data
+  // truthy means THIS call made the filed->graded transition). Never
+  // awaited into the response: an email failure must never fail a grading
+  // response, matching sendChallengeCompletionEmail's usage elsewhere. The
+  // per-attempt dedupeKey inside the sender is the durable guard against a
+  // retry double-sending; this branch just avoids firing on the lost-race
+  // read path in addition to that guard.
+  void sendCaseReportReadyEmail(admin, {
+    userId: user.id,
+    attemptId,
+    caseId: attempt.case_id,
+    caseTitle: caseRow.title,
+    gradeLabel: gradeResult.grade.grade_label,
+    totalScore: gradeResult.grade.total_score,
+  }).catch((err) => {
+    console.error('[casebook/case/file] sendCaseReportReadyEmail failed:', err instanceof Error ? err.message : err)
+  })
 
   return NextResponse.json({
     attempt: { id: attemptId, status: 'graded', graded_at: gradedAt },

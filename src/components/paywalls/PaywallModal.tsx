@@ -115,6 +115,16 @@ const FEATURE_COPY: Record<string, { eyebrow: string; headline?: string; detail:
     headline: 'You have used your analytics sessions this month.',
     detail: 'Your monthly Claude Code Analytics sessions reset on a rolling 30-day window.',
   },
+  cc_case_attempts_total: {
+    eyebrow: 'Challenge limit',
+    headline: 'You have used your Challenge attempts.',
+    detail: 'Pro gives you more full-case Challenge sessions.',
+  },
+  cc_drill_sessions_weekly: {
+    eyebrow: 'Practice limit',
+    headline: 'You have used your Practice sessions this week.',
+    detail: 'Pro gives you more weekly Practice reps.',
+  },
 }
 
 type BillingCycle = 'monthly' | 'annual'

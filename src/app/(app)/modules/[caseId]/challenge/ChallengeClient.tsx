@@ -26,6 +26,7 @@ import { ChallengeBrief } from '@/components/casebook/challenge/ChallengeBrief'
 import { ChallengeTerminal } from '@/components/casebook/challenge/ChallengeTerminal'
 import { startChallengeSession } from '@/components/casebook/challenge/startChallengeSession'
 import { fileChallengeReport } from '@/components/casebook/challenge/fileChallengeReport'
+import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import type {
   ChallengeEndReason,
   ChallengeFileStatus,
@@ -45,6 +46,10 @@ export function ChallengeClient({ caseId, initialPayload }: ChallengeClientProps
   const [wssUrl, setWssUrl] = useState<string | null>(null)
   const [expiresAt, setExpiresAt] = useState<string | null>(null)
   const [startError, setStartError] = useState<string | null>(null)
+  // Paywall data for the 'limit_reached' branch. Kept separate from the
+  // inline ended-state message ChallengeTerminal already renders — the
+  // modal is additive; dismissing it still leaves that calm message visible.
+  const [limitInfo, setLimitInfo] = useState<{ used?: number; limit?: number } | null>(null)
 
   const [fileStatus, setFileStatus] = useState<ChallengeFileStatus>('idle')
   const [fileMessage, setFileMessage] = useState<string | null>(null)
@@ -71,6 +76,7 @@ export function ChallengeClient({ caseId, initialPayload }: ChallengeClientProps
         setSessionStatus('ended')
         setEndReason('limit_reached')
         setEndMessage(result.message)
+        setLimitInfo({ used: result.used, limit: result.limit })
       } else {
         setStartError(result.message)
         setSessionStatus('idle')
@@ -191,6 +197,14 @@ export function ChallengeClient({ caseId, initialPayload }: ChallengeClientProps
           totalScore={totalScore}
         />
       </div>
+
+      <PaywallModal
+        open={limitInfo !== null}
+        feature="cc_case_attempts_total"
+        used={limitInfo?.used}
+        limit={limitInfo?.limit}
+        onClose={() => setLimitInfo(null)}
+      />
     </div>
   )
 }

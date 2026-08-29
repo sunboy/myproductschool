@@ -141,7 +141,7 @@ export const POST = withRoute(async (req: NextRequest) => {
       {
         used: usageResult.used,
         limit: usageResult.limit,
-        feature: 'practice_sessions',
+        feature: 'cc_drill_sessions_weekly',
         windowDays: usageResult.windowDays,
         upgrade_url: '/pricing',
       },

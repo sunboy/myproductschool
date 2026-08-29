@@ -8,6 +8,8 @@ export type UsageFeature =
   | 'cc_claude_spend_cents'
   | 'cc_drill_sessions_weekly'
   | 'cc_case_attempts_total'
+  | 'cc_terminal_minutes_weekly'
+  | 'cc_test_out_attempts_monthly'
 export type UsageUnit = 'count' | 'cents'
 export type BillingPlan = 'free' | 'pro'
 
@@ -106,6 +108,30 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       description: 'Casebook challenge (full case) session starts, lifetime',
       costCeilingCents: null,
     },
+    cc_terminal_minutes_weekly: {
+      // Casebook sandbox terminal wall-clock minutes cap. Unit is 'count'
+      // representing MINUTES (not cents/seconds) — mirrors the live
+      // plan_limits row (unit='count', verified 2026-08-29), consistent with
+      // every other cc_ count-based feature. Authoritative value lives in
+      // plan_limits (Phase 0 seed: free=45/7d); this is the fallback used
+      // only if that row is missing.
+      limitValue: 45,
+      windowDays: 7,
+      unit: 'count',
+      description: 'Casebook sandbox terminal minutes per rolling week',
+      costCeilingCents: null,
+    },
+    cc_test_out_attempts_monthly: {
+      // Free users can never test out (0 = hard block, not "unlimited" — see
+      // checkUsageLimit's `used + next <= limit` semantics, no -1 special
+      // case). Authoritative value lives in plan_limits (Phase 0 seed:
+      // free=0/30d); this is the fallback used only if that row is missing.
+      limitValue: 0,
+      windowDays: 30,
+      unit: 'count',
+      description: 'Casebook test-out attempts per rolling month',
+      costCeilingCents: null,
+    },
   },
   pro: {
     challenges: {
@@ -162,6 +188,25 @@ const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord
       windowDays: 36500,
       unit: 'count',
       description: 'Casebook challenge (full case) session starts, lifetime',
+      costCeilingCents: null,
+    },
+    cc_terminal_minutes_weekly: {
+      // Authoritative value lives in plan_limits (pro=10000/7d, effectively
+      // unlimited, verified live); this is the fallback used only if that
+      // row is missing.
+      limitValue: 10000,
+      windowDays: 7,
+      unit: 'count',
+      description: 'Casebook sandbox terminal minutes per rolling week',
+      costCeilingCents: null,
+    },
+    cc_test_out_attempts_monthly: {
+      // Authoritative value lives in plan_limits (Phase 0 seed: pro=5/30d);
+      // this is the fallback used only if that row is missing.
+      limitValue: 5,
+      windowDays: 30,
+      unit: 'count',
+      description: 'Casebook test-out attempts per rolling month',
       costCeilingCents: null,
     },
   },
@@ -315,13 +360,23 @@ export async function recordUsageEvent(
   const admin = createAdminClient()
   const estimatedCostCents = feature === 'hatch_ai_cents' ? quantity : 0
 
-  await admin.from('usage_events').insert({
+  const { error } = await admin.from('usage_events').insert({
     user_id: userId,
     feature,
     quantity,
     estimated_cost_cents: estimatedCostCents,
     metadata,
   })
+
+  if (error) {
+    // A silent failure here (e.g. a usage_events.feature CHECK constraint
+    // that hasn't been widened for a new feature key yet) makes the
+    // corresponding checkUsageLimit gate look like protection while
+    // protecting nothing — getUsedQuantity would read 0 forever. This
+    // exact failure mode has hit this codebase repeatedly (see Phase 3/4
+    // usage_events CHECK-widening migrations); always surface it loudly.
+    console.error(`[usage] recordUsageEvent insert failed for feature=${feature}:`, error.message)
+  }
 }
 
 export async function getUsageForUser(userId: string, userPlan: string): Promise<UsageData> {

@@ -18,6 +18,7 @@ import { PracticePreload } from '@/components/casebook/practice/PracticePreload'
 import { PracticeTerminal } from '@/components/casebook/practice/PracticeTerminal'
 import { startPracticeSession } from '@/components/casebook/practice/startPracticeSession'
 import type { PracticeEndReason, PracticePayload, PracticeSessionStatus } from '@/components/casebook/practice/types'
+import { PaywallModal } from '@/components/paywalls/PaywallModal'
 
 interface PracticeClientProps {
   caseId: string
@@ -31,6 +32,10 @@ export function PracticeClient({ caseId, sceneId, initialPayload }: PracticeClie
   const [endMessage, setEndMessage] = useState<string | null>(null)
   const [wssUrl, setWssUrl] = useState<string | null>(null)
   const [startError, setStartError] = useState<string | null>(null)
+  // Paywall data for the 'limit_reached' branch. Kept separate from the
+  // inline ended-state message PracticeTerminal already renders — the
+  // modal is additive; dismissing it still leaves that calm message visible.
+  const [limitInfo, setLimitInfo] = useState<{ used?: number; limit?: number } | null>(null)
   // Reported in the task summary for teardown; never rendered to the user.
   const lastAttemptIdRef = useRef<string | null>(null)
 
@@ -47,6 +52,7 @@ export function PracticeClient({ caseId, sceneId, initialPayload }: PracticeClie
         setSessionStatus('ended')
         setEndReason('limit_reached')
         setEndMessage(result.message)
+        setLimitInfo({ used: result.used, limit: result.limit })
       } else {
         setStartError(result.message)
         setSessionStatus('idle')
@@ -129,6 +135,14 @@ export function PracticeClient({ caseId, sceneId, initialPayload }: PracticeClie
           onUpstreamDead={handleUpstreamDead}
         />
       </div>
+
+      <PaywallModal
+        open={limitInfo !== null}
+        feature="cc_drill_sessions_weekly"
+        used={limitInfo?.used}
+        limit={limitInfo?.limit}
+        onClose={() => setLimitInfo(null)}
+      />
     </div>
   )
 }
