@@ -313,7 +313,7 @@ export function PaywallModal({
                 <p className="truncate font-label text-[10px] font-bold uppercase tracking-[0.14em] text-white/55">
                   {eyebrow}
                 </p>
-                <p className="truncate font-headline text-[17px] font-semibold leading-tight tracking-[-0.01em] text-white">
+                <p className="line-clamp-2 font-headline text-[17px] font-semibold leading-tight tracking-[-0.01em] text-white">
                   {checkoutOpen ? `HackProduct ${isAnalytics ? 'Analytics' : 'Pro'}` : headline}
                 </p>
               </div>
