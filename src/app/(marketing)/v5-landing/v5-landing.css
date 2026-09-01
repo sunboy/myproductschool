@@ -1669,3 +1669,141 @@
 }
 @media (max-width: 720px) {.v5 .reference-header .brand { width: 160px; height: 23px; }.v5 .reference-header .brand-wordmark { width: 158px !important; }
 }
+
+/* ===== AUTH MODAL =====
+   V5LandingPage reuses V3AuthGate (src/components/landing-v3/V3AuthGate.tsx)
+   as-is for the open-auth-modal mechanism, but that component's markup
+   (.v3-auth-modal*) only had styles under the .v3 scope. Since V5's page
+   root is .v5, not .v3, those rules never matched and the modal rendered
+   with position:static and no styling. Ported here under .v5 verbatim from
+   v3-landing.css (search "AUTH MODAL" there) — keep both copies in sync if
+   the modal's markup or styling changes. */
+.v5 {
+  --on-dark: #f9faf5;
+  --v3-font-display: var(--font-headline);
+  --v3-font-mono: var(--font-label);
+}
+.v5 .v3-auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+}
+.v5 .v3-auth-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background:
+    radial-gradient(900px 560px at 50% 18%, rgba(92,143,101,0.22), transparent 66%),
+    rgba(8,15,11,0.72);
+  backdrop-filter: blur(16px);
+  cursor: default;
+}
+.v5 .v3-auth-modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 430px);
+  max-height: min(880px, calc(100svh - 44px));
+  overflow-y: auto;
+  border: 1px solid rgba(255,253,247,0.15);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(17,31,23,0.97), rgba(8,16,11,0.97)),
+    var(--forest-950);
+  box-shadow: 0 34px 100px rgba(0,0,0,0.45);
+}
+.v5 .v3-auth-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(255,253,247,0.14);
+  border-radius: 999px;
+  background: rgba(255,253,247,0.08);
+  color: rgba(255,253,247,0.82);
+  cursor: pointer;
+}
+.v5 .v3-auth-modal-close svg {
+  width: 17px;
+  height: 17px;
+}
+.v5 .v3-auth-modal-copy {
+  padding: 30px 28px 0;
+}
+.v5 .v3-auth-modal-copy p {
+  margin: 0;
+  color: rgba(255,253,247,0.52);
+  font-family: var(--v3-font-mono);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.v5 .v3-auth-modal-copy h2 {
+  max-width: 320px;
+  margin: 10px 0 0;
+  color: var(--on-dark);
+  font-family: var(--v3-font-display);
+  font-size: 32px;
+  font-weight: 760;
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+.v5 .v3-auth-modal-form {
+  padding: 20px 20px 22px;
+}
+.v5 .v3-auth-modal-form > .relative {
+  min-height: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+.v5 .v3-auth-modal-form > .relative > div:not(:last-child) {
+  display: none !important;
+}
+.v5 .v3-auth-modal-form > .relative > div:last-child {
+  display: block !important;
+  min-height: 0 !important;
+}
+.v5 .v3-auth-modal-form > .relative > div:last-child > div:first-child {
+  display: none !important;
+}
+.v5 .v3-auth-modal-form > .relative > div:last-child > div:last-child {
+  display: block !important;
+  width: 100% !important;
+  padding: 0 !important;
+}
+.v5 .v3-auth-modal-form > .relative > div:last-child > div:last-child > div {
+  max-width: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+@media (max-width: 520px) {
+  .v5 .v3-auth-modal {
+    align-items: end;
+    padding: 10px;
+  }
+  .v5 .v3-auth-modal-panel {
+    width: 100%;
+    max-height: calc(100svh - 20px);
+    border-radius: 20px;
+  }
+  .v5 .v3-auth-modal-copy {
+    padding: 26px 22px 0;
+  }
+  .v5 .v3-auth-modal-copy h2 {
+    padding-right: 42px;
+    font-size: 27px;
+  }
+  .v5 .v3-auth-modal-form {
+    padding: 18px 16px 18px;
+  }
+}
