@@ -54,16 +54,6 @@ function getParadigmLabel(paradigm?: string | null): string {
   return (paradigm && PARADIGM_DISPLAY[paradigm]) ?? 'Traditional'
 }
 
-const DISCIPLINE_RAIL_LABELS: Record<CountDiscipline, string> = {
-  all: 'All practice',
-  algorithm: 'Coding / DSA',
-  sql: 'SQL',
-  system_design: 'System design',
-  data_modeling: 'Data modeling',
-  product_sense: 'Product sense',
-  analytics: 'AI Analytics',
-}
-
 export async function FreePracticeContent({ searchParams }: FreePracticeContentProps) {
   const resolvedSearchParams = await searchParams
   const { q } = resolvedSearchParams
@@ -129,10 +119,16 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
       {/* Results column */}
       <div className="flex min-w-0 flex-col gap-4">
-        {/* Slim Hatch's Pick banner + search on one band. No page heading. */}
-        <HatchPick className="w-full" />
+        {/* Hatch's Pick lives in the right rail on lg+ (above Next best rep,
+            grouping both "what to do next" surfaces together); below lg
+            there's no rail, so it stays here as a full-width banner. */}
+        <HatchPick className="w-full lg:hidden" />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <ChallengeSearch total={counts.all} className="w-full sm:flex-1" />
+          {/* The global top-nav search pill IS this page's search on lg+ (it
+              live-filters via the same `q` param when already on
+              /challenges) — this stays mobile-only, since the collapsed
+              mobile top bar has no search box at all. */}
+          <ChallengeSearch total={counts.all} className="w-full sm:flex-1 lg:hidden" />
           {/* Freemium usage meter — compact strip here below lg; lives in the rail on lg+ */}
           <BillingUsageFromProfile className="lg:hidden sm:w-64 sm:flex-shrink-0" />
         </div>
@@ -155,7 +151,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
           <PracticeRightRail
             inProgress={inProgress}
             coverage={coverage}
-            disciplineLabel={DISCIPLINE_RAIL_LABELS[discipline]}
+            topSlot={<HatchPick variant="card" className="w-full" />}
           >
             <BillingUsageFromProfile className="w-full" />
           </PracticeRightRail>

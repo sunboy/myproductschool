@@ -37,133 +37,30 @@ const T = {
   btnDarkText:           '#f0ede4',
 }
 
-// ── Chip (matches .chip from styles.css) ──────────────────────────────────────
-function Chip({ label, outline, amber }: { label: string; outline?: boolean; amber?: boolean }) {
-  if (amber) return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      padding: '4px 10px', borderRadius: 999,
-      fontSize: 12, fontWeight: 600, letterSpacing: '0.01em',
-      background: T.amberSoft, color: T.tertiary,
-      border: '1px solid transparent', lineHeight: 1.4,
-    }}>{label}</span>
-  )
-  if (outline) return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      padding: '4px 10px', borderRadius: 999,
-      fontSize: 12, fontWeight: 600, letterSpacing: '0.01em',
-      background: 'transparent', color: T.onSurfaceVariant,
-      border: `1px solid ${T.outlineVariant}`, lineHeight: 1.4,
-    }}>{label}</span>
-  )
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      padding: '4px 10px', borderRadius: 999,
-      fontSize: 12, fontWeight: 600, letterSpacing: '0.01em',
-      background: T.surfaceContainer, color: T.onSurfaceVariant,
-      border: `1px solid ${T.outlineFaint}`, lineHeight: 1.4,
-    }}>{label}</span>
-  )
-}
 
-// ── Mode card ──────────────────────────────────────────────────────────────────
-function ModeCard({
-  active, onClick, activeStyle, inactiveStyle, hoverStyle, sonic = 'nudge', children,
-}: {
-  active: boolean
-  onClick: () => void
-  sonic?: string
-  activeStyle: React.CSSProperties
-  inactiveStyle: React.CSSProperties
-  hoverStyle: React.CSSProperties
-  children: React.ReactNode
-}) {
-  const [hovered, setHovered] = useState(false)
-  const computed = active ? activeStyle : hovered ? hoverStyle : inactiveStyle
-  return (
-    <button
-      onClick={onClick}
-      data-hatch-sound={active ? undefined : sonic}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        textAlign: 'left', outline: 'none', cursor: 'pointer',
-        borderRadius: 16, // spec §4 radius hierarchy: page-level containers 16px
-        padding: '20px 22px',
-        display: 'flex', flexDirection: 'column', gap: 10,
-        position: 'relative', overflow: 'hidden',
-        transition: 'all 200ms cubic-bezier(.2,.8,.2,1)',
-        transform: hovered && !active ? 'translateY(-2px)' : 'none',
-        ...computed,
-      }}
-    >
-      {/* "Select →" hint when inactive */}
-      {!active && (
-        <span style={{
-          position: 'absolute', top: 14, right: 16,
-          fontSize: 12, fontWeight: 700,
-          opacity: hovered ? 0.9 : 0.35,
-          color: 'inherit', letterSpacing: '0.04em',
-          display: 'flex', alignItems: 'center', gap: 4,
-          transition: 'opacity 200ms, transform 200ms',
-          transform: hovered ? 'translateX(2px)' : 'none',
-          pointerEvents: 'none',
-        }}>
-          Select <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
-        </span>
-      )}
-      {children}
-    </button>
-  )
-}
-
-// ── Radio dot ──────────────────────────────────────────────────────────────────
-function RadioDot({ active, dark }: { active: boolean; dark?: boolean }) {
-  return (
-    <div style={{
-      marginLeft: 'auto', flexShrink: 0,
-      width: 20, height: 20, borderRadius: '50%',
-      border: active ? 'none' : `2px solid ${dark ? 'rgba(255,255,255,0.25)' : T.outlineVariant}`,
-      background: active ? (dark ? '#7ee099' : T.primary) : 'transparent',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      transition: 'all 200ms',
-    }}>
-      {active && (
-        <span className="material-symbols-outlined" style={{ fontSize: 13, color: dark ? '#0e2818' : '#fff', fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
-          check
-        </span>
-      )}
-    </div>
-  )
-}
-
-// ── Loop stat pill ─────────────────────────────────────────────────────────────
+// ── Loop stat pill (light background — Zone 3 placement) ──────────────────────
 function LoopStatPill({ label, count, dotColor }: { label: string; count: number; dotColor: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, boxShadow: `0 0 0 3px ${dotColor}22`, flexShrink: 0, display: 'inline-block' }} />
-      <span style={{ fontSize: 12, color: 'rgba(243,237,224,0.85)' }}>
-        <b style={{ color: '#f3ede0' }}>{count}</b> {label}
+      <span style={{ fontSize: 12, color: T.onSurfaceVariant }}>
+        <b style={{ color: T.onSurface }}>{count}</b> {label}
       </span>
     </div>
   )
 }
 
-function LoopSummaryStrip({ summary }: { summary: LoopSummary }) {
+// Relocated from the old dark "Full loop" illustrated mode card (spec
+// correction: the loop counts are live system state, not decorative chrome,
+// so they must survive the collapse to a segmented control). Rendered next
+// to "Recent sessions" in Zone 3 whenever the user isn't already looking at
+// the Full loop panel (which shows the roster itself).
+function LoopSummaryStripInline({ summary }: { summary: LoopSummary }) {
   const total = summary.inProgress + summary.configured + summary.completed
 
   if (summary.loading) {
     return (
-      <div style={{
-        position: 'relative',
-        display: 'flex',
-        gap: 8,
-        marginTop: 6,
-        paddingTop: 12,
-        borderTop: '1px solid rgba(255,255,255,0.10)',
-      }}>
+      <div style={{ display: 'flex', gap: 8 }}>
         {[0, 1, 2].map((item) => (
           <span
             key={item}
@@ -171,7 +68,7 @@ function LoopSummaryStrip({ summary }: { summary: LoopSummary }) {
               width: item === 0 ? 96 : 82,
               height: 13,
               borderRadius: 999,
-              background: 'rgba(255,255,255,0.12)',
+              background: T.surfaceContainer,
             }}
           />
         ))}
@@ -180,30 +77,14 @@ function LoopSummaryStrip({ summary }: { summary: LoopSummary }) {
   }
 
   if (total === 0) {
-    return (
-      <div style={{
-        position: 'relative',
-        display: 'flex',
-        gap: 8,
-        marginTop: 6,
-        paddingTop: 12,
-        borderTop: '1px solid rgba(255,255,255,0.10)',
-        fontSize: 12,
-        color: 'rgba(243,237,224,0.78)',
-      }}>
-        No loops yet. Build one when you want a full panel.
-      </div>
-    )
+    return <span>No loops yet.</span>
   }
 
   return (
-    <div style={{
-      position: 'relative', display: 'flex', gap: 14, marginTop: 6,
-      paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.10)',
-    }}>
-      <LoopStatPill label="In progress" count={summary.inProgress} dotColor="#c9e86e" />
-      <LoopStatPill label="Configured" count={summary.configured} dotColor="#7ee099" />
-      <LoopStatPill label="Completed" count={summary.completed} dotColor="rgba(255,255,255,0.4)" />
+    <div style={{ display: 'flex', gap: 14 }}>
+      <LoopStatPill label="in progress" count={summary.inProgress} dotColor={T.amber} />
+      <LoopStatPill label="configured" count={summary.configured} dotColor={T.primary} />
+      <LoopStatPill label="completed" count={summary.completed} dotColor={T.outline} />
     </div>
   )
 }
@@ -1407,142 +1288,74 @@ export function LiveInterviewsShell({
     })
   }, [prefersReducedMotion])
 
+  const loopTotal = loopSummary.inProgress + loopSummary.configured + loopSummary.completed
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* ── Mode switcher ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16 }}>
-
-        {/* Single Round */}
-        <ModeCard
-          active={mode === 'single'}
+      {/* ── Zone 2: lightweight segmented mode control ── */}
+      <div
+        role="tablist"
+        aria-label="Interview mode"
+        style={{
+          display: 'inline-flex',
+          alignSelf: 'flex-start',
+          gap: 4,
+          padding: 4,
+          borderRadius: 999,
+          background: T.surfaceContainerLow,
+          border: `1px solid ${T.outlineFaint}`,
+        }}
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === 'single'}
           onClick={() => selectMode('single')}
-          activeStyle={{
-            background: T.surface,
-            border: `2px solid ${T.primary}`,
-            boxShadow: '0 6px 20px -8px rgba(30,27,20,0.12), 0 1px 2px rgba(30,27,20,0.04)',
-          }}
-          inactiveStyle={{
-            background: T.surfaceContainerLow,
-            border: '2px solid transparent',
-            boxShadow: 'none',
-          }}
-          hoverStyle={{
-            background: T.surface,
-            border: `2px solid ${T.outlineVariant}`,
-            boxShadow: 'none',
+          data-hatch-sound={mode === 'single' ? undefined : 'nudge'}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '8px 16px', borderRadius: 999, border: 'none', cursor: 'pointer',
+            background: mode === 'single' ? T.surface : 'transparent',
+            boxShadow: mode === 'single' ? '0 1px 2px rgba(30,27,20,0.08)' : 'none',
+            color: mode === 'single' ? T.onSurface : T.onSurfaceMuted,
+            fontSize: 13.5, fontWeight: 700,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: mode === 'single' ? T.primaryContainer : T.surfaceContainer,
-              transition: 'background 200ms',
-            }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.primary, fontVariationSettings: "'FILL' 1" }}>graphic_eq</span>
-            </div>
-            <span style={{ fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 20, fontWeight: 600, color: T.onSurface }}>Single round</span>
-            <RadioDot active={mode === 'single'} />
-          </div>
-          <div style={{ fontSize: 13.5, color: T.onSurfaceVariant, lineHeight: 1.5 }}>
-            One AI-run interview type with a company persona. 25-45 min.
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
-            <Chip label="Product sense" />
-            <Chip label="System design" />
-            <Chip label="Data modeling" outline />
-            <Chip label="Coding" outline />
-            <Chip label="SQL" outline />
-          </div>
-        </ModeCard>
-
-        {/* Full Loop */}
-        <ModeCard
-          active={mode === 'loop'}
+          <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: mode === 'single' ? "'FILL' 1" : "'FILL' 0" }}>graphic_eq</span>
+          Single round
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === 'loop'}
           onClick={() => selectMode('loop')}
-          activeStyle={{
-            background: 'linear-gradient(135deg, #1e3528 0%, #14241c 100%)',
-            color: '#f3ede0',
-            border: '2px solid #7ee099',
-            boxShadow: '0 8px 32px -12px rgba(74,124,89,0.5)',
-          }}
-          inactiveStyle={{
-            background: 'linear-gradient(135deg, #243d2e 0%, #182c21 100%)',
-            color: '#f3ede0',
-            border: '2px solid transparent',
-            boxShadow: 'none',
-          }}
-          hoverStyle={{
-            background: 'linear-gradient(135deg, #1e3528 0%, #14241c 100%)',
-            color: '#f3ede0',
-            border: '2px solid rgba(126,224,153,0.4)',
-            boxShadow: 'none',
+          data-hatch-sound={mode === 'loop' ? undefined : 'nudge'}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '8px 16px', borderRadius: 999, border: 'none', cursor: 'pointer',
+            background: mode === 'loop' ? T.surface : 'transparent',
+            boxShadow: mode === 'loop' ? '0 1px 2px rgba(30,27,20,0.08)' : 'none',
+            color: mode === 'loop' ? T.onSurface : T.onSurfaceMuted,
+            fontSize: 13.5, fontWeight: 700,
           }}
         >
-          {/* Dot grid overlay */}
-          <div aria-hidden style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
-            backgroundSize: '18px 18px',
-            maskImage: 'radial-gradient(ellipse 70% 100% at 90% 50%, black 30%, transparent 75%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 70% 100% at 90% 50%, black 30%, transparent 75%)',
-          }} />
-
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(126,224,153,0.15)', flexShrink: 0,
-            }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#7ee099', fontVariationSettings: "'FILL' 1" }}>laps</span>
-            </div>
-            <span style={{ fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 20, fontWeight: 600, color: '#f3ede0' }}>Full loop</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: mode === 'loop' ? "'FILL' 1" : "'FILL' 0" }}>laps</span>
+          Full loop
+          {/* Live loop-count badge — relocated from the old illustrated card's
+              LoopSummaryStrip so in-progress/configured loops stay visible. */}
+          {!loopSummary.loading && loopTotal > 0 && (
             <span style={{
-              fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-              background: '#7ee099', color: '#0e2818', padding: '3px 8px', borderRadius: 999,
-            }}>New</span>
-            <RadioDot active={mode === 'loop'} dark />
-          </div>
-          <div style={{ position: 'relative', fontSize: 13.5, color: 'rgba(243,237,224,0.78)', lineHeight: 1.5 }}>
-            Sequential rounds with shared memory. Pause, resume, and let Hatch synthesize the loop-level signal.
-          </div>
-          <LoopSummaryStrip summary={loopSummary} />
-        </ModeCard>
-      </div>
-
-      {/* One container with hairline-separated cells (spec §4 "de-card list
-          content") instead of four identical icon tiles. */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        borderRadius: 12,
-        background: T.surface,
-        border: `1px solid ${T.outlineFaint}`,
-        overflow: 'hidden',
-      }}>
-        {[
-          { label: 'Live pressure', sub: 'Fast probing, no scheduling' },
-          { label: 'Artifacts watched', sub: 'Canvas, schema, code, SQL' },
-          { label: 'Round memory', sub: 'Signals carry into the loop' },
-          { label: 'Debrief engine', sub: 'Scores, transcript, next drills' },
-        ].map((item, i) => (
-          <div
-            key={item.label}
-            style={{
-              minWidth: 0,
-              padding: '11px 16px',
-              borderLeft: i > 0 ? `1px solid ${T.outlineFaint}` : 'none',
-            }}
-          >
-            <span style={{ display: 'block', fontSize: 12.5, fontWeight: 800, color: T.onSurface, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {item.label}
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              minWidth: 17, height: 17, padding: '0 5px', borderRadius: 999,
+              background: loopSummary.inProgress > 0 ? T.amber : T.primaryContainer,
+              color: loopSummary.inProgress > 0 ? '#fff' : T.onPrimaryContainer,
+              fontSize: 10.5, fontWeight: 800,
+            }}>
+              {loopTotal}
             </span>
-            <span style={{ display: 'block', marginTop: 2, fontSize: 11.5, color: T.onSurfaceMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {item.sub}
-            </span>
-          </div>
-        ))}
+          )}
+        </button>
       </div>
 
       {/* ── Body ── */}
@@ -1566,20 +1379,39 @@ export function LiveInterviewsShell({
         )}
       </div>
 
-      {/* ── Recent sessions + after-the-session note ── */}
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.15fr_1fr]">
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.onSurface, marginBottom: 10 }}>
+      {/* ── Zone 3: history ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.onSurface }}>
             Recent sessions
           </div>
-          <PastSessionsTable />
+          {/* Full-loop status, relocated from the old illustrated mode card so
+              in-progress/configured/completed counts stay visible even though
+              the segmented control only shows a total badge. */}
+          {mode !== 'loop' && (
+            <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>
+              <LoopSummaryStripInline summary={loopSummary} />
+            </div>
+          )}
         </div>
-        <div className="note-teal" style={{ borderRadius: 12, padding: '18px 20px' }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.onSurface, marginBottom: 6 }}>After the session</div>
-          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: T.onSurfaceVariant }}>
+        <PastSessionsTable />
+
+        <details style={{
+          borderRadius: 12,
+          border: `1px solid ${T.outlineFaint}`,
+          background: T.surfaceContainerLow,
+          padding: '10px 16px',
+        }}>
+          <summary style={{
+            cursor: 'pointer', fontSize: 13, fontWeight: 700, color: T.onSurface,
+            listStyle: 'none',
+          }}>
+            How grading works
+          </summary>
+          <p style={{ margin: '8px 0 2px', fontSize: 13, lineHeight: 1.55, color: T.onSurfaceVariant }}>
             Hatch scores the session on the same four moves as your reps: Frame, List, Optimize, Win. The debrief has per-move scores, the full transcript, and what to fix before your next round.
           </p>
-        </div>
+        </details>
       </div>
     </div>
   )

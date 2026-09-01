@@ -1254,9 +1254,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [coachRegister])
 
-  // Left panel footer interaction state
-  const [liked, setLiked] = useState(false)
-  const [bookmarked, setBookmarked] = useState(false)
+  // Share affordance state (Like/Bookmark removed in plan 6.2 - hardcoded
+  // literals with no backend persistence, dead UI).
   const [copied, setCopied] = useState(false)
 
   const handleSeparatorMouseDown = useCallback((e: React.MouseEvent) => {
@@ -4966,6 +4965,65 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
+  // Left pane's own header row: the doc-tab strip (Description/Solutions/
+  // Discussions/Submissions, or the coding seven-tab set). Moved out of the
+  // shared topChrome identity/action row (plan 6.1 "structural separation")
+  // since these tabs control this pane's content, not the workspace at
+  // large. Bordered-underline pattern matches CanvasChatPanel's tab strip.
+  const leftTabStrip = isCodingChallenge ? (
+    <div className="flex h-10 shrink-0 items-center gap-1 border-b border-hairline bg-card-bright px-2 overflow-hidden">
+      <AdaptiveTabStrip
+        tabs={[...codingPrimaryTabs, ...codingMoreTabs]}
+        active={leftTab}
+        onSelect={(t) => setLeftTab(t as typeof leftTab)}
+        badges={{
+          Discussions: discussionsLoaded ? workspaceTabBadge(discussions.length, leftTab === 'Discussions') : undefined,
+          Submissions: submissionBadgeCount > 0 ? workspaceTabBadge(submissionBadgeCount, leftTab === 'Submissions') : undefined,
+        }}
+      />
+    </div>
+  ) : (
+    <div className="flex h-10 shrink-0 items-center gap-1 border-b border-hairline bg-card-bright px-2 overflow-x-auto overflow-y-hidden" role="tablist" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+      {tabs.map(t => {
+        const active = leftTab === t
+        return (
+          <button
+            key={t}
+            role="tab"
+            aria-selected={active}
+            onClick={() => setLeftTab(t)}
+            className={!active ? 'text-ink-secondary hover:text-ink-strong' : undefined}
+            style={{
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+              padding: '0 8px',
+              fontSize: 12.5,
+              fontWeight: active ? 800 : 650,
+              color: active ? 'var(--color-forest-800)' : undefined,
+              background: 'transparent',
+              border: 'none',
+              /* Bordered-underline tabs (CanvasChatPanel pattern): active =
+                 forest border-bottom + semibold, no pill fill. */
+              borderBottom: active ? '2px solid var(--color-forest-700)' : '2px solid transparent',
+              borderRadius: 0,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              transition: 'border-color 140ms ease, color 140ms ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              minHeight: 36,
+            }}
+          >
+            <span>{t}</span>
+            {t === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, active)}
+            {t === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, active)}
+          </button>
+        )
+      })}
+    </div>
+  )
+
   // Left description panel - collapses to a 32px rail when leftCollapsed=true
   const leftDescriptionPanel = leftCollapsed ? (
     // ── Collapsed 32px rail ──
@@ -5020,25 +5078,31 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </section>
   ) : (
     // ── Full panel ──
+    // Tonal hierarchy (plan 6.1): the left content pane is dimmed to the
+    // container surface tone (not bg-card-bright) so the center/working pane
+    // reads as primary regardless of how panes are resized. Its own tab strip
+    // is the header row; content panes below keep their existing padding.
     <section
-      className="rounded-xl border border-hairline"
+      className="rounded-xl border border-hairline bg-surface-container-low"
       style={{
         width: `${leftWidth}%`,
         minWidth: leftPaneMinWidth,
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        background: 'var(--color-card-bright)',
         overflow: 'hidden',
         minHeight: 0,
       }}>
-      {leftTab === 'Description' && descriptionPane}
-      {leftTab === 'Examples' && examplesPane}
-      {leftTab === 'Constraints' && constraintsPane}
-      {leftTab === 'Notes' && notesPane}
-      {leftTab === 'Discussions' && discussionsPane}
-      {leftTab === 'Submissions' && submissionsPane}
-      {leftTab === 'Solutions' && solutionsPane}
+      {leftTabStrip}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+        {leftTab === 'Description' && descriptionPane}
+        {leftTab === 'Examples' && examplesPane}
+        {leftTab === 'Constraints' && constraintsPane}
+        {leftTab === 'Notes' && notesPane}
+        {leftTab === 'Discussions' && discussionsPane}
+        {leftTab === 'Submissions' && submissionsPane}
+        {leftTab === 'Solutions' && solutionsPane}
+      </div>
     </section>
   )
 
@@ -5195,69 +5259,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {challengeTitle}
           </span>
         )}
-        {/* Coding: one adaptive strip over ALL seven doc tabs — as many render
-            inline as the panel width allows, the rest fold behind a three-dots
-            menu that only appears when something is actually hidden. The menu
-            is fixed-positioned so this bar's overflow:hidden can't clip it. */}
-        {!leftCollapsed && isCodingChallenge && (
-          <AdaptiveTabStrip
-            tabs={[...codingPrimaryTabs, ...codingMoreTabs]}
-            active={leftTab}
-            onSelect={(t) => setLeftTab(t as typeof leftTab)}
-            badges={{
-              Discussions: discussionsLoaded ? workspaceTabBadge(discussions.length, leftTab === 'Discussions') : undefined,
-              Submissions: submissionBadgeCount > 0 ? workspaceTabBadge(submissionBadgeCount, leftTab === 'Submissions') : undefined,
-            }}
-          />
-        )}
-        {!leftCollapsed && !isCodingChallenge && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            minWidth: 0,
-            flex: 1,
-            overflowX: 'auto',
-            overflowY: 'hidden',
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'none',
-          }}>
-            {tabs.map(t => {
-              const active = leftTab === t
-              return (
-                <button
-                  key={t}
-                  onClick={() => setLeftTab(t)}
-                  style={{
-                    flexShrink: 0,
-                    whiteSpace: 'nowrap',
-                    padding: '8px 10px',
-                    fontSize: 12.5,
-                    fontWeight: active ? 800 : 650,
-                    color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
-                    background: 'transparent',
-                    border: 'none',
-                    /* Round-4 underline tabs (spec §"Signature components" 7):
-                       active = forest underline + semibold, no pill fill. */
-                    boxShadow: active ? 'inset 0 -2px 0 var(--color-forest-600)' : 'none',
-                    borderRadius: 0,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    transition: 'box-shadow 140ms ease, color 140ms ease',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    minHeight: 36,
-                  }}
-                >
-                  <span>{t}</span>
-                  {t === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, active)}
-                  {t === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, active)}
-                </button>
-              )
-            })}
-          </div>
-        )}
+        {/* Structural separation (plan 6.1): the doc-tab strip (Description/
+            Solutions/Discussions/Submissions, or the coding seven-tab set)
+            used to live in this identity/action row even though it controls
+            the LEFT PANE's content. It now renders as that pane's own header
+            row (see leftTabStrip, mounted inside leftDescriptionPanel) so
+            this bar only holds back + title + collapse. */}
+        {!leftCollapsed && <div style={{ flex: 1, minWidth: 0 }} />}
         {/* Collapse button - only shown when expanded and on coding challenges */}
         {!leftCollapsed && isCodingChallenge && (
           <button
@@ -5366,7 +5374,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         ) : (
           <>
             {/* Round-4 chrome: challenge title + difficulty chip live in the top
-                bar; the stepper moved to its own full-width card below. */}
+                bar. The standalone "FLOW Method" full-width card was compressed
+                (plan 6.1) into the same inline CompactStepPips pattern canvas/
+                coding already use here, so all three challenge types now carry
+                one compact stepper in this row instead of flow/MCQ alone
+                getting an extra full-width chrome band. */}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
               {challengeTitle && (
                 <span
@@ -5389,7 +5401,42 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 ) : null
               })()}
             </div>
+            <div style={{ flexShrink: 0, overflow: 'hidden' }} className="hidden min-[1100px]:flex items-center">
+              <CompactStepPips
+                steps={FLOW_STEPS.map(s => ({ id: s, label: STEP_LABEL[s] }))}
+                activeId={currentStep}
+                doneIds={completedSteps}
+                onSelect={undefined}
+                ariaLabel="FLOW method steps"
+              />
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              {/* Share (plan 6.2): relocated here from the deleted bottomFooter
+                  row. Like/Bookmark were hardcoded-literal dead UI and were
+                  removed outright; Share is a real capability
+                  (navigator.share with a clipboard-copy fallback), so it moved
+                  to a small icon-button near the title bar instead of being
+                  dropped. */}
+              <button
+                className="btn btn--ghost"
+                style={{ padding: '6px 8px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                title="Share"
+                aria-label="Share"
+                onClick={() => {
+                  const url = window.location.href
+                  if (navigator.share) {
+                    navigator.share({ url })
+                  } else {
+                    navigator.clipboard.writeText(url).then(() => {
+                      setCopied(true)
+                      setTimeout(() => setCopied(false), 2000)
+                    })
+                  }
+                }}
+              >
+                <span className="material-symbols-outlined msi-sm">share</span>
+                {copied && <span style={{ fontSize: 11 }}>Copied!</span>}
+              </button>
               <button
                 className="btn btn--ghost"
                 style={{
@@ -5412,27 +5459,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
-  // Round-4 FLOW method strip: full-width card under the top bar holding the
-  // Frame / List / Optimize / Win stepper (previews/round4/flow-workspace.html
-  // .stepper-card). Desktop FLOW MCQ challenges only; canvas/coding keep their
-  // own chrome and mobile keeps the scrollable stepper bar.
-  const flowStepperStrip = !isInterviewChallenge ? (
-    <div style={{ flexShrink: 0, padding: '10px 16px 2px', background: 'var(--color-page-field)' }}>
-      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: '12px 20px' }}>
-        <div className="font-label" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-ink-secondary)', marginBottom: 8 }}>
-          FLOW Method
-        </div>
-        <FlowStepper
-          currentStep={currentStep}
-          completedSteps={completedSteps}
-          /* Commit-forward: completed steps are locked. Retake the challenge to redo a step. */
-          onStepClick={undefined}
-          questionIdx={questionIdx}
-          questionCount={activeStepData?.questions.length}
-        />
-      </div>
-    </div>
-  ) : null
+  // flowStepperStrip retired (plan 6.1): the full-width "FLOW Method" card
+  // was compressed into the inline CompactStepPips stepper in topChrome above
+  // (onStepClick stays undefined there too — commit-forward FLOW steps are
+  // locked once graded; retake the challenge to redo a step). Kept as a null
+  // constant so the two render sites (question phase + reveal/complete phase)
+  // don't need their own conditionals.
+  const flowStepperStrip = null
 
   // Round-4 Hatch rail (FLOW MCQ question phase, wide desktop only): coach
   // header with the listening pose, a mint "Hatch's read" note fed by the real
@@ -5441,8 +5474,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // exists (proactiveNudge, completedSteps, questionIdx).
   const flowRightRail = (
     <aside
-      className="hidden min-[1280px]:flex"
-      style={{ width: 288, flexShrink: 0, flexDirection: 'column', gap: 10, marginLeft: 8, minHeight: 0, overflowY: 'auto' }}
+      // Tonal hierarchy (plan 6.1): the right Hatch rail sits at the container
+      // surface tone with a hairline separator, same treatment as the left
+      // content pane, so the center/working pane reads as the brightest
+      // (primary) surface. Individual cards inside stay bg-card-bright for
+      // contrast against this dimmer backdrop.
+      className="hidden min-[1280px]:flex rounded-xl border border-hairline bg-surface-container-low"
+      style={{ width: 288, flexShrink: 0, flexDirection: 'column', gap: 10, marginLeft: 8, minHeight: 0, overflowY: 'auto', padding: 8 }}
     >
       <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: 14, display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <HatchImage state="listening" size={46} className="rounded-lg" />
@@ -5495,11 +5533,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             </span>
             <span className="font-label" style={{ fontSize: 8.5, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-ink-muted)', marginTop: 2 }}>Steps</span>
           </ProgressRing>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>Current step</span>
-              <span className="font-label" style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink-strong)' }}>{STEP_LABEL[currentStep]}</span>
-            </div>
+          {/* "Current step" row removed (plan 6.1 redundancy check): the
+              compact FLOW stepper now inline in topChrome already shows the
+              active step at a glance, so repeating STEP_LABEL[currentStep]
+              here duplicated state across two surfaces. This rail keeps only
+              what the compact stepper can't show — question-within-step
+              progress — so it stays the single source of truth for that. */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
             {stepQuestions.length > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>Question</span>
@@ -5509,102 +5549,41 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </div>
         </div>
       </div>
+
+      {/* Pinned footer (plan 6.2): the Next question / Submit step / Previous
+          button state machine used to live in the shared bottomFooter row
+          below the two-pane split. It now pins to the bottom of this same
+          Hatch rail, directly under Session progress, so the coach panel is
+          one self-contained unit: coaching tip -> session progress -> the
+          primary action that advances that same progress. Deliberately
+          different from coding/canvas, which keep Run/Submit in the title
+          bar - flagged as intentional, not an oversight. */}
+      {currentQuestion && (
+        <div style={{ marginTop: 'auto', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
+          {questionIdx > 0 && (
+            <button
+              className="btn btn--ghost"
+              style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4, width: '100%' }}
+              disabled={activeSubmitting || ackVisible}
+              onClick={handlePreviousQuestion}
+            >
+              <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
+            </button>
+          )}
+          <button
+            className="btn btn--primary"
+            style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'var(--color-forest-950)', color: '#fff', borderRadius: 10, fontWeight: 700, border: 'none', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', width: '100%' }}
+            disabled={!currentQuestionAnswered || activeSubmitting || ackVisible}
+            onClick={isLastQuestionInStep ? handleStepSubmit : handleNextQuestion}
+          >
+            {activeSubmitting ? 'Grading…' : primaryButtonLabel}
+            {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
+            {activeSubmitting && <HatchImage size={18} state="reviewing" />}
+          </button>
+        </div>
+      )}
     </aside>
   )
-
-  // Shared bottom footer - spans full width so the borderTop is continuous
-  const bottomFooter = currentQuestion ? (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      borderTop: '1px solid var(--color-hairline)',
-      background: 'var(--color-card-bright)',
-      flexShrink: 0,
-    }}>
-      {/* Left side: like/bookmark/share + online count */}
-      <div style={{
-        width: leftCollapsed ? 32 : `${leftWidth}%`,
-        minWidth: leftPaneMinWidth,
-        flexShrink: 0,
-        padding: '10px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        fontSize: 12,
-        color: 'var(--color-on-surface-variant)',
-      }}>
-        {leftTab === 'Description' ? (
-          <>
-            <div style={{ display: 'flex', gap: 14 }}>
-              <button
-                className="btn btn--ghost"
-                style={{ padding: '4px 10px', fontSize: 12, gap: 4, color: liked ? 'var(--color-primary)' : undefined }}
-                onClick={() => setLiked(v => !v)}
-              >
-                <span
-                  className="material-symbols-outlined msi-sm"
-                  style={{ fontVariationSettings: liked ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
-                >thumb_up</span> {liked ? '1.1K+' : '1.1K'}
-              </button>
-              <button
-                className="btn btn--ghost"
-                style={{ padding: '4px 10px', fontSize: 12, gap: 4, color: bookmarked ? 'var(--color-primary)' : undefined }}
-                onClick={() => setBookmarked(v => !v)}
-              >
-                <span
-                  className="material-symbols-outlined msi-sm"
-                  style={{ fontVariationSettings: bookmarked ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
-                >{bookmarked ? 'bookmark' : 'bookmark_border'}</span> {bookmarked ? '343' : '342'}
-              </button>
-              <button
-                className="btn btn--ghost"
-                style={{ padding: '4px 10px', fontSize: 12, gap: 4 }}
-                onClick={() => {
-                  const url = window.location.href
-                  if (navigator.share) {
-                    navigator.share({ url })
-                  } else {
-                    navigator.clipboard.writeText(url).then(() => {
-                      setCopied(true)
-                      setTimeout(() => setCopied(false), 2000)
-                    })
-                  }
-                }}
-              >
-                <span className="material-symbols-outlined msi-sm">share</span>
-                {copied && <span style={{ fontSize: 11 }}>Copied!</span>}
-              </button>
-            </div>
-          </>
-        ) : null}
-      </div>
-      {/* Drag handle spacer - matches drag handle visibility */}
-      <div style={{ width: leftCollapsed ? 0 : 6, flexShrink: 0 }} />
-      {/* Right side: prev + next/submit */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: questionIdx > 0 ? 'space-between' : 'flex-end', alignItems: 'center', padding: '10px 16px' }}>
-        {questionIdx > 0 && (
-          <button
-            className="btn btn--ghost"
-            style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-            disabled={activeSubmitting || ackVisible}
-            onClick={handlePreviousQuestion}
-          >
-            <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
-          </button>
-        )}
-        <button
-          className="btn btn--primary"
-          style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-forest-950)', color: '#fff', borderRadius: 10, fontWeight: 700, border: 'none', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}
-          disabled={!currentQuestionAnswered || activeSubmitting || ackVisible}
-          onClick={isLastQuestionInStep ? handleStepSubmit : handleNextQuestion}
-        >
-          {activeSubmitting ? 'Grading…' : primaryButtonLabel}
-          {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
-          {activeSubmitting && <HatchImage size={18} state="reviewing" />}
-        </button>
-      </div>
-    </div>
-  ) : null
 
   // Shared drag handle - sits between left and right panel; hidden when rail is
   // collapsed or on mobile (the stacked layout has no side-by-side split to drag).
@@ -5705,6 +5684,41 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         questionIdx={questionIdx}
         questionCount={activeStepData?.questions.length}
       />
+    </div>
+  ) : null
+
+  // Mid-width fallback (plan 6.2 gap fix): flowRightRail's pinned Prev/Next
+  // footer only shows at 1280px+ (`min-[1280px]:flex`), and mobileFooter only
+  // shows below 1024px (`isMobile`). That left 1024-1279px (iPad landscape,
+  // split-screen, small laptops) with an answer surface but no way to advance
+  // - Fable review caught this as a real gap, not a nit. This bar fills
+  // exactly that window, reusing the same handlers/disabled logic as both
+  // siblings rather than introducing new behavior.
+  const midWidthFooter = (!isMobile && currentQuestion) ? (
+    <div
+      className="hidden min-[1024px]:flex min-[1280px]:hidden"
+      style={{ alignItems: 'center', justifyContent: questionIdx > 0 ? 'space-between' : 'flex-end', gap: 10, borderTop: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)', padding: '10px 14px', flexShrink: 0 }}
+    >
+      {questionIdx > 0 && (
+        <button
+          className="btn btn--ghost"
+          style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          disabled={activeSubmitting || ackVisible}
+          onClick={handlePreviousQuestion}
+        >
+          <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
+        </button>
+      )}
+      <button
+        className="btn btn--primary"
+        style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-forest-950)', color: '#fff', borderRadius: 10, fontWeight: 700, border: 'none', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}
+        disabled={!currentQuestionAnswered || activeSubmitting || ackVisible}
+        onClick={isLastQuestionInStep ? handleStepSubmit : handleNextQuestion}
+      >
+        {activeSubmitting ? 'Grading…' : primaryButtonLabel}
+        {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
+        {activeSubmitting && <HatchImage size={18} state="reviewing" />}
+      </button>
     </div>
   ) : null
 
@@ -6724,9 +6738,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       )}
 
-      {/* Full-width bottom footer: left actions + submit - only for MCQ FLOW challenges.
-          Mobile uses a compact full-width footer (no left stats column). */}
-      {!isInterviewChallenge && (mobileStacked ? mobileFooter : bottomFooter)}
+      {/* Mobile-only Next/Previous/Submit footer for MCQ FLOW challenges (plan
+          6.2). On desktop this control now pins inside flowRightRail (the
+          right Hatch coach panel), directly under Session progress, so it is
+          not repeated here. Mobile has no side rail at this breakpoint, so it
+          keeps its own compact full-width footer. */}
+      {!isInterviewChallenge && mobileStacked && mobileFooter}
+      {!isInterviewChallenge && !mobileStacked && midWidthFooter}
     </div>
   )
 }

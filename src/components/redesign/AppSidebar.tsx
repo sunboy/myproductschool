@@ -6,8 +6,6 @@ import {
   Mic,
   BookOpen,
   ChartColumn,
-  Users,
-  ChartLine,
   CircleHelp,
   ChevronRight,
   FileSearch,
@@ -16,7 +14,8 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HatchImage } from '@/components/redesign/HatchImage'
-import { HackProductWordmark } from '@/components/brand/HackProductBrand'
+import { HackProductWordmark, HackProductLogoMark } from '@/components/brand/HackProductBrand'
+import { AppTooltip } from '@/components/ui/AppTooltip'
 
 export type SidebarItem =
   | 'home'
@@ -26,8 +25,6 @@ export type SidebarItem =
   | 'autopsies'
   | 'guides'
   | 'progress'
-  | 'community'
-  | 'analytics'
 
 export type PlanTier = 'free' | 'pro'
 
@@ -45,8 +42,6 @@ const MAIN_NAV_ENTRIES: NavEntry[] = [
   { key: 'practice', label: 'Practice', href: '/challenges', icon: Compass },
   { key: 'interviews', label: 'Interviews', href: '/live-interviews', icon: Mic, showLivePill: true },
   { key: 'progress', label: 'Progress', href: '/progress', icon: ChartColumn },
-  { key: 'community', label: 'Community', href: '/cohort', icon: Users },
-  { key: 'analytics', label: 'Analytics', href: '/challenges?discipline=analytics', icon: ChartLine },
 ]
 
 const LIBRARY_NAV_ENTRIES: NavEntry[] = [
@@ -82,6 +77,12 @@ export interface AppSidebarProps {
   /** Called when the Send feedback footer row is clicked. */
   onFeedbackClick?: () => void
   className?: string
+  /**
+   * Icon-only rail (wordmark mark + nav icons only, no labels/coach card/Go
+   * Pro card) for deep-reading routes where the full sidebar competes with
+   * the content for attention. Route-derived, not a stateful toggle.
+   */
+  collapsed?: boolean
 }
 
 /**
@@ -98,10 +99,34 @@ export function AppSidebar({
   onHelpClick,
   onFeedbackClick,
   className,
+  collapsed = false,
 }: AppSidebarProps) {
   const renderEntry = (entry: NavEntry) => {
     const Icon = entry.icon
     const isActive = entry.key === active
+
+    if (collapsed) {
+      return (
+        <AppTooltip key={entry.key} label={entry.label} side="right">
+          <Link
+            href={entry.href}
+            aria-label={entry.label}
+            aria-current={isActive ? 'page' : undefined}
+            data-hatch-target={entry.key === 'home' ? 'nav-dashboard' : `nav-${entry.key}`}
+            className={cn(
+              'relative flex items-center justify-center rounded-lg p-2.5 text-ink-secondary transition-colors',
+              isActive && 'bg-forest-800 text-white'
+            )}
+          >
+            <Icon size={18} strokeWidth={1.8} className={cn('shrink-0', isActive ? 'opacity-100' : 'opacity-85')} />
+            {entry.showLivePill && (
+              <span className="absolute right-1 top-1 size-[7px] rounded-full bg-flame" />
+            )}
+          </Link>
+        </AppTooltip>
+      )
+    }
+
     return (
       <Link
         key={entry.key}
@@ -124,10 +149,54 @@ export function AppSidebar({
     )
   }
 
+  if (collapsed) {
+    return (
+      <aside
+        className={cn(
+          'flex h-full w-[64px] shrink-0 flex-col items-center gap-5 border-r border-hairline bg-white p-3',
+          className
+        )}
+      >
+        <Link href="/dashboard" aria-label="HackProduct dashboard" className="flex items-center justify-center p-1">
+          <HackProductLogoMark className="size-8 rounded-md" sizes="32px" priority />
+        </Link>
+
+        <nav className="mt-2 flex flex-col items-center gap-1">
+          {MAIN_NAV_ENTRIES.map(renderEntry)}
+          <div className="my-2 h-px w-6 bg-hairline" />
+          {LIBRARY_NAV_ENTRIES.map(renderEntry)}
+        </nav>
+
+        <div className="mt-auto flex flex-col items-center gap-1">
+          <AppTooltip label="Send feedback" side="right">
+            <button
+              type="button"
+              onClick={onFeedbackClick}
+              aria-label="Send feedback"
+              className="flex items-center justify-center rounded-lg p-2.5 text-ink-secondary"
+            >
+              <MessageSquare size={16} strokeWidth={1.8} />
+            </button>
+          </AppTooltip>
+          <AppTooltip label="Help & Support" side="right">
+            <button
+              type="button"
+              onClick={onHelpClick}
+              aria-label="Help & Support"
+              className="flex items-center justify-center rounded-lg p-2.5 text-ink-secondary"
+            >
+              <CircleHelp size={16} strokeWidth={1.8} />
+            </button>
+          </AppTooltip>
+        </div>
+      </aside>
+    )
+  }
+
   return (
     <aside
       className={cn(
-        'flex h-full w-[232px] shrink-0 flex-col gap-5 border-r border-hairline bg-white p-4',
+        'flex h-full w-[232px] shrink-0 flex-col gap-5 overflow-y-auto border-r border-hairline bg-white p-4 pb-6',
         className
       )}
     >
@@ -145,7 +214,15 @@ export function AppSidebar({
       </nav>
 
       <div className="mt-auto flex flex-col gap-3.5">
-        <div className="rounded-xl border border-hairline bg-card-bright p-3.5">
+        {/* Opens the same chat as the global "Ask Hatch" floating bubble
+            (FloatingHatch.tsx listens for this event) — this card used to be
+            a plain, non-interactive div that looked clickable but did
+            nothing. */}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-ask-hatch'))}
+          className="rounded-xl border border-hairline bg-card-bright p-3.5 text-left transition-colors hover:bg-surface-container"
+        >
           <div className="flex items-center gap-2.5">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-forest-900 p-[3px]">
               <HatchImage state="avatar" size={30} />
@@ -160,9 +237,9 @@ export function AppSidebar({
             {coachLine}
           </div>
           {coachLineSecondary && (
-            <div className="mt-1.5 text-[11.5px] leading-[1.4] text-ink-secondary">{coachLineSecondary}</div>
+            <div className="mt-1.5 text-left text-[11.5px] leading-[1.4] text-ink-secondary">{coachLineSecondary}</div>
           )}
-        </div>
+        </button>
 
         {planTier === 'free' && (
           <div className="rounded-xl border border-hairline bg-card-bright p-4 text-ink-strong">

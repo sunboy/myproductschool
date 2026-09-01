@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Flame, Zap, Volume2, VolumeX, Compass, LogOut, Settings, Handshake, Sparkles, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { levelFromXp } from '@/lib/utils'
@@ -34,11 +34,21 @@ function getInitials(name: string | null | undefined): string {
  */
 export function AppTopShell() {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { profile } = useSession()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
+  const isPracticePage = pathname === '/challenges'
+  // On /challenges the pill IS the search — initialize from the live `q`
+  // param (and re-sync on back/forward) instead of local-only state, so the
+  // pill and the filtered results never disagree about what's searched.
+  const [searchValue, setSearchValue] = useState(() => searchParams.get('q') ?? '')
+  useEffect(() => {
+    if (isPracticePage) setSearchValue(searchParams.get('q') ?? '')
+  }, [isPracticePage, searchParams])
   const menuRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { muted, toggleMuted } = useHatchSonics()
 
   useEffect(() => {
@@ -75,10 +85,32 @@ export function AppTopShell() {
     setMenuOpen(false)
   }
 
+  function pushChallengesQuery(q: string) {
+    // Merge into whatever filters (discipline, difficulty, company, ...) are
+    // already on the URL instead of replacing them — the old handler did a
+    // bare `/challenges?q=...` push that silently dropped every other filter
+    // the user had set.
+    const params = isPracticePage ? new URLSearchParams(searchParams.toString()) : new URLSearchParams()
+    if (q) params.set('q', q)
+    else params.delete('q')
+    const query = params.toString()
+    router.replace(query ? `/challenges?${query}` : '/challenges', { scroll: false })
+  }
+
+  function handleSearchChange(value: string) {
+    setSearchValue(value)
+    if (!isPracticePage) return
+    // Live-filter (matches the debounce the old page-local search used) only
+    // when already on /challenges; elsewhere the pill still waits for submit
+    // so it reads as "search the site", not "filter this page".
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => pushChallengesQuery(value), 300)
+  }
+
   function handleSearchSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const q = searchValue.trim()
-    router.push(q ? `/challenges?q=${encodeURIComponent(q)}` : '/challenges')
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    pushChallengesQuery(searchValue.trim())
   }
 
   const streak = profile?.streak_days ?? 0
@@ -229,7 +261,7 @@ export function AppTopShell() {
         <TopUtilityBar
           searchPlaceholder="Search topics, problems, or interviews..."
           searchValue={searchValue}
-          onSearchChange={setSearchValue}
+          onSearchChange={handleSearchChange}
           onSearchSubmit={handleSearchSubmit}
           searchInputRef={searchInputRef}
           streakDays={streak > 0 ? streak : undefined}

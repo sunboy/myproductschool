@@ -13,7 +13,6 @@ const PRIVATE_PATHS = [
   '/notes/',
   '/challenges/',
   '/live-interviews/',
-  '/simulation/',
 ]
 
 export default function robots(): MetadataRoute.Robots {

@@ -20,15 +20,20 @@ function tabButtonStyle(active: boolean): CSSProperties {
     padding: '4px 8px',
     fontSize: 12.5,
     fontWeight: active ? 800 : 650,
-    color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
+    // Inactive-tab color lives in the `text-ink-secondary hover:text-ink-strong`
+    // className instead of here — an inline color would always beat the hover
+    // class and make the hover state a dead rule.
+    color: active ? 'var(--color-forest-800)' : undefined,
     background: 'transparent',
+    // Bordered-underline tab pattern (matches CanvasChatPanel's tab strip):
+    // active = forest border-bottom + semibold, inactive = transparent border
+    // so hover doesn't shift layout, no pill fill.
     border: 'none',
-    // Round-4 underline tabs: active = forest underline + semibold, no pill fill.
-    boxShadow: active ? 'inset 0 -2px 0 var(--color-forest-600)' : 'none',
+    borderBottom: active ? '2px solid var(--color-forest-700)' : '2px solid transparent',
     borderRadius: 0,
     cursor: 'pointer',
     fontFamily: 'inherit',
-    transition: 'box-shadow 140ms ease, color 140ms ease',
+    transition: 'border-color 140ms ease, color 140ms ease',
     display: 'inline-flex',
     alignItems: 'center',
     gap: 6,
@@ -126,9 +131,12 @@ export function AdaptiveTabStrip({ tabs, active, onSelect, badges }: AdaptiveTab
     return (
       <button
         key={t}
+        role={interactive ? 'tab' : undefined}
+        aria-selected={interactive ? isActive : undefined}
         onClick={interactive ? () => { onSelect(t); setMenuOpen(false) } : undefined}
         tabIndex={interactive ? undefined : -1}
         aria-hidden={interactive ? undefined : true}
+        className={!isActive ? 'text-ink-secondary hover:text-ink-strong' : undefined}
         style={tabButtonStyle(isActive)}
       >
         <span>{t}</span>
@@ -140,6 +148,7 @@ export function AdaptiveTabStrip({ tabs, active, onSelect, badges }: AdaptiveTab
   return (
     <div
       ref={containerRef}
+      role="tablist"
       style={{ display: 'flex', alignItems: 'center', gap: TAB_GAP, minWidth: 0, flex: 1, overflow: 'hidden', position: 'relative' }}
     >
       {/* Hidden mirror row: measures every tab's natural width + the trigger. */}
@@ -166,6 +175,7 @@ export function AdaptiveTabStrip({ tabs, active, onSelect, badges }: AdaptiveTab
           aria-label="More tabs"
           title={activeHidden ? active : 'More'}
           data-testid="coding-more-tabs"
+          className={!activeHidden ? 'text-ink-secondary hover:text-ink-strong' : undefined}
           style={{ ...tabButtonStyle(activeHidden), gap: 3 }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 16 }}>

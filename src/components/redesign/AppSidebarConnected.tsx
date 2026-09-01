@@ -12,9 +12,26 @@ function resolveActive(pathname: string): SidebarItem {
   if (pathname.startsWith('/explore/autopsies')) return 'autopsies'
   if (pathname.startsWith('/explore/modules')) return 'guides'
   if (pathname.startsWith('/progress')) return 'progress'
-  if (pathname.startsWith('/cohort')) return 'community'
   if (pathname.startsWith('/challenges')) return 'practice'
   return 'home'
+}
+
+// Deep-reading routes (story reader, module reader) stack the global sidebar
+// under their own in-page navigation (chapter rail, TOC, progress dock). An
+// icon-only rail here frees width back to the content without adding a
+// stateful collapse toggle — it's purely a function of the current route.
+//
+// /explore/autopsies/[slug] is the company hub (browsing UI, not a reader) —
+// only routes with a segment beyond the company slug are actual stories, in
+// either shape the app uses: /[slug]/[storySlug] or /[slug]/stories/[storySlug].
+// /explore/modules/[slug] is itself the chapter reader, so no such distinction
+// is needed there.
+function isDeepReadingRoute(pathname: string): boolean {
+  if (pathname.startsWith('/explore/autopsies/')) {
+    const segmentsAfterHub = pathname.slice('/explore/autopsies/'.length).split('/').filter(Boolean)
+    return segmentsAfterHub.length > 1
+  }
+  return pathname.startsWith('/explore/modules/')
 }
 
 /**
@@ -38,6 +55,7 @@ export function AppSidebarConnected() {
       active={resolveActive(pathname)}
       planTier={isPro ? 'pro' : 'free'}
       coachLine={coachLine}
+      collapsed={isDeepReadingRoute(pathname)}
       onUpgradeClick={() => window.dispatchEvent(new CustomEvent('open-upgrade-modal'))}
       onHelpClick={() => router.push('/help')}
       onFeedbackClick={openFeedbackModal}

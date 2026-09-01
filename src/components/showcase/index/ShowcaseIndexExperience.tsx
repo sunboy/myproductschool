@@ -3,10 +3,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BookOpen, Building2, Clock, Search, X } from 'lucide-react';
-import { ProTipStrip } from '@/components/redesign/ProTipStrip';
+import { ArrowRight, Search, X } from 'lucide-react';
 import type { AutopsyCompanyWithStories, FeatureAutopsy } from '@/lib/autopsies/types';
-import { getFeaturedAppStory } from '@/lib/autopsies/app-library';
 import { StoryVisual } from '@/components/showcase/StoryVisual';
 import { getProminentStoryImage } from '@/lib/autopsies/images';
 
@@ -43,29 +41,17 @@ function formatReadTime(raw: string) {
 }
 
 /**
- * Editorial autopsies hub: light page header, dark featured-story card built
- * from real loader data (metrics only render when the story actually
- * carries them), an editorial article list (brand-colored text label, no
- * marks, no spines per spec §8), and a quiet companies text strip. Search
- * and the full company list stay real and wired, restyled to the same
- * tokens.
+ * Editorial autopsies hub: light page header, a uniform story grid (brand-
+ * colored text label, no marks, no spines per spec §8), and a quiet
+ * companies text strip. Search and the full company list stay real and
+ * wired, restyled to the same tokens.
  */
 export function ShowcaseIndexExperience({
   companies,
   stories,
 }: ShowcaseIndexExperienceProps) {
   const [searchOpen, setSearchOpen] = useState(false);
-  const featured = useMemo(() => getFeaturedAppStory(stories), [stories]);
-
   const companyMap = useMemo(() => bySlug(companies), [companies]);
-  const featuredCompany = featured ? companyMap.get(featured.companySlug) : undefined;
-
-  const restStories = useMemo(
-    () => (featured ? stories.filter(story => story.slug !== featured.slug) : stories),
-    [featured, stories]
-  );
-
-  const totalStages = featured?.flow?.length;
 
   return (
     <div className="mx-auto max-w-[1180px] px-4 pb-12 pt-4 lg:px-0">
@@ -75,33 +61,17 @@ export function ShowcaseIndexExperience({
         onOpenSearch={() => setSearchOpen(true)}
       />
 
-      {/* Magazine grid: the featured story is a 2x2 dark tile INSIDE the story
-          grid, so real cards are above the fold instead of a hero-sized
-          featured band + explainer card blocking the catalog. */}
-      <StoryList
-        stories={restStories}
-        companyMap={companyMap}
-        featured={featured}
-        featuredCompany={featuredCompany}
-        featuredStages={totalStages}
-      />
+      {/* Uniform story grid — no featured tile. The dark 2x-wide featured card
+          broke the grid's rhythm and just duplicated a story already in the
+          list below it; every card now gets the same plain treatment. */}
+      <StoryList stories={stories} companyMap={companyMap} />
 
       {companies.length > 0 && (
         <>
-          <SectionHead
-            title="Browse by company"
-            subtitle="More stories coming from these companies"
-          />
+          <SectionHead title="Browse by company" />
           <CompaniesStrip companies={companies} />
         </>
       )}
-
-      <ProTipStrip
-        lead="Predict before you read."
-        tip="Before each stage, write down the call you would make. The gap between your call and the company's is the lesson."
-        ctaLabel="Run a linked rep"
-        ctaHref="/challenges"
-      />
 
       <SearchOverlay
         open={searchOpen}
@@ -125,10 +95,11 @@ function parseReadMinutes(raw: string): number | null {
 }
 
 /**
- * Compact dense dark hero per autopsies-hub-1440.png (spec §1 amendment:
- * library hubs keep the approved previews' dark hero bands). Stat chips only
- * render with real backing data; avg read time derives from the stories'
- * estimatedReadTime strings and omits itself when none parse.
+ * Quiet dark hero: heading + subhead carry the page, one plain inline stat
+ * line replaces the old three boxed chips, and Search sits alone on the
+ * right instead of crowding in next to them. Stats only render with real
+ * backing data; avg read time derives from the stories' estimatedReadTime
+ * strings and omits itself when none parse.
  */
 function HubHero({
   stories,
@@ -146,6 +117,12 @@ function HubHero({
     ? Math.round(readMinutes.reduce((sum, minutes) => sum + minutes, 0) / readMinutes.length)
     : null;
 
+  const statParts = [
+    stories.length > 0 ? `${stories.length} ${stories.length === 1 ? 'story' : 'stories'}` : null,
+    companyCount > 0 ? `${companyCount} ${companyCount === 1 ? 'company' : 'companies'}` : null,
+    avgRead !== null ? `${avgRead} min avg read` : null,
+  ].filter(Boolean);
+
   return (
     <div
       data-tour-target="autopsies-hero"
@@ -160,149 +137,42 @@ function HubHero({
         className="pointer-events-none absolute -right-10 -top-16 h-[420px] w-[420px] rounded-full"
         style={{ background: 'radial-gradient(circle, rgba(30,71,45,.55) 0%, rgba(30,71,45,0) 70%)' }}
       />
-      <div className="relative z-10">
-        <div className="mb-1.5 flex items-center gap-2">
-          <Link
-            href="/explore"
-            aria-label="Back to Explore"
-            className="-ml-1.5 flex items-center gap-1 rounded-full px-2 py-1 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-white/60 no-underline transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <ArrowRight size={13} strokeWidth={2.4} className="rotate-180" />
-            Explore
-          </Link>
-          <span className="text-white/30">/</span>
-          <span className="font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
+      <div className="relative z-10 flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
+        <div className="min-w-0">
+          <span className="mb-1.5 block font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
             Product autopsies
           </span>
-        </div>
-        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
-          <div className="min-w-0">
-            <h1 className="font-headline text-[24px] font-semibold leading-[1.15] text-on-hero-strong">
-              Learn from real product wins and misses.
-            </h1>
-            <p className="mt-1 max-w-[62ch] text-[13px] leading-[1.5] text-white/72">
-              Stage-by-stage breakdowns of real growth, monetization, and retention calls. Read one, then make the same call yourself in a linked rep.
+          <h1 className="font-headline text-[24px] font-semibold leading-[1.15] text-on-hero-strong">
+            Learn from real product wins and misses.
+          </h1>
+          <p className="mt-1 max-w-[62ch] text-[13px] leading-[1.5] text-white/72">
+            Stage-by-stage breakdowns of real growth, monetization, and retention calls. Read one, then make the same call yourself in a linked rep.
+          </p>
+          {statParts.length > 0 && (
+            <p className="mt-2.5 text-[12px] font-semibold tabular-nums text-white/55">
+              {statParts.join('  ·  ')}
             </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {stories.length > 0 && (
-              <span className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-bold text-white/85">
-                <BookOpen size={15} strokeWidth={1.8} className="shrink-0 text-gold" />
-                {stories.length} {stories.length === 1 ? 'story' : 'stories'}
-              </span>
-            )}
-            {companyCount > 0 && (
-              <span className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-bold tabular-nums text-white/85">
-                <Building2 size={15} strokeWidth={1.8} className="shrink-0 text-gold" />
-                {companyCount} {companyCount === 1 ? 'company' : 'companies'}
-              </span>
-            )}
-            {avgRead !== null && (
-              <span className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-[12px] font-bold tabular-nums text-white/85">
-                <Clock size={15} strokeWidth={1.8} className="shrink-0 text-gold" />
-                {avgRead} min avg read
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={onOpenSearch}
-              className="flex items-center gap-2 rounded-lg border border-white/20 bg-transparent px-3 py-1.5 text-[12px] font-bold text-white/85 transition-colors hover:bg-white/10"
-            >
-              <Search size={15} strokeWidth={1.8} className="shrink-0" />
-              Search
-            </button>
-          </div>
+          )}
         </div>
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          className="flex shrink-0 items-center gap-2 rounded-lg border border-white/20 bg-transparent px-3 py-1.5 text-[12px] font-bold text-white/85 transition-colors hover:bg-white/10"
+        >
+          <Search size={15} strokeWidth={1.8} className="shrink-0" />
+          Search
+        </button>
       </div>
     </div>
   );
 }
 
-function FeaturedStoryCard({
-  story,
-  company,
-  totalStages,
-}: {
-  story: FeatureAutopsy;
-  company?: AutopsyCompanyWithStories;
-  totalStages?: number;
-}) {
-  const stats = story.metrics.slice(0, 3);
-
-  return (
-    <Link
-      href={routeForStory(story)}
-      className="relative flex flex-col justify-between overflow-hidden rounded-xl px-5 py-4 text-white no-underline sm:col-span-2"
-      style={{
-        background: 'linear-gradient(120deg, var(--color-forest-900) 0%, var(--color-forest-850) 70%, var(--color-forest-800) 100%)',
-      }}
-    >
-      {/* Story hero art bleeding in from the right, faded into the forest
-          gradient so the copy keeps full contrast. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-[52%] opacity-45 [&_figure]:m-0 [&_figure]:h-full [&_figure]:w-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover"
-        style={{ maskImage: 'linear-gradient(to left, black 55%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to left, black 55%, transparent 100%)' }}
-      >
-        <StoryVisual
-          story={story}
-          company={company ? { name: company.name, slug: company.slug, accent: company.accent } : undefined}
-          variant="hero"
-          priority
-        />
-      </div>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-16 -top-20 h-[380px] w-[380px] rounded-full"
-        style={{ background: 'radial-gradient(circle, rgba(163,235,177,0.14) 0%, transparent 70%)' }}
-      />
-      <div className="relative z-[1]">
-        <div className="mb-2.5 flex items-center gap-2.5">
-          <span className="rounded-full bg-mint-glow/15 px-2.5 py-0.5 font-label text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-mint-glow">
-            Featured
-          </span>
-          {company?.name && (
-            <span className="text-xs font-bold" style={{ color: company.accent }}>
-              {company.name}
-            </span>
-          )}
-          <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-mint-glow">
-            {typeof totalStages === 'number' && totalStages > 0 ? `${totalStages} stages · ` : ''}
-            {formatReadTime(story.estimatedReadTime)}
-          </span>
-        </div>
-        <h2 className="mb-1.5 max-w-[30ch] font-headline text-[20px] font-semibold leading-[1.18] text-on-hero-strong">
-          {story.title}
-        </h2>
-        <p className="mb-3 max-w-[56ch] text-[13px] leading-[1.5] text-white/78">{story.dek}</p>
-      </div>
-
-      <div className="relative z-[1] flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        {stats.length > 0 && (
-          <div className="flex flex-wrap gap-x-6 gap-y-1.5">
-            {stats.map(stat => (
-              <div key={stat.label} className="leading-tight">
-                <div className="font-headline text-[15px] font-bold tabular-nums text-white">{stat.value}</div>
-                <div className="mt-0.5 text-[10.5px] font-bold text-white/60">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        )}
-        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-bold text-mint-glow">
-          Read the autopsy
-          <ArrowRight size={14} strokeWidth={2.2} />
-        </span>
-      </div>
-    </Link>
-  );
-}
-
-function SectionHead({ title, subtitle }: { title: string; subtitle: string }) {
+function SectionHead({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="mb-1 mt-6 flex items-baseline justify-between gap-4">
       <div>
         <div className="text-lg font-bold text-ink-strong">{title}</div>
-        <div className="mt-0.5 text-[12.5px] text-ink-muted">{subtitle}</div>
+        {subtitle && <div className="mt-0.5 text-[12.5px] text-ink-muted">{subtitle}</div>}
       </div>
     </div>
   );
@@ -311,19 +181,13 @@ function SectionHead({ title, subtitle }: { title: string; subtitle: string }) {
 function StoryList({
   stories,
   companyMap,
-  featured,
-  featuredCompany,
-  featuredStages,
 }: {
   stories: FeatureAutopsy[];
   companyMap: Map<string, AutopsyCompanyWithStories>;
-  featured?: FeatureAutopsy;
-  featuredCompany?: AutopsyCompanyWithStories;
-  featuredStages?: number;
 }) {
   const [showAll, setShowAll] = useState(false);
 
-  if (stories.length === 0 && !featured) {
+  if (stories.length === 0) {
     return <p className="border-t border-hairline py-6 text-sm text-ink-muted">More stories are on the way.</p>;
   }
 
@@ -333,11 +197,10 @@ function StoryList({
   return (
     <div className="mt-4">
       {/* Card grid per autopsies-hub-1440.png: brand-accent company text
-          label leads each card (letter avatars are banned, spec §8). */}
+          label leads each card (letter avatars are banned, spec §8). Every
+          card is a single full-card link, so the border/shadow hover state
+          is the click affordance — no separate "Read" label needed. */}
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {featured && (
-          <FeaturedStoryCard story={featured} company={featuredCompany} totalStages={featuredStages} />
-        )}
         {visible.map(story => {
           const company = companyMap.get(story.companySlug);
           const stageCount = story.flow?.length;
@@ -346,7 +209,7 @@ function StoryList({
             <Link
               key={story.slug}
               href={routeForStory(story)}
-              className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-card-bright no-underline"
+              className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-card-bright no-underline transition-shadow hover:shadow-[0_1px_2px_rgba(30,27,20,.04),0_16px_36px_-24px_rgba(30,27,20,.3)]"
             >
               {/* Art band only when the story carries a REAL hero image — the
                   generated placeholder art read as junk, so imageless stories
@@ -361,23 +224,19 @@ function StoryList({
                 </div>
               )}
               <div className="flex flex-1 flex-col p-4">
-              <div className="text-[11.5px] font-bold" style={{ color: company?.accent ?? 'var(--color-ink-secondary)' }}>
-                {company?.name ?? story.companySlug}
-              </div>
-              <div className="mt-1.5 flex-1 text-[15px] font-bold leading-[1.32] text-ink-strong">{story.title}</div>
-              <div className="mt-2 text-xs tabular-nums text-ink-muted">
-                {formatReadTime(story.estimatedReadTime)}
-                {typeof stageCount === 'number' && stageCount > 0 && (
-                  <>
-                    <span className="mx-1.5 opacity-55">·</span>
-                    {stageCount} {stageCount === 1 ? 'stage' : 'stages'}
-                  </>
-                )}
-              </div>
-              <span className="mt-3 flex items-center gap-1 whitespace-nowrap text-xs font-bold text-forest-700">
-                Read
-                <ArrowRight size={13} strokeWidth={2.2} />
-              </span>
+                <div className="text-[11.5px] font-bold" style={{ color: company?.accent ?? 'var(--color-ink-secondary)' }}>
+                  {company?.name ?? story.companySlug}
+                </div>
+                <div className="mt-1.5 flex-1 text-[15px] font-bold leading-[1.32] text-ink-strong">{story.title}</div>
+                <div className="mt-2 text-xs tabular-nums text-ink-muted">
+                  {formatReadTime(story.estimatedReadTime)}
+                  {typeof stageCount === 'number' && stageCount > 0 && (
+                    <>
+                      <span className="mx-1.5 opacity-55">·</span>
+                      {stageCount} {stageCount === 1 ? 'stage' : 'stages'}
+                    </>
+                  )}
+                </div>
               </div>
             </Link>
           );

@@ -3,13 +3,11 @@ import { ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
-import { DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
+import { DIFFICULTY_LABELS, DIFFICULTY_PILL_CLASSES, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import type { LearnModule, LearnModuleWithProgress } from '@/lib/types'
-import { BackButton } from '@/components/navigation/BackButton'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { HatchSays } from '@/components/redesign/HatchSays'
 import { NoteCard } from '@/components/redesign/NoteCard'
-import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 
 // Guides hub — compact dense dark hero band per spec §1 amendment (the three
 // library hubs keep the approved previews' dark heroes; guides-hub-1440.png).
@@ -17,14 +15,6 @@ import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 // continue-reading band is real per-user chapter progress from
 // user_learn_progress (same source /api/learn uses), rendered only when a
 // module is genuinely in progress.
-
-function tintFromHex(hex: string, alpha: number): string {
-  const clean = hex.replace('#', '')
-  const r = parseInt(clean.slice(0, 2), 16)
-  const g = parseInt(clean.slice(2, 4), 16)
-  const b = parseInt(clean.slice(4, 6), 16)
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
 
 export default async function ModulesPage() {
   const supabase = await createClient()
@@ -70,11 +60,9 @@ export default async function ModulesPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 24px 48px' }}>
-      <BackButton href="/explore" label="Back to Explore" className="mb-4" />
-
       {/* ── Compact dense dark hero band (guides-hub-1440.png) ── */}
       <div
-        className="relative mb-5 overflow-hidden rounded-2xl px-[26px] py-6 text-white"
+        className="relative mb-4 overflow-hidden rounded-2xl px-[26px] py-4 text-white"
         style={{
           background:
             'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-850) 75%, var(--color-forest-700) 130%)',
@@ -124,61 +112,11 @@ export default async function ModulesPage() {
         </div>
       </div>
 
-      {/* ── Continue reading (real progress only) ── */}
-      {continueModule && (
-        <NoteCard
-          tint="amber"
-          className="mb-5 flex flex-col gap-3 px-[18px] py-3 md:flex-row md:items-center md:gap-4"
-        >
-          <div className="flex min-w-0 items-center gap-4 md:flex-1">
-            <span className="font-label shrink-0 whitespace-nowrap text-[11.5px] font-bold text-on-surface-muted">
-              In progress
-            </span>
-            <span className="h-4 w-px shrink-0 bg-outline-variant" aria-hidden="true" />
-            <div className="flex min-w-0 flex-1 items-center gap-2.5">
-              <span className="font-body truncate text-sm font-bold text-on-surface">
-                {continueModule.name}
-              </span>
-              <span className="font-label min-w-0 truncate text-xs font-semibold tabular-nums text-on-surface-muted">
-                {continueModule.tagline ? `${continueModule.tagline} · ` : ''}Ch. {continueModule.completed_chapters} of {continueModule.chapter_count}
-              </span>
-            </div>
-          </div>
-          <div className="flex w-full shrink-0 items-center gap-2 md:w-[130px]">
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-outline-variant/60">
-              <div
-                className="h-full rounded-full"
-                style={{ width: `${continueModule.progress_percentage}%`, background: continueModule.accent_color }}
-              />
-            </div>
-            <span className="font-label shrink-0 text-[11px] font-extrabold tabular-nums text-on-surface-variant">
-              {continueModule.progress_percentage}%
-            </span>
-          </div>
-          <Link
-            href={`/explore/modules/${continueModule.slug}`}
-            className="font-label inline-flex shrink-0 items-center gap-1.5 self-start whitespace-nowrap rounded-[8px] px-[18px] py-2.5 text-[12.5px] font-extrabold text-white md:self-auto"
-            style={{ background: 'var(--color-forest-950, #052316)' }}
-          >
-            Resume chapter {resumeChapterNumber}
-            <ArrowRight size={14} strokeWidth={2} />
-          </Link>
-        </NoteCard>
-      )}
-
       {/* ── Section head ── */}
       <div className="mb-1 mt-1 flex items-baseline justify-between">
-        <div>
-          <h2 className="font-body" style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-on-surface, #20291f)', margin: 0 }}>
-            All guides
-          </h2>
-          {modules.length > 0 && (
-            <p className="font-label mt-0.5 text-[12.5px] text-on-surface-muted">
-              {totalChapters > 0 ? `${totalChapters} chapters total` : `${modules.length} guides`}
-              {totalMinutes > 0 ? `, ${totalMinutes} minutes end to end` : ''}
-            </p>
-          )}
-        </div>
+        <h2 className="font-body" style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-on-surface, #20291f)', margin: 0 }}>
+          All guides
+        </h2>
       </div>
 
       {/* ── Module grid ── */}
@@ -205,17 +143,20 @@ export default async function ModulesPage() {
                 href={`/explore/modules/${module.slug}`}
                 className="flex flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface no-underline"
               >
-                {/* Cover band: tinted surface with the module title as the mark.
-                    Letter-initial covers are banned (spec §8) — the accent
-                    lives in the title text color, never an initial square. */}
+                {/* Identity band: a thin top tint carries the module's freeform
+                    accent as a quiet identity signal only — not a second
+                    semantic color competing with the difficulty pill below.
+                    Letter-initial covers are banned (spec §8), so the mark
+                    stays the title text, now in the standard on-surface color. */}
                 <div
-                  className="flex items-center px-4"
-                  style={{ minHeight: 68, background: tintFromHex(module.cover_color, 0.12) }}
-                >
+                  aria-hidden="true"
+                  className="h-1.5 w-full shrink-0"
+                  style={{ background: module.accent_color }}
+                />
+                <div className="flex items-center px-4" style={{ minHeight: 60 }}>
                   <span
-                    className="font-body py-3 text-[15.5px] font-bold leading-snug"
+                    className="font-body text-on-surface py-3 text-[15.5px] font-bold leading-snug"
                     style={{
-                      color: module.accent_color,
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
@@ -239,12 +180,7 @@ export default async function ModulesPage() {
                     <span className="size-[3px] shrink-0 rounded-full bg-on-surface-muted" aria-hidden="true" />
                     <span>{module.est_minutes} min</span>
                     <span
-                      className="ml-0.5 rounded-full px-2.5 py-[3px] text-[11px] font-bold"
-                      style={{
-                        color: diff === 'hard' ? '#b83230' : diff === 'medium' ? '#9d6a1a' : 'var(--color-forest-700, #1d432b)',
-                        background: diff === 'hard' ? '#fbe4e2' : diff === 'medium' ? 'var(--color-amber-soft, #fef3e2)' : '#e8f4de',
-                        border: `1.5px solid ${diff === 'hard' ? '#b83230' : diff === 'medium' ? '#9d6a1a' : 'var(--color-forest-700, #1d432b)'}`,
-                      }}
+                      className={`ml-0.5 rounded-full px-2.5 py-[3px] text-[11px] font-bold ${DIFFICULTY_PILL_CLASSES[diff] ?? DIFFICULTY_PILL_CLASSES.easy}`}
                     >
                       {diffLabel}
                     </span>
@@ -268,13 +204,6 @@ export default async function ModulesPage() {
           </NoteCard>
         </div>
       )}
-
-      <ProTipStrip
-        lead="Theory decays fast."
-        tip="A framework you read but never use fades within the week. After a chapter, run one challenge that grades against it."
-        ctaLabel="Pick a challenge"
-        ctaHref="/challenges"
-      />
     </div>
   )
 }

@@ -14,7 +14,6 @@ import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 
 const NAV_ITEMS = [
   { id: 'home',       href: '/',               icon: 'home',          label: 'Home'       },
-  { id: 'explore',    href: '/explore',         icon: 'explore',       label: 'Explore'    },
   { id: 'practice',   href: '/challenges',      icon: 'track_changes', label: 'Practice'   },
   { id: 'interviews', href: '/live-interviews', icon: 'graphic_eq',    label: 'Interviews' },
   { id: 'progress',   href: '/progress',        icon: 'bar_chart',     label: 'Progress'   },

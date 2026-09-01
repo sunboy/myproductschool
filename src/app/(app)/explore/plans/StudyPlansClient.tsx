@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { Check, ArrowRight } from 'lucide-react'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { HatchSays } from '@/components/redesign/HatchSays'
-import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 import type { StudyPlanWithItems } from '@/lib/types'
 import { DisciplineTile, type Discipline } from '@/components/redesign/DisciplineTile'
 import { trackEvent } from '@/lib/posthog/client'
@@ -88,7 +87,7 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
           the approved previews' dark heroes; study-plans-1440.png) ── */}
       <div
         data-tour-target="study-plans-hero"
-        className="relative overflow-hidden rounded-2xl px-[26px] py-6 text-white"
+        className="relative overflow-hidden rounded-2xl px-[26px] py-4 text-white"
         style={{
           background:
             'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-850) 75%, var(--color-forest-700) 130%)',
@@ -201,19 +200,10 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
       {/* ── Plans grid ── */}
       {activeTab === 'study_plan' && (
         <>
-          <div id="all-plans" className="mb-1 mt-5 flex items-baseline justify-between">
-            <div>
-              <div className="font-body text-[17px] font-bold text-ink-strong">All study plans</div>
-              <div className="mt-0.5 text-[12.5px] text-ink-muted">
-                {tracks.studyPlanRows.length} {tracks.studyPlanRows.length === 1 ? 'plan' : 'plans'}, one capability each
-              </div>
-            </div>
-          </div>
-
           {tracks.studyPlanRows.length === 0 ? (
-            <div className="py-12 text-center text-sm text-ink-muted">No study plans yet.</div>
+            <div id="all-plans" className="py-12 text-center text-sm text-ink-muted">No study plans yet.</div>
           ) : (
-            <div className="mt-3.5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div id="all-plans" className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {tracks.studyPlanRows.map(plan => (
                 <PlanCard key={plan.id} plan={plan} />
               ))}
@@ -224,12 +214,7 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
               default view; the Interview loops tab is a focused shortcut. */}
           {hasLoops && (
             <>
-              <div className="mb-1 mt-6 flex items-baseline justify-between">
-                <div>
-                  <div className="font-body text-[17px] font-bold text-ink-strong">Interview loop tracks</div>
-                  <div className="mt-0.5 text-[12.5px] text-ink-muted">Multi-round sequences matched to a target role</div>
-                </div>
-              </div>
+              <div className="mb-1 mt-6 font-body text-[17px] font-bold text-ink-strong">Interview loop tracks</div>
               <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {tracks.loopRows.map(loop => (
                   <LoopCard key={loop.id} loop={loop} />
@@ -242,28 +227,12 @@ export function StudyPlansClient({ studyPlans, enrolledPlans }: Props) {
 
       {/* ── Loop tracks ── */}
       {activeTab === 'loop' && hasLoops && (
-        <>
-          <div className="mb-1 mt-5 flex items-baseline justify-between">
-            <div>
-              <div className="font-body text-[17px] font-bold text-ink-strong">Interview loop tracks</div>
-              <div className="mt-0.5 text-[12.5px] text-ink-muted">Multi-round sequences matched to a target role</div>
-            </div>
-          </div>
-
-          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tracks.loopRows.map(loop => (
-              <LoopCard key={loop.id} loop={loop} />
-            ))}
-          </div>
-        </>
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {tracks.loopRows.map(loop => (
+            <LoopCard key={loop.id} loop={loop} />
+          ))}
+        </div>
       )}
-
-      <ProTipStrip
-        lead="One plan at a time."
-        tip="Two plans in parallel stall both. Pick the capability you need next, finish the sequence, then enroll in the next one."
-        ctaLabel="See your progress"
-        ctaHref="/progress"
-      />
     </div>
   )
 }

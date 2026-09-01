@@ -17,7 +17,6 @@ import { expandDifficultiesForQuery, type PracticeDifficulty } from '@/lib/pract
 import { AnalyticsLabCard } from '@/components/dashboard/cards/AnalyticsLabCard'
 import { ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboard/cards/AchievementsCard'
 import { PausedLoopCard } from '@/components/live-interviews/PausedLoopCard'
-import { getFeaturedAutopsyForDashboard } from '@/lib/autopsies/queries'
 import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { getCuratedFirstRepSlug, FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
@@ -32,7 +31,6 @@ import { PeersPanel } from '@/components/redesign/dashboard/PeersPanel'
 import { FlowMethodRail } from '@/components/redesign/dashboard/FlowMethodRail'
 import { QuietInviteRow, QuietInviteRail } from '@/components/redesign/dashboard/QuietInvite'
 import { WhyThisOrderCard } from '@/components/redesign/dashboard/WhyThisOrderCard'
-import { ProTipStrip } from '@/components/redesign/ProTipStrip'
 import { difficultyLabel } from '@/lib/utils'
 import { COMPETENCY_LABELS, type Competency } from '@/lib/types'
 import type { FocusArea } from '@/components/redesign/dashboard/ThisWeekPanel'
@@ -262,13 +260,12 @@ async function loadDashboardCoreUncached() {
     ? withSoftTimeout<HatchUserContext | null>(getHatchContext(userId), 2200, null)
     : Promise.resolve(null)
 
-  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity, featuredAutopsy, activePlanResult] = await Promise.all([
+  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity, activePlanResult] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId, { display_name: rawDisplayName, xp_total: xpTotal }) : [],
     userId ? getEnrolledPlans(userId) : [],
     userId ? getLatestInterview(userId) : null,
     userId ? getCommunityActivityFeed(6) : [],
-    getFeaturedAutopsyForDashboard(),
     userId
       ? adminClient
           .from('user_study_plans')
@@ -665,7 +662,6 @@ async function loadDashboardCoreUncached() {
     enrolledPlans,
     latestInterview,
     communityActivity,
-    featuredAutopsy,
     activePlanSlug,
     pausedLoopData,
     achievementData,
@@ -868,14 +864,6 @@ async function DashboardContent() {
           </div>
         )}
       </aside>
-
-      <ProTipStrip
-        className="lg:col-span-2"
-        lead="Finish, then start."
-        tip="A completed rep teaches more than three abandoned ones. Short on time? Finish one step of a paused rep instead of opening a new challenge."
-        ctaLabel="Pick a rep"
-        ctaHref="/challenges"
-      />
     </div>
   )
 }

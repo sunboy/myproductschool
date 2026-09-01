@@ -44,15 +44,6 @@ export const MAIN_TOUR: TourConfig = {
       glyph: 'speaking',
     },
     {
-      id: 'explore',
-      route: '/explore',
-      anchor: '[data-tour-target="explore-paths"]',
-      title: 'The whole library',
-      body: 'Plans, autopsies, domains, and guides live under Explore. This is where you go when you want to choose what to work on.',
-      on: 'bottom',
-      glyph: 'speaking',
-    },
-    {
       id: 'autopsies',
       route: '/explore/autopsies',
       anchor: '[data-tour-target="autopsies-hero"]',

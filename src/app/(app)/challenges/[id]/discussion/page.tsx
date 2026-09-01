@@ -193,13 +193,6 @@ function ChallengeDiscussionContent() {
           <h1 className="font-headline text-3xl font-bold text-on-surface mb-3">
             {challengeTitle ?? 'Challenge'} Discussion
           </h1>
-          <Link
-            href={challengeHref}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-          >
-            <span className="material-symbols-outlined text-base">arrow_back</span>
-            Back to challenge
-          </Link>
         </div>
         <div className="flex items-center gap-4 text-sm text-on-surface-variant">
           <span className="flex items-center gap-1.5">

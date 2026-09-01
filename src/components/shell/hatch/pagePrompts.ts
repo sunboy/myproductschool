@@ -2,13 +2,15 @@
  * Page-context starter prompts shown in Hatch's passive page bubble and as the
  * empty-chat greeting. Pure data + lookup. No React, no DOM.
  *
- * Every entry carries a `cta` so the bubble is never a dead end: either it
- * pre-fills the chat with a concrete first message (`open-chat`), or it runs a
- * personalized navigation (`filter-practice`, `show-plan`) backed by
- * GET /api/hatch/pick. FloatingHatch owns the execution.
+ * `filter-practice` and `show-plan` action variants used to exist for
+ * personalized navigation backed by GET /api/hatch/pick, but FloatingHatch
+ * never actually rendered a cta button for page prompts (only pagePrompt.message
+ * ever reached the UI) — the actions were dead. Removed rather than left as an
+ * unwired promise; every entry now either has no cta or uses `open-chat`,
+ * which IS wired (opens the panel, optionally pre-filling `prompt`).
  */
 
-export type PagePromptAction = 'open-chat' | 'filter-practice' | 'show-plan'
+export type PagePromptAction = 'open-chat'
 
 export interface PagePromptCta {
   label: string
@@ -51,8 +53,8 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   },
   {
     pattern: /^\/explore\/plans\/?$/,
-    message: 'One of these plans matches your weakest FLOW move.',
-    cta: { label: 'Show my plan', action: 'show-plan' },
+    message: 'Ask me which plan fits where you are right now.',
+    cta: { label: 'Ask Hatch', action: 'open-chat' },
   },
   {
     pattern: /^\/explore\/domains\//,
@@ -66,8 +68,8 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   },
   {
     pattern: /^\/challenges/,
-    message: 'I can filter these to the FLOW move you need most.',
-    cta: { label: 'Filter to my gap', action: 'filter-practice' },
+    message: 'Ask me anything about picking the right rep.',
+    cta: { label: 'Ask Hatch', action: 'open-chat' },
   },
   {
     pattern: /^\/live-interviews/,

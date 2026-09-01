@@ -1809,6 +1809,12 @@
   border-radius: 999px;
   box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 18px 42px -16px rgba(30,27,20,0.28);
 }
+/* ReaderRail (Tailwind `hidden lg:flex`, lg = 1024px) already carries this
+   same progress/TOC affordance on desktop — the dock is mobile-only so the
+   reader has one navigation surface instead of two competing ones. */
+@media (min-width: 64rem) {
+  .sc-dock { display: none; }
+}
 .sc-dock-btn {
   display: inline-flex;
   align-items: center;

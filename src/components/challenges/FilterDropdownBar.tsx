@@ -148,6 +148,18 @@ function MultiSelectDropdown({
 }
 
 export function FilterDropdownBar({ discipline, filters, onChange, resultCount, topicCounts = {}, techniqueCounts = {}, onOpenMobileSheet, listView, onToggleView, showViewToggle = true }: Props) {
+  const [panelOpen, setPanelOpen] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!panelOpen) return
+    function handler(e: MouseEvent) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setPanelOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [panelOpen])
+
   const visibleDropdowns = DROPDOWNS.filter(
     (d) =>
       (d.disciplines.length === 0 || d.disciplines.includes(discipline)) &&
@@ -199,27 +211,51 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
 
   return (
     <>
-      {/* Desktop secondary filter bar */}
+      {/* Desktop secondary filter bar — Difficulty/Role/Company/Topic/Technique
+          used to render as five always-visible dropdown chips before the
+          first result. They now collapse behind one "Filters" trigger (same
+          anchored-popover pattern MultiSelectDropdown already used per
+          dropdown, just one level up) so the control-chrome-to-content ratio
+          matches the rest of the page's cleanup. Real interview/Resume only
+          stay inline — they're single-click toggles, not multi-select
+          configuration, so folding them in would cost a click for no gain. */}
       <div className="hidden sm:flex items-center gap-1.5 px-4 py-2 flex-wrap rounded-xl border border-hairline bg-card-bright">
-        {/* Filter icon label */}
-        <SlidersHorizontal className="size-3.5 text-ink-muted mr-0.5 shrink-0" />
+        <div ref={panelRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setPanelOpen((o) => !o)}
+            title="Filters"
+            className={[CHIP_BASE, activeFilterCount > 0 ? CHIP_ACTIVE : CHIP_IDLE].join(' ')}
+          >
+            <SlidersHorizontal className="size-3.5" />
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="bg-forest-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
+                {activeFilterCount}
+              </span>
+            )}
+            <ChevronDown className="size-3.5 shrink-0" />
+          </button>
 
-        {visibleDropdowns.map((d) => {
-          const opts = resolveOptions(d)
-          // No live options → hide the dropdown. This also drops Topic/Technique
-          // for 'all' (empty taxonomy) and before their counts have loaded.
-          if (opts.length === 0) return null
-          return (
-            <MultiSelectDropdown
-              key={d.key}
-              label={d.label}
-              options={opts}
-              selected={filters[d.key] as string[]}
-              onToggle={(v) => toggleArray(d.key, v)}
-              helpText={DROPDOWN_HELP[d.key]}
-            />
-          )
-        })}
+          {panelOpen && (
+            <div className="absolute top-full left-0 mt-1.5 flex flex-col gap-2 rounded-xl border border-hairline bg-card-bright p-3 shadow-lg z-50 min-w-[280px]">
+              {visibleDropdowns.map((d) => {
+                const opts = resolveOptions(d)
+                if (opts.length === 0) return null
+                return (
+                  <MultiSelectDropdown
+                    key={d.key}
+                    label={d.label}
+                    options={opts}
+                    selected={filters[d.key] as string[]}
+                    onToggle={(v) => toggleArray(d.key, v)}
+                    helpText={DROPDOWN_HELP[d.key]}
+                  />
+                )
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Real interview pill toggle */}
         <AppTooltip label={DROPDOWN_HELP.real_interview} side="bottom">

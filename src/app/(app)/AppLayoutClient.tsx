@@ -16,19 +16,20 @@ import { AppTopShell } from '@/components/redesign/AppTopShell'
 function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <OnboardingModalProvider>
-      <div className="min-h-screen min-w-0 bg-background">
-        <div className="mx-auto flex min-h-screen w-full max-w-[1400px]">
-          {/* Desktop (lg+) fixed left sidebar. Hidden below lg — BottomTabs takes over. */}
-          <div className="sticky top-0 hidden h-screen shrink-0 overflow-y-auto lg:block">
-            <AppSidebarConnected />
-          </div>
+      <div className="flex min-h-screen min-w-0 bg-background">
+        {/* Desktop (lg+) fixed left sidebar. Anchored to the real viewport edge,
+            outside the centered max-w-[1400px] column below — otherwise the
+            mx-auto gutter on wide viewports leaves a stray gap between the
+            sidebar and the window edge, most visible on the slim icon-only rail. */}
+        <div className="sticky top-0 hidden h-screen shrink-0 overflow-y-auto lg:block">
+          <AppSidebarConnected />
+        </div>
 
-          <div className="flex min-w-0 flex-1 flex-col">
-            <AppTopShell />
-            <main className="min-w-0 flex-1 pb-20 lg:pb-8">
-              {children}
-            </main>
-          </div>
+        <div className="mx-auto flex min-h-screen w-full min-w-0 max-w-[1400px] flex-1 flex-col">
+          <AppTopShell />
+          <main className="min-w-0 flex-1 pb-20 lg:pb-8">
+            {children}
+          </main>
         </div>
 
         <BottomTabs />

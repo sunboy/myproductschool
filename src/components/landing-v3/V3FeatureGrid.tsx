@@ -62,7 +62,7 @@ const featureCells: FeatureCell[] = [
   { title: 'Flashcards', icon: ListChecks, href: '/flashcards', muted: true },
   { title: 'Debriefs', icon: ClipboardCheck, href: '/history' },
   { title: 'Simulations', icon: PlayCircle, href: '/simulation' },
-  { title: 'Community', icon: Users, href: '/explore' },
+  { title: 'Community', icon: Users, href: '/challenges' },
   { title: 'Vocabulary', icon: LibraryBig, href: '/vocabulary', muted: true },
   { title: 'Progress', icon: Trophy, href: '/progress' },
   { title: 'Notes', icon: MessageSquareText, href: '/notes', muted: true },

@@ -30,6 +30,7 @@ function TocRail({
   completedCount,
   onSelect,
   backHref,
+  activeChapterHeadings,
 }: {
   module: LearnModule
   chapters: LearnChapterWithProgress[]
@@ -37,6 +38,9 @@ function TocRail({
   completedCount: number
   onSelect: (slug: string) => void
   backHref: string
+  /** In-body h2/h3 headings of the active chapter, rendered as a collapsible
+      "In this chapter" mini-TOC directly under its entry. */
+  activeChapterHeadings: { text: string; el: HTMLElement }[]
 }) {
   const pct = module.chapter_count > 0 ? Math.round((completedCount / module.chapter_count) * 100) : 0
   const activeIdx = chapters.findIndex(c => c.slug === activeSlug)
@@ -62,27 +66,43 @@ function TocRail({
           const locked = !ch.is_unlocked && !ch.is_completed
           const isActive = ch.slug === activeSlug
           return (
-            <button
-              key={ch.id}
-              disabled={locked}
-              onClick={() => !locked && onSelect(ch.slug)}
-              className={cn(
-                'flex items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] leading-[1.4]',
-                isActive ? 'bg-forest-800' : locked ? 'opacity-40 cursor-not-allowed' : 'text-ink-secondary hover:bg-surface-container',
-              )}
-            >
-              <span
+            <div key={ch.id} className="flex flex-col">
+              <button
+                disabled={locked}
+                onClick={() => !locked && onSelect(ch.slug)}
                 className={cn(
-                  'mt-px flex size-5 shrink-0 items-center justify-center rounded-full text-[10.5px] font-extrabold',
-                  ch.is_completed ? 'bg-forest-800 text-white' : isActive ? 'bg-white/20 text-white' : 'bg-[#eee9df] text-ink-muted',
+                  'flex items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] leading-[1.4]',
+                  isActive ? 'bg-forest-800' : locked ? 'opacity-40 cursor-not-allowed' : 'text-ink-secondary hover:bg-surface-container',
                 )}
               >
-                {ch.is_completed ? <Check size={12} strokeWidth={2.4} /> : i + 1}
-              </span>
-              <span className={cn('font-body font-bold', isActive ? 'text-white' : locked ? 'text-ink-muted' : 'text-ink-strong')}>
-                {ch.title}
-              </span>
-            </button>
+                <span
+                  className={cn(
+                    'mt-px flex size-5 shrink-0 items-center justify-center rounded-full text-[10.5px] font-extrabold',
+                    ch.is_completed ? 'bg-forest-800 text-white' : isActive ? 'bg-white/20 text-white' : 'bg-[#eee9df] text-ink-muted',
+                  )}
+                >
+                  {ch.is_completed ? <Check size={12} strokeWidth={2.4} /> : i + 1}
+                </span>
+                <span className={cn('font-body font-bold', isActive ? 'text-white' : locked ? 'text-ink-muted' : 'text-ink-strong')}>
+                  {ch.title}
+                </span>
+              </button>
+
+              {/* In-chapter mini-TOC, only under the active chapter's own entry. */}
+              {isActive && activeChapterHeadings.length > 0 && (
+                <div className="ml-[30px] mt-0.5 flex flex-col gap-0.5 border-l border-hairline pl-3">
+                  {activeChapterHeadings.map((h, i) => (
+                    <button
+                      key={i}
+                      onClick={() => h.el.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                      className="rounded px-1.5 py-1 text-left font-body text-[11.5px] leading-[1.3] text-ink-muted hover:bg-surface-container hover:text-ink-secondary"
+                    >
+                      {h.text}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )
         })}
       </nav>
@@ -129,7 +149,8 @@ function ReadingColumn({
     setMarkedDone(false)
   }, [chapterSlug])
 
-  // Collect in-body headings for the right-rail mini-TOC, once content mounts.
+  // Collect in-body headings for the left-rail "In this chapter" mini-TOC,
+  // once content mounts.
   useEffect(() => {
     if (!data) return
     const container = bodyRef.current
@@ -151,6 +172,8 @@ function ReadingColumn({
 
   if (!data) return null
 
+  const pct = chapters.length > 0 ? Math.round(((currentIdx + 1) / chapters.length) * 100) : 0
+
   return (
     <div className="reading-col mx-auto w-full max-w-[720px] min-w-0" ref={bodyRef}>
       <div className="mb-3.5 flex items-center gap-2 font-body text-[11px] font-extrabold uppercase tracking-[0.08em] text-dm-fg">
@@ -159,6 +182,16 @@ function ReadingColumn({
         <span className="font-bold tracking-[0.06em] text-ink-muted">
           CHAPTER {data.sort_order} OF {module.chapter_count}
         </span>
+      </div>
+
+      {/* Slim reading-progress readout — replaces the dedicated right-rail
+          "Reading progress" card so the progress column doesn't cost the
+          reading column its own width. */}
+      <div className="mb-5 flex items-center gap-2">
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-hairline">
+          <div className="h-full rounded-full bg-forest-600" style={{ width: `${pct}%` }} />
+        </div>
+        <span className="shrink-0 font-body text-[11px] font-bold tabular-nums text-ink-muted">{pct}%</span>
       </div>
 
       <h1 className="mb-5 font-headline text-[38px] font-bold leading-[1.18] tracking-[-0.015em] text-ink-strong">
@@ -223,86 +256,6 @@ function ReadingColumn({
         </div>
       </div>
     </div>
-  )
-}
-
-// ─── RIGHT: mini-TOC + reading progress rail ─────────────────────────────────
-
-function ReaderRail({
-  module,
-  chapters,
-  activeChapterSlug,
-  headings,
-}: {
-  module: LearnModule
-  chapters: LearnChapterWithProgress[]
-  activeChapterSlug: string | null
-  headings: { text: string; el: HTMLElement }[]
-}) {
-  const [activeHeadingIdx, setActiveHeadingIdx] = useState(0)
-
-  useEffect(() => {
-    setActiveHeadingIdx(0)
-    if (headings.length === 0) return
-    const onScroll = () => {
-      let idx = 0
-      for (let i = 0; i < headings.length; i++) {
-        const rect = headings[i].el.getBoundingClientRect()
-        if (rect.top <= 120) idx = i
-      }
-      setActiveHeadingIdx(idx)
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [headings])
-
-  const currentIdx = chapters.findIndex(c => c.slug === activeChapterSlug)
-  const pct = chapters.length > 0 ? Math.round(((currentIdx + 1) / chapters.length) * 100) : 0
-
-  return (
-    <aside
-      className="hidden lg:flex shrink-0 flex-col gap-3"
-      style={{ width: 280, position: 'sticky', top: 24 }}
-    >
-      {headings.length > 0 && (
-        <div className="rounded-xl border border-hairline bg-card-bright p-4">
-          <h3 className="m-0 mb-2.5 font-body text-xs font-bold uppercase tracking-[0.04em] text-ink-secondary">
-            In this chapter
-          </h3>
-          <div className="flex flex-col">
-            {headings.map((h, i) => (
-              <button
-                key={i}
-                onClick={() => h.el.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                className={cn(
-                  'flex items-center gap-2.5 py-1.5 text-left font-body text-[13px]',
-                  i === activeHeadingIdx ? 'font-bold text-forest-800' : 'text-ink-secondary',
-                )}
-              >
-                <span className={cn('size-1.5 shrink-0 rounded-full', i === activeHeadingIdx ? 'bg-forest-700' : 'bg-ink-muted')} />
-                {h.text}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-xl border border-hairline bg-card-bright p-4">
-        <h3 className="m-0 mb-2.5 font-body text-xs font-bold uppercase tracking-[0.04em] text-ink-secondary">
-          Reading progress
-        </h3>
-        <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-hairline">
-          <div className="h-full rounded-full bg-forest-600" style={{ width: `${pct}%` }} />
-        </div>
-        <div className="flex items-center justify-between font-body text-xs tabular-nums text-ink-muted">
-          <span>
-            Chapter {currentIdx >= 0 ? currentIdx + 1 : 1} of {module.chapter_count}
-          </span>
-          <b className="font-bold text-ink-strong">{pct}%</b>
-        </div>
-      </div>
-    </aside>
   )
 }
 
@@ -399,9 +352,10 @@ function ModulePageInner({ slug }: { slug: string }) {
           completedCount={completedCount}
           onSelect={handleSelectChapter}
           backHref="/explore/modules"
+          activeChapterHeadings={headings}
         />
 
-        <main className="min-w-0 flex-1" data-hatch-page-title>
+        <main className="min-w-0 flex-1 max-w-[720px]" data-hatch-page-title>
           {activeChapterSlug ? (
             <ReadingColumn
               moduleSlug={slug}
@@ -420,8 +374,6 @@ function ModulePageInner({ slug }: { slug: string }) {
             </div>
           )}
         </main>
-
-        <ReaderRail module={module} chapters={chapters} activeChapterSlug={activeChapterSlug} headings={headings} />
       </div>
     </div>
   )

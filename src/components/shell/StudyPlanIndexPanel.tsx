@@ -11,10 +11,19 @@ interface Props {
 
 export function StudyPlanIndexPanel({ planSlug, activeChallengeId }: Props) {
   const { plan, chapters, userProgress, inProgressChallengeIds, isLoading, refetch } = useStudyPlan(planSlug)
-  const [collapsed, setCollapsed] = useState(false)
+  // Default collapsed on this route (plan 6.2): the workspace is a working/
+  // answering context, not a reading context, so a first-time visitor should
+  // land on the 40px icon rail rather than the full 256px panel. This only
+  // changes the *default* for an unset key - an explicit user expand/collapse
+  // choice still persists via the shared INDEX_PANEL_COLLAPSE_KEY exactly as
+  // before (DomainIndexPanel's own default is untouched).
+  const [collapsed, setCollapsed] = useState(true)
 
   useEffect(() => {
-    if (window.localStorage.getItem(INDEX_PANEL_COLLAPSE_KEY) === '1') setCollapsed(true)
+    const stored = window.localStorage.getItem(INDEX_PANEL_COLLAPSE_KEY)
+    if (stored === '1') setCollapsed(true)
+    else if (stored === '0') setCollapsed(false)
+    // else: no stored choice yet - keep the collapsed default above.
   }, [])
 
   const toggleCollapsed = () => {
