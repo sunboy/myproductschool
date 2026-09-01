@@ -92,6 +92,15 @@
   --color-traditional-soft:         #dfe7e1;
   --color-success:                  #2f7a4a;
 
+  /* CareerOps dashboard — forest-ink dark surface + electric lime accent */
+  --color-ink:                      #1f2a23;
+  --color-ink-container:            #2a3a30;
+  --color-on-ink:                   #f5f0e8;
+  --color-on-ink-muted:             #b8c2ba;
+  --color-ink-border:               #3a4a40;
+  --color-accent-lime:              #c5f06c;
+  --color-on-accent-lime:           #1c2a10;
+
   /* Extended radius scale */
   --radius-xs:  0.5rem;
   --radius-sm:  0.75rem;

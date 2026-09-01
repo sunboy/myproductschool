@@ -4,8 +4,11 @@
 // listing cards with grade chips + a mini readiness map, and gates locked rows.
 
 import { useCallback, useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { ReadinessMap } from './ReadinessMap'
 import { ProfileRolePrompt } from './ProfileRolePrompt'
+import { MotionList, MotionListItem, PresencePanel } from '@/components/motion/primitives'
+import { motionSprings } from '@/components/motion/tokens'
 import { gradeClasses } from './grade'
 import { isCareerOpsFeatureEnabled } from '@/lib/careerops/flags'
 import type { FeedEntry, FeedResponse } from '@/lib/careerops/types'
@@ -67,18 +70,19 @@ export function DiscoveryFeed() {
   }
 
   return (
-    <div className="space-y-3">
+    <MotionList className="space-y-3">
       {state.listings.map((entry) => (
-        <ListingCard
-          key={entry.id}
-          entry={entry}
-          providerLabel={PROVIDER_LABEL[entry.provider] ?? entry.provider}
-          trackerOn={trackerOn}
-          expanded={expanded === entry.id}
-          onToggle={() => setExpanded((cur) => (cur === entry.id ? null : entry.id))}
-        />
+        <MotionListItem key={entry.id}>
+          <ListingCard
+            entry={entry}
+            providerLabel={PROVIDER_LABEL[entry.provider] ?? entry.provider}
+            trackerOn={trackerOn}
+            expanded={expanded === entry.id}
+            onToggle={() => setExpanded((cur) => (cur === entry.id ? null : entry.id))}
+          />
+        </MotionListItem>
       ))}
-    </div>
+    </MotionList>
   )
 }
 
@@ -122,7 +126,11 @@ function ListingCard({
   }
 
   return (
-    <div className="rounded-2xl bg-surface-container-low p-5">
+    <motion.div
+      className="rounded-2xl bg-surface-container-low p-5"
+      whileHover={{ y: -2 }}
+      transition={motionSprings.soft}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate font-headline text-lg font-semibold text-on-surface">{entry.role_title}</h3>
@@ -131,9 +139,14 @@ function ListingCard({
           </p>
         </div>
         {entry.grade ? (
-          <span className={`shrink-0 rounded-full px-3 py-1 font-label text-sm font-bold ${gradeClasses(entry.grade)}`}>
+          <motion.span
+            className={`shrink-0 rounded-full px-3 py-1 font-label text-sm font-bold ${gradeClasses(entry.grade)}`}
+            initial={{ scale: 0.4, rotate: -8 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={motionSprings.pop}
+          >
             {entry.grade}
-          </span>
+          </motion.span>
         ) : entry.locked ? (
           <span className="shrink-0 rounded-full bg-surface-container-highest px-3 py-1 font-label text-xs font-semibold text-on-surface-variant">
             Pro
@@ -190,11 +203,9 @@ function ListingCard({
         )}
       </div>
 
-      {expanded && entry.readiness_map && (
-        <div className="mt-4">
-          <ReadinessMap rows={entry.readiness_map} compact />
-        </div>
-      )}
-    </div>
+      <PresencePanel isOpen={expanded} className="mt-4">
+        {entry.readiness_map && <ReadinessMap rows={entry.readiness_map} compact />}
+      </PresencePanel>
+    </motion.div>
   )
 }
