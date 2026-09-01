@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
-import gsap from 'gsap'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 export interface HatchSidePanelProps {
@@ -17,10 +16,10 @@ export function HatchSidePanel({ message, hatchState, stepName }: HatchSidePanel
   const prevMessage = useRef(message)
   const [displayMessage, setDisplayMessage] = useState(message)
 
-  // Fix A: store tween references so we kill only the specific in-flight tween,
-  // not everything on the element, and only on actual re-run or unmount.
-  const tweenRef = useRef<gsap.core.Tween | null>(null)
-  const glyphTweenRef = useRef<gsap.core.Tween | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tweenRef = useRef<any>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const glyphTweenRef = useRef<any>(null)
 
   useEffect(() => {
     if (message === prevMessage.current) return
@@ -28,59 +27,51 @@ export function HatchSidePanel({ message, hatchState, stepName }: HatchSidePanel
     const msgEl = messageRef.current
     const glyphEl = glyphRef.current
 
-    // Kill previous in-flight tweens by reference, not by element
     if (glyphTweenRef.current) glyphTweenRef.current.kill()
     if (tweenRef.current) tweenRef.current.kill()
 
-    // Glyph scale pulse: 1 → 1.08 → 1
-    if (glyphEl) {
-      gsap.set(glyphEl, { scale: 1 })
-      glyphTweenRef.current = gsap.fromTo(
-        glyphEl,
-        { scale: 1 },
-        {
-          scale: 1.08,
-          duration: 0.12,
-          ease: 'power2.out',
-          yoyo: true,
-          repeat: 1,
+    import('gsap').then(({ gsap }) => {
+      if (glyphEl) {
+        gsap.set(glyphEl, { scale: 1 })
+        glyphTweenRef.current = gsap.fromTo(
+          glyphEl,
+          { scale: 1 },
+          {
+            scale: 1.08,
+            duration: 0.12,
+            ease: 'power2.out',
+            yoyo: true,
+            repeat: 1,
+            onComplete: () => {
+              gsap.set(glyphEl, { scale: 1 })
+              glyphTweenRef.current = null
+            },
+          }
+        )
+      }
+
+      if (msgEl) {
+        tweenRef.current = gsap.to(msgEl, {
+          opacity: 0,
+          y: -3,
+          duration: 0.2,
+          ease: 'power2.in',
           onComplete: () => {
-            gsap.set(glyphEl, { scale: 1 })
-            glyphTweenRef.current = null
+            setDisplayMessage(message)
+            prevMessage.current = message
+            tweenRef.current = gsap.fromTo(
+              msgEl,
+              { opacity: 0, y: 3 },
+              { opacity: 1, y: 0, duration: 0.25, ease: 'power2.out', onComplete: () => { tweenRef.current = null } }
+            )
           },
-        }
-      )
-    }
+        })
+      } else {
+        setDisplayMessage(message)
+        prevMessage.current = message
+      }
+    })
 
-    // Fade out old message → swap content → fade in new message
-    if (msgEl) {
-      tweenRef.current = gsap.to(msgEl, {
-        opacity: 0,
-        y: -3,
-        duration: 0.2,
-        ease: 'power2.in',
-        onComplete: () => {
-          setDisplayMessage(message)
-          prevMessage.current = message
-          tweenRef.current = gsap.fromTo(
-            msgEl,
-            { opacity: 0, y: 3 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.25,
-              ease: 'power2.out',
-              onComplete: () => { tweenRef.current = null },
-            }
-          )
-        },
-      })
-    } else {
-      setDisplayMessage(message)
-      prevMessage.current = message
-    }
-
-    // Cleanup on unmount (or before next run if message hasn't settled)
     return () => {
       tweenRef.current?.kill()
       glyphTweenRef.current?.kill()

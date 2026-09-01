@@ -29,12 +29,14 @@ export function CanvasSnapshotViewer({ snapshot, annotations }: CanvasSnapshotVi
   if (!snapshot || Object.keys(snapshot).length === 0) return null
 
   const elements = Array.isArray(snapshot.elements) ? snapshot.elements : []
-  const appState = (snapshot.appState && typeof snapshot.appState === 'object') ? snapshot.appState as Record<string, unknown> : {}
+  const rawAppState = (snapshot.appState && typeof snapshot.appState === 'object') ? snapshot.appState as Record<string, unknown> : {}
+  // collaborators is serialized as a plain object from a Map — Excalidraw expects Map/array
+  const { collaborators: _collaborators, ...safeAppState } = rawAppState
   const files = (snapshot.files && typeof snapshot.files === 'object') ? snapshot.files as BinaryFiles : {} as BinaryFiles
 
   const initialData = {
     elements,
-    appState: { ...appState, viewModeEnabled: true },
+    appState: { ...safeAppState, viewModeEnabled: true, collaborators: new Map() },
     files,
   }
 

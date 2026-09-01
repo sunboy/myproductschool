@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import gsap from 'gsap'
 import type { FlowStep } from '@/lib/types'
 import type { QuestionRevealRecord } from './FlowWorkspace'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
@@ -228,23 +227,24 @@ export function StepReveal({
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const targets = [headerRef.current, coachingRef.current, breakdownRef.current, bottomRef.current].filter(Boolean)
-    if (prefersReduced) {
-      gsap.set(targets, { opacity: 1, y: 0 })
-      return
-    }
-
-    gsap.set(headerRef.current, { opacity: 0, y: -6 })
-    gsap.set(coachingRef.current, { opacity: 0, y: 10 })
-    gsap.set(breakdownRef.current, { opacity: 0, y: 10 })
-    gsap.set(bottomRef.current, { opacity: 0, y: 8 })
-
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-    tl.to(headerRef.current, { opacity: 1, y: 0, duration: 0.4 })
-    tl.to(coachingRef.current, { opacity: 1, y: 0, duration: 0.38 }, '-=0.2')
-    tl.to(breakdownRef.current, { opacity: 1, y: 0, duration: 0.38 }, '-=0.2')
-    tl.to(bottomRef.current, { opacity: 1, y: 0, duration: 0.32 }, '-=0.15')
-
-    return () => { tl.kill() }
+    let cleanup: (() => void) | null = null
+    import('gsap').then(({ gsap }) => {
+      if (prefersReduced) {
+        gsap.set(targets, { opacity: 1, y: 0 })
+        return
+      }
+      gsap.set(headerRef.current, { opacity: 0, y: -6 })
+      gsap.set(coachingRef.current, { opacity: 0, y: 10 })
+      gsap.set(breakdownRef.current, { opacity: 0, y: 10 })
+      gsap.set(bottomRef.current, { opacity: 0, y: 8 })
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+      tl.to(headerRef.current, { opacity: 1, y: 0, duration: 0.4 })
+      tl.to(coachingRef.current, { opacity: 1, y: 0, duration: 0.38 }, '-=0.2')
+      tl.to(breakdownRef.current, { opacity: 1, y: 0, duration: 0.38 }, '-=0.2')
+      tl.to(bottomRef.current, { opacity: 1, y: 0, duration: 0.32 }, '-=0.15')
+      cleanup = () => { tl.kill() }
+    })
+    return () => { cleanup?.() }
   }, [step])
 
   return (

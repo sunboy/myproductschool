@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import gsap from 'gsap'
 import type { FlowStep, UserRoleV2, InterviewGrade } from '@/lib/types'
 import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, SyntheticChallenge } from '@/lib/showcase/adapters/autopsyAdapter'
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
@@ -36,7 +35,6 @@ import type { SchemaDiagramData } from '@/components/challenge/SchemaDiagram'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
 import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import type { ChallengeDiscussion } from '@/lib/types'
-import { createClient } from '@/lib/supabase/client'
 
 const ExcalidrawCanvas = dynamic(() => import('@/components/challenge/ExcalidrawCanvas'), { ssr: false })
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
@@ -302,6 +300,7 @@ interface SessionRecord {
   stepResults: MirrorStepResult[]
   competencyDeltas: MirrorCompetencyDelta[]
   canvasPngUrl?: string | null
+  canvasFinalSnapshot?: Record<string, unknown> | null
 }
 
 type FlowWorkspaceProps =
@@ -369,6 +368,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [contextPackOpen, setContextPackOpen] = useState(true)
   const [contextPack, setContextPack] = useState<ContextPackState>(EMPTY_CONTEXT_PACK)
   const [isSubmittingInterview, setIsSubmittingInterview] = useState(false)
+  const [showEmptyCanvasWarning, setShowEmptyCanvasWarning] = useState(false)
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const contextPackRef = useRef<HTMLDivElement>(null)
 
@@ -490,6 +490,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const apiChallengeType = isApiMode ? detail?.challenge?.challenge_type : undefined
   const isCanvasChallenge = apiChallengeType === 'system_design' || apiChallengeType === 'data_modeling'
   const isCodingChallenge = apiChallengeType === 'sql' || apiChallengeType === 'algorithm'
+  const isCanvasEmpty = isCanvasChallenge &&
+    (!canvasScene || (canvasScene.elements as unknown[]).length === 0)
   // Either canvas or coding - both are full-panel interview modes (no MCQ FLOW steps)
   const isInterviewChallenge = isCanvasChallenge || isCodingChallenge
 
@@ -591,6 +593,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         max_score: number | null
         submitted_at: string | null
         canvas_png_url?: string | null
+        canvas_final_snapshot?: Record<string, unknown> | null
         feedback_json: {
           step_breakdown?: Array<{ step: string; score: number; max_score: number }>
           step_signals?: Array<{ step: string; quality_label: string; hatch_signal: string | null; framework_hint: string | null; selected_option_id?: string | null }>
@@ -637,6 +640,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               stepResults,
               competencyDeltas,
               canvasPngUrl: (r.canvas_png_url as string | null) ?? null,
+              canvasFinalSnapshot: (r.canvas_final_snapshot as Record<string, unknown> | null) ?? null,
             }
           })
         setSessionHistory(past)
@@ -1097,17 +1101,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     hasAnimated.current = true
     const children = workspaceRef.current?.children
     if (!children) return
-    const tween = gsap.fromTo(
-      Array.from(children),
-      { opacity: 0, y: 8 },
-      { opacity: 1, y: 0, stagger: 0.07, duration: 0.4, ease: 'power2.out' }
-    )
-    return () => { tween.kill() }
+    let cleanup: (() => void) | null = null
+    import('gsap').then(({ gsap }) => {
+      const tween = gsap.fromTo(
+        Array.from(children),
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, stagger: 0.07, duration: 0.4, ease: 'power2.out' }
+      )
+      cleanup = () => { tween.kill() }
+    })
+    return () => { cleanup?.() }
   }, [phase])
 
   // GSAP: slide-up + green glow pulse when user picks an option; kill on submit/question change
   const prevSelectedOptionRef = useRef<string | null>(null)
-  const glowTweensRef = useRef<gsap.core.Tween[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const glowTweensRef = useRef<any[]>([])
 
   const killGlowTweens = useCallback(() => {
     glowTweensRef.current.forEach(t => t.kill())
@@ -1127,32 +1136,34 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const targets = ([reasoningCardRef.current, confidenceCardRef.current] as Array<HTMLElement | null>).filter((el): el is HTMLElement => el !== null)
     if (!targets.length) return
 
-    // 1. Slide-up entrance
-    gsap.fromTo(
-      targets,
-      { opacity: 0.4, y: 12 },
-      {
-        opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', stagger: 0.1, clearProps: 'transform',
-        onComplete: () => {
-          confidenceCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-        },
-      }
-    )
-
-    // 2. Slow repeating glow pulse on each target independently
-    targets.forEach(el => {
-      const tween = gsap.fromTo(
-        el,
-        { boxShadow: '0 0 0px 0px rgba(74, 124, 89, 0)' },
+    import('gsap').then(({ gsap }) => {
+      // 1. Slide-up entrance
+      gsap.fromTo(
+        targets,
+        { opacity: 0.4, y: 12 },
         {
-          boxShadow: '0 0 12px 3px rgba(74, 124, 89, 0.28)',
-          duration: 1.4,
-          ease: 'sine.inOut',
-          repeat: -1,
-          yoyo: true,
+          opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', stagger: 0.1, clearProps: 'transform',
+          onComplete: () => {
+            confidenceCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+          },
         }
       )
-      glowTweensRef.current.push(tween)
+
+      // 2. Slow repeating glow pulse on each target independently
+      targets.forEach(el => {
+        const tween = gsap.fromTo(
+          el,
+          { boxShadow: '0 0 0px 0px rgba(74, 124, 89, 0)' },
+          {
+            boxShadow: '0 0 12px 3px rgba(74, 124, 89, 0.28)',
+            duration: 1.4,
+            ease: 'sine.inOut',
+            repeat: -1,
+            yoyo: true,
+          }
+        )
+        glowTweensRef.current.push(tween)
+      })
     })
   }, [selectedOptionId, killGlowTweens])
 
@@ -1312,30 +1323,35 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [isApiMode, currentQuestion, attemptId, selectedOptionId, reasoning, confidence, submitAnswer, fetchCoaching, initialRoleId, currentStep, props, setHatch])
 
-  const uploadCanvasPng = useCallback(async (attemptId: string): Promise<string | null> => {
+  const exportCanvasPngBase64 = useCallback(async (): Promise<string | null> => {
     if (!canvasExportRef.current) return null
     const blob = await canvasExportRef.current()
     if (!blob) return null
-    const supabase = createClient()
-    const path = `canvas-snapshots/${attemptId}.png`
-    const { error } = await supabase.storage.from('challenge-assets').upload(path, blob, {
-      contentType: 'image/png',
-      upsert: true,
+    return new Promise<string | null>((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const result = reader.result as string
+        // Strip data:image/png;base64, prefix
+        const base64 = result.split(',')[1] ?? null
+        resolve(base64)
+      }
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(blob)
     })
-    if (error) return null
-    const { data } = supabase.storage.from('challenge-assets').getPublicUrl(path)
-    return data.publicUrl
   }, [])
 
   // Submit handler for canvas / interview challenge types (does NOT touch FLOW submit logic)
   const handleInterviewSubmit = useCallback(async () => {
     const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
     if (!challengeId || !attemptId || isSubmittingInterview) return
+    if (isCanvasEmpty) {
+      setShowEmptyCanvasWarning(true)
+      return
+    }
     playHatchSound('submit')
     setIsSubmittingInterview(true)
     try {
-      const canvasPngUrl = await uploadCanvasPng(attemptId)
-      if (canvasPngUrl) setSubmittedCanvasPngUrl(canvasPngUrl)
+      const canvasPngBase64 = await exportCanvasPngBase64()
       const res = await fetch(`/api/challenges/${challengeId}/interview-submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1347,11 +1363,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             context_pack_fields: contextPack,
           },
           contextPack: contextPackText || null,
-          canvasPngUrl: canvasPngUrl ?? null,
+          canvasPngBase64: canvasPngBase64 ?? null,
         }),
       })
       if (!res.ok) throw new Error('Submit failed')
       const data = await res.json()
+      if (data.canvasPngUrl) setSubmittedCanvasPngUrl(data.canvasPngUrl)
       playHatchSound('success')
       setInterviewGrade(data.grade)
       setPhase('complete')
@@ -1361,7 +1378,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       setIsSubmittingInterview(false)
     }
-  }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, isSubmittingInterview, playHatchSound, uploadCanvasPng])
+  }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, isSubmittingInterview, isCanvasEmpty, playHatchSound, exportCanvasPngBase64])
 
   // Run handler for coding challenges - fires visible test cases only
   const handleCodingRun = useCallback(async () => {
@@ -2180,7 +2197,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       })()}
 
       {/* Context disclosure (situation + trigger) - FLOW challenges */}
-      {!isCodingChallenge && (ch?.scenario_context || ch?.scenario_trigger) && (
+      {!isCodingChallenge && (scenarioContext || scenarioTrigger) && (
         <div className="space-y-3">
           <button
             onClick={() => setShowContext(v => !v)}
@@ -2197,16 +2214,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
           {showContext && (
             <div className="space-y-3 pl-4 border-l-2 border-outline-variant">
-              {ch?.scenario_context && (
+              {scenarioContext && (
                 <div className="space-y-1">
                   <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">The situation</p>
-                  <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_context}</p>
+                  <p className="font-body text-sm text-on-surface leading-relaxed">{scenarioContext}</p>
                 </div>
               )}
-              {ch?.scenario_trigger && (
+              {scenarioTrigger && (
                 <div className="space-y-1">
                   <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">What just happened</p>
-                  <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_trigger}</p>
+                  <p className="font-body text-sm text-on-surface leading-relaxed">{scenarioTrigger}</p>
                 </div>
               )}
             </div>
@@ -3122,6 +3139,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   grade={interviewGrade}
                   challengeType={apiChallengeType ?? 'system_design'}
                   canvasPngUrl={submittedCanvasPngUrl}
+                  canvasFinalSnapshot={canvasScene ?? null}
                   onRetry={() => window.location.reload()}
                   onBackToCanvas={() => {
                     setPhase('question')
@@ -3142,6 +3160,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     grade={historyInterviewGrade}
                     challengeType={apiChallengeType ?? 'system_design'}
                     canvasPngUrl={historyRecord.canvasPngUrl}
+                    canvasFinalSnapshot={historyRecord.canvasFinalSnapshot}
                   />
                 </div>
               ) : (
@@ -3690,7 +3709,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   selectedOptionIds={selectedOptionIds}
                   allowMultiple={currentQuestion.allow_multiple}
                   elaboration={reasoning || elaboration}
-                  revealed={revealed}
+                  revealed={revealedOptions.length > 0}
                   revealedOptions={revealedOptions}
                   onOptionSelect={(id) => {
                     if (currentQuestion.allow_multiple) {
@@ -3703,7 +3722,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     }
                   }}
                   onElaborationChange={(text) => { setReasoning(text); setElaboration(text) }}
-                  disabled={activeSubmitting || (revealed && !currentQuestion.allow_multiple)}
+                  disabled={activeSubmitting || (revealedOptions.length > 0 && !currentQuestion.allow_multiple)}
                   elaborationRef={reasoningCardRef}
                 />
               </div>
@@ -3759,6 +3778,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </div>
         </section>
       </div>
+
+      {/* Empty canvas warning toast */}
+      {isCanvasChallenge && showEmptyCanvasWarning && (
+        <div className="absolute inset-x-0 bottom-16 z-50 flex justify-center px-4 pointer-events-none">
+          <div className="bg-inverse-surface text-inverse-on-surface rounded-xl px-5 py-3 flex items-center gap-3 shadow-lg pointer-events-auto max-w-sm">
+            <span className="material-symbols-outlined text-[20px] shrink-0">draw</span>
+            <p className="font-label text-sm font-semibold flex-1">Add something to the canvas before submitting.</p>
+            <button
+              onClick={() => setShowEmptyCanvasWarning(false)}
+              className="material-symbols-outlined text-[18px] opacity-70 hover:opacity-100 transition-opacity"
+            >
+              close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Submit bar for canvas interview challenge types */}
       {isCanvasChallenge && (

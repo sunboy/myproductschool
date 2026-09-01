@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { gradeInterviewSession } from '@/lib/v2/skills/interview-grading'
 import type { ChallengeType } from '@/lib/types'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
@@ -10,7 +11,7 @@ const RequestSchema = z.object({
   attemptId: z.string().uuid(),
   canvasFinalSnapshot: z.record(z.string(), z.unknown()).nullable().optional(),
   contextPack: z.string().max(50000).nullable().optional(),
-  canvasPngUrl: z.string().url().nullable().optional(),
+  canvasPngBase64: z.string().nullable().optional(),
 })
 
 function validationIssues(error: ZodError) {
@@ -66,7 +67,7 @@ export async function POST(
     }
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-  const { attemptId, canvasFinalSnapshot, contextPack, canvasPngUrl } = body
+  const { attemptId, canvasFinalSnapshot, contextPack, canvasPngBase64 } = body
 
   // Verify ownership
   const { data: attempt } = await supabase
@@ -106,6 +107,25 @@ export async function POST(
     return NextResponse.json({ error: 'Not an interview challenge' }, { status: 400 })
   }
 
+  // Upload canvas PNG server-side (service role bypasses RLS)
+  let canvasPngUrl: string | null = null
+  if (canvasPngBase64) {
+    try {
+      const adminClient = createAdminClient()
+      const pngBuffer = Buffer.from(canvasPngBase64, 'base64')
+      const storagePath = `canvas-snapshots/${attemptId}.png`
+      const { error: uploadError } = await adminClient.storage
+        .from('challenge-assets')
+        .upload(storagePath, pngBuffer, { contentType: 'image/png', upsert: true })
+      if (!uploadError) {
+        const { data } = adminClient.storage.from('challenge-assets').getPublicUrl(storagePath)
+        canvasPngUrl = data.publicUrl
+      }
+    } catch {
+      // Non-fatal — proceed without snapshot
+    }
+  }
+
   // Store the final snapshot first so the grader has data to read, but DO NOT
   // flip status to 'completed' yet - if grading fails we want the user to be
   // able to retry without hitting the "Already submitted" 409.
@@ -120,7 +140,7 @@ export async function POST(
     .from('challenge_attempts')
     .update({
       canvas_final_snapshot: snapshotWithContext,
-      canvas_png_url: canvasPngUrl ?? null,
+      canvas_png_url: canvasPngUrl,
     })
     .eq('id', attemptId)
 
@@ -162,5 +182,5 @@ export async function POST(
     canvas_annotations: grade.canvas_annotations,
   })
 
-  return NextResponse.json({ grade })
+  return NextResponse.json({ grade, canvasPngUrl })
 }

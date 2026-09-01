@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import type { InterviewGrade, ChallengeType } from '@/lib/types'
+import { CanvasSnapshotViewer } from './CanvasSnapshotViewer'
 
 interface InterviewFeedbackProps {
   grade: InterviewGrade
   challengeType: ChallengeType
   canvasPngUrl?: string | null
+  canvasFinalSnapshot?: Record<string, unknown> | null
   onRetry?: () => void
   onBackToCanvas?: () => void
 }
@@ -187,8 +189,16 @@ function DimensionTile({
   )
 }
 
-export function InterviewFeedback({ grade, challengeType: _challengeType, canvasPngUrl, onRetry, onBackToCanvas }: InterviewFeedbackProps) {
+export function InterviewFeedback({ grade, challengeType: _challengeType, canvasPngUrl, canvasFinalSnapshot, onRetry, onBackToCanvas }: InterviewFeedbackProps) {
   const [calloutVisible, setCalloutVisible] = useState(false)
+  const [viewerOpen, setViewerOpen] = useState(false)
+
+  const hasCanvasContent = Boolean(
+    canvasPngUrl &&
+    canvasFinalSnapshot &&
+    Array.isArray((canvasFinalSnapshot as Record<string, unknown>).elements) &&
+    ((canvasFinalSnapshot as Record<string, unknown>).elements as unknown[]).length > 0
+  )
 
   // Lift expanded state up so parent can collapse grid to 1-col when any tile is open
   const dimEntries = Object.entries(grade.dimensions)
@@ -216,16 +226,31 @@ export function InterviewFeedback({ grade, challengeType: _challengeType, canvas
         </div>
 
         {/* ── 2. CANVAS SNAPSHOT ─────────────────────────────── */}
-        {canvasPngUrl && (
+        {hasCanvasContent && (
           <div className="rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low">
-            <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant px-3 py-2 border-b border-outline-variant">
-              Your diagram
-            </p>
-            <img
-              src={canvasPngUrl}
-              alt="Canvas snapshot"
-              className="w-full object-contain max-h-64"
-            />
+            <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant">
+              <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+                Your diagram
+              </p>
+              {canvasFinalSnapshot && (
+                <button
+                  onClick={() => setViewerOpen(v => !v)}
+                  className="material-symbols-outlined text-[18px] text-on-surface-variant hover:text-on-surface transition-colors"
+                  title={viewerOpen ? 'Collapse diagram' : 'Expand diagram'}
+                >
+                  {viewerOpen ? 'close_fullscreen' : 'open_in_full'}
+                </button>
+              )}
+            </div>
+            {viewerOpen && canvasFinalSnapshot ? (
+              <CanvasSnapshotViewer snapshot={canvasFinalSnapshot} />
+            ) : (
+              <img
+                src={canvasPngUrl!}
+                alt="Canvas snapshot"
+                className="w-full object-contain max-h-64"
+              />
+            )}
           </div>
         )}
 

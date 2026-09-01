@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
-import gsap from 'gsap'
 
 export interface StepCalibration {
   stepKey: 'frame' | 'list' | 'optimize' | 'win'
@@ -58,7 +57,8 @@ export function CalibrationPreview({ steps }: CalibrationPreviewProps) {
   )
   // Fix B: store timeline references so we kill only the specific in-flight
   // timeline, not every tween on the element, on re-run or unmount
-  const tlRefs = useRef<(gsap.core.Timeline | null)[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tlRefs = useRef<(any | null)[]>([])
 
   useEffect(() => {
     steps.forEach((step, idx) => {
@@ -72,28 +72,30 @@ export function CalibrationPreview({ steps }: CalibrationPreviewProps) {
         // Kill any in-flight timeline for this slot by reference
         if (tlRefs.current[idx]) tlRefs.current[idx]!.kill()
 
-        const tl = gsap.timeline()
-        tlRefs.current[idx] = tl
+        import('gsap').then(({ gsap }) => {
+          const tl = gsap.timeline()
+          tlRefs.current[idx] = tl
 
-        // Rotate out (old icon visible) → swap icon at midpoint → rotate in
-        tl.to(el, {
-          rotateX: 90,
-          duration: 0.15,
-          ease: 'power2.in',
-          onComplete: () => {
-            // Element is edge-on (invisible) - safe to swap icon now
-            setDisplayStatuses((prev) => {
-              const next = [...prev]
-              next[idx] = curr
-              return next
-            })
-            gsap.set(el, { rotateX: -90 })
-          },
-        }).to(el, {
-          rotateX: 0,
-          duration: 0.3,
-          ease: 'back.out(2)',
-          onComplete: () => { tlRefs.current[idx] = null },
+          // Rotate out (old icon visible) → swap icon at midpoint → rotate in
+          tl.to(el, {
+            rotateX: 90,
+            duration: 0.15,
+            ease: 'power2.in',
+            onComplete: () => {
+              // Element is edge-on (invisible) - safe to swap icon now
+              setDisplayStatuses((prev) => {
+                const next = [...prev]
+                next[idx] = curr
+                return next
+              })
+              gsap.set(el, { rotateX: -90 })
+            },
+          }).to(el, {
+            rotateX: 0,
+            duration: 0.3,
+            ease: 'back.out(2)',
+            onComplete: () => { tlRefs.current[idx] = null },
+          })
         })
       }
 

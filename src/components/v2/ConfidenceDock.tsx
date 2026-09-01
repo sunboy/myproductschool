@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
-import gsap from 'gsap'
 
 export interface ConfidenceDockProps {
   optionSelected: boolean
@@ -37,95 +36,74 @@ export function ConfidenceDock({
   const prevConfidence = useRef<number | null>(null)
   const prevSubmitted = useRef(false)
 
-  // Fix C: set initial opacity via GSAP at mount so GSAP owns opacity entirely -
-  // no competing Tailwind opacity classes or inline style opacity on these rows.
   useEffect(() => {
-    if (confidenceRowRef.current) {
-      gsap.set(confidenceRowRef.current, { opacity: 0.3 })
-    }
-    if (reasoningRowRef.current) {
-      gsap.set(reasoningRowRef.current, { opacity: 0 })
-    }
+    import('gsap').then(({ gsap }) => {
+      if (confidenceRowRef.current) gsap.set(confidenceRowRef.current, { opacity: 0.3 })
+      if (reasoningRowRef.current) gsap.set(reasoningRowRef.current, { opacity: 0 })
+    })
   }, [])
 
-  // Animate confidence row in when optionSelected becomes true
   useEffect(() => {
     if (!confidenceRowRef.current) return
+    const el = confidenceRowRef.current
     if (optionSelected && !prevOptionSelected.current) {
-      gsap.fromTo(
-        confidenceRowRef.current,
-        { y: 4, opacity: 0.3 },
-        { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }
-      )
+      import('gsap').then(({ gsap }) => {
+        gsap.fromTo(el, { y: 4, opacity: 0.3 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' })
+      })
     }
     prevOptionSelected.current = optionSelected
   }, [optionSelected])
 
-  // Animate reasoning row in when confidence first becomes non-null
   useEffect(() => {
     if (!reasoningRowRef.current) return
+    const el = reasoningRowRef.current
     if (confidence !== null && prevConfidence.current === null) {
-      gsap.fromTo(
-        reasoningRowRef.current,
-        { y: 4, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }
-      )
+      import('gsap').then(({ gsap }) => {
+        gsap.fromTo(el, { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' })
+      })
     }
     prevConfidence.current = confidence
   }, [confidence])
 
-  // Animate fill sweep on confidence buttons
   const handleConfidenceClick = (idx: number) => {
     onConfidenceChange(idx)
-    fillRefs.current.forEach((el, i) => {
-      if (!el) return
-      gsap.killTweensOf(el)
-      if (i === idx) {
-        gsap.fromTo(el, { scaleX: 0 }, { scaleX: 1, duration: 0.32, ease: 'power2.out', transformOrigin: 'left center' })
-      } else {
-        gsap.to(el, { scaleX: 0, duration: 0.2, ease: 'power2.in', transformOrigin: 'left center' })
-      }
+    const fills = fillRefs.current.slice()
+    import('gsap').then(({ gsap }) => {
+      fills.forEach((el, i) => {
+        if (!el) return
+        gsap.killTweensOf(el)
+        if (i === idx) {
+          gsap.fromTo(el, { scaleX: 0 }, { scaleX: 1, duration: 0.32, ease: 'power2.out', transformOrigin: 'left center' })
+        } else {
+          gsap.to(el, { scaleX: 0, duration: 0.2, ease: 'power2.in', transformOrigin: 'left center' })
+        }
+      })
     })
   }
 
-  // Submit button ready-pulse animation
   useEffect(() => {
     const btn = submitBtnRef.current
     if (!btn) return
-    let tl: gsap.core.Timeline | null = null
-    if (confidence !== null && !submitting && !submitted) {
-      tl = gsap.timeline({ repeat: -1, yoyo: true })
-      tl.to(btn, {
-        // primary = #4a7c59
-        boxShadow: '0 0 0 6px rgba(74,124,89,0.25)',
-        duration: 0.9,
-        ease: 'sine.inOut',
-      }).to(btn, {
-        // primary = #4a7c59
-        boxShadow: '0 0 0 0px rgba(74,124,89,0)',
-        duration: 0.9,
-        ease: 'sine.inOut',
-      })
-    } else {
-      gsap.set(btn, { boxShadow: 'none' })
-    }
-    return () => {
-      if (tl) tl.kill()
-      if (btn) gsap.killTweensOf(btn)
-    }
+    let cleanup: (() => void) | null = null
+    import('gsap').then(({ gsap }) => {
+      if (confidence !== null && !submitting && !submitted) {
+        const tl = gsap.timeline({ repeat: -1, yoyo: true })
+        tl.to(btn, { boxShadow: '0 0 0 6px rgba(74,124,89,0.25)', duration: 0.9, ease: 'sine.inOut' })
+          .to(btn, { boxShadow: '0 0 0 0px rgba(74,124,89,0)', duration: 0.9, ease: 'sine.inOut' })
+        cleanup = () => { tl.kill(); gsap.killTweensOf(btn) }
+      } else {
+        gsap.set(btn, { boxShadow: 'none' })
+      }
+    })
+    return () => { cleanup?.() }
   }, [confidence, submitting, submitted])
 
-  // Fade dock out on submit, then unmount via hidden state
   useEffect(() => {
     const dock = dockRef.current
     if (!dock) return
     if (submitted && !prevSubmitted.current) {
-      gsap.to(dock, {
-        opacity: 0,
-        y: -4,
-        duration: 0.25,
-        ease: 'power2.in',
-        onComplete: () => { setHidden(true) },
+      import('gsap').then(({ gsap }) => {
+        gsap.to(dock, { opacity: 0, y: -4, duration: 0.25, ease: 'power2.in', onComplete: () => { setHidden(true) } })
       })
     }
     prevSubmitted.current = submitted

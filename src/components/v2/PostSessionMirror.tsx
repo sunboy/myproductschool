@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
-import gsap from 'gsap'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StepDetailModal } from './StepDetailModal'
 import { AnswerGalleryPanel } from '@/components/community/AnswerGalleryPanel'
@@ -474,40 +473,44 @@ export function PostSessionMirror({
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReduced) {
-      gsap.set([headerRef.current, ...cardRefs.current, ...badgeRefs.current, ...deltaRefs.current, xpRef.current, footerRef.current], { opacity: 1, y: 0, scale: 1, rotation: 0 })
-      return
-    }
+    let cleanup: (() => void) | null = null
+    import('gsap').then(({ gsap }) => {
+      if (prefersReduced) {
+        gsap.set([headerRef.current, ...cardRefs.current, ...badgeRefs.current, ...deltaRefs.current, xpRef.current, footerRef.current], { opacity: 1, y: 0, scale: 1, rotation: 0 })
+        return
+      }
 
-    gsap.set(headerRef.current, { opacity: 0, y: -6 })
-    gsap.set(cardRefs.current.filter(Boolean), { opacity: 0, y: 18, scale: 0.98 })
-    gsap.set(badgeRefs.current.filter(Boolean), { scale: 0, opacity: 0, rotation: -45, transformOrigin: '50% 50%' })
-    gsap.set(deltaRefs.current.filter(Boolean), { opacity: 0, y: 8 })
-    if (xpRef.current) gsap.set(xpRef.current, { opacity: 0, scale: 0.4, rotation: -12 })
-    if (footerRef.current) gsap.set(footerRef.current, { opacity: 0, y: 8 })
+      gsap.set(headerRef.current, { opacity: 0, y: -6 })
+      gsap.set(cardRefs.current.filter(Boolean), { opacity: 0, y: 18, scale: 0.98 })
+      gsap.set(badgeRefs.current.filter(Boolean), { scale: 0, opacity: 0, rotation: -45, transformOrigin: '50% 50%' })
+      gsap.set(deltaRefs.current.filter(Boolean), { opacity: 0, y: 8 })
+      if (xpRef.current) gsap.set(xpRef.current, { opacity: 0, scale: 0.4, rotation: -12 })
+      if (footerRef.current) gsap.set(footerRef.current, { opacity: 0, y: 8 })
 
-    if (pathRef.current) {
-      const len = pathRef.current.getTotalLength()
-      pathRef.current.style.strokeDasharray = String(len)
-      pathRef.current.style.strokeDashoffset = String(len)
-    }
+      if (pathRef.current) {
+        const len = pathRef.current.getTotalLength()
+        pathRef.current.style.strokeDasharray = String(len)
+        pathRef.current.style.strokeDashoffset = String(len)
+      }
 
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-    tl.to(headerRef.current, { opacity: 1, y: 0, duration: 0.4 })
-    if (pathRef.current) {
-      tl.to(pathRef.current, { strokeDashoffset: 0, duration: 1.4, ease: 'power1.inOut' }, '-=0.15')
-    }
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+      tl.to(headerRef.current, { opacity: 1, y: 0, duration: 0.4 })
+      if (pathRef.current) {
+        tl.to(pathRef.current, { strokeDashoffset: 0, duration: 1.4, ease: 'power1.inOut' }, '-=0.15')
+      }
 
-    uniqueStepResults.forEach((_, i) => {
-      tl.to(badgeRefs.current[i], { scale: 1, opacity: 1, rotation: 0, duration: 0.32, ease: 'back.out(2.2)' }, 0.55 + i * 0.22)
-      tl.to(cardRefs.current[i], { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'power3.out' }, 0.62 + i * 0.22)
+      uniqueStepResults.forEach((_, i) => {
+        tl.to(badgeRefs.current[i], { scale: 1, opacity: 1, rotation: 0, duration: 0.32, ease: 'back.out(2.2)' }, 0.55 + i * 0.22)
+        tl.to(cardRefs.current[i], { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'power3.out' }, 0.62 + i * 0.22)
+      })
+
+      tl.to(deltaRefs.current.filter(Boolean), { opacity: 1, y: 0, duration: 0.35, stagger: 0.05 }, '-=0.2')
+      if (xpRef.current) tl.to(xpRef.current, { opacity: 1, scale: 1, rotation: 0, duration: 0.55, ease: 'back.out(2.5)' }, '-=0.15')
+      if (footerRef.current) tl.to(footerRef.current, { opacity: 1, y: 0, duration: 0.35 }, '-=0.3')
+
+      cleanup = () => { tl.kill() }
     })
-
-    tl.to(deltaRefs.current.filter(Boolean), { opacity: 1, y: 0, duration: 0.35, stagger: 0.05 }, '-=0.2')
-    if (xpRef.current) tl.to(xpRef.current, { opacity: 1, scale: 1, rotation: 0, duration: 0.55, ease: 'back.out(2.5)' }, '-=0.15')
-    if (footerRef.current) tl.to(footerRef.current, { opacity: 1, y: 0, duration: 0.35 }, '-=0.3')
-
-    return () => { tl.kill() }
+    return () => { cleanup?.() }
   }, [uniqueStepResults.length])
 
   return (

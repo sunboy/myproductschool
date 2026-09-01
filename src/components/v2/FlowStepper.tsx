@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
-import gsap from 'gsap'
 import type { FlowStep } from '@/lib/types'
 
 interface FlowStepperProps {
@@ -38,41 +37,41 @@ export function FlowStepper({ currentStep, completedSteps, onStepClick, question
     const prevIdx = STEPS.findIndex(s => s.id === prevStepRef.current)
     prevStepRef.current = currentStep
 
-    // 1. Pop the newly completed dot (prevIdx)
     const completedDot = dotRefs.current[prevIdx]
-    if (completedDot) {
-      gsap.timeline()
-        .to(completedDot, { scale: 1.35, duration: 0.18, ease: 'power2.out' })
-        .to(completedDot, { scale: 1, duration: 0.22, ease: 'elastic.out(1.2, 0.5)' })
-    }
-
-    // 2. Fill the connector between prevIdx and currentIdx
     const connector = connectorRefs.current[prevIdx]
-    if (connector) {
-      gsap.fromTo(connector,
-        { scaleX: 0, transformOrigin: 'left center' },
-        { scaleX: 1, duration: 0.35, ease: 'power2.inOut', delay: 0.15 }
-      )
-    }
-
-    // 3. Slide the new active dot in from slight scale-down
     const newDot = dotRefs.current[currentIdx]
-    if (newDot) {
-      gsap.fromTo(newDot,
-        { scale: 0.7, opacity: 0.4 },
-        { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(1.8)', delay: 0.2 }
-      )
-    }
+
+    import('gsap').then(({ gsap }) => {
+      if (completedDot) {
+        gsap.timeline()
+          .to(completedDot, { scale: 1.35, duration: 0.18, ease: 'power2.out' })
+          .to(completedDot, { scale: 1, duration: 0.22, ease: 'elastic.out(1.2, 0.5)' })
+      }
+      if (connector) {
+        gsap.fromTo(connector,
+          { scaleX: 0, transformOrigin: 'left center' },
+          { scaleX: 1, duration: 0.35, ease: 'power2.inOut', delay: 0.15 }
+        )
+      }
+      if (newDot) {
+        gsap.fromTo(newDot,
+          { scale: 0.7, opacity: 0.4 },
+          { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(1.8)', delay: 0.2 }
+        )
+      }
+    })
   }, [currentStep, currentIdx])
 
   // Mount animation - slide entire stepper in
   useEffect(() => {
     const dots = dotRefs.current.filter(Boolean)
     if (dots.length) {
-      gsap.fromTo(dots,
-        { opacity: 0, y: -6 },
-        { opacity: 1, y: 0, stagger: 0.06, duration: 0.4, ease: 'power2.out' }
-      )
+      import('gsap').then(({ gsap }) => {
+        gsap.fromTo(dots,
+          { opacity: 0, y: -6 },
+          { opacity: 1, y: 0, stagger: 0.06, duration: 0.4, ease: 'power2.out' }
+        )
+      })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

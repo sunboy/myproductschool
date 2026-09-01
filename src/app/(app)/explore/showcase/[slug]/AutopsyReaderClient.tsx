@@ -2,9 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import type { AutopsyProductDetail, AarrrStageContent } from '@/lib/types'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -61,14 +58,16 @@ function animateMetric(el: HTMLElement, rawValue: string) {
   const prefix = rawValue.match(/^[^0-9]*/)?.[0] ?? ''
   const suffix = rawValue.match(/[^0-9.]+$/)?.[0] ?? ''
   const proxy = { val: 0 }
-  gsap.to(proxy, {
-    val: num,
-    duration: 1.2,
-    ease: 'power2.out',
-    onUpdate() {
-      const display = num < 10 ? proxy.val.toFixed(1) : Math.round(proxy.val).toString()
-      el.textContent = prefix + display + suffix
-    },
+  import('gsap').then(({ gsap }) => {
+    gsap.to(proxy, {
+      val: num,
+      duration: 1.2,
+      ease: 'power2.out',
+      onUpdate() {
+        const display = num < 10 ? proxy.val.toFixed(1) : Math.round(proxy.val).toString()
+        el.textContent = prefix + display + suffix
+      },
+    })
   })
 }
 
@@ -402,43 +401,50 @@ function StageSection({ stage, accentColor, isEven, sectionRef }: StageSectionPr
   const metricValueRefs = useRef<HTMLSpanElement[]>([])
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const sectionEl = headerRef.current?.closest('[data-stage-section]') as HTMLElement
-      if (!sectionEl) return
+    let cleanup: (() => void) | null = null
+    import('gsap').then(({ gsap }) =>
+      import('gsap/ScrollTrigger').then(({ ScrollTrigger }) => {
+        gsap.registerPlugin(ScrollTrigger)
+        const ctx = gsap.context(() => {
+          const sectionEl = headerRef.current?.closest('[data-stage-section]') as HTMLElement
+          if (!sectionEl) return
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionEl,
-          start: 'top 72%',
-          once: true,
-        },
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: sectionEl,
+              start: 'top 72%',
+              once: true,
+            },
+          })
+
+          if (dividerRef.current) {
+            tl.fromTo(dividerRef.current, { scaleX: 0, transformOrigin: 'left' }, { scaleX: 1, duration: 0.6, ease: 'power3.out' }, 0)
+          }
+          if (labelRef.current) {
+            tl.fromTo(labelRef.current, { x: 20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
+          }
+          if (questionRef.current) {
+            tl.fromTo(questionRef.current, { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: 'power2.out' }, 0.22)
+          }
+          if (narrativeRef.current) {
+            tl.fromTo(narrativeRef.current, { y: 12, opacity: 0, filter: 'blur(6px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.7, ease: 'power2.out' }, 0.4)
+          }
+          if (metricsRef.current) {
+            const cards = metricsRef.current.querySelectorAll('[data-metric-card]')
+            tl.fromTo(cards, { y: 28, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, stagger: 0.09, ease: 'back.out(1.4)' }, 0.5)
+            tl.call(() => {
+              metricValueRefs.current.forEach(el => { if (el) animateMetric(el, el.dataset.raw ?? '') })
+            }, [], 0.55)
+          }
+          if (warRoomRef.current) {
+            const rows = warRoomRef.current.querySelectorAll('[data-war-row]')
+            tl.fromTo(rows, { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, stagger: 0.07, ease: 'power2.out' }, 0.65)
+          }
+        })
+        cleanup = () => ctx.revert()
       })
-
-      if (dividerRef.current) {
-        tl.fromTo(dividerRef.current, { scaleX: 0, transformOrigin: 'left' }, { scaleX: 1, duration: 0.6, ease: 'power3.out' }, 0)
-      }
-      if (labelRef.current) {
-        tl.fromTo(labelRef.current, { x: 20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
-      }
-      if (questionRef.current) {
-        tl.fromTo(questionRef.current, { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: 'power2.out' }, 0.22)
-      }
-      if (narrativeRef.current) {
-        tl.fromTo(narrativeRef.current, { y: 12, opacity: 0, filter: 'blur(6px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.7, ease: 'power2.out' }, 0.4)
-      }
-      if (metricsRef.current) {
-        const cards = metricsRef.current.querySelectorAll('[data-metric-card]')
-        tl.fromTo(cards, { y: 28, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, stagger: 0.09, ease: 'back.out(1.4)' }, 0.5)
-        tl.call(() => {
-          metricValueRefs.current.forEach(el => { if (el) animateMetric(el, el.dataset.raw ?? '') })
-        }, [], 0.55)
-      }
-      if (warRoomRef.current) {
-        const rows = warRoomRef.current.querySelectorAll('[data-war-row]')
-        tl.fromTo(rows, { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, stagger: 0.07, ease: 'power2.out' }, 0.65)
-      }
-    })
-    return () => ctx.revert()
+    )
+    return () => { cleanup?.() }
   }, [])
 
   return (
@@ -711,82 +717,101 @@ export function AutopsyReaderClient({
   const scrollBodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
-  }, [])
-
-  useEffect(() => {
     if (!heroRef.current) return
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+    let cleanup: (() => void) | null = null
+    import('gsap').then(({ gsap }) => {
+      const ctx = gsap.context(() => {
+        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
 
-      if (heroBgRef.current) {
-        tl.fromTo(heroBgRef.current, { scaleX: 0, transformOrigin: 'left' }, { scaleX: 1, duration: 0.7 }, 0)
-      }
-      if (heroTitleRef.current) {
-        const words = heroTitleRef.current.querySelectorAll('[data-word]')
-        tl.fromTo(words, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, stagger: 0.04 }, 0.35)
-      }
-      if (heroTaglineRef.current) {
-        tl.fromTo(heroTaglineRef.current, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 0.6)
-      }
-      if (heroMetaRef.current) {
-        const chips = heroMetaRef.current.querySelectorAll('[data-chip]')
-        tl.fromTo(chips, { x: -16, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, stagger: 0.07 }, 0.75)
-      }
-      if (railRef.current) {
-        tl.fromTo(railRef.current, { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5 }, 0.8)
-      }
-    }, heroRef)
-    return () => ctx.revert()
+        if (heroBgRef.current) {
+          tl.fromTo(heroBgRef.current, { scaleX: 0, transformOrigin: 'left' }, { scaleX: 1, duration: 0.7 }, 0)
+        }
+        if (heroTitleRef.current) {
+          const words = heroTitleRef.current.querySelectorAll('[data-word]')
+          tl.fromTo(words, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, stagger: 0.04 }, 0.35)
+        }
+        if (heroTaglineRef.current) {
+          tl.fromTo(heroTaglineRef.current, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 0.6)
+        }
+        if (heroMetaRef.current) {
+          const chips = heroMetaRef.current.querySelectorAll('[data-chip]')
+          tl.fromTo(chips, { x: -16, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, stagger: 0.07 }, 0.75)
+        }
+        if (railRef.current) {
+          tl.fromTo(railRef.current, { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5 }, 0.8)
+        }
+      }, heroRef)
+      cleanup = () => ctx.revert()
+    })
+    return () => { cleanup?.() }
   }, [])
 
   useEffect(() => {
     if (sectionRefs.current.length === 0) return
-    const ctx = gsap.context(() => {
-      sectionRefs.current.forEach((el, idx) => {
-        if (!el) return
-        ScrollTrigger.create({
-          trigger: el,
-          start: 'top center',
-          end: 'bottom center',
-          onEnter: () => setActiveStageIdx(idx),
-          onEnterBack: () => setActiveStageIdx(idx),
-        })
-      })
+    let cleanup: (() => void) | null = null
+    import('gsap').then(({ gsap }) =>
+      import('gsap/ScrollTrigger').then(({ ScrollTrigger }) => {
+        gsap.registerPlugin(ScrollTrigger)
+        const ctx = gsap.context(() => {
+          sectionRefs.current.forEach((el, idx) => {
+            if (!el) return
+            ScrollTrigger.create({
+              trigger: el,
+              start: 'top center',
+              end: 'bottom center',
+              onEnter: () => setActiveStageIdx(idx),
+              onEnterBack: () => setActiveStageIdx(idx),
+            })
+          })
 
-      if (scrollBodyRef.current) {
-        ScrollTrigger.create({
-          trigger: scrollBodyRef.current,
-          start: 'top top',
-          end: 'bottom bottom',
-          onUpdate: self => setScrollProgress(self.progress),
+          if (scrollBodyRef.current) {
+            ScrollTrigger.create({
+              trigger: scrollBodyRef.current,
+              start: 'top top',
+              end: 'bottom bottom',
+              onUpdate: self => setScrollProgress(self.progress),
+            })
+          }
         })
-      }
-    })
-    return () => ctx.revert()
+        cleanup = () => ctx.revert()
+      })
+    )
+    return () => { cleanup?.() }
   }, [stages.length])
 
   useEffect(() => {
     if (!closingRef.current) return
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: closingRef.current, start: 'top 75%', once: true },
+    let cleanup: (() => void) | null = null
+    import('gsap').then(({ gsap }) =>
+      import('gsap/ScrollTrigger').then(({ ScrollTrigger }) => {
+        gsap.registerPlugin(ScrollTrigger)
+        const ctx = gsap.context(() => {
+          const tl = gsap.timeline({
+            scrollTrigger: { trigger: closingRef.current, start: 'top 75%', once: true },
+          })
+          if (closingTextRef.current) {
+            const words = closingTextRef.current.querySelectorAll('[data-word]')
+            tl.fromTo(words, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.018, ease: 'power2.out' }, 0)
+          }
+          if (closingCtaRef.current) {
+            tl.fromTo(closingCtaRef.current, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }, 0.8)
+          }
+        })
+        cleanup = () => ctx.revert()
       })
-      if (closingTextRef.current) {
-        const words = closingTextRef.current.querySelectorAll('[data-word]')
-        tl.fromTo(words, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.018, ease: 'power2.out' }, 0)
-      }
-      if (closingCtaRef.current) {
-        tl.fromTo(closingCtaRef.current, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }, 0.8)
-      }
-    })
-    return () => ctx.revert()
+    )
+    return () => { cleanup?.() }
   }, [])
 
   function jumpToStage(idx: number) {
     const el = sectionRefs.current[idx]
     if (!el) return
-    gsap.to(window, { scrollTo: { y: el, offsetY: 68 }, duration: 0.85, ease: 'power3.inOut' })
+    import('gsap').then(({ gsap }) =>
+      import('gsap/ScrollToPlugin').then(({ ScrollToPlugin }) => {
+        gsap.registerPlugin(ScrollToPlugin)
+        gsap.to(window, { scrollTo: { y: el, offsetY: 68 }, duration: 0.85, ease: 'power3.inOut' })
+      })
+    )
   }
 
   const heroWords = splitWords(hero?.product_name ?? product.name)
