@@ -82,7 +82,7 @@ export const IDENTITY_LEAK_PATTERNS: VoicePattern[] = [
   },
   {
     rule: 'identity_leak',
-    re: /\b(?:claude|sonnet|haiku|opus)(?:[- ]?\d+(?:\.\d+)?)?\b/gi,
+    re: /\b(?:claude(?!\s+code\b)|sonnet|haiku|opus)(?:[- ]?\d+(?:\.\d+)?)?\b/gi,
     replacement: 'Hatch',
   },
   { rule: 'identity_leak', re: /\banthropic\b/gi, replacement: 'Hatch' },

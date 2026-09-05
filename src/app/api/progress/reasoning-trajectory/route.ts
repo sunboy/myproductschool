@@ -313,7 +313,7 @@ function buildPayload(
     moveLabel: focus.move[0].toUpperCase() + focus.move.slice(1),
     href: focusDiscipline.href,
     reason: focus.cell.sampleSize === 0
-      ? `No ${focus.move} signal yet in ${focusDiscipline.label.toLowerCase()}. Hatch needs one clean rep there.`
+      ? `No ${focus.move} signal yet in ${focusDiscipline.label.toLowerCase()}. Complete a challenge to build evidence in this area.`
       : `${focusDiscipline.label} ${focus.move} is the lowest recent signal at ${focus.cell.score ?? 0}.`,
   }
 

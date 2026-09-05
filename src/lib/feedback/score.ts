@@ -35,7 +35,7 @@ export const GRADE_DESCRIPTORS: Record<GradeBand, string> = {
   sharp: 'This is the level that carries a real interview.',
   solid: 'The core moves are there. Sharpen the specifics.',
   surface: 'Right direction, but the reasoning stays on the surface.',
-  needs_work: 'The foundations need reps. That is what practice is for.',
+  needs_work: 'Focus your next challenge on the foundations.',
 }
 
 /** Terra token classes per band (ring stroke, badge chip, text). */

@@ -329,7 +329,7 @@ export function FloatingHatch() {
         return
       }
 
-      openPagePromptChat(cta, 'Which study plan fits my weakest FLOW move right now?')
+      openPagePromptChat(cta, 'Which study plan fits my role and learning goal?')
     } finally {
       setPageCtaBusy(false)
     }
@@ -402,7 +402,7 @@ export function FloatingHatch() {
                  currentPageType === 'progress' ? 'Reviewing your progress' :
                  currentPageType === 'live_interviews' ? 'Practicing an interview with you' :
                  currentPageType === 'practice' ? 'Helping you pick the right rep' :
-                 'Your product thinking coach'}
+                 'Your learning companion'}
               </p>
             </div>
             <div className="flex items-center gap-1">
@@ -517,7 +517,7 @@ export function FloatingHatch() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about FLOW or product thinking…"
+                placeholder="Ask about your challenge, reading, or next step…"
                 disabled={loading}
                 className="flex-1 bg-surface-container-low rounded-full px-3 py-1.5 text-xs text-on-surface placeholder:text-on-surface-variant/50 outline-none border border-outline-variant/40 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
               />

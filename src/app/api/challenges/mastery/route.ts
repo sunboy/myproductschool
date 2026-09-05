@@ -25,14 +25,19 @@ export async function GET() {
   const [{ data: challenges }, { data: attempts }] = await Promise.all([
     admin.from('challenges').select('id').eq('is_published', true),
     admin.from('challenge_attempts')
-      .select('challenge_id, total_score')
+      .select('challenge_id, total_score, max_score')
       .eq('user_id', user.id)
       .eq('status', 'completed'),
   ])
 
-  const completedMap = new Map(
-    (attempts ?? []).map(a => [a.challenge_id, a.total_score])
-  )
+  const completedMap = new Map<string, number | null>()
+  for (const attempt of attempts ?? []) {
+    const score = attempt.total_score == null || !Number.isFinite(Number(attempt.total_score)) || !(Number(attempt.max_score) > 0)
+      ? null
+      : Math.round(Math.max(0, Math.min(1, Number(attempt.total_score) / Number(attempt.max_score))) * 100)
+    const previous = completedMap.get(attempt.challenge_id)
+    if (!completedMap.has(attempt.challenge_id) || (score != null && (previous == null || score > previous))) completedMap.set(attempt.challenge_id, score)
+  }
 
   const result = (challenges ?? []).map(c => ({
     challenge_id: c.id,

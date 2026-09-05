@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { gradeCodingAttempt, shouldUseDeterministicCodingGrade } from '../../../src/lib/coding-grading/grader'
+import { gradeCodingAttempt, gradeFromCorrectnessFallback, shouldUseDeterministicCodingGrade } from '../../../src/lib/coding-grading/grader'
 import type { GradingInput } from '../../../src/lib/coding-grading/grader'
 
 function baseInput(overrides: Partial<GradingInput> = {}): GradingInput {
@@ -58,5 +58,20 @@ describe('coding grader deterministic guardrails', () => {
     assert.match(grade.summary ?? '', /runnable test result/)
     assert.match(grade.next_actions?.[0] ?? '', /Run the visible tests/)
     assert.equal(grade.score_breakdown?.correctness.score, 0)
+  })
+})
+
+
+describe('unavailable detailed coding review', () => {
+  it('keeps objective correctness without inventing process or skill scores', () => {
+    const grade = gradeFromCorrectnessFallback(baseInput({
+      finalCode: 'return [0, 1]',
+      correctness: { runId: 'verified-run', testsPassed: 1, testsTotal: 1, results: [{ id: 'visible-1', label: 'Basic pair', status: 'passed', hidden: false }] },
+    }))
+    assert.equal(grade.degraded, true)
+    assert.deepEqual(grade.dimensions, {})
+    assert.equal(grade.score_breakdown?.correctness.tests_passed, 1)
+    assert.equal(grade.score_breakdown?.process.score, null)
+    assert.match(grade.score_breakdown?.process.summary ?? '', /not been assessed/)
   })
 })

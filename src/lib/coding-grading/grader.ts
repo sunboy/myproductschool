@@ -1,5 +1,3 @@
-import { readFileSync } from 'fs'
-import { join } from 'path'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { buildEmptyStateResponse, buildSkillContextPrompt } from '@/lib/hatch/skill-context'
 import { AiBudgetExceededError } from '@/lib/usage/ai-budget'
@@ -15,25 +13,28 @@ function isAiLimitError(err: unknown): boolean {
 
 type AiBudget = { userId: string; userPlan: string; route: string }
 
-// ---------------------------------------------------------------------------
-// Skill loader — loads the hackproduct-coding-grader SKILL.md as system prompt
-// ---------------------------------------------------------------------------
+// Keep the grading contract in the deployed application. A developer-machine
+// skill file is unavailable in serverless functions and cannot define this API.
+const GRADER_SKILL = `You are Hatch, the HackProduct coding and SQL interview reviewer. Assess the submitted work and observed session evidence on problem_approach (25%), ai_collaboration (30%), code_quality (15%), verification_discipline (15%), and interview_communication (15%). Score each dimension from 1 to 5. Distinguish test correctness from process evidence. If collaboration or communication was not observed, say so explicitly rather than inventing it. Use professional learning language: challenge, practice, feedback, next step.
 
-function loadGraderSkill(): string {
-  try {
-    const skillPath = join(
-      process.env.HOME ?? '/root',
-      '.claude/skills/hackproduct-coding-grader/SKILL.md'
-    )
-    return readFileSync(skillPath, 'utf-8')
-  } catch {
-    // Fallback inline prompt if skill file is unavailable
-    return `You are the HackProduct coding interview grader. Grade the user's session on five dimensions: problem_approach (25%), ai_collaboration (30%), code_quality (15%), verification_discipline (15%), interview_communication (15%). Each dimension scored 1-5. Return ONLY valid JSON matching the exact schema provided. No markdown fences, no preamble.`
-  }
+Return ONLY a JSON object with this exact structure:
+{
+  "overall_score": 3.5,
+  "headline": "A concise assessment grounded in the submitted work",
+  "dimensions": {
+    "problem_approach": { "score": 3, "verdict": "Specific assessment", "evidence": "Observed code or session evidence", "hole_to_poke": "A useful follow-up question", "how_to_improve": "One concrete improvement" },
+    "ai_collaboration": { "score": 3, "verdict": "Specific assessment", "evidence": "Observed evidence or an explicit statement that none was captured", "hole_to_poke": "A useful follow-up question", "how_to_improve": "One concrete improvement" },
+    "code_quality": { "score": 3, "verdict": "Specific assessment", "evidence": "Observed code evidence", "hole_to_poke": "A useful follow-up question", "how_to_improve": "One concrete improvement" },
+    "verification_discipline": { "score": 3, "verdict": "Specific assessment", "evidence": "Observed test or reasoning evidence", "hole_to_poke": "A useful follow-up question", "how_to_improve": "One concrete improvement" },
+    "interview_communication": { "score": 3, "verdict": "Specific assessment", "evidence": "Observed evidence or an explicit statement that none was captured", "hole_to_poke": "A useful follow-up question", "how_to_improve": "One concrete improvement" }
+  },
+  "top_strength": "The strongest evidenced aspect",
+  "top_improvement": "One concrete next step",
+  "what_a_5_would_look_like": "What stronger work on this problem would demonstrate",
+  "summary": "A brief overall assessment",
+  "next_actions": ["One concrete next action"]
 }
-
-// Cache the skill at module load to avoid repeated disk reads
-const GRADER_SKILL = loadGraderSkill()
+The numbers above illustrate the format only. Choose scores from the actual evidence. Do not use markdown fences or return an alternative schema.`
 
 const CODING_FEEDBACK_CONTRACT = `User-facing feedback contract:
 - Keep the response crisp, direct, and useful to a real learner.
@@ -340,8 +341,8 @@ function withCodingScoreBreakdown(feedback: GradingFeedback, input: GradingInput
         summary: buildCorrectnessSummary(input),
       },
       process: {
-        score: processScore,
-        summary: buildProcessSummary(input, processScore),
+        score: feedback.degraded ? null : processScore,
+        summary: feedback.degraded ? "Detailed review was unavailable. Process skills have not been assessed." : buildProcessSummary(input, processScore),
       },
     },
   }
@@ -396,7 +397,6 @@ export function gradeFromCorrectnessFallback(input: GradingInput): GradingFeedba
 
   const passRate = testsPassed / testsTotal
   const score = roundTenth(1 + passRate * 4) // 0/n -> 1.0, n/n -> 5.0
-  const dimScore = Math.max(1, Math.round(score))
   const challengeType = input.language === 'sql' ? 'sql' : 'algorithm'
   const noun = challengeType === 'sql' ? 'query' : 'solution'
   const passText = `${testsPassed} of ${testsTotal} tests passed.`
@@ -408,13 +408,7 @@ export function gradeFromCorrectnessFallback(input: GradingInput): GradingFeedba
   return withCodingScoreBreakdown({
     overall_score: score,
     headline: `Scored from your test results. ${note}`,
-    dimensions: {
-      problem_approach: dimension(dimScore, passText, improvement, passText),
-      ai_collaboration: dimension(dimScore, 'Detailed review was unavailable for this attempt.', 'Ask Hatch a focused question about the failing case.'),
-      code_quality: dimension(dimScore, `Correctness signal: ${passText}`, improvement, passText),
-      verification_discipline: dimension(dimScore, passRate >= 1 ? 'All visible tests passed.' : 'Some visible tests are still failing.', improvement, passText),
-      interview_communication: dimension(dimScore, 'Detailed review was unavailable for this attempt.', `State your approach and one edge case for this ${noun}.`),
-    },
+    dimensions: {},
     top_strength: passRate >= 1 ? 'All visible tests pass.' : passText,
     top_improvement: improvement,
     what_a_5_would_look_like: challengeType === 'sql'

@@ -18,7 +18,9 @@ import { provisionSession } from '@/lib/sandbox/provision-session'
 import { resolveSessionTtlSeconds } from '@/lib/sandbox/cost-policy'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+// Cold SQL and gateway startup can exceed 60s before a host is persisted.
+// Fluid Compute supports this bounded allowance; state polling remains authoritative.
+export const maxDuration = 180
 
 export async function POST(
   req: NextRequest,

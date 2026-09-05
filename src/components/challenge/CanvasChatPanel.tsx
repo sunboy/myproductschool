@@ -52,6 +52,7 @@ interface CanvasChatPanelProps {
   // Coding-mode context fields (only used when challengeType === 'coding')
   currentCode?: string
   currentLanguage?: string
+  sqlSchemaSummary?: string
   lastRunResult?: unknown
   timeElapsed?: number
   timeRemaining?: number
@@ -249,6 +250,7 @@ export function CanvasChatPanel({
   canvasDrawFailure = null,
   currentCode,
   currentLanguage,
+  sqlSchemaSummary,
   lastRunResult,
   timeElapsed,
   timeRemaining,
@@ -481,6 +483,7 @@ export function CanvasChatPanel({
         guidance_level: guidanceLevel,
         current_code: currentCode,
         current_language: currentLanguage,
+        sql_schema_summary: sqlSchemaSummary,
         last_run_result: lastRunResult,
         time_elapsed_seconds: timeElapsed,
         time_remaining_seconds: timeRemaining,
@@ -584,7 +587,7 @@ export function CanvasChatPanel({
       setIsLoading(false)
     }
   }, [isLoading, scene, contextPack, challengeId, challengeType, attemptId, messages, onCanvasActions,
-      currentCode, currentLanguage, lastRunResult, timeElapsed, timeRemaining,
+      currentCode, currentLanguage, sqlSchemaSummary, lastRunResult, timeElapsed, timeRemaining,
       challengeTitle, problemStatement, codingStep,
       activePartId, activePartSequence, activePartTitle, activePartPrompt,
       activePartResponseType, activePartWeightPct,

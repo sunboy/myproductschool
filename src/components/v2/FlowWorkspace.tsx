@@ -3798,6 +3798,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     metadata: (challenge as { metadata?: Record<string, unknown> | null } | null | undefined)?.metadata,
   })
 
+  const problemStatementForHatch = challengeBriefSections.map(section => `${section.title}: ${section.body}`).join('\n\n')
+  const sqlSchema = currentLanguage === 'sql'
+    ? (detail?.challenge.metadata?.sql_schema as { schema_diagram?: unknown; sample_data_preview?: unknown; setup_script?: string } | undefined)
+    : undefined
+  const sqlSchemaSummary = sqlSchema ? JSON.stringify({
+    schema: sqlSchema.schema_diagram ?? sqlSchema.setup_script,
+    sample_data: sqlSchema.sample_data_preview,
+  }).slice(0, 20000) : undefined
+
   const handleRunAnother = () => {
     setHistoryPracticeRequested(true)
     setLeftTab('Description')
@@ -4631,7 +4640,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, color: 'var(--color-on-surface)' }}>
                       <span style={{ fontWeight: 700 }}>Process</span>
-                      <span>{finalizeResult.score_breakdown.process.score.toFixed(1)} / 5</span>
+                      <span>{finalizeResult.score_breakdown.process.score == null ? 'Not assessed' : `${finalizeResult.score_breakdown.process.score.toFixed(1)} / 5`}</span>
                     </div>
                     <div style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
                       {finalizeResult.score_breakdown.process.summary}
@@ -5605,7 +5614,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       currentLanguage={currentLanguage}
                       lastRunResult={lastRunResult}
                       challengeTitle={challengeTitle ?? undefined}
-                      problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
+                      problemStatement={problemStatementForHatch}
+                      sqlSchemaSummary={sqlSchemaSummary}
                       activePartId={activePart?.id}
                       activePartSequence={activePart?.sequence}
                       activePartTitle={activePart?.title}
@@ -6185,7 +6195,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     lastRunResult={lastRunResult}
                     codingStep={codingStep}
                     challengeTitle={challengeTitle ?? undefined}
-                    problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
+                    problemStatement={problemStatementForHatch}
+                      sqlSchemaSummary={sqlSchemaSummary}
                     activePartId={activePart?.id}
                     activePartSequence={activePart?.sequence}
                     activePartTitle={activePart?.title}

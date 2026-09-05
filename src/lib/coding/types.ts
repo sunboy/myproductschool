@@ -68,7 +68,7 @@ export interface GradingDimension {
 export interface GradingFeedback {
   overall_score: number                                   // e.g. 3.8
   headline: string
-  dimensions: Record<GradingDimensionKey, GradingDimension>
+  dimensions: Partial<Record<GradingDimensionKey, GradingDimension>>
   top_strength: string
   top_improvement: string
   what_a_5_would_look_like: string
@@ -80,7 +80,7 @@ export interface GradingFeedback {
       summary: string
     }
     process: {
-      score: number
+      score: number | null
       summary: string
     }
   }

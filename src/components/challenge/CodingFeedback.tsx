@@ -49,7 +49,7 @@ const DIMENSION_ORDER: GradingDimensionKey[] = [
 ]
 
 // Shared type-scale fragments (see file header).
-const EYEBROW = 'font-label text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant'
+const EYEBROW = 'font-label text-[12px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant'
 const TITLE = 'font-label text-[15px] font-semibold text-on-surface'
 const MONO = 'font-mono text-[13px] text-on-surface'
 
@@ -349,14 +349,14 @@ function CorrectnessLead({
 // ── Beat 3: what Hatch saw — scannable lines, detail on demand ───────────────
 
 function WhatHatchSaw({ grading }: { grading: GradingFeedback }) {
-  const present = DIMENSION_ORDER.filter((key) => grading.dimensions[key])
+  const present = grading.degraded || grading.headline.includes('Scored from your test results.') ? [] : DIMENSION_ORDER.filter((key) => grading.dimensions[key])
   const lowest = present.length > 0
     ? Math.min(...present.map((key) => grading.dimensions[key]!.score))
     : 0
 
   return (
     <div>
-      <p className={`${TITLE} pb-3`}>What Hatch saw</p>
+      <p className={`${TITLE} pb-3`}>{grading.degraded || grading.headline.includes('Scored from your test results.') ? 'Verified test results' : 'What Hatch saw'}</p>
       <div className="divide-y divide-outline-variant/40 border-y border-outline-variant/60">
         {grading.score_breakdown && (
           <div className="flex items-start gap-3 py-2.5">
@@ -401,13 +401,13 @@ function WhatHatchSaw({ grading }: { grading: GradingFeedback }) {
           <div className="flex items-start gap-3 py-2.5">
             <span className="material-symbols-outlined mt-0.5 text-[18px] text-primary">arrow_forward</span>
             <div className="min-w-0 flex-1">
-              <span className="font-label text-[13px] font-semibold text-on-surface">Next rep</span>
+              <span className="font-label text-[13px] font-semibold text-on-surface">Next step</span>
               <FeedbackText className="text-[13px] leading-relaxed text-on-surface">{grading.top_improvement}</FeedbackText>
             </div>
           </div>
         )}
 
-        {grading.what_a_5_would_look_like && (
+        {!grading.degraded && !grading.headline.includes('Scored from your test results.') && grading.what_a_5_would_look_like && (
           <details>
             <summary className={`${EYEBROW} cursor-pointer py-2.5 list-none [&::-webkit-details-marker]:hidden`}>
               What a 5 would look like
@@ -512,7 +512,7 @@ export function CodingFeedback({
               </div>
             </div>
             {(onRetryGrading ?? onRetry) && (
-              <PrimaryButton onClick={(onRetryGrading ?? onRetry)!}>Retry grading</PrimaryButton>
+              <PrimaryButton onClick={(onRetryGrading ?? onRetry)!}>Retry feedback</PrimaryButton>
             )}
           </div>
         ) : grading ? (

@@ -57,7 +57,7 @@ const DROPDOWNS: DropdownDef[] = [
 ]
 
 const DROPDOWN_HELP: Record<FilterKey, string> = {
-  difficulty: 'Match the rep to your current energy: Easy, Medium, or Hard.',
+  difficulty: 'Choose a challenge difficulty: Easy, Medium, or Hard.',
   role: 'Show scenarios calibrated to the job you are aiming for.',
   company: 'Practice with the product and systems style of specific companies.',
   topic: 'Filter by a specific topic area (e.g. caching, arrays, pricing).',

@@ -36,7 +36,7 @@ const SAFE_PLAN_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
  * callers must run every derived href through this allowlist before router.push.
  */
 export function isAllowedPagePromptHref(href: string): boolean {
-  if (href === '/challenges?discipline=product_sense') return true
+  if (href === '/challenges') return true
   return /^\/explore\/plans\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(href)
 }
 
@@ -45,7 +45,7 @@ export function pagePromptDestination(
   pick?: HatchPickResponse | null,
 ): string | null {
   if (action === 'filter-practice') {
-    return '/challenges?discipline=product_sense'
+    return '/challenges'
   }
 
   if (action !== 'show-plan' || !pick?.planSlug || !SAFE_PLAN_SLUG.test(pick.planSlug)) {
@@ -96,8 +96,8 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   },
   {
     pattern: /^\/explore\/plans\/?$/,
-    message: 'One of these plans matches your weakest FLOW move.',
-    cta: { label: 'Show my plan', action: 'show-plan' },
+    message: 'Find a study plan that fits your role and learning goal.',
+    cta: { label: 'Help me choose', action: 'open-chat', prompt: 'Help me choose a study plan for my role and learning goal.' },
   },
   {
     pattern: /^\/explore\/domains\//,
@@ -111,8 +111,8 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   },
   {
     pattern: /^\/challenges/,
-    message: 'I can filter these to the FLOW move you need most.',
-    cta: { label: 'Filter to my gap', action: 'filter-practice' },
+    message: 'What would you like to get better at?',
+    cta: { label: 'Help me choose', action: 'open-chat', prompt: 'Help me choose a challenge that fits my current discipline and learning goal.' },
   },
   {
     pattern: /^\/live-interviews/,
@@ -153,7 +153,7 @@ export const PAGE_PROMPTS: PagePrompt[] = [
 
 const DEFAULT_PROMPT: PagePrompt = {
   pattern: /.*/,
-  message: 'Ask me anything about FLOW or product thinking.',
+  message: 'Ask about your challenge, reading, feedback, or next step.',
   cta: { label: 'Ask Hatch', action: 'open-chat' },
 }
 

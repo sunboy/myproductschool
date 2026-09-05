@@ -32,7 +32,7 @@ Rules:
 - Voice: direct, plain. No em dashes. No AI slop (delve, leverage, robust, seamlessly, utilize). Never "you are a [role]".
 - Prefer prompts that advance the CURRENT step's goal. Do not jump ahead to later steps.
 
-ALWAYS return exactly 3 chips. There is always a sensible next move for the current state, so never return an empty list. If the terminal tail gives you nothing specific, fall back to sharper, rephrased versions of the step's default chips.
+Return the number requested for the learner’s guidance level: 3 for scaffolded, 2-3 for guided, and 1 for open. There is always a sensible next move for the current state, so never return an empty list. If the terminal tail gives you nothing specific, fall back to sharper, rephrased versions of the step's default chips.
 
 Output ONLY this JSON, no markdown:
 { "prompts": ["...", "...", "..."] }`
@@ -42,6 +42,7 @@ const RequestSchema = z.object({
   challengeType: z.enum(['claude_code_analytics', 'claude_code_debugging']),
   mcp_connected: z.boolean().optional(),
   repl_running: z.boolean().optional(),
+  problem_statement: z.string().max(12000).optional(),
   terminal_tail: z.string().max(4000).nullable().optional(),
   active_sub_problem_id: z.string().max(200).nullable().optional(),
   active_sub_problem_kind: z.string().max(40).nullable().optional(),
@@ -59,6 +60,7 @@ function retryAfterSeconds(resetAt: Date) {
 
 function buildUserContent(body: z.infer<typeof RequestSchema>): string {
   const lines: string[] = []
+  if (body.problem_statement) lines.push(`## Mission\n${body.problem_statement}\n`)
   lines.push('## Session state')
   lines.push(`- BigQuery MCP connected: ${body.mcp_connected ? 'yes' : 'no'}`)
   lines.push(`- claude REPL running: ${body.repl_running ? 'yes' : 'no'}`)

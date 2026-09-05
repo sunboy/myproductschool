@@ -10,15 +10,15 @@ import {
 describe('Hatch page prompt actions', () => {
   it('keeps page-specific prompts connected to a concrete action', () => {
     assert.equal(getPagePromptEntry('/dashboard').cta?.action, 'open-chat')
-    assert.equal(getPagePromptEntry('/challenges').cta?.action, 'filter-practice')
-    assert.equal(getPagePromptEntry('/explore/plans').cta?.action, 'show-plan')
+    assert.equal(getPagePromptEntry('/challenges').cta?.action, 'open-chat')
+    assert.equal(getPagePromptEntry('/explore/plans').cta?.action, 'open-chat')
     assert.equal(getPagePromptEntry('/explore/modules/product-sense/intro').cta?.action, 'open-chat')
   })
 
-  it('routes the practice suggestion to the live product-sense catalog', () => {
+  it('routes the practice suggestion to the complete catalog', () => {
     assert.equal(
       pagePromptDestination('filter-practice', { weakestMove: 'frame' }),
-      '/challenges?discipline=product_sense',
+      '/challenges',
     )
   })
 

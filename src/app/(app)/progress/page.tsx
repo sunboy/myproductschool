@@ -595,6 +595,7 @@ export default function ProgressPage() {
   const [reflectionLoading, setReflectionLoading] = useState(true)
   const [trajectory, setTrajectory] = useState<ReasoningTrajectory | null>(null)
   const [trajectoryLoading, setTrajectoryLoading] = useState(true)
+  const [learnUnavailable, setLearnUnavailable] = useState(false)
   const [learnModules, setLearnModules] = useState<Array<{
     module_id: string; module_title: string; module_slug: string;
     total_chapters: number; completed_chapters: number;
@@ -632,12 +633,13 @@ export default function ProgressPage() {
       .catch(() => {})
       .finally(() => setTrajectoryLoading(false))
     Promise.all([
-      fetch('/api/progress/learn-progress').then(r => r.ok ? r.json() : { modules: [] }),
+      fetch('/api/progress/learn-progress').then(r => r.ok ? r.json() : { modules: [], unavailable: true }).catch(() => ({ modules: [], unavailable: true })),
       fetch('/api/progress/streak-history').then(r => r.ok ? r.json() : { dates: [] }),
       fetch('/api/progress/activity-feed').then(r => r.ok ? r.json() : { events: [] }),
       fetch('/api/profile').then(r => r.ok ? r.json() : null),
     ]).then(([learnData, streakData, feedData, profileData]) => {
       setLearnModules(learnData.modules ?? [])
+      setLearnUnavailable(Boolean(learnData.unavailable))
       setStreakDates(streakData.dates ?? [])
       setActivityEvents((feedData.events ?? []).map((ev: { id: string; event_type: string; payload: unknown; created_at: string }) => ({
         ...ev,
@@ -926,7 +928,7 @@ export default function ProgressPage() {
             learnModules.map((mod, i) => (
               <div key={mod.module_id} className={`py-2.5 ${i < learnModules.length - 1 ? 'border-b border-hairline' : ''}`}>
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="truncate text-[13px] font-bold text-ink-strong">{mod.module_title}</span>
+                  <span className="truncate text-[13px] font-bold text-ink-strong"><Link href={`/explore/modules/${mod.module_slug}`}>{mod.module_title}</Link></span>
                   <span className="shrink-0 text-[11.5px] font-semibold tabular-nums text-ink-secondary">
                     {mod.completed_chapters}/{mod.total_chapters} chapters
                   </span>
@@ -940,7 +942,7 @@ export default function ProgressPage() {
               </div>
             ))
           ) : (
-            <p className="m-0 text-[12.5px] font-semibold text-ink-secondary">No modules started yet.</p>
+            <p className="m-0 text-[12.5px] font-semibold text-ink-secondary">{learnUnavailable ? 'Learning progress is temporarily unavailable.' : 'No chapters completed yet.'}</p>
           )}
         </section>
       </div>

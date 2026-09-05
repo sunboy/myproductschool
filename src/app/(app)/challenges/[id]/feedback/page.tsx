@@ -1,7 +1,8 @@
 import { feedbackSummaryScore } from '@/lib/feedback/summary-score'
 import { HatchSuggestionCard } from '@/components/redesign/dashboard/HatchSuggestionCard'
 import { getChallengeById } from '@/lib/data/challenges'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
+import { workspaceLocation } from '@/lib/workspace/location'
 import Link from 'next/link'
 import {
   Share2, ArrowRight, ChevronRight, CheckCircle2, Play, BookOpen,
@@ -108,6 +109,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     } else {
       noGradedAttempt = true
     }
+  }
+
+  if (!isMock && attempt && (challenge.challenge_type === 'algorithm' || challenge.challenge_type === 'sql')) {
+    // Coding/SQL reviews are stored in interview_grades, not the FLOW feedback
+    // payload. Preserve the exact attempt and let the owned history view load it.
+    redirect(workspaceLocation(id, { attempt, returnTo: returnTo ?? undefined }))
   }
 
   let feedback: HatchFeedbackItem[] = isMock ? MOCK_FEEDBACK : []

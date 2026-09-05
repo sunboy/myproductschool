@@ -11,6 +11,7 @@ import { SkillsLibraryPanel } from './SkillsLibraryPanel'
 import { IdleReapModal } from './IdleReapModal'
 import { MissionBrief, markMissionBriefSeen } from './MissionBrief'
 import { AnalyticsSessionMirror } from './AnalyticsSessionMirror'
+import { Md } from '@/components/ui/Md'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
@@ -152,6 +153,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
 
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
+  const [sessionRetry, setSessionRetry] = useState(0)
   // Free quota exhausted (HTTP 402). Opens the unified PaywallModal (analytics
   // tier) instead of a generic error. Holds the used/limit for the modal copy.
   const [paywall, setPaywall] = useState<{ used?: number; limit?: number } | null>(null)
@@ -210,6 +212,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // MCP + skills state) on every turn via the analytics context props below.
   const [hatchOpen, setHatchOpen] = useState(false)
 
+  const missionContext = [scenario?.context, scenario?.trigger, scenario?.question ? `Question: ${scenario.question}` : null].filter(Boolean).join('\n\n').slice(0, 12000)
   const activeSubProblem = subProblems[activeSubProblemIdx] ?? null
 
   // ── Artifact spine: the deliverable-as-progress, derived from live signals
@@ -442,6 +445,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
       // Kick off the heavy provision request (its own 60s budget). Not awaited for
       // the UI — the poll below is the source of truth for readiness — but a 402
       // still routes to the paywall.
+      let provisionRequestFailed = false
       fetch(`/api/claude-code/session/${data.session_id}/provision`, { method: 'POST' })
         .then(async (pres) => {
           if (cancelled) return
@@ -449,10 +453,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             const err = await pres.json().catch(() => ({})) as { used?: number; limit?: number }
             setPaywall({ used: err.used, limit: err.limit })
           }
+          if (!pres.ok) provisionRequestFailed = true
           // Success/active is picked up by the poll; non-OK (503/timeout) flips
           // the row to `failed`, which the poll reads and turns into an outcome.
         })
-        .catch(() => { /* the poll loop is the source of truth */ })
+        .catch(() => { provisionRequestFailed = true })
 
       // Poll /state until the row goes active (connected), failed (classify by
       // failure_code), or the deadline is hit. Server provision_phase is truth;
@@ -484,6 +489,13 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                 wss_url?: string | null
                 provision_phase?: string | null
                 failure_code?: string | null
+              }
+              // A transport error does not prove the server stopped. Wait beyond
+              // the route’s 180s execution limit before retrying a hostless row.
+              if (provisionRequestFailed && sdata.status === 'provisioning' && !sdata.wss_url && elapsed >= 185000) {
+                if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
+                resolve({ kind: 'retryable' })
+                return
               }
               // Phase: prefer server truth (monotonic via SandboxStartupProgress),
               // fall back to the elapsed-time guess before the first phase lands.
@@ -561,7 +573,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
       if (pollTimer) clearInterval(pollTimer)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [started])
+  }, [started, sessionRetry])
 
   // Idle detection — mirrors CanvasChatPanel:~189 setInterval pattern.
   // Nudge eagerness follows the guidance level (design §3.3): scaffolded
@@ -582,10 +594,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
       if (idleTimerRef.current) clearInterval(idleTimerRef.current)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSubProblemIdx, terminalTail, guidance])
+  }, [activeSubProblemIdx, terminalTail, guidance, wssUrl, replRunning])
 
   async function fetchNudge() {
-    if (!activeSubProblem) return
+    if (!activeSubProblem || !wssUrl || !replRunning) return
     try {
       const res = await fetch('/api/hatch/canvas/nudge', {
         method: 'POST',
@@ -594,12 +606,14 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           challengeId: challenge.id,
           attemptId,
           challengeType: 'claude_code_analytics',
+          problem_statement: missionContext,
           mcp_connected: mcpConnected,
           terminal_tail: terminalTail.slice(-2000),
           artifact_state: artifactSummary,
           active_sub_problem_id: activeSubProblem.id,
           active_sub_problem_title: activeSubProblem.title,
           active_sub_problem_objective: activeSubProblem.objective,
+          active_sub_problem_success_criterion: activeSubProblem.successCriterion,
           active_sub_problem_kind: activeSubProblem.kind,
           active_sub_problem_teaching_note: activeSubProblem.teachingNote ?? null,
           report_written: !!reportPath,
@@ -672,7 +686,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // is never blank. Skipped in the dev stub (no real session).
   const chipsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fetchSuggestedPrompts = useCallback(async () => {
-    if (USE_DEV_STUB) return
+    if (USE_DEV_STUB || !wssUrl || !replRunning) return
     const step = subProblems[activeSubProblemIdx]
     if (!step) return
     try {
@@ -682,6 +696,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
         body: JSON.stringify({
           challengeId: challenge.id,
           challengeType: 'claude_code_analytics',
+          problem_statement: missionContext,
           mcp_connected: mcpConnected,
           repl_running: replRunning,
           terminal_tail: terminalTail.slice(-3000),
@@ -701,7 +716,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
     } catch {
       setAiPrompts([]) // fall back to static prompts
     }
-  }, [activeSubProblemIdx, subProblems, challenge.id, mcpConnected, replRunning, terminalTail, guidance, artifactSummary])
+  }, [activeSubProblemIdx, subProblems, challenge.id, mcpConnected, replRunning, terminalTail, guidance, artifactSummary, missionContext, wssUrl])
 
   // Refetch immediately when the step or connection state changes (clear stale
   // chips first so we never show a previous step's suggestions).
@@ -801,6 +816,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           challengeId: challenge.id,
           ...(attemptId ? { attemptId } : {}),
           challengeType: 'claude_code_analytics',
+          problem_statement: missionContext,
           // No canvas in analytics. `scene` is optional in the interpret schema;
           // sending a partial scene ({entities,connections} only) fails the full
           // CanvasSceneSchema (elementCount/groups/freeText/foreignKeys) → 400.
@@ -986,8 +1002,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
     )
   }
 
-  if (sessionError) {
-    return (
+  const sessionErrorPanel = sessionError ? (
       <div style={{
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
@@ -1004,12 +1019,12 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           fontSize: 13, color: 'var(--color-on-surface-variant)',
           background: 'var(--color-surface-container)',
           borderRadius: 10, padding: '10px 16px',
-          fontFamily: 'monospace', maxWidth: 420, textAlign: 'center',
+          fontFamily: 'var(--font-body)', maxWidth: 420, textAlign: 'center',
         }}>
           {sessionError}
         </div>
         <button
-          onClick={() => { setSessionError(null); setStarted(false) }}
+          onClick={() => { setSessionError(null); setStarted(true); setSessionRetry(value => value + 1) }}
           style={{
             padding: '9px 20px', borderRadius: 99,
             background: 'var(--color-primary)', color: 'var(--color-on-primary)',
@@ -1020,8 +1035,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           Try again
         </button>
       </div>
-    )
-  }
+  ) : null
 
   return (
     <>
@@ -1150,14 +1164,10 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             {scenario && (scenario.context || scenario.trigger || scenario.question) ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {!questionCollapsed && scenario.context && (
-                  <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--color-on-surface)', margin: 0 }}>
-                    {scenario.context}
-                  </p>
+                  <Md className="text-base leading-relaxed">{scenario.context}</Md>
                 )}
                 {!questionCollapsed && scenario.trigger && (
-                  <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--color-on-surface)', margin: 0 }}>
-                    {scenario.trigger}
-                  </p>
+                  <Md className="text-base leading-relaxed">{scenario.trigger}</Md>
                 )}
                 {scenario.question && (
                   <div style={{
@@ -1171,9 +1181,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                     }}>
                       The question
                     </div>
-                    <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--color-on-surface)', margin: 0, fontWeight: 600 }}>
-                      {scenario.question}
-                    </p>
+                    <Md className="text-base font-semibold leading-relaxed">{scenario.question}</Md>
                   </div>
                 )}
               </div>
@@ -1407,7 +1415,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                     />
                   )}
                 </>
-              ) : resuming ? (
+              ) : sessionError ? sessionErrorPanel : resuming ? (
                 // Mount-time check for an already-live sandbox (e.g. after a page
                 // refresh). Held until /session/current resolves so the Start
                 // button never flashes before we know whether to auto-reconnect.
@@ -1569,6 +1577,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             activeSubProblemSuccessCriterion={activeSubProblem?.successCriterion ?? null}
             markedFindings={markedFindings}
             challengeTitle={challenge.title}
+            problemStatement={missionContext}
             guidanceLevel={guidance}
           />
         </div>
