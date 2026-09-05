@@ -68,3 +68,11 @@ Home /dashboard; Practice /challenges (interviews and analytics accessible insid
 - Finalization starts teardown alongside grading and registers the promise with Next.js after, retaining it through early responses. Cron remains the timeout/failure backstop.
 - Combined validation: 484 Node tests +131 Vitest tests passed (615 total), TypeScript clean. Existing unrelated FlowWorkspace lint errors remain; changed lifecycle/API modules pass targeted lint.
 - Remaining operational risks: bounded reaper wall-clock/network waits and session-key revocation need a further pass before live analytics canary. Current changes do not remove Cloud SQL or claim reduced invoices.
+
+## Final submission and cleanup checkpoint
+- Added8s Cloud Run HTTP timeouts, caller cancellation for teardown/listing,5s Cloud SQL HTTP timeouts, and shared reaper phase deadlines (20s session work,40s orphan work,55s response target). Deferred work is reported and remains available to later sweeps. SDK token acquisition/database waits remain outside these HTTP bounds.
+- Analytics finalization pauses into resumable idle state before teardown; saves feedback, then the attempt grade, then terminates. Errors return503/402 and the client offers retry instead of showing a false success. Persisted feedback is reusable only by the originating session UUID, preventing stale feedback on resumed work.
+- Simplified six-item public catalog to discipline filtering; removed redundant approach/career labels and replaced remaining shared CTA reps language with professional learning copy.
+- Combined validation:487 Node tests +144 Vitest tests passed (631 total); TypeScript clean. Targeted lifecycle/API/public-catalog lint passes. Existing workspace/medium divider accessibility lint findings remain outstanding.
+- Hosted a4fb8f91 build also passed. Final batch preview build and public catalog check follow publication. Authenticated device coverage, payments, live analytics canary and infrastructure migration remain launch gates.
+- Immediate key deletion remains deferred because /key/list retains the spend evidence used by retryable accounting. Preserve TTL/budget enforcement until revocation can retain accounting evidence.

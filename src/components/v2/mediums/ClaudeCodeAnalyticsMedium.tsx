@@ -192,6 +192,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   const [showBrief, setShowBrief] = useState(false)
   const [showMirror, setShowMirror] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
+  const [finalizationError, setFinalizationError] = useState<string | null>(null)
   const finalizedRef = useRef(false)
   // Set from the finalize response once the attempt has a share_id (the public
   // share page reuses the existing /workspace/challenges/[id]/share/[shareId]
@@ -608,14 +609,14 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // Idle-reap watcher: while a live session is running, show the warning modal
   // once activity has been stale for REAP_WARN_MS. "Keep working" resets it.
   useEffect(() => {
-    if (!wssUrl || showMirror || USE_DEV_STUB) return
+    if (!wssUrl || showMirror || finalizing || finalizationError || USE_DEV_STUB) return
     const t = setInterval(() => {
       if (Date.now() - reapActivityRef.current >= REAP_WARN_MS) {
         setShowReapModal(true)
       }
     }, 10000)
     return () => clearInterval(t)
-  }, [wssUrl, showMirror])
+  }, [wssUrl, showMirror, finalizing, finalizationError])
 
   // User chose to keep the session alive: reset idle + ping the server so its
   // reaper backs off (the /state poll refreshes last_activity_at).
@@ -745,25 +746,26 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // the attempt completed (so it reaches Submissions history), and returns the
   // grade + a share link. Runs once. Then shows the mirror.
   const finalizeSession = useCallback(async () => {
-    if (finalizedRef.current || !sessionId || USE_DEV_STUB) {
-      setShowMirror(true)
-      return
-    }
+    if (USE_DEV_STUB) { setShowMirror(true); return }
+    if (finalizedRef.current) return
+    if (!sessionId) { setFinalizationError('Your session could not be found. Reload this page to reconnect.'); return }
     finalizedRef.current = true
     setFinalizing(true)
+    setFinalizationError(null)
+    setShowReapModal(false)
     try {
       const res = await fetch(`/api/claude-code/session/${sessionId}/finalize`, { method: 'POST' })
-      if (res.ok) {
-        const data = await res.json() as { share_url?: string | null; final_artifact?: unknown }
-        if (data.share_url) setShareUrl(data.share_url)
-        const views = toDimensionViews(data.final_artifact)
-        if (views) setDimensions(views)
-      }
-    } catch {
-      // Grading failure must not block the user from seeing their session summary.
+      const data = await res.json() as { error?: string; share_url?: string | null; final_artifact?: unknown }
+      if (!res.ok) throw new Error(data.error || 'Your submission could not be saved. Please try again.')
+      if (data.share_url) setShareUrl(data.share_url)
+      const views = toDimensionViews(data.final_artifact)
+      if (views) setDimensions(views)
+      setShowMirror(true)
+    } catch (error) {
+      finalizedRef.current = false
+      setFinalizationError(error instanceof Error ? error.message : 'Your submission could not be saved. Please try again.')
     } finally {
       setFinalizing(false)
-      setShowMirror(true)
     }
   }, [sessionId])
 
@@ -888,6 +890,19 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   }
 
   // ── Render ────────────────────────────────────────────────────────────────────
+
+  if (finalizing || finalizationError) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4 overflow-y-auto p-6 text-center">
+        <h2 className="font-headline text-2xl font-semibold text-ink-strong">{finalizing ? 'Saving your submission' : 'Submission needs another try'}</h2>
+        <p role={finalizationError ? 'alert' : 'status'} className="max-w-lg text-base text-ink-secondary">{finalizationError ?? 'Preparing your feedback and saving it to your submission history.'}</p>
+        {finalizationError && <div className="flex flex-wrap justify-center gap-3">
+          <button type="button" onClick={() => void finalizeSession()} className="min-h-11 rounded-lg bg-forest-950 px-4 text-sm font-bold text-white">Retry submission</button>
+          <a href="/dashboard" className="inline-flex min-h-11 items-center rounded-lg border border-hairline px-4 text-sm font-bold">Back to Home</a>
+        </div>}
+      </div>
+    )
+  }
 
   if (showMirror) {
     return (

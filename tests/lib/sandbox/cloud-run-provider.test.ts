@@ -154,3 +154,40 @@ test('destroySession does not delete a revision when traffic detach conflicts', 
     restore()
   }
 })
+
+test('createSession aborts a stalled Cloud Run request before billable provisioning', async () => {
+  const restore = withRequiredEnv()
+  const keepAlive = setTimeout(() => {}, 500)
+  let requestCount = 0
+  const provider = new CloudRunProvider({
+    accessToken: async () => 'test-token',
+    requestTimeoutMs: 10,
+    fetchFn: async (_url, init) => {
+      requestCount++
+      return new Promise<Response>((_resolve, reject) => {
+        assert.ok(init?.signal)
+        init.signal.addEventListener('abort', () => reject(init.signal?.reason), { once: true })
+      })
+    },
+  })
+  try {
+    await assert.rejects(provider.createSession({ sessionId: sessionEnv().SESSION_ID, env: sessionEnv(), ttlSeconds: 1800 }), { name: 'TimeoutError' })
+    assert.equal(requestCount, 1)
+  } finally {
+    clearTimeout(keepAlive)
+    restore()
+  }
+})
+
+test('expired reaper budget prevents Cloud Run traffic mutations or deletion', async () => {
+  const restore = withRequiredEnv()
+  let requestCount = 0
+  const provider = new CloudRunProvider({
+    accessToken: async () => 'test-token',
+    fetchFn: async () => { requestCount++; throw new Error('must not fetch') },
+  })
+  try {
+    await assert.rejects(provider.destroySession('smine', { signal: AbortSignal.abort() }), /Failed to detach/)
+    assert.equal(requestCount, 0)
+  } finally { restore() }
+})

@@ -6,6 +6,7 @@
 // and marks the session terminated.
 
 import { randomUUID } from 'crypto'
+import { pauseForFinalization, persistAnalyticsGrade, savedAnalyticsGrade } from '@/lib/sandbox/finalize-grade'
 import { after, NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -53,11 +54,13 @@ export async function POST(
   const admin = createAdminClient()
 
   // --- Load session and verify ownership ---
-  const { data: session } = await admin
+  const { data: session, error: sessionError } = await admin
     .from('claude_code_sessions')
     .select('id, user_id, challenge_id, attempt_id, host_instance_id, status, transcript_uri, final_artifact')
     .eq('id', sessionId)
     .maybeSingle()
+
+  if (sessionError) return NextResponse.json({ error: 'Session could not be loaded. Please try again.' }, { status: 503 })
 
   if (!session || session.user_id !== user.id) {
     return NextResponse.json({ error: 'Session not found' }, { status: 404 })
@@ -65,18 +68,30 @@ export async function POST(
 
   if (session.status === 'terminated') {
     // Already finalized — return the stored grade from the attempt.
-    const { data: attempt } = await admin
+    const { data: attempt, error: attemptReadError } = await admin
       .from('challenge_attempts')
-      .select('total_score, grade_label')
+      .select('status, total_score, max_score, grade_label')
       .eq('id', session.attempt_id as string)
       .single()
 
-    return NextResponse.json({
-      session_id: sessionId,
-      total_score: attempt?.total_score ?? 0,
-      grade_label: attempt?.grade_label ?? 'ungraded',
-      already_finalized: true,
-    })
+    if (attemptReadError) return NextResponse.json({ error: 'Saved feedback could not be loaded. Please try again.' }, { status: 503 })
+
+    if (attempt?.status === 'completed' && typeof attempt.total_score === 'number' && attempt.max_score > 0) {
+      return NextResponse.json({
+        session_id: sessionId,
+        total_score: Math.round((attempt.total_score / attempt.max_score) * 100),
+        grade_label: attempt.grade_label,
+        final_artifact: session.final_artifact,
+        already_finalized: true,
+      })
+    }
+    // Recover legacy partial finalizations instead of returning an ungraded success.
+  }
+
+  try {
+    await pauseForFinalization(admin, sessionId)
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 503 })
   }
 
   // --- Best-effort sandbox teardown ---
@@ -109,9 +124,9 @@ export async function POST(
 
   const userPlan = await getUserPlanForBudget(user.id).catch(() => 'free')
 
-  let gradeResult
+  let gradeResult = savedAnalyticsGrade(sessionId, session.final_artifact)
   try {
-    gradeResult = await gradeAnalystSession({
+    gradeResult ??= await gradeAnalystSession({
       rubric: rubricSpec,
       sessionId,
       transcriptUri: session.transcript_uri as string | null,
@@ -121,7 +136,7 @@ export async function POST(
     })
   } catch (err) {
     // Budget/plan caps surface as 402 (per project_ai_budget_blocks_grading);
-    // the session stays active so the user can retry once under budget.
+    // the idle session retains its snapshot for resume or another submission.
     const isCap = (err as { isLimitError?: boolean })?.isLimitError
       || /budget|limit/i.test((err as Error)?.message ?? '')
     if (isCap) {
@@ -130,65 +145,22 @@ export async function POST(
         { status: 402 },
       )
     }
-    throw err
+    console.error('[cc/finalize] grading failed:', err)
+    return NextResponse.json({ error: 'Feedback could not be generated. Please retry submission.' }, { status: 503 })
   }
 
-  // --- Write grade to session row ---
-  // Merge order matters: the grader's artifact is the base, the session's
-  // adaptive log survives it (design §5, Codex finding 3).
-  const priorAdaptive = (session.final_artifact as { adaptive?: unknown } | null)?.adaptive
-  await admin.from('claude_code_sessions').update({
-    status: 'terminated',
-    ended_at: new Date().toISOString(),
-    final_artifact: priorAdaptive
-      ? { ...(gradeResult.final_artifact as Record<string, unknown>), adaptive: priorAdaptive }
-      : gradeResult.final_artifact,
-  }).eq('id', sessionId)
-
-  // --- Complete challenge_attempts with grade so it shows in Submissions history ---
-  // total_score + grade_label are the two fields the Submissions page reads
-  // (per project memory: project_submissions_history_gap). Also mint a share_id
-  // so the report can be shared via the existing public share route.
-  //
-  // The grader works on a 0-100 scale, but challenge_attempts.max_score is
-  // DECIMAL(4,2) (cap 99.99) and the whole product renders attempt scores on the
-  // FLOW 0-5 scale (migration 078). Writing max_score: 100 overflowed the column
-  // and silently rolled back the entire UPDATE, leaving the attempt in_progress
-  // with null score. Rescale to 0-5 here; the full 0-100 per-dimension detail is
-  // preserved in final_artifact for the report page.
-  const FLOW_MAX = 5
-  const scaledScore = Math.round((gradeResult.total_score / 100) * FLOW_MAX * 10) / 10
-  const shareId = randomUUID()
-  const attemptUpdate: Record<string, unknown> = {
-    status: 'completed',
-    completed_at: new Date().toISOString(),
-    total_score: scaledScore,
-    grade_label: gradeResult.grade_label,
-    max_score: FLOW_MAX,
-    share_id: shareId,
-  }
   let shareUrl: string | null = null
-  const { error: attemptErr } = await admin
-    .from('challenge_attempts')
-    .update(attemptUpdate)
-    .eq('id', session.attempt_id as string)
-  if (attemptErr) {
-    // Some DBs may not have the share_id column yet — retry without it so the
-    // grade still lands (the share link is a nice-to-have, the grade is not).
-    delete attemptUpdate.share_id
-    const { error: retryErr } = await admin
-      .from('challenge_attempts')
-      .update(attemptUpdate)
-      .eq('id', session.attempt_id as string)
-    if (retryErr) {
-      // Don't swallow — a failed grade write means the attempt stays in_progress
-      // and never reaches Submissions. Surface it instead of returning a grade
-      // the user can't see persisted.
-      console.error('[cc/finalize] attempt grade write failed:', retryErr)
+  try {
+    const saved = await persistAnalyticsGrade(admin, {
+      id: sessionId, attempt_id: session.attempt_id as string, final_artifact: session.final_artifact,
+    }, gradeResult, randomUUID())
+    if (saved.shareId) {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+      shareUrl = `${baseUrl}/workspace/challenges/${session.challenge_id}/share/${saved.shareId}`
     }
-  } else {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    shareUrl = `${baseUrl}/workspace/challenges/${session.challenge_id}/share/${shareId}`
+  } catch (error) {
+    console.error('[cc/finalize] persistence failed:', error)
+    return NextResponse.json({ error: (error as Error).message }, { status: 503 })
   }
 
   // --- Feed the session into learner competencies (adaptive B0) ---

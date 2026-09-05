@@ -20,6 +20,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
+import { reaperRemainingMs } from '@/lib/sandbox/reaper-budget'
 import { canStopGatewaySql, claimExpiredProvisioning, provisioningLeaseCutoff } from '@/lib/sandbox/provisioning-lease'
 import { recordSessionSpend } from '@/lib/sandbox/record-spend'
 import { runSpendSnapshot } from '@/lib/sandbox/spend-snapshot'
@@ -39,6 +40,7 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 export async function GET(request: NextRequest) {
+  const startedAt = Date.now()
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -74,9 +76,14 @@ export async function GET(request: NextRequest) {
   const sessions = [...(stale ?? []), ...expiredStarts]
   const sandbox = getSandbox()
   let reaped = 0
+  let sessionsDeferred = 0
   const failures: string[] = []
 
   for (const s of sessions) {
+    if (reaperRemainingMs(startedAt, 'sessions') < 1_000) {
+      sessionsDeferred++
+      continue
+    }
     const hostId = s.host_instance_id as string | null
     try {
       // Capture Claude spend before releasing the instance — the gateway key may
@@ -93,7 +100,9 @@ export async function GET(request: NextRequest) {
       if (hostId) {
         // Drops the tag from the service traffic + deletes the revision,
         // releasing the pinned instance. (See destroySession.)
-        await sandbox.destroySession(hostId)
+        const remaining = reaperRemainingMs(startedAt, 'sessions')
+        if (remaining < 1_000) { sessionsDeferred++; continue }
+        await sandbox.destroySession(hostId, { signal: AbortSignal.timeout(remaining) })
       }
       // `idle` = reaped-but-resumable (NOT `terminated`, the finalized end state).
       // The workspace snapshot lives on in cc-sessions for resume.
@@ -126,11 +135,11 @@ export async function GET(request: NextRequest) {
   // A stuck orphan (latest-created revision) costs a base bump + ~10-25s poll to
   // tear down. With maxDuration 60s, a backlog could blow the budget mid-loop, so
   // bound wall-clock per run; leftovers are caught on the next 10-min sweep.
-  const SWEEP_BUDGET_MS = 45_000
-  const sweepStart = Date.now()
-  if (typeof sandbox.listSessionHostIds === 'function') {
+  // Keep the final fifteen seconds for liveness, SQL shutdown and response.
+  const orphanBudget = () => reaperRemainingMs(startedAt, 'orphans')
+  if (typeof sandbox.listSessionHostIds === 'function' && orphanBudget() >= 1_000) {
     try {
-      const liveHostIds = await sandbox.listSessionHostIds()
+      const liveHostIds = await sandbox.listSessionHostIds({ signal: AbortSignal.timeout(Math.min(8_000, orphanBudget())) })
       orphansScanned = liveHostIds.length
       if (liveHostIds.length) {
         // Which of these host ids belong to a session that's legitimately live?
@@ -165,6 +174,7 @@ export async function GET(request: NextRequest) {
           return NextResponse.json({
             scanned: sessions.length,
             reaped,
+            sessions_deferred: sessionsDeferred,
             failures: failures.length,
             idle_cutoff_seconds: IDLE_REAP_SECONDS,
             orphans_scanned: orphansScanned,
@@ -176,12 +186,12 @@ export async function GET(request: NextRequest) {
         }
         for (const hostId of liveHostIds) {
           if (keep.has(hostId)) continue
-          if (Date.now() - sweepStart > SWEEP_BUDGET_MS) {
+          if (orphanBudget() < 1_000) {
             orphansSkipped++ // out of budget — next sweep gets it
             continue
           }
           try {
-            await sandbox.destroySession(hostId)
+            await sandbox.destroySession(hostId, { signal: AbortSignal.timeout(orphanBudget()) })
             orphansReaped++
           } catch (err) {
             orphanFailures.push(`${hostId}: ${String(err)}`)
@@ -226,26 +236,6 @@ export async function GET(request: NextRequest) {
   const fullyIdle =
     sessions.length === 0 && activeCount === 0 && freshProvisioning === 0
 
-  // --- Spend snapshot (piggybacked on this cron) ---
-  // Folded into cc-reap rather than its own cron to stay under the Vercel
-  // cron-count limit. Both are 10-min CC sweeps. Tight budget so it can't blow
-  // this route's 60s maxDuration on top of the reap + orphan work above.
-  //
-  // Skip entirely when fully idle: there is no spend to record, and the reaper
-  // has stopped cc-llm-db so the gateway's /key/list hangs ~51s on a dead DB
-  // connection — which is what blew the 60s budget → 504 → false health alert.
-  // Whenever any session was live we still run it.
-  let spend: Awaited<ReturnType<typeof runSpendSnapshot>> | { skipped: 'idle' } | null = null
-  if (fullyIdle) {
-    spend = { skipped: 'idle' }
-  } else {
-    try {
-      spend = await runSpendSnapshot(admin, 12_000)
-    } catch (err) {
-      console.error('[cc-reap] spend snapshot failed (best-effort):', err)
-    }
-  }
-
   // --- Stop the gateway's Cloud SQL when idle ---
   // cc-llm-db is started on demand at session-start (cloud-sql-admin) and has no
   // native scale-to-zero, so it would bill 24/7 if left running. If NO session is
@@ -265,9 +255,34 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // --- Spend snapshot (piggybacked on this cron) ---
+  // Folded into cc-reap rather than its own cron to stay under the Vercel
+  // cron-count limit. Both are 10-min CC sweeps. Tight budget so it can't blow
+  // this route's 60s maxDuration on top of the reap + orphan work above.
+  //
+  // Skip entirely when fully idle: there is no spend to record, and the reaper
+  // has stopped cc-llm-db so the gateway's /key/list hangs ~51s on a dead DB
+  // connection — which is what blew the 60s budget → 504 → false health alert.
+  // Whenever any session was live we still run it.
+  let spend: Awaited<ReturnType<typeof runSpendSnapshot>> | { skipped: 'idle' | 'time_budget' } | null = null
+  if (fullyIdle || sqlStopped) {
+    spend = { skipped: 'idle' }
+  } else if (reaperRemainingMs(startedAt, 'response') < 12_000) {
+    spend = { skipped: 'time_budget' }
+  } else {
+    try {
+      spend = await runSpendSnapshot(admin, Math.min(12_000, reaperRemainingMs(startedAt, 'response')))
+    } catch (err) {
+      console.error('[cc-reap] spend snapshot failed (best-effort):', err)
+    }
+  }
+
+
   return NextResponse.json({
     scanned: sessions.length,
     reaped,
+    sessions_deferred: sessionsDeferred,
+    cleanup_budget_exhausted: reaperRemainingMs(startedAt, 'orphans') === 0,
     failures: failures.length,
     idle_cutoff_seconds: IDLE_REAP_SECONDS,
     orphans_scanned: orphansScanned,

@@ -73,6 +73,7 @@ export async function getSqlInstanceInfo(): Promise<SqlInstanceInfo> {
   try {
     const token = await getToken(cfg.saJson)
     const res = await fetch(`${SQL_API}/projects/${cfg.project}/instances/${cfg.instance}`, {
+      signal: AbortSignal.timeout(5_000),
       headers: { Authorization: `Bearer ${token}` },
     })
     if (!res.ok) return { state: null, activationPolicy: null }
@@ -103,6 +104,7 @@ async function patchActivationPolicy(
     `${SQL_API}/projects/${cfg.project}/instances/${cfg.instance}?updateMask=settings.activationPolicy`,
     {
       method: 'PATCH',
+      signal: AbortSignal.timeout(5_000),
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ settings: { activationPolicy: policy } }),
     },

@@ -92,6 +92,7 @@ async function getToken(cfg: CloudRunConfig): Promise<string> {
 }
 
 export interface CloudRunProviderDependencies {
+  requestTimeoutMs: number
   fetchFn: typeof fetch
   accessToken: () => Promise<string>
 }
@@ -102,7 +103,10 @@ export class CloudRunProvider implements HostProvider {
   constructor(private readonly dependencies: Partial<CloudRunProviderDependencies> = {}) {}
 
   private request(input: string | URL, init?: RequestInit): Promise<Response> {
-    return (this.dependencies.fetchFn ?? globalThis.fetch)(input, init)
+    const timeout = AbortSignal.timeout(this.dependencies.requestTimeoutMs ?? 8_000)
+    const signal = init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout
+    signal.throwIfAborted()
+    return (this.dependencies.fetchFn ?? globalThis.fetch)(input, { ...init, signal })
   }
 
   private accessToken(cfg: CloudRunConfig): Promise<string> {
@@ -292,7 +296,8 @@ export class CloudRunProvider implements HostProvider {
     return false
   }
 
-  async destroySession(hostInstanceId: string): Promise<void> {
+  async destroySession(hostInstanceId: string, options?: { signal?: AbortSignal }): Promise<void> {
+    const signal = options?.signal ?? AbortSignal.timeout(35_000)
     // hostInstanceId is the revision tag. Teardown is two steps and ORDER MATTERS:
     //   1. Remove this tag from the service's traffic array (read-modify-write
     //      PATCH, keeping every OTHER live session's tag).
@@ -319,6 +324,7 @@ export class CloudRunProvider implements HostProvider {
     try {
       const getRes = await this.request(`${RUN_API}/${servicePath}`, {
         headers: { Authorization: `Bearer ${token}` },
+        signal,
       })
       if (getRes.ok) {
         const svc = await getRes.json()
@@ -334,6 +340,7 @@ export class CloudRunProvider implements HostProvider {
         const patchRes = await this.request(`${RUN_API}/${servicePath}?updateMask=traffic`, {
           method: 'PATCH',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          signal,
           body: JSON.stringify({
             traffic: removal.traffic,
             etag: removal.etag,
@@ -363,6 +370,7 @@ export class CloudRunProvider implements HostProvider {
       const delRes = await this.request(`${RUN_API}/${revPath}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
+        signal,
       })
       // 404 = already gone (fine). 2xx = deleted. Anything else we must NOT
       // swallow blindly: the prior code ignored the response and a silent
@@ -378,10 +386,11 @@ export class CloudRunProvider implements HostProvider {
         // (minScale=1) and billing. Recover by bumping the base service to make a
         // NEW latest-created revision, which un-blocks the delete.
         if (delRes.status === 400 && /latest created Revision/i.test(detail)) {
-          await this.bumpLatestRevision(cfg, token, hostInstanceId)
+          await this.bumpLatestRevision(cfg, token, hostInstanceId, signal)
           const retry = await this.request(`${RUN_API}/${revPath}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
+            signal,
           })
           deleted = retry.ok || retry.status === 404
           if (!deleted) {
@@ -410,11 +419,12 @@ export class CloudRunProvider implements HostProvider {
   // no cost) and becomes deletable itself once a later session/bump supersedes
   // it. Scoped via updateMask=template so we don't touch traffic. Idempotent
   // label toggle keeps the change minimal.
-  private async bumpLatestRevision(cfg: CloudRunConfig, token: string, stuckHostId: string): Promise<void> {
+  private async bumpLatestRevision(cfg: CloudRunConfig, token: string, stuckHostId: string, signal: AbortSignal): Promise<void> {
     const servicePath = `projects/${cfg.project}/locations/${cfg.region}/services/${cfg.serviceName}`
     try {
       const getRes = await this.request(`${RUN_API}/${servicePath}`, {
         headers: { Authorization: `Bearer ${token}` },
+        signal,
       })
       if (!getRes.ok) return
       const svc = await getRes.json()
@@ -444,6 +454,7 @@ export class CloudRunProvider implements HostProvider {
       const patchRes = await this.request(`${RUN_API}/${servicePath}?updateMask=template`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        signal,
         body: JSON.stringify({ template, etag }),
       })
       if (!patchRes.ok) {
@@ -456,9 +467,9 @@ export class CloudRunProvider implements HostProvider {
       // reaper will retry the whole teardown on its next sweep).
       const stuckName = `${servicePath}/revisions/${cfg.serviceName}-${stuckHostId}`
       const deadline = Date.now() + 25_000
-      while (Date.now() < deadline) {
+      while (Date.now() < deadline && !signal.aborted) {
         await new Promise((r) => setTimeout(r, 2000))
-        const chk = await this.request(`${RUN_API}/${servicePath}`, { headers: { Authorization: `Bearer ${token}` } })
+        const chk = await this.request(`${RUN_API}/${servicePath}`, { headers: { Authorization: `Bearer ${token}` }, signal })
         if (!chk.ok) continue
         const cur = await chk.json()
         const latest: string = cur?.latestCreatedRevision ?? ''
@@ -475,7 +486,8 @@ export class CloudRunProvider implements HostProvider {
   // to 20 [a-z0-9]. Base-service revisions are named `${serviceName}-NNNNN-xxx`
   // (a 5-digit generation + suffix), which we exclude. We return the TAG
   // (hostInstanceId) for each, matching what destroySession expects.
-  async listSessionHostIds(): Promise<string[]> {
+  async listSessionHostIds(options?: { signal?: AbortSignal }): Promise<string[]> {
+    const signal = options?.signal ?? AbortSignal.timeout(15_000)
     let cfg: CloudRunConfig
     try {
       cfg = loadConfig()
@@ -501,6 +513,7 @@ export class CloudRunProvider implements HostProvider {
         if (pageToken) url.searchParams.set('pageToken', pageToken)
         const res = await this.request(url.toString(), {
           headers: { Authorization: `Bearer ${token}` },
+          signal,
         })
         if (!res.ok) break
         const data = await res.json()
@@ -516,7 +529,7 @@ export class CloudRunProvider implements HostProvider {
           hostIds.push(tail)
         }
         pageToken = data?.nextPageToken || undefined
-      } while (pageToken)
+      } while (pageToken && !signal.aborted)
     } catch {
       return hostIds
     }
