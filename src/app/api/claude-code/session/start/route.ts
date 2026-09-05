@@ -1,3 +1,4 @@
+import { readAnalyticsProgress } from '@/lib/sandbox/analytics-progress'
 // POST /api/claude-code/session/start
 //
 // Provisions (or reconnects to) a Claude Code Analytics sandbox session.
@@ -247,6 +248,7 @@ export async function POST(req: NextRequest) {
           sub_problems: persistedAdaptive?.arc?.length ? persistedAdaptive.arc : subProblems,
           arc_complete: Boolean(persistedAdaptive?.arc?.length),
           guidance: persistedAdaptive?.guidance ?? 'guided',
+          progress: readAnalyticsProgress(existingSession?.final_artifact),
         })
       }
       // Stale active row (container reaped) — retire it and re-provision below.
@@ -266,6 +268,7 @@ export async function POST(req: NextRequest) {
         sub_problems: persistedAdaptive?.arc?.length ? persistedAdaptive.arc : subProblems,
         arc_complete: Boolean(persistedAdaptive?.arc?.length),
         guidance: persistedAdaptive?.guidance ?? 'guided',
+          progress: readAnalyticsProgress(existingSession?.final_artifact),
       })
     } else {
       // Reaped/expired/terminated prior session: carry its workspace forward.
@@ -292,7 +295,9 @@ export async function POST(req: NextRequest) {
     console.error('[cc/session/start] guidance derivation failed, using guided:', err)
   }
   const labClient = getLabClient(labIdForChallengeType(challenge.challenge_type))
-  const arc = mergeArc(
+  const restoredProgress = readAnalyticsProgress(existingSession?.final_artifact)
+  if (restoredProgress && persistedAdaptive?.guidance) guidance = persistedAdaptive.guidance
+  const arc = restoredProgress && persistedAdaptive?.arc?.length ? persistedAdaptive.arc : mergeArc(
     (challenge as { difficulty?: string | null }).difficulty,
     subProblems as Partial<AnalyticsSubProblem>[],
     guidance,
@@ -312,7 +317,7 @@ export async function POST(req: NextRequest) {
       // the same attempt_id, and a previously graded artifact must survive.
       final_artifact: {
         ...((existingSession?.final_artifact as Record<string, unknown> | null) ?? {}),
-        adaptive: { guidance, arc, source: 'start', decided_at: new Date().toISOString() },
+        adaptive: { guidance, arc, ...(restoredProgress ? { progress: restoredProgress } : {}), source: 'start', decided_at: new Date().toISOString() },
       },
       // Carry the prior workspace forward so provision can presign + restore it.
       transcript_uri: resumeSnapshotUri,
@@ -356,5 +361,6 @@ export async function POST(req: NextRequest) {
     sub_problems: arc,
     arc_complete: true,
     guidance,
+    progress: restoredProgress,
   })
 }

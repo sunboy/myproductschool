@@ -787,7 +787,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const reasoningCardRef = useRef<HTMLTextAreaElement>(null)
 
   // Resizable panel state - left panel width as percentage of container
-  const [leftWidth, setLeftWidth] = useState(30)
+  const [leftWidth, setLeftWidth] = useState(40)
   const containerRef = useRef<HTMLDivElement>(null)
   const dragCleanupRef = useRef<(() => void) | null>(null)
 
@@ -5041,6 +5041,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         overflow: 'hidden',
         minHeight: 0,
       }}>
+      {!isInterviewChallenge && <nav className="workspace-reference-nav" aria-label="Challenge reference">{tabs.map(tab => <button key={tab} type="button" aria-pressed={leftTab === tab} onClick={() => setLeftTab(tab)}>{tab === 'Description' ? 'The brief' : tab}{tab === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, leftTab === tab)}{tab === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, leftTab === tab)}</button>)}</nav>}
       {leftTab === 'Description' && descriptionPane}
       {leftTab === 'Examples' && examplesPane}
       {leftTab === 'Constraints' && constraintsPane}
@@ -5984,13 +5985,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </>
       ) : (
         <>
-          {topChrome}
-          {flowStepperStrip}
+          {isInterviewChallenge ? topChrome : <header className="workspace-focus-header">
+            <button type="button" onClick={props.onExit ?? (() => window.history.back())} aria-label="Back to practice">← <span>Practice</span></button>
+            <h1>{challengeTitle}</h1>
+            <button type="button" aria-pressed={hintOpen} onClick={() => setHintOpen(v => !v)}>Need a hint?</button>
+          </header>}
         </>
       )}
 
       {/* Middle: resizable two-pane on desktop, single column on mobile */}
-      <div ref={containerRef} style={mobileStacked && mobileDescOpen ? { display: 'none' } : undefined} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden p-2 bg-page-field'}>
+      <div ref={containerRef} style={mobileStacked && mobileDescOpen ? { display: 'none' } : undefined} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'workspace-focus-columns flex flex-1 min-h-0 overflow-hidden bg-page-field'}>
         {!mobileStacked && leftDescriptionPanel}
         {!mobileStacked && dragHandle}
 
@@ -6002,6 +6006,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             background: !isCanvasChallenge && !isCodingChallenge ? 'var(--color-card-bright)' : 'transparent',
             overflow: 'hidden', minHeight: 0,
           }}>
+          {!mobileStacked && !isInterviewChallenge && <div className="workspace-work-header"><h2>Your work</h2>{flowStepperStrip}</div>}
           {/* Grading interstitial - fills the right panel while the model grades. */}
           {isCanvasChallenge && isSubmittingInterview && (
             <div className="flex-1 min-h-0 flex flex-col animate-step-enter">

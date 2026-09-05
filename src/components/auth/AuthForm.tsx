@@ -1,5 +1,7 @@
 'use client'
 
+import { LearningGeometry } from '@/components/redesign/LearningGeometry'
+
 import { safeAuthRedirect } from '@/lib/auth/redirect'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -271,16 +273,17 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
      * Mobile: stacks vertically with the same gradient top to bottom.
      */
     <div
-      className="relative min-h-[100svh] overflow-x-hidden"
+      className="learning-auth relative min-h-[100svh] overflow-x-hidden"
       style={{
-        background: 'linear-gradient(118deg, #07100c 0%, #0c1610 25%, #163324 48%, #1e4a31 60%, #29623f 70%, #3d7a52 80%, #5a9468 90%, #7ab088 100%)',
+        background: '#f8f5ef',
       }}
     >
       {/* Content: left brand/headline + right form card — on desktop side by side */}
       <div className="relative flex min-h-[100svh] flex-col md:min-h-[100dvh] md:flex-row md:items-center" style={{ zIndex: 2 }}>
 
         {/* ── Left: brand + headline ───────────────────── */}
-        <div className="flex flex-col justify-center px-5 pb-5 pt-6 sm:px-8 sm:pt-8 md:flex-1 md:px-12 md:py-0 lg:px-16">
+        <div className="learning-auth-story relative isolate flex flex-col justify-center px-5 pb-5 pt-6 sm:px-8 sm:pt-8 md:flex-1 md:px-12 md:py-0 lg:px-16">
+          <LearningGeometry />
           {/* Brand mark */}
           <div className="mb-6 flex items-center md:mb-10 lg:mb-12">
             <HackProductWordmark
@@ -291,18 +294,18 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
 
           {/* Headline */}
           <h1
-            className="font-headline text-[34px] font-extrabold leading-[1.06] text-white sm:text-[44px] lg:text-[56px]"
+            className="relative font-headline text-[34px] font-medium leading-[1.2] text-forest-950 sm:text-[44px] lg:text-[56px]"
             style={{
               letterSpacing: 0,
               maxWidth: '11ch',
             } as React.CSSProperties}
           >
-            Build with judgment.
+            Keep growing. Build with confidence.
           </h1>
           <p
-            className="font-body mt-3 max-w-[38ch] text-sm leading-relaxed text-white/55 sm:mt-4 sm:text-base md:text-white/45"
+            className="relative font-body mt-4 max-w-[38ch] text-base leading-relaxed text-ink-secondary"
           >
-            Open a personalized daily brief for product sense, system design, SQL, coding, and the Analytics Lab.
+            Learn through real challenges, thoughtful reading, and feedback that helps you take the next step.
           </p>
 
           {/* Feature bullets — desktop only */}
@@ -319,7 +322,7 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
                 >
                   check_circle
                 </span>
-                <span className="font-body text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>{item}</span>
+                <span className="relative font-body text-base text-ink-secondary">{item}</span>
               </li>
             ))}
           </ul>
@@ -331,11 +334,11 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
           <div
             className="w-full max-w-sm space-y-4 rounded-2xl p-5 shadow-2xl sm:space-y-5 sm:p-7 md:p-8"
             style={{
-              background: 'rgba(8,18,12,0.72)',
+              background: '#103e30',
               backdropFilter: 'blur(28px)',
               WebkitBackdropFilter: 'blur(28px)',
               border: '1px solid rgba(255,255,255,0.10)',
-              boxShadow: '0 16px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
+              boxShadow: '0 20px 60px -32px rgba(16,62,48,0.35)',
             }}
           >
             {/* Tab switcher - hidden in single-email modes */}

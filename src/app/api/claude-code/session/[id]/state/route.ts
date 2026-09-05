@@ -1,3 +1,4 @@
+import { readAnalyticsProgress } from '@/lib/sandbox/analytics-progress'
 // GET /api/claude-code/session/[id]/state
 //
 // Returns live session state for the analytics medium's reconnect flow and
@@ -160,5 +161,6 @@ export async function GET(
     sub_problems: subProblems,
     arc_complete: arcComplete,
     guidance: adaptive?.guidance ?? 'guided',
+    progress: readAnalyticsProgress(session.final_artifact),
   })
 }

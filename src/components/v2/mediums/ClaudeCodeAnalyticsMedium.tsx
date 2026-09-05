@@ -1,5 +1,6 @@
 'use client'
 
+import { readAnalyticsProgress, type AnalyticsProgress } from '@/lib/sandbox/analytics-progress'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { ArtifactSpineStrip } from './ArtifactSpineStrip'
 import { deriveArtifactRows, artifactProgress, artifactSummaryText } from './analyticsArtifact'
@@ -8,7 +9,7 @@ import { AnalyticsTerminalFrame } from './AnalyticsTerminalFrame'
 import { SuggestedPromptRail } from './SuggestedPromptRail'
 import { SkillsLibraryPanel } from './SkillsLibraryPanel'
 import { IdleReapModal } from './IdleReapModal'
-import { MissionBrief, shouldShowMissionBrief, markMissionBriefSeen } from './MissionBrief'
+import { MissionBrief, markMissionBriefSeen } from './MissionBrief'
 import { AnalyticsSessionMirror } from './AnalyticsSessionMirror'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { PaywallModal } from '@/components/paywalls/PaywallModal'
@@ -67,7 +68,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // they commit to working the challenge. The dev stub skips the gate.
   const [started, setStarted] = useState<boolean>(USE_DEV_STUB)
   // True while the mount-time check for an already-live sandbox is in flight (e.g.
-  // after a browser refresh). Holds back the "Start sandbox" button so it doesn't
+  // after a browser refresh). Holds back the "Start analysis" button so it doesn't
   // flash before we know whether to auto-reconnect. Init false in the dev stub.
   const [resuming, setResuming] = useState<boolean>(!USE_DEV_STUB)
   // True once a prior session for this attempt was reaped/expired and its work
@@ -97,15 +98,16 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // FlowWorkspace so the lab reads like the coding workspace.
   const containerRef = useRef<HTMLDivElement>(null)
   const dragCleanupRef = useRef<null | (() => void)>(null)
-  const [leftWidth, setLeftWidth] = useState(30) // percent, md and up only
+  const [leftWidth, setLeftWidth] = useState(38) // percent, md and up only
   // Starts collapsed on small screens so the terminal is reachable without
   // a long scroll; auto-collapses on desktop once the session is live.
+  const [briefPanel, setBriefPanel] = useState<'brief' | 'guidance' | 'findings'>('brief')
   const [registerMenuOpen, setRegisterMenuOpen] = useState(false)
   // On small screens the brief and terminal are deliberate stages, rather than
   // two tall panels competing in one scroll. Desktop keeps both visible.
   const [mobilePanel, setMobilePanel] = useState<'brief' | 'workspace'>('brief')
   const [questionCollapsed, setQuestionCollapsed] = useState<boolean>(
-    () => typeof window !== 'undefined' && window.innerWidth < 768,
+    () => false,
   )
   const questionTouchedRef = useRef(false)
 
@@ -166,7 +168,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   const [retrying, setRetrying] = useState(false)
 
   const [activeSubProblemIdx, setActiveSubProblemIdx] = useState(0)
-  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
+  const [, setCompletedIds] = useState<Set<string>>(new Set())
+  const pendingMarkRef = useRef<(() => Promise<MarkVerdict>) | null>(null)
+  const [checkpointPending, setCheckpointPending] = useState(false)
+  const [checkpointResult, setCheckpointResult] = useState<{ stepId: string; verdict: MarkVerdict } | null>(null)
+  const [progressSaveError, setProgressSaveError] = useState<string | null>(null)
   const [markedFindings, setMarkedFindings] = useState<MarkedFinding[]>([])
   const [mcpConnected, setMcpConnected] = useState(false)
   // True once the `claude` REPL has launched (its banner/prompt appeared). Step 1
@@ -272,10 +278,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
     return () => { cancelled = true; clearInterval(t) }
   }, [sessionId])
 
-  // Check onboarding gate after mount (client-only)
-  useEffect(() => {
-    setShowBrief(shouldShowMissionBrief(challenge.id))
-  }, [])
+  // The brief is visible on entry; the optional walkthrough opens on request.
   // First-session coaching: the dock is opened once via CanvasChatPanel's
   // autoOpenKey below (the panel owns its open state, so setHatchOpen can't
   // drive it).
@@ -304,6 +307,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           session_id?: string
           wss_url?: string | null
           sub_problems?: AnalyticsSubProblem[]
+          progress?: AnalyticsProgress | null
           arc_complete?: boolean
           guidance?: 'scaffolded' | 'guided' | 'open'
         }
@@ -321,6 +325,12 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             )
           }
           if (data.guidance) setGuidance(data.guidance)
+          const restored = readAnalyticsProgress({ adaptive: { progress: data.progress } })
+          if (restored) {
+            setMarkedFindings(restored.findings)
+            const index = data.sub_problems?.findIndex(step => step.id === restored.activeStepId) ?? -1
+            if (index >= 0) setActiveSubProblemIdx(index)
+          }
           sessionStartRef.current = Date.now()
           setResuming(false)
         } else if (!cancelled) {
@@ -399,6 +409,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
         session_id: string
         status: string
         wss_url: string | null
+        progress?: AnalyticsProgress | null
         sub_problems?: AnalyticsSubProblem[]
         arc_complete?: boolean
         guidance?: 'scaffolded' | 'guided' | 'open'
@@ -413,6 +424,12 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
         )
       }
       if (data.guidance) setGuidance(data.guidance)
+          const restored = readAnalyticsProgress({ adaptive: { progress: data.progress } })
+          if (restored) {
+            setMarkedFindings(restored.findings)
+            const index = data.sub_problems?.findIndex(step => step.id === restored.activeStepId) ?? -1
+            if (index >= 0) setActiveSubProblemIdx(index)
+          }
       sessionStartRef.current = Date.now()
 
       // Already live (reconnect to a running container) — done.
@@ -684,7 +701,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
     } catch {
       setAiPrompts([]) // fall back to static prompts
     }
-  }, [activeSubProblemIdx, subProblems, challenge.id, mcpConnected, replRunning, terminalTail, guidance])
+  }, [activeSubProblemIdx, subProblems, challenge.id, mcpConnected, replRunning, terminalTail, guidance, artifactSummary])
 
   // Refetch immediately when the step or connection state changes (clear stale
   // chips first so we never show a previous step's suggestions).
@@ -770,6 +787,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   }, [sessionId])
 
   async function handleMark(finding: string): Promise<MarkVerdict> {
+    if (pendingMarkRef.current) {
+      throw new Error('Save your previous finding before submitting another.')
+    }
     if (!activeSubProblem) return 'retry'
 
     try {
@@ -808,7 +828,6 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
 
       const newFinding: MarkedFinding = { id: activeSubProblem.id, text: finding, verdict }
       const allFindings = [...markedFindings, newFinding]
-      setMarkedFindings(allFindings)
 
       // ── Adaptive: bounded guidance adjustment + arc branching (design §3.2, §5) ──
       const adj = applyVerdict(machineRef.current, verdict, guidance)
@@ -857,34 +876,43 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
         )
       }
 
-      // Persist adaptive state best-effort; a failed write never blocks the verdict.
-      if (sessionId && !USE_DEV_STUB) {
-        void fetch(`/api/claude-code/session/${sessionId}/adaptive`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            guidance: nextGuidance,
-            arc: nextArc,
-            injected: log.injected,
-            adjustments: log.adjustments,
-          }),
-        }).catch(() => {})
-      }
-
-      if (verdict === 'pass' || verdict === 'partial') {
-        setCompletedIds(prev => new Set([...prev, activeSubProblem.id]))
-        const activeIdxInNext = nextArc.findIndex((s) => s.id === activeSubProblem.id)
-        const nextIdx = (activeIdxInNext >= 0 ? activeIdxInNext : activeSubProblemIdx) + 1
-        if (nextIdx < nextArc.length) {
-          setActiveSubProblemIdx(nextIdx)
-        } else {
-          // All steps done — finalize (grade + mark attempt complete) then mirror.
-          void finalizeSession()
+      // Keep a failed checkpoint retryable without another model call. Persist
+      // the final finding before teardown/grading can replace the artifact.
+      const activeIdxInNext = nextArc.findIndex(step => step.id === activeSubProblem.id)
+      const nextIdx = verdict === 'pass' || verdict === 'partial' ? (activeIdxInNext >= 0 ? activeIdxInNext : activeSubProblemIdx) + 1 : activeSubProblemIdx
+      setCheckpointPending(true)
+      let checkpointPromise: Promise<MarkVerdict> | null = null
+      const saveCheckpoint = async (): Promise<MarkVerdict> => {
+        setProgressSaveError(null)
+        if (sessionId && !USE_DEV_STUB) {
+          const saved = await fetch(`/api/claude-code/session/${sessionId}/adaptive`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guidance: nextGuidance, arc: nextArc, injected: log.injected, adjustments: log.adjustments, progress: { findings: allFindings, activeStepId: nextArc[Math.min(nextIdx, nextArc.length - 1)]?.id ?? null } }),
+          }).catch(() => null)
+          if (!saved?.ok) {
+            setProgressSaveError('Your finding is still here, but could not be saved. Retry saving before continuing.')
+            throw new Error('Checkpoint was not saved')
+          }
         }
+        pendingMarkRef.current = null
+        setCheckpointPending(false)
+        setMarkedFindings(allFindings)
+        setCheckpointResult({ stepId: activeSubProblem.id, verdict })
+        if (verdict === 'pass' || verdict === 'partial') {
+          setCompletedIds(previous => new Set([...previous, activeSubProblem.id]))
+          if (nextIdx < nextArc.length) setActiveSubProblemIdx(nextIdx)
+          else void finalizeSession()
+        }
+        return verdict
       }
+      pendingMarkRef.current = () => {
+        if (!checkpointPromise) checkpointPromise = saveCheckpoint().finally(() => { checkpointPromise = null })
+        return checkpointPromise
+      }
+      return await pendingMarkRef.current()
 
-      return verdict
-    } catch {
+    } catch (error) {
+      if (pendingMarkRef.current) throw error
       return 'retry'
     }
   }
@@ -1021,36 +1049,18 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
         />
       )}
 
-      <div style={{
+      <div className="analytics-studio" style={{
         display: 'flex', flexDirection: 'column',
         height: '100%', minHeight: 0, overflow: 'hidden',
         background: 'var(--color-background)',
       }}>
-        {/* Artifact spine — the deliverable as progress. 48px, never wraps;
-            a long adaptive arc scrolls horizontally instead of stealing
-            terminal height. */}
-        <div style={{
-          flexShrink: 0, height: 48, padding: '0 16px 0 10px',
-          display: 'flex', alignItems: 'center', gap: 8,
-          borderBottom: '1px solid var(--color-outline-variant)',
-          background: 'var(--color-surface)',
-        }}>
-          {exitHref && (
-            <a
-              href={exitHref}
-              aria-label="Back"
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 20, color: 'var(--color-on-surface-variant)',
-                borderRadius: 999, padding: 4, flexShrink: 0,
-                textDecoration: 'none',
-              }}
-            >
-              arrow_back
-            </a>
-          )}
-          <ArtifactSpineStrip rows={artifactRows} done={artifactDone} total={artifactTotal} />
-        </div>
+        <header className="analytics-studio-header">
+          {exitHref && <a href={exitHref} className="analytics-back" aria-label="Back to practice">←</a>}
+          <div className="analytics-studio-title"><span>AI analytics</span><h1>{challenge.title || 'Your analysis'}</h1></div>
+          <button type="button" className="analytics-help" onClick={() => setShowBrief(true)}>How it works</button>
+          <button type="button" className="analytics-help" onClick={() => { setBriefPanel('findings'); setMobilePanel('brief') }}>{artifactDone}/{artifactTotal} complete</button>
+          <span className="analytics-session-state" role="status">{wssUrl && mcpConnected && replRunning ? 'Ready to analyze' : wssUrl ? 'Connecting…' : resuming ? 'Checking session…' : started ? 'Preparing session…' : 'Ready when you are'}</span>
+        </header>
 
         {/* Body split. position: relative so the floating Hatch bubble anchors
             to this workspace row (its closed/floating modes use `absolute
@@ -1058,7 +1068,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             the right column — exactly how FlowWorkspace mounts the same panel. */}
         <div
           ref={containerRef}
-          className="flex flex-col overflow-y-auto md:flex-row md:overflow-hidden"
+          className="analytics-studio-body flex flex-col overflow-y-auto md:flex-row md:overflow-hidden"
           style={{ flex: 1, minHeight: 0, position: 'relative', gap: 8, padding: 8, background: 'var(--color-surface-container-low)', ['--cc-left-w' as string]: `${leftWidth}%` }}
         >
 
@@ -1096,7 +1106,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             id="analytics-brief-panel"
             role="tabpanel"
             aria-labelledby="analytics-brief-tab"
-            className={(mobilePanel === 'brief' ? 'flex' : 'hidden') + " w-full flex-col md:flex md:w-[var(--cc-left-w)] md:h-full md:min-h-0 md:overflow-y-auto"}
+            className={(mobilePanel === 'brief' ? 'flex' : 'hidden') + " analytics-studio-brief w-full flex-col md:flex md:w-[var(--cc-left-w)] md:h-full md:min-h-0 md:overflow-y-auto"}
             style={{
               flexShrink: 0,
               border: '1px solid var(--color-outline-variant)', borderRadius: 12,
@@ -1104,6 +1114,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
               gap: 12,
               background: 'var(--color-surface-container-lowest)',
             }}>
+            {progressSaveError && <div role="alert" className="analytics-empty"><p>{progressSaveError}</p><button type="button" onClick={() => { void pendingMarkRef.current?.().catch(() => {}) }}>Retry saving</button></div>}
+            <nav className="analytics-panel-nav" aria-label="Analysis reference">
+              {(['brief', 'guidance', 'findings'] as const).map(panel => <button type="button" key={panel} aria-pressed={briefPanel === panel} onClick={() => setBriefPanel(panel)}>{panel === 'brief' ? 'The brief' : panel === 'guidance' ? 'Guidance' : 'Findings'}</button>)}
+            </nav>
+            <section className="analytics-panel-content" hidden={briefPanel !== 'brief'}>
             <button
               onClick={() => { questionTouchedRef.current = true; setQuestionCollapsed(v => !v) }}
               style={{
@@ -1185,6 +1200,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             </div>
 
 
+            <button type="button" className="analytics-continue" onClick={() => { setBriefPanel('guidance'); setMobilePanel('workspace') }}>Continue to your analysis <span aria-hidden="true">→</span></button>
+            </section>
+            <section className="analytics-panel-content" hidden={briefPanel !== 'guidance'}>
             {/* Coaching register — how Hatch coaches this session (F3). Derived
                 from the learner's track record, adjustable per session. Product
                 language only; the internal level never surfaces. */}
@@ -1277,6 +1295,8 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             {/* Objective card */}
             {activeSubProblem && (
               <AnalyticsObjectiveCard
+                key={activeSubProblem.id}
+                savedVerdict={checkpointResult?.stepId === activeSubProblem.id ? checkpointResult.verdict : null}
                 subProblem={activeSubProblem}
                 stepIdx={activeSubProblemIdx}
                 totalSteps={subProblems.length}
@@ -1286,6 +1306,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                 hideTeachingNote={guidance === 'open'}
                 reportWritten={!!reportPath}
                 onMark={handleMark}
+                checkpointPending={checkpointPending}
               />
             )}
 
@@ -1303,6 +1324,8 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                   prompts={railPrompts}
                   terminalRef={terminalRef}
                   contextual={aiPrompts.length > 0}
+                  disabled={!wssUrl}
+                  onInsert={() => setMobilePanel('workspace')}
                 />
               ) : null
             })()}
@@ -1314,11 +1337,26 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
               replRunning={replRunning}
               onLoaded={handleSkillWritten}
             />
+            </section>
+            <section className="analytics-panel-content analytics-findings" hidden={briefPanel !== 'findings'}>
+              <h2>Your findings</h2>
+              <p>Review the evidence you have submitted as your analysis develops.</p>
+              <ArtifactSpineStrip rows={artifactRows} done={artifactDone} total={artifactTotal} />
+              {markedFindings.length ? <ol>{markedFindings.map((finding, index) => <li key={finding.id + ':' + index}><span>Finding {index + 1}</span><p>{finding.text}</p><small>{finding.verdict === 'retry' ? 'Needs another look' : 'Reviewed by Hatch'}</small></li>)}</ol> : <div className="analytics-empty">No findings submitted yet. Use Guidance to work through the question and share your evidence with Hatch.</div>}
+              <button type="button" className="analytics-continue" onClick={() => setBriefPanel('guidance')}>Back to guidance</button>
+            </section>
           </div>
 
           {/* Drag divider — desktop only (mobile stacks) */}
+          {/* A focusable separator supports the same resize action by keyboard. */}
+          {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex -- Keyboard-operable resize separator. */}
           <div
             onMouseDown={handleLeftDividerMouseDown}
+            tabIndex={0}
+            aria-valuemin={20}
+            aria-valuemax={50}
+            aria-valuenow={Math.round(leftWidth)}
+            onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); setLeftWidth(width => Math.max(20, Math.min(50, width + (event.key === 'ArrowLeft' ? -2 : 2)))) } }}
             role="separator"
             aria-orientation="vertical"
             aria-label="Resize mission panel and terminal"
@@ -1327,6 +1365,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           >
             <div style={{ width: 4, height: 36, borderRadius: 999, background: 'var(--color-outline-variant)' }} />
           </div>
+          {/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
 
           {/* RIGHT — live session. overflow:hidden, NOT auto: the terminal is
               the only element allowed to scroll (xterm scrolls internally).
@@ -1336,7 +1375,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             id="analytics-workspace-panel"
             role="tabpanel"
             aria-labelledby="analytics-workspace-tab"
-            className={(mobilePanel === 'workspace' ? 'flex' : 'hidden') + " min-h-[360px] flex-col md:flex md:min-h-0"}
+            className={(mobilePanel === 'workspace' ? 'flex' : 'hidden') + " analytics-work-surface min-h-[360px] flex-col md:flex md:min-h-0"}
             style={{
               flex: 1, minWidth: 0,
               padding: '10px 12px',
@@ -1385,7 +1424,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                     progress_activity
                   </span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(232,228,220,0.85)' }}>
-                    Checking for a running sandbox…
+                    Checking for your previous session…
                   </span>
                 </div>
               ) : !started ? (
@@ -1401,12 +1440,12 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                   </span>
                   <div style={{ maxWidth: 360, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: '#e8e4dc' }}>
-                      {wasReaped ? 'Resume your analyst sandbox' : 'Start your analyst sandbox'}
+                      {wasReaped ? 'Continue your analysis' : 'Explore the data with Claude Code'}
                     </span>
                     <span style={{ fontSize: 12.5, lineHeight: 1.55, color: 'rgba(232,228,220,0.7)' }}>
                       {wasReaped
                         ? 'The idle sandbox was shut down to free resources. Resuming restores your previous work right where you left off.'
-                        : 'This spins up a live environment with Claude Code and read-only BigQuery access. It starts when you are ready to work, and stays open while you do.'}
+                        : 'Use Claude Code to explore the dataset, test a hypothesis, and build an evidence-backed answer. Your session starts only when you choose.'}
                     </span>
                   </div>
                   <button
@@ -1422,7 +1461,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                     <span className="material-symbols-outlined" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
                       {wasReaped ? 'restart_alt' : 'play_arrow'}
                     </span>
-                    {wasReaped ? 'Resume sandbox' : 'Start sandbox'}
+                    {wasReaped ? 'Resume analysis' : 'Start sandbox'}
                   </button>
                 </div>
               ) : (
@@ -1516,7 +1555,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
             scene={{ elementCount: 0, entities: [], connections: [], groups: [], freeText: [], foreignKeys: [] }}
             isOpen={hatchOpen}
             onToggle={() => setHatchOpen((v) => !v)}
-            autoOpenKey="cc-analytics"
+            autoOpenKey={undefined}
             proactiveNudge={proactiveNudge ? { id: 'idle', text: proactiveNudge } : null}
             onDismissNudge={() => setProactiveNudge(null)}
             terminalTail={terminalTail.slice(-3000)}

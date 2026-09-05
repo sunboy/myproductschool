@@ -1,5 +1,7 @@
 'use client'
 
+import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
@@ -97,23 +99,9 @@ export default function BillingSettingsPage() {
   const cancelDate = formatDate(subscription?.cancel_at ?? subscription?.current_period_end)
 
   return (
-    <main className="mx-auto max-w-[720px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-      {/* ── Light page header ─────────────────────────────────────────────── */}
-      <div className="mb-5">
-        <Link href="/settings" className="inline-flex items-center gap-1.5 font-label text-xs font-bold text-ink-secondary transition-colors hover:text-ink-strong">
-          <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
-          Settings
-        </Link>
-        <p className="mt-4 font-label text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
-          Account
-        </p>
-        <h1 className="mt-1 font-headline text-[28px] font-semibold leading-[1.2] tracking-[-0.02em] text-ink-strong">
-          Billing
-        </h1>
-        <p className="mt-1 font-body text-[13.5px] text-ink-secondary">
-          Subscription, payment method, and invoices.
-        </p>
-      </div>
+    <main className="learning-account mx-auto max-w-[720px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+      <Link href="/settings" className="inline-flex min-h-11 items-center gap-2 text-sm text-ink-secondary"><ArrowLeft size={16} /> Account settings</Link>
+      <LearningPageHeading eyebrow="Membership" title="Your plan and billing.">Manage your subscription, payment method, and invoices.</LearningPageHeading>
 
       {/* Current plan card */}
       <div className="mb-4 rounded-2xl border border-hairline bg-card-bright p-5">

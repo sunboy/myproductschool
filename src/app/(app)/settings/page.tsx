@@ -1,5 +1,7 @@
 'use client'
 
+import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
+
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -470,26 +472,8 @@ export default function SettingsPage() {
   ]
 
   return (
-    <main className="mx-auto max-w-[1060px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-      {/* ── Light page header (spec §1: not a hub, no dark hero) ─────────── */}
-      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="font-label text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
-            Account
-          </p>
-          <h1 className="mt-1 font-headline text-[28px] font-semibold leading-[1.2] tracking-[-0.02em] text-ink-strong">
-            Settings
-          </h1>
-          <p className="mt-1 font-body text-[13.5px] text-ink-secondary">
-            Profile, sign-in, plan, and billing.
-          </p>
-        </div>
-        {isPro && (
-          <span className="inline-flex w-fit items-center rounded-full border-[1.5px] border-gold bg-note-amber px-3 py-1 font-label text-xs font-bold text-forest-800">
-            Pro
-          </span>
-        )}
-      </div>
+    <main className="learning-account mx-auto max-w-[1060px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+      <LearningPageHeading eyebrow="Your account" title="Make it yours." action={isPro ? <span className="rounded-full bg-note-amber px-4 py-2 text-sm font-semibold text-forest-950">Pro member</span> : undefined}>Manage your profile, sign-in preferences, and membership.</LearningPageHeading>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[360px_1fr]">
         {/* ── Profile & security card ─────────────────────────────────────── */}

@@ -1,3 +1,4 @@
+import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import { IS_MOCK } from '@/lib/mock'
 import { UsageProvider } from '@/context/UsageContext'
@@ -7,7 +8,6 @@ import {
   DISCIPLINE_META,
   type LiveInterviewDiscipline,
 } from '@/lib/live-interview/disciplines'
-import { HatchImage } from '@/components/redesign/HatchImage'
 import { HatchSays } from '@/components/redesign/HatchSays'
 import { LiveInterviewsShellClient } from './LiveInterviewsShellClient'
 
@@ -168,37 +168,7 @@ export default async function LiveInterviewsPage() {
   return (
     <UsageProvider>
       <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-8 sm:py-7">
-        <section
-          data-tour-target="interviews-hero"
-          className="relative isolate min-h-[196px] overflow-hidden rounded-[24px] bg-forest-950 px-5 py-6 text-white sm:px-8 sm:py-7"
-        >
-          <div aria-hidden className="absolute inset-y-0 right-0 w-[42%] bg-forest-900 [clip-path:polygon(30%_0,100%_0,100%_100%,0_100%)]" />
-          <div aria-hidden className="absolute -bottom-12 right-[30%] h-28 w-40 rotate-[-14deg] bg-gold/20 [clip-path:polygon(0_18%,100%_0,82%_100%,12%_82%)]" />
-          <div className="relative z-10 grid grid-cols-1 items-center gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-            <div className="min-w-0">
-              <div className="mb-2 font-label text-xs font-extrabold uppercase tracking-[0.11em] text-mint-glow">
-                Live interviews
-              </div>
-              <h1 className="max-w-[24ch] font-headline text-[30px] font-semibold leading-tight tracking-[-0.025em] text-on-hero-strong sm:text-[32px]">
-                Practice a focused, realistic interview.
-              </h1>
-              <p className="mt-3 max-w-[58ch] text-base leading-relaxed text-white/72">
-                Choose the company context and skill area. Hatch asks follow-ups, adapts to your answer, and prepares a detailed debrief.
-              </p>
-            </div>
-
-            <div className="relative flex items-center gap-3 lg:col-start-2">
-              <HatchImage state="thinking" size={62} priority className="hidden shrink-0 sm:block" />
-              <HatchSays
-                className="relative z-10 w-full"
-                tint="mint"
-                message={hatchMessage}
-                ctaLabel="Set up an interview"
-                ctaHref="#interview-setup"
-              />
-            </div>
-          </div>
-        </section>
+        <div data-tour-target="interviews-hero"><LearningPageHeading eyebrow="Interview preparation" title="Find your confidence in conversation." action={<HatchSays tint="mint" message={hatchMessage} ctaLabel="Set up an interview" ctaHref="#interview-setup" />}>Choose a role and company context, practice a realistic conversation, and leave with specific feedback.</LearningPageHeading></div>
 
         <div className="mt-4">
           <BillingUsageFromProfile />

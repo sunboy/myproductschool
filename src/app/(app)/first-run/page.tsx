@@ -91,12 +91,12 @@ export default function FirstRunPage() {
           <div className="flex flex-col justify-between bg-page-field p-6">
             <div>
               <h1 className="font-headline text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink-strong">
-                Let&apos;s start with a real <span className="hl-word">challenge</span>
+                Your next step starts here.
               </h1>
-              <p className="mt-3 font-body text-[13.5px] leading-relaxed text-ink-secondary">
-                A short product scenario you work through in writing.
+              <p className="mt-3 font-body text-base leading-relaxed text-ink-secondary">
+                Start with a short written challenge matched to your role.
                 {' '}<span className="font-bold text-forest-800">Hatch</span> reads
-                how you reason and grades it.
+                how you reason and offers personalized feedback.
               </p>
             </div>
             <div className="flex justify-center py-3">
@@ -109,13 +109,13 @@ export default function FirstRunPage() {
 
           {/* ── Role chip-select ─────────────────────────────────────────── */}
           <div className="flex flex-col justify-center p-6 sm:p-7">
-            <p className="font-label text-[11px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
+            <p className="font-label text-xs font-semibold uppercase tracking-[0.08em] text-ink-secondary">
               Pick your role
             </p>
             <h2 className="mt-1.5 font-body text-[18px] font-extrabold leading-tight text-ink-strong">
               Which role best matches your work?
             </h2>
-            <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-secondary">
+            <p className="mt-1 font-body text-sm leading-relaxed text-ink-secondary">
               Hatch pulls a scenario that fits. Goals and calibration stay
               optional, so you can start learning before answering more questions.
             </p>

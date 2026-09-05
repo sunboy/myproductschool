@@ -1,5 +1,7 @@
 'use client'
 
+import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, type ReactNode } from 'react'
@@ -12,18 +14,11 @@ import { Md } from '@/components/ui/Md'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
-import { levelFromXp, XP_PER_USER_LEVEL } from '@/lib/utils'
+import { levelFromXp } from '@/lib/utils'
 import { useLearnerDNAData } from './LearnerDNASection'
 
 /* ── Humanize snake_case archetype labels ─────────────────────────── */
 
-function humanizeArchetype(value: string | null | undefined): string {
-  if (!value) return 'Not set'
-  return value
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
 
 /** Display an interview score on the canonical /100 scale. */
 function formatInterviewScore(score: number | null | undefined): string | null {
@@ -671,7 +666,6 @@ export default function ProgressPage() {
   const streakDays = profile?.streak_days ?? 0
   const xpTotal = profile?.xp_total ?? 0
   const level = levelFromXp(xpTotal)
-  const xpToNext = level * XP_PER_USER_LEVEL - xpTotal
   const hasActivity = recentAttempts.length > 0 || recentInterviews.length > 0
 
   const coreLoaded = attemptsLoaded && feedLoaded && !profileLoading
@@ -803,63 +797,8 @@ export default function ProgressPage() {
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 py-5 pb-12">
-      {/* ── Compact hero: evidence summary + streak + XP ───────────── */}
-      <section
-        className="relative mb-4 grid grid-cols-1 items-center gap-5 overflow-hidden rounded-2xl px-6 py-5 lg:grid-cols-[1.3fr_auto_auto_auto_auto]"
-        style={{
-          background:
-            'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-850) 55%, var(--color-forest-700) 130%)',
-        }}
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{ background: 'radial-gradient(600px 300px at 85% -10%, rgba(163,235,177,.16), transparent 60%)' }}
-        />
-        <div className="relative min-w-0">
-          <div className="mb-1 text-[13px] font-bold text-on-hero-soft">Your progress</div>
-          <h1 className="m-0 mb-1.5 font-headline text-[25px] font-semibold leading-[1.15] text-white">
-            {weakest ? (
-              <><span className="hl-word">{weakest.k}</span> is your slowest move.</>
-            ) : (
-              <>Your learning evidence lives here.</>
-            )}
-          </h1>
-          <p className="m-0 max-w-[42ch] text-[13px] leading-[1.4] text-on-hero-muted">
-            {attempted > 0
-              ? `${attempted} completed challenge${attempted === 1 ? '' : 's'}. ${mastered} scored 80 or higher.`
-              : 'Complete a challenge to put numbers on this page.'}
-          </p>
-          {profile?.archetype && (
-            <div className="mt-2.5 inline-flex rounded-full border border-white/15 bg-white/8 px-2.5 py-1 text-[10.5px] font-bold text-white/80">
-              Archetype: {humanizeArchetype(profile.archetype)}
-            </div>
-          )}
-        </div>
-
-        <div aria-hidden className="relative hidden w-px self-stretch bg-white/15 lg:block" />
-
-        {streakDays > 0 && (
-          <div className="relative min-w-[126px]">
-            <div className="text-[16px] font-extrabold tabular-nums leading-[1.2] text-white">{streakDays}-day streak</div>
-            {shieldCount > 0 && (
-              <div className="mt-px text-[10.5px] tabular-nums text-on-hero-faint">
-                {shieldCount} shield{shieldCount === 1 ? '' : 's'} banked
-              </div>
-            )}
-          </div>
-        )}
-
-        {xpTotal > 0 && (
-          <div className="relative min-w-[126px]">
-            <div className="text-[16px] font-extrabold tabular-nums leading-[1.2] text-white">{xpTotal.toLocaleString()} XP</div>
-            <div className="text-[11px] text-on-hero-muted">Level {level}</div>
-            <div className="mt-px text-[10.5px] tabular-nums text-on-hero-faint">
-              {xpToNext.toLocaleString()} XP to Level {level + 1}
-            </div>
-          </div>
-        )}
-      </section>
+      <LearningPageHeading eyebrow="Your progress" title="See how far you’ve come.">Your completed work, feedback, and learning history in one place.</LearningPageHeading>
+      {weakest && <section className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-hairline bg-card-bright p-6"><div><p className="text-xs uppercase tracking-wide text-ink-secondary">Your next focus</p><h2 className="mt-2 font-headline text-2xl font-medium text-forest-950">Build confidence in {weakest.k.toLowerCase()}.</h2></div><Link href="/challenges" className="inline-flex min-h-11 items-center rounded-xl bg-forest-950 px-5 text-sm font-semibold text-white">Find a challenge →</Link></section>}
 
       {/* ── Stat strip (all values real; no invented deltas) ────────── */}
       <StatStrip

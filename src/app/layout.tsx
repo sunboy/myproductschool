@@ -13,6 +13,8 @@ import "./globals.css";
 import "katex/dist/katex.min.css";
 import "@/components/ui/markdown.css";
 import "@/components/redesign/learning-design.css";
+import "@/components/redesign/workspace-design.css";
+import "@/components/redesign/platform-design.css";
 import "../styles/shepherd-theme.css";
 
 export const metadata: Metadata = {

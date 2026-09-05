@@ -90,6 +90,10 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
     const containerRef = useRef<HTMLDivElement>(null)
     const termRef = useRef<import('xterm').Terminal | null>(null)
     const wsRef = useRef<WebSocket | null>(null)
+    // A prompt may be selected while the mobile terminal is hidden or connecting.
+    // Keep the most recent selection until the PTY has actually produced output.
+    const pendingInsertRef = useRef<string | null>(null)
+    const shellReadyRef = useRef(false)
     const tailRef = useRef<string>('')
     const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const mountedRef = useRef(true)
@@ -124,8 +128,10 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
     // Expose imperative handle to parent
     useImperativeHandle(ref, () => ({
       insertText(text: string) {
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
+        if (wsRef.current?.readyState === WebSocket.OPEN && shellReadyRef.current) {
           wsRef.current.send(text)
+        } else {
+          pendingInsertRef.current = text
         }
       },
       focus() {
@@ -367,6 +373,7 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
 
     function connectWS() {
       if (!mountedRef.current) return
+      shellReadyRef.current = false
       setWsError(null)
 
       try {
@@ -391,6 +398,13 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           if (!mountedRef.current) return
           const text = typeof event.data === 'string' ? event.data : ''
           if (!text) return
+
+          shellReadyRef.current = true
+          if (pendingInsertRef.current !== null && ws.readyState === WebSocket.OPEN) {
+            ws.send(pendingInsertRef.current)
+            pendingInsertRef.current = null
+            termRef.current?.focus()
+          }
 
           onActivity?.()
           // Route through the readiness gate: if xterm's renderer hasn't measured
