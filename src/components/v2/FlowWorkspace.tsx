@@ -5863,7 +5863,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                         const prev = idx > 0 ? designSteps[idx - 1] : null
                         const next = idx >= 0 && idx < designSteps.length - 1 ? designSteps[idx + 1] : null
                         return (
-                          <div className="mt-5 flex items-center justify-between border-t border-hairline pt-4">
+                          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-hairline pt-4">
                             {prev ? (
                               <button
                                 type="button"
@@ -5873,7 +5873,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                                 <span className="material-symbols-outlined text-[15px]">arrow_back</span>
                                 {prev.label}
                               </button>
-                            ) : <span />}
+                            ) : null}
                             {next && (
                               <button
                                 type="button"

@@ -188,7 +188,7 @@ Interview transcript:
 ${transcript}`
 
   const response = await guardedCachedMessage(
-    loadSkillPrompt('hackproduct-interview-grader', systemPrompt) + '\n\n# Active mode\nDebrief grading',
+    loadSkillPrompt('hackproduct-interview-grader', systemPrompt) + '\n\n# Active mode\nDebrief grading\nUse professional learning language: challenge, interview, session, and feedback. Do not call learning activities reps, a practice gym, or training loops. Recommend only supplied destinations; do not imply an unverified resource exists.',
     userMessage, {
     model: liveInterviewModel('debrief'),
     max_tokens: 1500,
