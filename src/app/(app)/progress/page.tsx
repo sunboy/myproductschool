@@ -6,7 +6,6 @@ import { useState, useEffect, type ReactNode } from 'react'
 import { ArrowRight, Check, ChevronRight, Minus, Share2, TrendingDown, TrendingUp } from 'lucide-react'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { NoteCard } from '@/components/redesign/NoteCard'
-import { ProgressRing } from '@/components/redesign/ProgressRing'
 import { StatStrip } from '@/components/redesign/StatStrip'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { Md } from '@/components/ui/Md'
@@ -130,10 +129,6 @@ interface ReasoningTrajectory {
     totalSignals: number
   }
 }
-
-const READINESS_CHALLENGE_QUOTA = 10
-const READINESS_MOVE_LEVEL = 3
-const READINESS_MOVES: string[] = ['frame', 'list', 'optimize', 'win']
 
 const TRAJECTORY_MOVE_LABELS: Record<TrajectoryMove, string> = {
   frame: 'Frame',
@@ -346,7 +341,7 @@ function TrajectoryCellCard({
         </div>
         <MiniSparkline values={cell.history} color={color} />
         <div className="mt-1 flex items-center justify-between gap-2 text-[10px] font-semibold tabular-nums text-ink-secondary">
-          <span>{cell.sampleSize} reps</span>
+          <span>{cell.sampleSize} challenges</span>
           <span>{cell.confidence}% conf</span>
         </div>
       </div>
@@ -418,7 +413,7 @@ function ReasoningTrajectorySection({
           href={trajectory.nextFocus.href}
           className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-forest-700 no-underline"
         >
-          Next best rep
+          Next challenge
           <ChevronRight size={13} strokeWidth={2.2} />
         </Link>
       </div>
@@ -431,7 +426,7 @@ function ReasoningTrajectorySection({
             </p>
             <div className="grid grid-cols-3 gap-1.5">
               <TrajectoryStat label="Signals" value={String(totalSignals)} />
-              <TrajectoryStat label="Practice" value={String(trajectory.summary.challengeReps)} />
+              <TrajectoryStat label="Challenges" value={String(trajectory.summary.challengeReps)} />
               <TrajectoryStat label="Gaps" value={String(lowSignal)} />
             </div>
           </div>
@@ -439,7 +434,7 @@ function ReasoningTrajectorySection({
           <div className="overflow-x-auto">
             <div className="min-w-[780px]">
               <p className="mb-2 px-1 text-xs font-semibold text-ink-secondary">
-                Score · Δ vs last week · reps · confidence
+                Score · Δ vs last week · challenges · confidence
               </p>
               <div
                 className="mb-1 grid items-center gap-1.5 px-1 text-[10px] font-black uppercase tracking-[0.10em] text-ink-muted"
@@ -489,7 +484,7 @@ function ReasoningTrajectorySection({
         </>
       ) : (
         <p className="m-0 mb-3 text-[12.5px] font-semibold text-ink-secondary">
-          This fills in as you complete reps across disciplines.
+          This fills in as you complete challenges across disciplines.
         </p>
       )}
 
@@ -511,7 +506,7 @@ function ReasoningTrajectorySection({
             href={trajectory.nextFocus.href}
             className="mt-3 inline-flex items-center gap-1.5 rounded-[10px] bg-forest-800 px-3 py-1.5 text-[11.5px] font-extrabold text-white no-underline"
           >
-            Start focused rep
+            Start focused challenge
             <ArrowRight size={12} strokeWidth={2.2} />
           </Link>
         </NoteCard>
@@ -544,7 +539,7 @@ function ReasoningTrajectorySection({
             </div>
           ) : (
             <p className="m-0 text-[12px] font-semibold text-ink-secondary">
-              No evidence yet. Hatch will fill this after your first completed rep.
+              No evidence yet. Hatch will fill this after your first completed challenge.
             </p>
           )}
         </div>
@@ -673,14 +668,6 @@ export default function ProgressPage() {
   const mastered = masteryEntries.filter(e => e.is_completed && e.score !== null && (e.score as number) >= 80).length
   const attemptedPct = total > 0 ? Math.round((attempted / total) * 100) : 0
 
-  // Readiness score
-  const qualifiedChallenges = masteryEntries.filter(e => e.is_completed && e.score !== null && (e.score as number) >= 60).length
-  const challengePct = Math.min(100, Math.round((qualifiedChallenges / READINESS_CHALLENGE_QUOTA) * 100))
-  const moveLevelMap = new Map<string, number>(moves.map(m => [m.move as string, m.level]))
-  const movesAtLevel = READINESS_MOVES.filter(m => (moveLevelMap.get(m) ?? 0) >= READINESS_MOVE_LEVEL).length
-  const movePct = Math.round((movesAtLevel / READINESS_MOVES.length) * 100)
-  const overallPct = Math.round((challengePct + movePct) / 2)
-
   const streakDays = profile?.streak_days ?? 0
   const xpTotal = profile?.xp_total ?? 0
   const level = levelFromXp(xpTotal)
@@ -691,10 +678,10 @@ export default function ProgressPage() {
   const isDayZero =
     coreLoaded && !hasActivity && activityEvents.length === 0 && attempted === 0 && streakDays === 0 && xpTotal === 0
 
-  // Hero headline from real state: slowest FLOW move among moves with reps.
-  const movesWithReps = flowMoves.filter(m => m.hasReps)
-  const weakest = movesWithReps.length > 0
-    ? movesWithReps.reduce((min, m) => (m.pct < min.pct ? m : min), movesWithReps[0])
+  // Hero headline from real state: slowest FLOW move among moves with evidence.
+  const movesWithEvidence = flowMoves.filter(m => m.hasReps)
+  const weakest = movesWithEvidence.length > 0
+    ? movesWithEvidence.reduce((min, m) => (m.pct < min.pct ? m : min), movesWithEvidence[0])
     : null
 
   // Merged activity timeline: attempts + interviews + feed events, newest first.
@@ -784,7 +771,7 @@ export default function ProgressPage() {
         <section className={`${CARD_CLASS} flex flex-col items-center p-8 text-center`}>
           <HatchImage state="wave" size={120} priority />
           <h1 className="mb-2 mt-4 font-headline text-[28px] font-semibold leading-[1.2] text-ink-strong">
-            One <span className="hl-word">rep</span> starts the map.
+            One <span className="hl-word">challenge</span> starts the map.
           </h1>
           <p className="mb-5 max-w-[44ch] text-[13.5px] leading-[1.55] text-ink-secondary">
             This page fills in after your first completed challenge. About 5 minutes, no setup.
@@ -793,7 +780,7 @@ export default function ProgressPage() {
             href="/challenges"
             className="inline-flex items-center gap-2 rounded-[10px] bg-forest-950 px-[18px] py-[11px] text-[13.5px] font-extrabold text-white no-underline shadow-[inset_0_1px_0_rgba(255,255,255,.12)]"
           >
-            Start your first rep
+            Start your first challenge
             <ArrowRight size={14} strokeWidth={2.2} />
           </Link>
         </section>
@@ -816,7 +803,7 @@ export default function ProgressPage() {
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 py-5 pb-12">
-      {/* ── Dark hero: headline + readiness ring + streak + XP ─────── */}
+      {/* ── Compact hero: evidence summary + streak + XP ───────────── */}
       <section
         className="relative mb-4 grid grid-cols-1 items-center gap-5 overflow-hidden rounded-2xl px-6 py-5 lg:grid-cols-[1.3fr_auto_auto_auto_auto]"
         style={{
@@ -835,12 +822,12 @@ export default function ProgressPage() {
             {weakest ? (
               <><span className="hl-word">{weakest.k}</span> is your slowest move.</>
             ) : (
-              <>Every completed <span className="hl-word">rep</span> lands here.</>
+              <>Your learning evidence lives here.</>
             )}
           </h1>
           <p className="m-0 max-w-[42ch] text-[13px] leading-[1.4] text-on-hero-muted">
             {attempted > 0
-              ? `${attempted} completed rep${attempted === 1 ? '' : 's'}. ${mastered} scored 80 or higher.`
+              ? `${attempted} completed challenge${attempted === 1 ? '' : 's'}. ${mastered} scored 80 or higher.`
               : 'Complete a challenge to put numbers on this page.'}
           </p>
           {profile?.archetype && (
@@ -848,13 +835,6 @@ export default function ProgressPage() {
               Archetype: {humanizeArchetype(profile.archetype)}
             </div>
           )}
-        </div>
-
-        <div className="relative flex flex-col items-center gap-1.5">
-          <ProgressRing percent={overallPct} size={64} strokeWidth={9} color={['#fdb41f', '#a3ebb1']}>
-            <span className="font-body text-[16px] font-extrabold tabular-nums text-white">{overallPct}%</span>
-          </ProgressRing>
-          <span className="text-center text-[9px] font-bold uppercase tracking-[0.05em] text-on-hero-muted">Readiness</span>
         </div>
 
         <div aria-hidden className="relative hidden w-px self-stretch bg-white/15 lg:block" />
@@ -885,8 +865,7 @@ export default function ProgressPage() {
       <StatStrip
         className="mb-4"
         cells={[
-          { key: 'readiness', label: 'Readiness', value: `${overallPct}%` },
-          { key: 'completed', label: 'Reps completed', value: String(attempted) },
+          { key: 'completed', label: 'Challenges completed', value: String(attempted) },
           { key: 'mastered', label: 'Scored 80+', value: String(mastered) },
           { key: 'coverage', label: 'Library coverage', value: `${attemptedPct}%` },
           {
@@ -898,7 +877,7 @@ export default function ProgressPage() {
         ]}
       />
 
-      {/* ── Row 1: FLOW moves / readiness radar / four-week heatmap ── */}
+      {/* ── Row 1: FLOW moves / skill profile / four-week activity ── */}
       <div className="mb-4 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1.05fr_1.05fr_1fr]">
         <section className={CARD_CLASS}>
           <CardTitle>FLOW moves</CardTitle>
@@ -919,7 +898,7 @@ export default function ProgressPage() {
                 </div>
               ) : (
                 <div className="mt-1.5 inline-flex rounded-full border border-hairline px-2 py-0.5 text-[10px] font-bold text-ink-muted">
-                  Building reps
+                  Building evidence
                 </div>
               )}
             </div>
@@ -928,7 +907,7 @@ export default function ProgressPage() {
         </section>
 
         <section className={`${CARD_CLASS} flex flex-col`}>
-          <CardTitle>Readiness radar</CardTitle>
+          <CardTitle>Skill profile</CardTitle>
           {dna ? (
             <>
               <div className="flex flex-1 items-center justify-center">
@@ -949,7 +928,7 @@ export default function ProgressPage() {
             </>
           ) : (
             <p className="m-0 flex flex-1 items-center justify-center text-center text-[12.5px] font-semibold text-ink-secondary">
-              Your competency radar appears after Hatch grades a few reps.
+              Your skill profile appears after Hatch grades a few challenges.
             </p>
           )}
         </section>
@@ -987,7 +966,7 @@ export default function ProgressPage() {
               {timeline.map((item, i) => (
                 <TimelineRow key={item.key} item={item} isLast={i === timeline.length - 1} />
               ))}
-              <ViewLink href="/challenges">View all</ViewLink>
+              <ViewLink href="/history">View full history</ViewLink>
             </>
           ) : (
             <div className="flex items-center gap-3 py-2">

@@ -7,11 +7,11 @@ import { itemListJsonLd, PRACTICE_DIRECTORIES } from '@/lib/seo/directory-conten
 import { PracticeCatalogClient, type PracticeCatalogItem } from './PracticeCatalogClient'
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Practice Catalog for FLOW-Scored Career Reps | HackProduct',
+  title: 'Practice Catalog for Career Skills | HackProduct',
   description:
-    'Browse public HackProduct practice previews by discipline, FLOW move, and career goal. Open the full app for Hatch coaching, scoring, and saved progress.',
+    'Browse public HackProduct challenge previews by discipline, approach, and career goal. Open the full app for Hatch coaching, scoring, and saved progress.',
   path: '/practice',
-  keywords: ['product sense practice questions', 'system design practice questions', 'SQL product analytics practice', 'FLOW practice reps'],
+  keywords: ['product sense practice questions', 'system design practice questions', 'SQL product analytics practice', 'career skills practice'],
 })
 
 const PRACTICE_META: Record<string, Pick<PracticeCatalogItem, 'flowMoves' | 'goals'>> = {
@@ -66,21 +66,21 @@ export default function PracticeDirectoryPage() {
       />
       <V3PageHero
         eyebrow="Practice catalog"
-        title="Filter reps by discipline, FLOW move, and career goal."
-        subtitle="Public previews show the scenario, skill focus, rubric hints, and Hatch-style nudges. The full app adds the answer workspace, follow-ups, scoring, and saved progress."
-        ctas={[{ label: 'Start a free rep', href: '/login?returnTo=/challenges' }]}
+        title="Browse challenges by discipline, approach, and career goal."
+        subtitle="Explore scenarios across product, systems, data, SQL, coding, and AI analytics. The full app adds the answer workspace, follow-ups, scoring, and saved progress."
+        ctas={[{ label: 'Start a free challenge', href: '/login?returnTo=/challenges' }]}
       />
       <V3Section
         eyebrow="Sneak peek catalog"
         title="Useful previews without replacing logged-in practice."
-        subtitle="Use filters to find the next rep. Public pages show the prompt and rubric preview; Hatch coaching and saved receipts happen in the app."
+        subtitle="Use filters to find a challenge that matches your goals. Public pages show the prompt and rubric preview; Hatch coaching and scored history continue in the app."
       >
         <PracticeCatalogClient items={catalogItems} />
       </V3Section>
       <V3CtaBand
         title="Start training for your next career move."
-        subtitle="Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress."
-        ctas={[{ label: 'Start a free rep', href: '/login?returnTo=/challenges' }]}
+        subtitle="Public previews show the challenge. The app gives you guided feedback, Hatch follow-ups, FLOW scoring, and a clear next step."
+        ctas={[{ label: 'Start a free challenge', href: '/login?returnTo=/challenges' }]}
       />
     </V3PageShell>
   )

@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+:root {
+  --font-nunito-sans: "Nunito Sans Variable", sans-serif;
+  --font-literata: "Literata Variable", serif;
+}
+
 /* ── Material 3 + Terra Design System ────────────────────────── */
 
 @theme inline {
@@ -231,23 +236,14 @@ body {
     radial-gradient(1200px 600px at 15% -10%, rgba(74, 124, 89, 0.06), transparent 60%),
     radial-gradient(1000px 500px at 110% 10%, rgba(201, 147, 58, 0.06), transparent 60%);
   font-family: var(--font-nunito-sans, 'Nunito Sans', sans-serif);
-  font-weight: 500;
+  font-weight: 400;
   color: #2e3230;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Bump Raleway body/label weights up ~1 step — headlines excluded */
-:not(.font-headline) {
-  &.font-normal, &.font-regular { font-weight: 500; }
-  &.font-medium                 { font-weight: 600; }
-  &.font-semibold               { font-weight: 700; }
-  &.font-bold                   { font-weight: 800; }
-}
-.font-headline {
-  font-weight: revert;
-}
+/* Font utilities retain their declared weights across the platform. */
 
 /* Grain overlay — subtle paper feel (from HackProduct redesign handoff) */
 body::before {
@@ -882,4 +878,11 @@ body::before {
   /* Pull the wash overhang back so trailing punctuation hugs the word
      instead of reading as a stray space before the period. */
   margin: 0 -0.09em;
+}
+
+/* Shared, low-contrast geometric field: scales with the viewport, never content. */
+.hp-learning-shell {
+  background-image: linear-gradient(145deg, transparent 58%, rgba(213,199,173,.14) 58% 76%, transparent 76%), linear-gradient(35deg, transparent 64%, rgba(213,199,173,.12) 64% 80%, transparent 80%);
+  background-size: 100% 48rem;
+  background-repeat: no-repeat;
 }

@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Flame, Zap, Volume2, VolumeX, Compass, LogOut, Settings, Handshake, Sparkles, MessageSquare } from 'lucide-react'
+import { Volume2, VolumeX, Compass, LogOut, Settings, Handshake, Sparkles, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { levelFromXp } from '@/lib/utils'
 import { useSession } from '@/context/SessionContext'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { FreemiumUsageSummary, SpendIndicator } from '@/components/billing/FreemiumUsageSummary'
@@ -26,9 +25,8 @@ function getInitials(name: string | null | undefined): string {
 }
 
 /**
- * Desktop TopUtilityBar (real search, streak/XP, sound + tour toggles,
- * avatar dropdown) and the collapsed mobile top bar (logo + streak/XP +
- * avatar, no sidebar, no search). Replaces TopNav inside (app)/layout.tsx
+ * Desktop TopUtilityBar (real search, sound + tour toggles,
+ * avatar dropdown) and the collapsed mobile top bar (logo + avatar, no sidebar, no search). Replaces TopNav inside (app)/layout.tsx
  * only — TopNav itself stays mounted by (workspace)/layout.tsx and other
  * surfaces that still import it directly.
  */
@@ -81,10 +79,6 @@ export function AppTopShell() {
     router.push(q ? `/challenges?q=${encodeURIComponent(q)}` : '/challenges')
   }
 
-  const streak = profile?.streak_days ?? 0
-  const bestStreak = Math.max(profile?.longest_streak ?? 0, streak)
-  const xp = profile?.xp_total ?? 0
-  const level = levelFromXp(xp)
   const isPro = profile?.plan === 'pro'
 
   // Derive trial/dunning banners from already-fetched profile data (same logic as TopNav).
@@ -224,7 +218,7 @@ export function AppTopShell() {
         <DunningBanner message={dunningMessage} daysUntilSuspension={dunningDaysLeft} />
       )}
 
-      {/* Desktop (lg+): full TopUtilityBar with live search, streak/XP, sound + tour toggles, avatar menu. */}
+      {/* Desktop (lg+): full TopUtilityBar with live search, sound + tour toggles, avatar menu. */}
       <div data-topnav className="hidden lg:block">
         <TopUtilityBar
           searchPlaceholder="Search topics, problems, or interviews..."
@@ -232,10 +226,6 @@ export function AppTopShell() {
           onSearchChange={setSearchValue}
           onSearchSubmit={handleSearchSubmit}
           searchInputRef={searchInputRef}
-          streakDays={streak > 0 ? streak : undefined}
-          bestStreakDays={streak > 0 ? bestStreak : undefined}
-          totalXp={xp > 0 ? xp : undefined}
-          level={xp > 0 ? level : undefined}
           avatarInitial={getInitials(profile?.display_name)}
           displayName={profile?.display_name ?? 'You'}
           isPro={isPro}
@@ -266,25 +256,13 @@ export function AppTopShell() {
         />
       </div>
 
-      {/* Mobile (<lg): collapsed bar — logo + streak/XP + avatar. No sidebar, no search box. */}
+      {/* Mobile (<lg): collapsed bar — logo + avatar. No sidebar, no search box. */}
       <div data-topnav className="flex items-center gap-3 border-b border-hairline bg-page-field px-4 py-3 lg:hidden">
         <Link href="/dashboard" className="flex min-w-0 shrink-0 items-center">
           <HackProductWordmark className="h-7 w-[147px] object-cover" />
         </Link>
 
         <div className="ml-auto flex items-center gap-4">
-          {streak > 0 && (
-            <div className="flex items-center gap-1">
-              <Flame size={15} strokeWidth={1.8} className="text-flame" />
-              <span className="text-[13px] font-extrabold tabular-nums text-ink-strong">{streak}d</span>
-            </div>
-          )}
-          {xp > 0 && (
-            <div className="flex items-center gap-1">
-              <Zap size={15} strokeWidth={1.8} className="text-gold" />
-              <span className="text-[13px] font-extrabold tabular-nums text-ink-strong">{xp.toLocaleString()}</span>
-            </div>
-          )}
           <AvatarMenu compact />
         </div>
       </div>

@@ -14,6 +14,8 @@
 //   LLM_GATEWAY_MASTER_KEY admin key authorizing /key/generate
 //   CC_SESSION_BUDGET_USD  hard cap per session (default 0.50)
 
+import { resolveSessionBudgetUsd, resolveSessionTtlSeconds } from './cost-policy'
+
 export interface VirtualKey {
   /** The virtual key the container uses as its Anthropic API key. */
   key: string
@@ -28,8 +30,8 @@ export function isGatewayConfigured(): boolean {
 
 /**
  * Mint a virtual key scoped to one session with a hard budget. Returns null if
- * the gateway is not configured (caller falls back to the shared key) — so the
- * gateway can be adopted without breaking environments that haven't deployed it.
+ * the gateway is not configured. Production provisioning treats that as a hard
+ * failure; only an explicitly opted-in local environment may use a direct key.
  */
 export async function mintSessionVirtualKey(
   sessionId: string,
@@ -48,7 +50,8 @@ export async function mintSessionVirtualKey(
 
   const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
-  const budgetUsd = parseFloat(process.env.CC_SESSION_BUDGET_USD ?? '0.50')
+  const budgetUsd = resolveSessionBudgetUsd(process.env.CC_SESSION_BUDGET_USD)
+  const boundedTtlSeconds = resolveSessionTtlSeconds(ttlSeconds)
 
   // Retry with backoff: the gateway is minScale=0 and its Cloud SQL may have just
   // been woken on demand (see cloud-sql-admin), so the FIRST key/generate can hit
@@ -88,7 +91,7 @@ export async function mintSessionVirtualKey(
           key_alias: keyAlias,
           max_budget: budgetUsd,
           // Hard duration so a key can't be reused indefinitely; matches session TTL.
-          duration: `${Math.max(60, ttlSeconds)}s`,
+          duration: `${boundedTtlSeconds}s`,
           models,
           metadata: { feature: 'claude_code_analytics', session_id: sessionId },
         }),

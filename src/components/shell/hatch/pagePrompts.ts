@@ -23,6 +23,51 @@ export interface PagePrompt {
   cta?: PagePromptCta
 }
 
+export interface HatchPickResponse {
+  weakestMove?: string
+  planSlug?: string | null
+}
+
+const SAFE_PLAN_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+/**
+ * Keep personalized Hatch navigation inside the two app surfaces page prompts
+ * are allowed to open. The API returns data, not a trusted redirect target, so
+ * callers must run every derived href through this allowlist before router.push.
+ */
+export function isAllowedPagePromptHref(href: string): boolean {
+  if (href === '/challenges?discipline=product_sense') return true
+  return /^\/explore\/plans\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(href)
+}
+
+export function pagePromptDestination(
+  action: PagePromptAction,
+  pick?: HatchPickResponse | null,
+): string | null {
+  if (action === 'filter-practice') {
+    return '/challenges?discipline=product_sense'
+  }
+
+  if (action !== 'show-plan' || !pick?.planSlug || !SAFE_PLAN_SLUG.test(pick.planSlug)) {
+    return null
+  }
+
+  const href = `/explore/plans/${pick.planSlug}`
+  return isAllowedPagePromptHref(href) ? href : null
+}
+
+/** Return a safe prompt only when opening it cannot replace user work. */
+export function promptForFreshConversation(
+  candidate: unknown,
+  hasMessages: boolean,
+  currentInput: string,
+): string | null {
+  if (typeof candidate !== 'string' || hasMessages || currentInput.trim().length > 0) return null
+  const prompt = candidate.trim()
+  if (!prompt || candidate.length > 20_000) return null
+  return prompt
+}
+
 export const PAGE_PROMPTS: PagePrompt[] = [
   {
     pattern: /^\/workspace\/challenges\//,

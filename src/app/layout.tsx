@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Raleway, Literata, Geist } from "next/font/google";
+import "@fontsource-variable/nunito-sans";
+import "@fontsource-variable/literata";
+import "@fontsource-variable/literata/wght-italic.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AnalyticsGate } from "@/components/legal/AnalyticsGate";
 import { CookieBanner } from "@/components/legal/CookieBanner";
@@ -9,24 +11,6 @@ import { HatchSonicSurface } from "@/components/shell/HatchSonicSurface";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, imageUrl, SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
 import "../styles/shepherd-theme.css";
-
-const raleway = Raleway({
-  variable: "--font-nunito-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-});
-
-const literata = Literata({
-  variable: "--font-literata",
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
-});
-
-const geist = Geist({
-  variable: "--font-geist",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -104,7 +88,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${raleway.variable} ${literata.variable} ${geist.variable} h-full antialiased`}>
+    <html lang="en" className="h-full antialiased">
       <head>
         {/* Material Symbols Outlined icon font — loaded non-render-blocking.
             Preconnect warms the connection. The stylesheet loads with media="print"

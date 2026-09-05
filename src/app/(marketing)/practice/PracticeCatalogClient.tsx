@@ -45,10 +45,13 @@ export function PracticeCatalogClient({ items }: { items: PracticeCatalogItem[] 
     <div className="space-y-8">
       <div className="grid gap-4 rounded-xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant/35 lg:grid-cols-3">
         <FilterGroup label="Discipline" options={disciplines} value={discipline} onChange={setDiscipline} />
-        <FilterGroup label="FLOW move" options={flowMoves} value={flowMove} onChange={setFlowMove} />
+        <FilterGroup label="Approach" options={flowMoves} value={flowMove} onChange={setFlowMove} />
         <FilterGroup label="Career goal" options={goals} value={goal} onChange={setGoal} />
       </div>
 
+      <p className="text-sm text-on-surface-variant" aria-live="polite">
+        Showing <span className="font-bold text-on-surface">{filtered.length}</span> of {items.length} challenges
+      </p>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filtered.map((item) => (
           <Card key={item.slug} className="rounded-xl bg-surface-container-lowest shadow-sm ring-1 ring-outline-variant/35">
@@ -69,7 +72,7 @@ export function PracticeCatalogClient({ items }: { items: PracticeCatalogItem[] 
                 ))}
               </div>
               <Link href={item.href} className="mt-5 text-sm font-bold text-primary no-underline">
-                Preview rep
+                Preview challenge
               </Link>
             </CardContent>
           </Card>
@@ -117,7 +120,8 @@ function FilterGroup({
             key={option}
             type="button"
             onClick={() => onChange(option)}
-            className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
+            aria-pressed={value === option}
+            className={`min-h-11 rounded-full border px-3 py-2 text-xs font-bold transition-colors ${
               value === option
                 ? 'border-primary bg-primary text-on-primary'
                 : 'border-outline-variant bg-background text-on-surface-variant hover:border-primary/50'

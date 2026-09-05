@@ -3,15 +3,10 @@ import Link from 'next/link'
 import {
   Home,
   Compass,
-  Mic,
   BookOpen,
   ChartColumn,
-  Users,
-  ChartLine,
   CircleHelp,
   ChevronRight,
-  FileSearch,
-  GraduationCap,
   MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -21,13 +16,8 @@ import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 export type SidebarItem =
   | 'home'
   | 'practice'
-  | 'interviews'
-  | 'study-plans'
-  | 'autopsies'
-  | 'guides'
+  | 'library'
   | 'progress'
-  | 'community'
-  | 'analytics'
 
 export type PlanTier = 'free' | 'pro'
 
@@ -43,17 +33,10 @@ interface NavEntry {
 const MAIN_NAV_ENTRIES: NavEntry[] = [
   { key: 'home', label: 'Home', href: '/dashboard', icon: Home },
   { key: 'practice', label: 'Practice', href: '/challenges', icon: Compass },
-  { key: 'interviews', label: 'Interviews', href: '/live-interviews', icon: Mic, showLivePill: true },
+  { key: 'library', label: 'Library', href: '/explore', icon: BookOpen },
   { key: 'progress', label: 'Progress', href: '/progress', icon: ChartColumn },
-  { key: 'community', label: 'Community', href: '/cohort', icon: Users },
-  { key: 'analytics', label: 'Analytics', href: '/challenges?discipline=analytics', icon: ChartLine },
 ]
 
-const LIBRARY_NAV_ENTRIES: NavEntry[] = [
-  { key: 'study-plans', label: 'Study Plans', href: '/explore/plans', icon: BookOpen },
-  { key: 'autopsies', label: 'Autopsies', href: '/explore/autopsies', icon: FileSearch },
-  { key: 'guides', label: 'Guides', href: '/explore/modules', icon: GraduationCap },
-]
 
 export interface AppSidebarProps {
   /** Which nav item is highlighted with the forest-800 active pill. */
@@ -109,7 +92,7 @@ export function AppSidebar({
         aria-current={isActive ? 'page' : undefined}
         data-hatch-target={entry.key === 'home' ? 'nav-dashboard' : `nav-${entry.key}`}
         className={cn(
-          'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-ink-secondary transition-colors',
+          'flex min-h-11 items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-ink-secondary transition-colors',
           isActive && 'bg-forest-800 text-white'
         )}
       >
@@ -137,11 +120,6 @@ export function AppSidebar({
 
       <nav className="mt-2 flex flex-col gap-0.5">
         {MAIN_NAV_ENTRIES.map(renderEntry)}
-
-        <div className="mt-4 mb-1 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
-          Library
-        </div>
-        {LIBRARY_NAV_ENTRIES.map(renderEntry)}
       </nav>
 
       <div className="mt-auto flex flex-col gap-3.5">

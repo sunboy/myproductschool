@@ -82,8 +82,8 @@ export function V3ContextSection() {
   return (
     <section className="context-section" aria-labelledby="context-heading">
       <div className="shell">
-        <div className="context-logo-row" aria-label="Practice for interview loops at">
-          <div className="context-logo-label">Practice for interview loops at</div>
+        <div className="context-logo-row" aria-label="Practice for interviews at">
+          <div className="context-logo-label">Practice for interviews at</div>
           <div className="context-logo-marquee" tabIndex={0}>
             <div className="context-logo-track">
               {tickerLoops.map((companies, loopIndex) => (
@@ -106,9 +106,9 @@ export function V3ContextSection() {
 
         <div className="context-copy">
           <h2 id="context-heading">
-            Your interview anxiety isn&rsquo;t a flaw to fix. It&rsquo;s untrained reps.
+            Interview confidence is a skill you can build.
           </h2>
-          <p>Practice under pressure, with a coach that tells you the truth.</p>
+          <p>Practice under pressure with a coach that gives you clear feedback.</p>
         </div>
 
         <div className="context-map">

@@ -3,6 +3,7 @@ import { JsonLdScript } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl, imageUrl } from '@/lib/seo/site'
 import { organizationJsonLd, websiteJsonLd } from '@/lib/seo/directory-content'
 import { V3Nav } from '@/components/landing-v3/V3Nav'
+import { V3TryRep } from '@/components/landing-v3/V3TryRep'
 import { V3Hero } from '@/components/landing-v3/V3Hero'
 import { V3ContextSection } from '@/components/landing-v3/V3ContextSection'
 import { V3HowItWorks } from '@/components/landing-v3/V3HowItWorks'
@@ -15,16 +16,16 @@ import { V3Footer } from '@/components/landing-v3/V3Footer'
 import { V3AuthGate } from '@/components/landing-v3/V3AuthGate'
 
 export const v3LandingDescription =
-  'HackProduct makes product and technical judgment trainable. Run live interviews, drive a live AI data analyst with Claude Code, get Hatch AI coaching, study autopsies, follow study plans, practice code and canvas work, and track scoring in one AI-native prep system.'
+  'Build practical skills for your next challenge at work. Explore product and technical challenges, learn from real cases, prepare for interviews, and get personalized guidance from Hatch.'
 
-export const v3LandingTitle = 'HackProduct | AI-Native Practice System for Product and Technical Judgment'
+export const v3LandingTitle = 'HackProduct | Practical Learning for Tech Professionals'
 
 export const v3LandingKeywords = [
   'AI-native practice system',
   'product judgment practice',
   'technical interview practice',
   'AI interview coaching',
-  'live interview loops',
+  'live interview practice',
   'product sense interview prep',
   'system design interview practice',
 ]
@@ -56,7 +57,7 @@ const softwareJsonLd = {
         price: '39',
         priceCurrency: 'USD',
         url: canonicalUrl('/pricing?plan=monthly'),
-        description: 'Monthly access to HackProduct Pro for live loops, Hatch coaching, scoring, and practice artifacts.',
+        description: 'Monthly access to HackProduct Pro for live interviews, Hatch coaching, scoring, and practice artifacts.',
       },
       {
         '@type': 'Offer',
@@ -64,7 +65,7 @@ const softwareJsonLd = {
         price: '199',
         priceCurrency: 'USD',
         url: canonicalUrl('/pricing?plan=annual'),
-        description: 'Annual access to HackProduct Pro for an interview season or role transition sprint.',
+        description: 'Annual access to HackProduct Pro for interview preparation or a role transition sprint.',
       },
     ],
   },
@@ -79,6 +80,14 @@ export function V3LandingPage() {
         <V3Hero />
         <V3ContextSection />
         <V3HowItWorks />
+        <section className="shell hp-try-challenge" aria-labelledby="try-challenge-title">
+          <div>
+            <p className="hp-launch-kicker">TRY IT FOR YOURSELF</p>
+            <h2 id="try-challenge-title">A small challenge.<br />A useful perspective.</h2>
+            <p>Share how you would approach a real product decision. Get a sample of Hatch’s feedback before creating an account.</p>
+          </div>
+          <V3TryRep />
+        </section>
         <V3HatchReveal />
         <V3FeatureGrid />
         <V3LiveInterviewSection />

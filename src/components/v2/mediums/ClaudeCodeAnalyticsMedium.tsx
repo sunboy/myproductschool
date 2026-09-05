@@ -101,6 +101,9 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // Starts collapsed on small screens so the terminal is reachable without
   // a long scroll; auto-collapses on desktop once the session is live.
   const [registerMenuOpen, setRegisterMenuOpen] = useState(false)
+  // On small screens the brief and terminal are deliberate stages, rather than
+  // two tall panels competing in one scroll. Desktop keeps both visible.
+  const [mobilePanel, setMobilePanel] = useState<'brief' | 'workspace'>('brief')
   const [questionCollapsed, setQuestionCollapsed] = useState<boolean>(
     () => typeof window !== 'undefined' && window.innerWidth < 768,
   )
@@ -1044,18 +1047,46 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           style={{ flex: 1, minHeight: 0, position: 'relative', gap: 8, padding: 8, background: 'var(--color-surface-container-low)', ['--cc-left-w' as string]: `${leftWidth}%` }}
         >
 
+          <div className="flex shrink-0 items-center gap-1 rounded-lg border border-[var(--color-outline-variant)] bg-[var(--color-surface)] p-1 md:hidden" role="tablist" aria-label="Analytics workspace stages">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mobilePanel === 'brief'}
+              aria-controls="analytics-brief-panel"
+              id="analytics-brief-tab"
+              onClick={() => setMobilePanel('brief')}
+              className={"min-h-11 flex-1 rounded-md px-3 text-sm font-semibold transition-colors " + (mobilePanel === 'brief' ? 'bg-[var(--color-primary-fixed)] text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)]')}
+            >
+              Brief
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mobilePanel === 'workspace'}
+              aria-controls="analytics-workspace-panel"
+              id="analytics-workspace-tab"
+              onClick={() => setMobilePanel('workspace')}
+              className={"min-h-11 flex-1 rounded-md px-3 text-sm font-semibold transition-colors " + (mobilePanel === 'workspace' ? 'bg-[var(--color-primary-fixed)] text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)]')}
+            >
+              Workspace
+            </button>
+          </div>
+
           {/* LEFT — scenario + dataset. `minHeight: 0` + `height: 100%` are what
               let `overflowY: auto` actually engage inside the flex row: without
               them the column stretches to its content's intrinsic height, grows
               the row past the viewport, and the bottom (skills library) gets
               clipped with no scrollbar. */}
           <div
-            className="w-full md:w-[var(--cc-left-w)] md:h-full md:min-h-0 md:overflow-y-auto"
+            id="analytics-brief-panel"
+            role="tabpanel"
+            aria-labelledby="analytics-brief-tab"
+            className={(mobilePanel === 'brief' ? 'flex' : 'hidden') + " w-full flex-col md:flex md:w-[var(--cc-left-w)] md:h-full md:min-h-0 md:overflow-y-auto"}
             style={{
               flexShrink: 0,
               border: '1px solid var(--color-outline-variant)', borderRadius: 12,
               overflowX: 'hidden', padding: '14px 14px',
-              display: 'flex', flexDirection: 'column', gap: 12,
+              gap: 12,
               background: 'var(--color-surface-container-lowest)',
             }}>
             <button
@@ -1287,10 +1318,12 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
               An auto column here created a second scrollbar around the
               terminal and let sibling cards jitter its height. */}
           <div
-            className="min-h-[360px] md:min-h-0"
+            id="analytics-workspace-panel"
+            role="tabpanel"
+            aria-labelledby="analytics-workspace-tab"
+            className={(mobilePanel === 'workspace' ? 'flex' : 'hidden') + " min-h-[360px] flex-col md:flex md:min-h-0"}
             style={{
               flex: 1, minWidth: 0,
-              display: 'flex', flexDirection: 'column',
               padding: '10px 12px',
               overflow: 'hidden',
               border: '1px solid var(--color-outline-variant)', borderRadius: 12,

@@ -22,7 +22,6 @@ import { PostSessionMirror, type StepResult as MirrorStepResult, type Competency
 import type { StepCalibration } from './CalibrationPreview'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
-import { ProgressRing } from '@/components/redesign/ProgressRing'
 import { useHatchContext } from '@/context/HatchContext'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { CanvasEmptyState } from '@/components/challenge/CanvasEmptyState'
@@ -5159,10 +5158,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         <button
           onClick={props.onExit ?? (() => window.history.back())}
           className="btn btn--ghost"
-          aria-label="Back"
+          aria-label="Back to practice"
+          title="Back to practice"
           style={{ padding: '6px 8px', fontSize: 12, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
+          <span className="hidden min-[1180px]:inline font-label" style={{ fontSize: 11, fontWeight: 800, whiteSpace: 'nowrap' }}>Back to Practice</span>
         </button>
         {leftCollapsed && challengeTitle && (
           <span
@@ -5412,83 +5413,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   ) : null
 
-  // Round-4 Hatch rail (FLOW MCQ question phase, wide desktop only): coach
-  // header with the listening pose, a mint "Hatch's read" note fed by the real
-  // proactive nudge (falling back to the current move's tagline), and the
-  // session progress ring. Pure chrome: it only displays state that already
-  // exists (proactiveNudge, completedSteps, questionIdx).
-  const flowRightRail = (
-    <aside
-      className="hidden min-[1280px]:flex"
-      style={{ width: 288, flexShrink: 0, flexDirection: 'column', gap: 10, marginLeft: 8, minHeight: 0, overflowY: 'auto' }}
-    >
-      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: 14, display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-        <HatchImage state="listening" size={46} className="rounded-lg" />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="font-label" style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-ink-strong)' }}>Hatch</div>
-          <div className="font-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-ink-muted)' }}>AI Coach</div>
-        </div>
-      </div>
-
-      <div className="note-mint" style={{ borderRadius: 16, padding: 14, flexShrink: 0 }}>
-        <div className="font-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 13, fontWeight: 800, color: 'var(--color-ink-strong)', marginBottom: 6 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 7, height: 7, borderRadius: 999, background: 'var(--color-forest-600)' }} />
-            {/* Only brand the note as live Hatch output when a real nudge is
-                showing; the static fallback is a method reminder, not a read. */}
-            {proactiveNudge ? <>Hatch&apos;s read</> : <>The move</>}
-          </span>
-          {proactiveNudge && (
-            <button
-              onClick={() => setProactiveNudge(null)}
-              aria-label="Dismiss nudge"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-ink-secondary)', padding: 0, display: 'inline-flex' }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 15 }}>close</span>
-            </button>
-          )}
-        </div>
-        <p className="font-body" style={{ fontSize: 12.8, lineHeight: 1.55, color: 'var(--color-ink-secondary)', margin: 0 }}>
-          {proactiveNudge?.text ?? `${STEP_LABEL[currentStep]} is the move here. ${FLOW_MOVES[currentStep].tagline}.`}
-        </p>
-      </div>
-
-      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: 14, flexShrink: 0 }}>
-        <div className="font-label" style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-ink-strong)' }}>Session progress</div>
-        <p className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)', margin: '2px 0 12px' }}>
-          {completedSteps.length === 0
-            ? 'No steps graded yet.'
-            : `${completedSteps.length} of ${FLOW_STEPS.length} steps graded.`}
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <ProgressRing
-            percent={Math.round((completedSteps.length / FLOW_STEPS.length) * 100)}
-            size={76}
-            strokeWidth={7}
-            trackColor="#eee9df"
-            color="var(--color-forest-600)"
-          >
-            <span className="font-label" style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-ink-strong)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-              {completedSteps.length}/{FLOW_STEPS.length}
-            </span>
-            <span className="font-label" style={{ fontSize: 8.5, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-ink-muted)', marginTop: 2 }}>Steps</span>
-          </ProgressRing>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>Current step</span>
-              <span className="font-label" style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink-strong)' }}>{STEP_LABEL[currentStep]}</span>
-            </div>
-            {stepQuestions.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>Question</span>
-                <span className="font-label" style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink-strong)', fontVariantNumeric: 'tabular-nums' }}>{Math.min(questionIdx + 1, stepQuestions.length)} of {stepQuestions.length}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </aside>
-  )
+  // The main answer area stays focused; Hatch remains available through the
+  // floating coach and the contextual nudge below the answer.
 
   // Shared bottom footer - spans full width so the borderTop is continuous
   const bottomFooter = currentQuestion ? (
@@ -5516,26 +5442,32 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             <div style={{ display: 'flex', gap: 14 }}>
               <button
                 className="btn btn--ghost"
+                aria-label={liked ? 'Remove like' : 'Like challenge'}
+                title={liked ? 'Remove like' : 'Like challenge'}
                 style={{ padding: '4px 10px', fontSize: 12, gap: 4, color: liked ? 'var(--color-primary)' : undefined }}
                 onClick={() => setLiked(v => !v)}
               >
                 <span
                   className="material-symbols-outlined msi-sm"
                   style={{ fontVariationSettings: liked ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
-                >thumb_up</span> {liked ? '1.1K+' : '1.1K'}
+                >thumb_up</span>
               </button>
               <button
                 className="btn btn--ghost"
+                aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark challenge'}
+                title={bookmarked ? 'Remove bookmark' : 'Bookmark challenge'}
                 style={{ padding: '4px 10px', fontSize: 12, gap: 4, color: bookmarked ? 'var(--color-primary)' : undefined }}
                 onClick={() => setBookmarked(v => !v)}
               >
                 <span
                   className="material-symbols-outlined msi-sm"
                   style={{ fontVariationSettings: bookmarked ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
-                >{bookmarked ? 'bookmark' : 'bookmark_border'}</span> {bookmarked ? '343' : '342'}
+                >{bookmarked ? 'bookmark' : 'bookmark_border'}</span>
               </button>
               <button
                 className="btn btn--ghost"
+                aria-label="Share challenge"
+                title="Share challenge"
                 style={{ padding: '4px 10px', fontSize: 12, gap: 4 }}
                 onClick={() => {
                   const url = window.location.href
@@ -5609,10 +5541,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <button
         onClick={props.onExit ?? (() => window.history.back())}
         className="btn btn--ghost"
+        title="Back to practice"
         style={{ padding: '6px 8px', display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}
-        aria-label="Back"
+        aria-label="Back to practice"
       >
         <span className="material-symbols-outlined" style={{ fontSize: 20 }}>arrow_back</span>
+        <span className="hidden min-[640px]:inline font-label" style={{ fontSize: 11, fontWeight: 800, whiteSpace: 'nowrap' }}>Back to Practice</span>
       </button>
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', overflowY: 'hidden', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', flex: 1, scrollbarWidth: 'none' }}>
         {tabs.map(t => {
@@ -6671,7 +6605,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </div>
         </section>
 
-        {!mobileStacked && !isInterviewChallenge && flowRightRail}
       </div>
 
       {/* Submit bar for canvas interview challenge types */}

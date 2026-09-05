@@ -8,7 +8,13 @@ import { HatchImage } from '@/components/redesign/HatchImage'
 import type { HatchImageState } from '@/components/redesign/HatchImage'
 import { HatchChoreography } from '@/components/shell/HatchChoreography'
 import { HatchTargetPointer } from '@/components/shell/hatch/HatchTargetPointer'
-import { getPagePromptEntry } from '@/components/shell/hatch/pagePrompts'
+import {
+  getPagePromptEntry,
+  pagePromptDestination,
+  promptForFreshConversation,
+  type HatchPickResponse,
+  type PagePromptCta,
+} from '@/components/shell/hatch/pagePrompts'
 import { useHatchContext } from '@/context/HatchContext'
 import type { HatchChatMessage, HatchCue } from '@/context/HatchContext'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
@@ -119,6 +125,7 @@ export function FloatingHatch() {
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [pageCtaBusy, setPageCtaBusy] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -139,12 +146,18 @@ export function FloatingHatch() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  // Listen for open-ask-hatch event
+  // Listen for open-ask-hatch events from contextual cards. A prompt may prime
+  // a fresh conversation, but it never overwrites an active thread or draft.
   useEffect(() => {
-    const handler = () => { setOpen(true) }
+    const handler = (event: Event) => {
+      const candidate = (event as CustomEvent<{ prompt?: unknown }>).detail?.prompt
+      const prompt = promptForFreshConversation(candidate, messages.length > 0, input)
+      if (prompt) setInput(prompt)
+      setOpen(true)
+    }
     window.addEventListener('open-ask-hatch', handler)
     return () => window.removeEventListener('open-ask-hatch', handler)
-  }, [])
+  }, [input, messages.length])
 
   const sendMessage = useCallback(async () => {
     const text = input.trim()
@@ -276,6 +289,52 @@ export function FloatingHatch() {
 
   const pagePrompt = getPagePromptEntry(pathname)
 
+  function openPagePromptChat(cta: PagePromptCta, fallbackPrompt?: string) {
+    const prompt = promptForFreshConversation(
+      cta.prompt ?? fallbackPrompt,
+      messages.length > 0,
+      input,
+    )
+    if (prompt) setInput(prompt)
+    logCueClick(cta.label)
+    play('open')
+    setOpen(true)
+  }
+
+  async function runPagePromptCta(cta: PagePromptCta) {
+    if (pageCtaBusy) return
+
+    if (cta.action === 'open-chat') {
+      openPagePromptChat(cta)
+      return
+    }
+
+    setPageCtaBusy(true)
+    try {
+      let pick: HatchPickResponse | null = null
+      if (cta.action === 'show-plan') {
+        try {
+          const response = await fetch('/api/hatch/pick')
+          pick = response.ok ? await response.json() as HatchPickResponse : null
+        } catch {
+          pick = null
+        }
+      }
+
+      const href = pagePromptDestination(cta.action, pick)
+      if (href) {
+        logCueClick(cta.label)
+        setOpen(false)
+        router.push(href)
+        return
+      }
+
+      openPagePromptChat(cta, 'Which study plan fits my weakest FLOW move right now?')
+    } finally {
+      setPageCtaBusy(false)
+    }
+  }
+
   // In-panel greeting for an empty chat (NOT a nudge — only visible after the
   // user opens the panel). Proactive nudge bubbles were removed entirely on
   // 2026-07-24 (founder call): clicking to invoke is sufficient.
@@ -385,6 +444,18 @@ export function FloatingHatch() {
                 <p className="text-xs text-on-surface-variant text-center leading-relaxed px-4">
                   {contextMessage}
                 </p>
+                {pagePrompt.cta && (
+                  <button
+                    type="button"
+                    data-testid="hatch-page-prompt-action"
+                    onClick={() => { void runPagePromptCta(pagePrompt.cta!) }}
+                    disabled={pageCtaBusy}
+                    className="mt-1 inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[11px] font-label font-bold text-on-primary transition-opacity hover:opacity-90 disabled:opacity-60"
+                  >
+                    {pageCtaBusy ? 'One moment' : pagePrompt.cta.label}
+                    <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                  </button>
+                )}
                 {!isInWorkspace && (
                   <button
                     type="button"

@@ -7,13 +7,10 @@ import { openFeedbackModal } from '@/components/feedback/FeedbackWidget'
 
 function resolveActive(pathname: string): SidebarItem {
   if (pathname === '/' || pathname.startsWith('/dashboard')) return 'home'
-  if (pathname.startsWith('/live-interviews')) return 'interviews'
-  if (pathname.startsWith('/explore/plans')) return 'study-plans'
-  if (pathname.startsWith('/explore/autopsies')) return 'autopsies'
-  if (pathname.startsWith('/explore/modules')) return 'guides'
+  if (pathname.startsWith('/live-interviews')) return 'practice'
+  if (pathname.startsWith('/explore')) return 'library'
   if (pathname.startsWith('/progress')) return 'progress'
-  if (pathname.startsWith('/cohort')) return 'community'
-  if (pathname.startsWith('/challenges')) return 'practice'
+  if (pathname.startsWith('/challenges') || pathname.startsWith('/workspace/challenges')) return 'practice'
   return 'home'
 }
 
@@ -30,8 +27,8 @@ export function AppSidebarConnected() {
   const isPro = profile?.plan === 'pro'
 
   const coachLine = profile?.streak_days
-    ? `${profile.streak_days}-day streak. Today's rep is picked on your dashboard.`
-    : 'Your next rep is picked on the dashboard.'
+    ? `${profile.streak_days}-day streak. Today's practice is picked on your dashboard.`
+    : 'Your next practice session is picked on the dashboard.'
 
   return (
     <AppSidebar

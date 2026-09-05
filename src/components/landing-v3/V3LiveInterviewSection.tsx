@@ -26,7 +26,7 @@ const modes = [
   { label: 'Canvas', icon: PenTool },
 ]
 
-const loopSteps = ['Company brief', 'Live round', 'Artifact work', 'Rubric score', 'Next loop']
+const loopSteps = ['Company brief', 'Live round', 'Artifact work', 'Rubric score', 'Next step']
 
 export function V3LiveInterviewSection() {
   const sectionRef = useRef<HTMLElement | null>(null)
@@ -207,10 +207,10 @@ export function V3LiveInterviewSection() {
         >
           <h2 id="live-interview-heading">Live interviews with Hatch.</h2>
           <p>
-            Voice, chat, code, and a shared canvas in one session, scored as you go.
+            Voice, chat, code, and a shared canvas in one session, with feedback as you go.
           </p>
 
-          <div className="live-company-panel" aria-label="Company interview loops">
+          <div className="live-company-panel" aria-label="Company interview sessions">
             {companies.map((company, index) => (
               <div className={`live-company-chip${index === 2 ? ' is-active' : ''}`} key={company.name}>
                 <Image src={company.src} alt="" aria-hidden="true" width={26} height={26} />
@@ -232,7 +232,7 @@ export function V3LiveInterviewSection() {
           <div className="live-cockpit-topline">
             <div>
               <span>Round 2 of 5</span>
-              <strong>Stripe system design loop</strong>
+              <strong>Stripe system design interview</strong>
             </div>
             <div className="live-status-pill">
               <span aria-hidden="true" />
@@ -240,7 +240,7 @@ export function V3LiveInterviewSection() {
             </div>
           </div>
 
-          <div className="live-loop-rail" aria-label="Live interview loop progress">
+          <div className="live-loop-rail" aria-label="Live interview progress">
             {loopSteps.map((step, index) => (
               <div className={`live-loop-step${index <= 2 ? ' is-complete' : ''}`} key={step}>
                 <span>{index + 1}</span>

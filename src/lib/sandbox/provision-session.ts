@@ -22,6 +22,7 @@ import { mintSessionVirtualKey, isGatewayConfigured, warmGateway } from '@/lib/s
 import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 import { recordUsageEvent } from '@/lib/usage/check-limit'
 import { captureServerImmediate } from '@/lib/posthog/server'
+import { allowsDirectProviderKey } from '@/lib/sandbox/cost-policy'
 
 /**
  * Step where provisioning died — surfaced to Sentry/PostHog so the next incident
@@ -29,7 +30,12 @@ import { captureServerImmediate } from '@/lib/posthog/server'
  * gateway-400 root cause took a deep log dive to find). Also persisted on the row
  * (failure_code) so the client can decide whether to silently retry.
  */
-type ProvisionFailureCode = 'sql_wake_timeout' | 'gateway_key_mint' | 'create_session' | 'readiness_timeout'
+export type ProvisionFailureCode =
+  | 'gateway_unconfigured'
+  | 'sql_wake_timeout'
+  | 'gateway_key_mint'
+  | 'create_session'
+  | 'readiness_timeout'
 
 /**
  * Coarse provisioning phase the client renders as staged progress. Ordered; the
@@ -119,13 +125,38 @@ export type ProvisionResult =
   | { ok: true; wssUrl: string; expiresAt: string; pending?: boolean }
   | { ok: false; status: number; error: string }
 
+export interface ProvisionFailure {
+  code: ProvisionFailureCode
+  userId?: string
+  challengeId?: string
+  /** The HTTP status from the upstream dependency (e.g. gateway 400), if known. */
+  gatewayStatus?: number
+  error?: unknown
+}
+
+/** Small injection seam for exercising the production fail-closed boundary. */
+export interface ProvisionSessionDependencies {
+  createAdminClient: typeof createAdminClient
+  isGatewayConfigured: typeof isGatewayConfigured
+  allowsDirectProviderKey: typeof allowsDirectProviderKey
+  markFailed: (
+    admin: ReturnType<typeof createAdminClient>,
+    sessionId: string,
+    failure?: ProvisionFailure,
+  ) => Promise<void>
+}
+
 /**
  * Run the full provisioning pipeline for an existing `provisioning` row. Flips
  * the row to `active` (with wss_url) on success or `failed` on any step error.
  * Safe to call once per session row; idempotency/dedup lives in the start route.
  */
-export async function provisionSession(input: ProvisionInput): Promise<ProvisionResult> {
-  const admin = createAdminClient()
+export async function provisionSession(
+  input: ProvisionInput,
+  dependencies: Partial<ProvisionSessionDependencies> = {},
+): Promise<ProvisionResult> {
+  const admin = (dependencies.createAdminClient ?? createAdminClient)()
+  const fail = dependencies.markFailed ?? markFailed
   const { sessionId, ttlSeconds } = input
 
   // Prefer the provisioning request's own origin so the container POSTs snapshots
@@ -139,6 +170,26 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   const orchestratorSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/snapshot`
   const userStateSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/user-state`
   const snapshotToken = mintSnapshotToken(sessionId, process.env.SESSION_TOKEN_SECRET ?? '')
+  const gatewayConfigured = (dependencies.isGatewayConfigured ?? isGatewayConfigured)()
+  const directKeyAllowed = (dependencies.allowsDirectProviderKey ?? allowsDirectProviderKey)()
+
+  // A production sandbox must never receive the shared Anthropic provider key.
+  // Local development can opt in explicitly, but production fails closed when
+  // the spend-enforcing gateway is absent or misconfigured.
+  if (!gatewayConfigured && !directKeyAllowed) {
+    const error = new Error('LiteLLM gateway is required for a budgeted analytics session')
+    await fail(admin, sessionId, {
+      code: 'gateway_unconfigured',
+      userId: input.userId,
+      challengeId: input.challengeId,
+      error,
+    })
+    return {
+      ok: false,
+      status: 503,
+      error: 'The analytics environment is temporarily unavailable. Please try again.',
+    }
+  }
 
   // --- Wake Cloud SQL AND warm the gateway CONCURRENTLY (both feed the key mint).
   // Serially these are the two long poles on a cold start (~40s + ~40s > Hobby's
@@ -148,13 +199,13 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   // the client's first /state poll already shows a real phase.
   await advancePhase(admin, sessionId, 'waking_database')
 
-  if (isGatewayConfigured()) {
+  if (gatewayConfigured) {
     const warm = warmGateway() // triggers gateway container boot in parallel
     if (isSqlAutostartConfigured()) {
       const sql = await ensureSqlRunnable(SQL_WAKE_MS)
       if (!sql.ready) {
         console.error('[cc/provision] cc-llm-db not RUNNABLE in time (state:', sql.state, ')')
-        await markFailed(admin, sessionId, {
+        await fail(admin, sessionId, {
           code: 'sql_wake_timeout',
           userId: input.userId,
           challengeId: input.challengeId,
@@ -174,7 +225,7 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   await advancePhase(admin, sessionId, 'starting_gateway')
 
   // --- Mint a per-session virtual key with a hard spend cap ---
-  let anthropicKey = process.env.ANTHROPIC_API_KEY ?? ''
+  let anthropicKey = directKeyAllowed ? (process.env.ANTHROPIC_API_KEY ?? '') : ''
   let anthropicBaseUrl: string | undefined
   try {
     const vkey = await mintSessionVirtualKey(sessionId, ttlSeconds)
@@ -186,7 +237,7 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
     console.error('[cc/provision] virtual key mint failed:', err)
     // FAIL CLOSED when the gateway is configured — never hand a session the
     // shared uncapped key. Only the no-gateway (local/dev) path may fall back.
-    if (isGatewayConfigured()) {
+    if (gatewayConfigured) {
       // Pull the upstream gateway HTTP status out of the mint error message so
       // Sentry tags it — a surfaced 400 "key_alias already exists" is self-
       // diagnosing. Covers both mint error formats: terminal `... failed (400):`
@@ -195,7 +246,7 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
       const gatewayStatus = Number(
         msg.match(/\((\d{3})\)/)?.[1] ?? msg.match(/key\/generate (\d{3})[: ]/)?.[1],
       ) || undefined
-      await markFailed(admin, sessionId, {
+      await fail(admin, sessionId, {
         code: 'gateway_key_mint',
         userId: input.userId,
         challengeId: input.challengeId,
@@ -207,6 +258,21 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
         status: 503,
         error: 'Could not start a budgeted session. Please try again.',
       }
+    }
+  }
+
+  if (!anthropicKey) {
+    const error = new Error('No budgeted analytics credential was issued')
+    await fail(admin, sessionId, {
+      code: 'gateway_unconfigured',
+      userId: input.userId,
+      challengeId: input.challengeId,
+      error,
+    })
+    return {
+      ok: false,
+      status: 503,
+      error: 'The analytics environment is temporarily unavailable. Please try again.',
     }
   }
 
@@ -254,7 +320,7 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
         .destroySession(partialHostId)
         .catch((e) => console.error('[cc/provision] partial teardown failed:', e))
     }
-    await markFailed(admin, sessionId, {
+    await fail(admin, sessionId, {
       code: 'create_session',
       userId: input.userId,
       challengeId: input.challengeId,
@@ -341,14 +407,7 @@ async function markActiveAndMeter(
 async function markFailed(
   admin: ReturnType<typeof createAdminClient>,
   sessionId: string,
-  failure?: {
-    code: ProvisionFailureCode
-    userId?: string
-    challengeId?: string
-    /** The HTTP status from the upstream dependency (e.g. gateway 400), if known. */
-    gatewayStatus?: number
-    error?: unknown
-  },
+  failure?: ProvisionFailure,
 ): Promise<void> {
   // CAS guard: only fail a row that is still `provisioning`. If a concurrent
   // provision attempt for the same session already flipped it to `active`, this

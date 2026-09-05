@@ -1,6 +1,7 @@
 'use client';
 
-import { useOptimistic, useTransition } from 'react';
+import { useState, useTransition } from 'react';
+import { Bookmark } from 'lucide-react';
 import { toggleBookmark } from '@/lib/showcase/bookmarks';
 
 interface BookmarkToggleProps {
@@ -10,33 +11,32 @@ interface BookmarkToggleProps {
 }
 
 export function BookmarkToggle({ companySlug, storySlug, initialBookmarked }: BookmarkToggleProps) {
-  const [, startTransition] = useTransition();
-  const [optimisticBookmarked, setOptimisticBookmarked] = useOptimistic(initialBookmarked);
+  const [pending, startTransition] = useTransition();
+  const [bookmarked, setBookmarked] = useState(initialBookmarked);
 
   const handleToggle = () => {
+    const previous = bookmarked;
+    setBookmarked(!previous);
     startTransition(async () => {
-      setOptimisticBookmarked(!optimisticBookmarked);
-      await toggleBookmark(companySlug, storySlug);
+      try {
+        const result = await toggleBookmark(companySlug, storySlug);
+        setBookmarked(result.bookmarked);
+      } catch {
+        setBookmarked(previous);
+      }
     });
   };
 
   return (
     <button
       onClick={handleToggle}
-      aria-label={optimisticBookmarked ? 'Remove bookmark' : 'Bookmark this story'}
-      aria-pressed={optimisticBookmarked}
-      className={`sc-dock-btn ${optimisticBookmarked ? 'is-on' : ''}`}
+      disabled={pending}
+      aria-label={bookmarked ? 'Remove bookmark' : 'Save this story'}
+      aria-pressed={bookmarked}
+      className={`reader-bookmark ${bookmarked ? 'is-on' : ''}`}
     >
-      <span
-        className="material-symbols-outlined text-xl transition-colors"
-        style={{
-          color: optimisticBookmarked ? 'var(--color-tertiary)' : 'var(--color-on-surface-variant)',
-          fontVariationSettings: optimisticBookmarked ? "'FILL' 1" : "'FILL' 0",
-          fontSize: '20px',
-        }}
-      >
-        bookmark
-      </span>
+      <Bookmark aria-hidden size={17} fill={bookmarked ? 'currentColor' : 'none'} />
+      <span>{bookmarked ? 'Saved' : 'Save'}</span>
     </button>
   );
 }

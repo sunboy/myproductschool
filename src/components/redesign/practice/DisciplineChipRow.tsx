@@ -25,7 +25,7 @@ const CHIPS: ChipDef[] = [
   { key: 'analytics', label: 'AI Analytics', description: 'Drive a live Claude Code agent against a real dataset.', icon: LineChart, iconClass: 'text-aiml-fg' },
   { key: 'data_modeling', label: 'Data modeling', description: 'Schema, entities, analytics thinking, and durable models.', icon: Workflow, iconClass: 'text-dm-fg' },
   { key: 'product_sense', label: 'Product sense', description: 'MCQs and judgment drills for product-quality thinking.', icon: Lightbulb, iconClass: 'text-ps-fg' },
-  { key: 'all', label: 'All practice', description: 'Every rep across product, data, systems, SQL, and coding.', icon: LayoutGrid, iconClass: 'text-forest-700' },
+  { key: 'all', label: 'All practice', description: 'Every challenge across product, data, systems, SQL, and coding.', icon: LayoutGrid, iconClass: 'text-forest-700' },
 ]
 
 interface Props {

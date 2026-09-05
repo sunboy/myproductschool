@@ -15,6 +15,7 @@ import { getLabServer, labIdForChallengeType } from '@/lib/labs/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { provisionSession } from '@/lib/sandbox/provision-session'
+import { resolveSessionTtlSeconds } from '@/lib/sandbox/cost-policy'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -97,7 +98,7 @@ export async function POST(
   const bqDataset = labEnv.BQ_DATASET ?? ''
   const bqBillingProject = labEnv.BQ_BILLING_PROJECT ?? 'hackproduct'
   const claudeMd = labEnv.CLAUDE_MD ?? ''
-  const ttlSeconds = parseInt(process.env.CC_SESSION_TTL_SECONDS ?? '1800', 10)
+  const ttlSeconds = resolveSessionTtlSeconds(process.env.CC_SESSION_TTL_SECONDS)
 
   // --- Presign prior ~/.claude state (MCP regs + skills) for one-time setup ---
   const { data: profile } = await admin
