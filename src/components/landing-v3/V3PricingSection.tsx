@@ -17,7 +17,7 @@ import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 
 const proFeatures = [
   'Live interviews across product, system design, SQL, and coding',
-  'Live AI data analyst sessions, using Claude Code',
+  'Hands-on coding, SQL, product, and system design challenges',
   'Hatch feedback and scoring on every answer',
   'Autopsies, study plans, and Hatch coaching included',
 ]
