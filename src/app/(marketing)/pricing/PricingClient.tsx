@@ -487,7 +487,7 @@ export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientPro
           <div className="pricing-note">
             <ShieldCheck aria-hidden="true" strokeWidth={2} />
             <span>
-              Trial first. Cancel anytime from the customer portal. Billing is handled through Stripe.
+              Manage or cancel your plan from the customer portal. Billing is handled through Stripe.
             </span>
           </div>
         </div>

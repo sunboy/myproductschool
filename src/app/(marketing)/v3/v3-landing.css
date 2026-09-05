@@ -3148,3 +3148,15 @@
 .v3 .context-logo-marquee { overflow-x:auto; mask-image:none; }
 .v3 .context-logo-track { width:auto; transform:none; }
 .v3 .context-logo-group { flex-wrap:wrap; justify-content:center; }
+
+/* Give each plan room to compare limits and billing without narrow columns. */
+.v3 .pricing-shell { display:block; }
+.v3 .pricing-copy { max-width:760px; margin-bottom:32px; }
+.v3 .pricing-copy h2 { font-size:clamp(28px,3.2vw,40px); font-weight:500; }
+.v3 .pricing-grid { width:100%; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.v3 .pricing-grid-three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.v3 .pricing-card { min-width:0; padding:28px; }
+.v3 .pricing-card h3 { font-weight:500; }
+.v3 .pricing-price { flex-wrap:wrap; }
+.v3 .pricing-toggle-price { white-space:nowrap; }
+@media(max-width:900px) { .v3 .pricing-grid, .v3 .pricing-grid-three { grid-template-columns:minmax(0,1fr); } .v3 .pricing-card { padding:24px; } }
