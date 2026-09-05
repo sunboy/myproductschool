@@ -83,8 +83,6 @@ const nextConfig: NextConfig = {
       { source: '/product-75', destination: '/explore', permanent: true },
       { source: '/frameworks', destination: '/explore', permanent: true },
       { source: '/flashcards', destination: '/explore', permanent: true },
-      { source: '/simulation', destination: '/prep', permanent: true },
-      { source: '/interview-prep/:slug', destination: '/prep/:slug', permanent: true },
       // Learn → Explore redirects (merged sections)
       { source: '/learn', destination: '/explore', permanent: true },
       { source: '/learn/flow', destination: '/explore/flow', permanent: true },

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { normalizeToTen } from '@/lib/feedback/score'
 import { useRouter } from 'next/navigation'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
@@ -1090,7 +1091,7 @@ function PastSessionsTable() {
                       repeated italic "stopped" was pure noise across the list. */}
                   {isScored && (
                     <span style={{ fontSize: 13, fontWeight: 800, color: T.primary, background: T.primaryFixed, padding: '4px 10px', borderRadius: 999 }}>
-                      {s.score} · {s.grade}
+                      {normalizeToTen(s.score ?? 0, 5).toFixed(1)}/10 · {s.grade}
                     </span>
                   )}
                 </div>

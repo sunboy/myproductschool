@@ -32,6 +32,8 @@ Tested against the branch preview, including READY deployment `dpl_8pdLh27V2gcEJ
 Test-owned examples used existing authorized browser authentication. Earlier user work was not deleted or overwritten. These examples are not user achievement claims.
 
 ## Code verification
+- Deployment `dpl_F4gCp8nj1BVpjHCnG4e6RYWKYShw` (commit `a8c5a05e27eef9670d0b01410baf40f90071f478`) reached READY. Fresh SQL feedback passed: 5/5 tests, detailed 8.0/10 review, and no unsupported collaboration or interview-communication dimension for an independent attempt. New interview entry displayed the explicit voice/chat choice, with voice disabled until microphone checking.
+- Final route audit removed two redirects into nonexistent `/prep` pages, restoring the existing simulation and company interview-prep routes. Interview lobby scores now use the same /10 scale as debriefs.
 - TypeScript passed after the final submission-error and scoring refinements.
 - Full unit suite: 658 passed (491 Node + 167 Vitest), including coding/canvas independence regressions.
 - Independent high-effort review checked voice lifecycle, scoring truthfulness, analytics retries, draft/checkpoint handling and control reachability. Findings were addressed.

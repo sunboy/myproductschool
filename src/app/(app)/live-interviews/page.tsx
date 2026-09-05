@@ -1,4 +1,5 @@
 import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
+import { normalizeToTen } from '@/lib/feedback/score'
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import { IS_MOCK } from '@/lib/mock'
 import { UsageProvider } from '@/context/UsageContext'
@@ -162,7 +163,7 @@ export default async function LiveInterviewsPage() {
   ])
 
   const hatchMessage = lastSession
-    ? `Your latest session scored ${lastSession.overallScore}${lastSession.disciplineLabel ? ` in ${lastSession.disciplineLabel}` : ''}. Open the debrief when you want to review the details.`
+    ? `Your latest session scored ${normalizeToTen(lastSession.overallScore, 5).toFixed(1)}/10${lastSession.disciplineLabel ? ` in ${lastSession.disciplineLabel}` : ''}. Open the debrief when you want to review the details.`
     : 'Choose a company and discipline below. You can answer by voice or chat.'
 
   return (
