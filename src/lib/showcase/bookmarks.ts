@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export interface BookmarkState {
   bookmarked: boolean;
@@ -43,7 +44,7 @@ export async function toggleBookmark(
 
   if (!user) throw new Error('Must be signed in to bookmark stories.');
 
-  const { data: existing } = await supabase
+  const { data: existing, error: lookupError } = await supabase
     .from('autopsy_bookmarks')
     .select('id')
     .eq('user_id', user.id)
@@ -51,18 +52,25 @@ export async function toggleBookmark(
     .eq('story_slug', storySlug)
     .maybeSingle();
 
+  if (lookupError) throw new Error('Could not load bookmark state. Please try again.');
+
   if (existing) {
-    await supabase
+    const { error } = await supabase
       .from('autopsy_bookmarks')
       .delete()
-      .eq('id', existing.id);
+      .eq('id', existing.id)
+      .eq('user_id', user.id);
+    if (error) throw new Error('Could not remove bookmark. Please try again.');
+    revalidatePath('/explore');
     return { bookmarked: false };
   }
 
-  await supabase
+  const { error } = await supabase
     .from('autopsy_bookmarks')
     .insert({ user_id: user.id, company_slug: companySlug, story_slug: storySlug });
 
+  if (error) throw new Error('Could not save bookmark. Please try again.');
+  revalidatePath('/explore');
   return { bookmarked: true };
 }
 

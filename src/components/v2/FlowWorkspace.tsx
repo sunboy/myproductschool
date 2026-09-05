@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import { loadWorkspaceHistory } from '@/lib/workspace/submission-history'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/posthog/client'
@@ -510,7 +511,7 @@ function scoreToGradeLabel(score: number): string {
 }
 
 type FlowWorkspaceProps =
-  | { mode: 'api'; challengeId: string; challengeSlug?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; fromDomain?: string; nextChallengeSlug?: string; returnTo?: string }
+  | { mode: 'api'; challengeId: string; challengeSlug?: string; initialAttemptId?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; fromDomain?: string; nextChallengeSlug?: string; returnTo?: string }
   | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void; fromPlan?: string; fromDomain?: string; nextChallengeSlug?: string; returnTo?: string }
 
 // First-entry tour for the canvas workspace. Auto-fires once when a canvas
@@ -814,7 +815,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Notes; Solutions/Discussions/Submissions move behind a trailing More menu.
   const [leftTab, setLeftTab] = useState<
     'Description' | 'Examples' | 'Constraints' | 'Notes' | 'Discussions' | 'Submissions' | 'Solutions'
-  >('Description')
+  >(props.mode === 'api' && props.initialAttemptId ? 'Submissions' : 'Description')
 
   // ── Coding workspace state (round-4 rebuild) ─────────────────────────────
   // Advisory solving path (Understand → Plan → Code → Test → Optimize).
@@ -1051,6 +1052,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // the existing sessionHistory untouched — never wipe it to [] — so a transient
   // /api/attempts error right after a submit can't erase the record the user
   // just made.
+  const initialAttemptId = props.mode === 'api' ? props.initialAttemptId : undefined
+  const historyDeepLinkApplied = useRef<string | null>(null)
   const loadSubmissionHistory = useCallback(async () => {
     if (!isApiMode || !challengeId) return
     setSubmissionsLoading(true)
@@ -1073,9 +1076,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       } | null
     }>
     try {
-      const res = await fetch(`/api/attempts?limit=20&summary=1&challenge_id=${encodeURIComponent(challengeId)}`)
-      if (!res.ok) { setSubmissionsLoading(false); return } // preserve existing history on 401/5xx
-      rows = await res.json()
+      const loaded = await loadWorkspaceHistory<(typeof rows)[number]>(challengeId, initialAttemptId)
+      if (!loaded) { setSubmissionsLoading(false); return }
+      rows = loaded
     } catch {
       setSubmissionsLoading(false)
       return // preserve existing history on network failure
@@ -1120,10 +1123,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         }
       })
     setSessionHistory(past)
+    if (initialAttemptId && historyDeepLinkApplied.current !== initialAttemptId) {
+      const index = past.findIndex(record => record.attemptId === initialAttemptId)
+      if (index !== -1) {
+        setSelectedHistoryIdx(index)
+        setPhase('question')
+        historyDeepLinkApplied.current = initialAttemptId
+      }
+    }
     setSubmissionsLoaded(true)
     setSubmissionsLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isApiMode, challengeId, challengeSlug])
+  }, [isApiMode, challengeId, challengeSlug, initialAttemptId])
 
   // Lazy-load submission history on first Submissions-tab open, so it stays off
   // the workspace mount critical path (mirrors Discussions/Solutions). Post-submit
@@ -2261,9 +2272,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // API mode: start attempt once detail loads
+  // Viewing existing feedback must not create a new attempt or consume a quota.
+  // Start normally after the user leaves the selected history entry.
   useEffect(() => {
     if (!isApiMode) return
+    if (initialAttemptId && (!submissionsLoaded || selectedHistoryIdx !== null)) {
+      if (detail) setPhase('question')
+      return
+    }
     if (detail && !attemptId) {
       if (detail.current_attempt?.status === 'in_progress') {
         setAttemptId(detail.current_attempt.id)
@@ -2284,7 +2300,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         })
       }
     }
-  }, [detail, attemptId, isApiMode, initialRoleId, startAttempt])
+  }, [detail, attemptId, isApiMode, initialRoleId, startAttempt, initialAttemptId, submissionsLoaded, selectedHistoryIdx])
 
   // Load step data when step changes - clear stale data immediately so no
   // previous step's questions flash while the new step loads

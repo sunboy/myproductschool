@@ -52,3 +52,11 @@ Home /dashboard; Practice /challenges (interviews and analytics accessible insid
 
 - Hosted anonymous feedback form successfully accepted a generated sample answer and returned specific live feedback. Authenticated sign-in handoff requested through the secure browser form.
 - Public preview detail links now preserve returnTo and connect three verified published challenge slugs directly; marketing-only scenarios go to a discipline catalog with honest related-challenge wording.
+
+## Journey repair checkpoint — 2026-09-05
+- Login/signup now consume safe returnTo, redirectTo and next aliases; protected-route redirects preserve the full destination. Password, Google, magic-link and verification-resend callbacks retain intent. Verification resend network failures are retryable.
+- Canonical challenge redirects preserve attempt/resume/filter parameters. Historical submissions beyond the recent twenty remain addressable under existing user/challenge authorization. Viewing feedback does not create a fresh attempt or consume quota.
+- Library includes persisted guide progress. Mobile chapter selection, chapter load/retry states, completion HTTP failures and bookmark rollback are repaired. Autopsy resume restores article-relative scroll position.
+- Moved interview browser spec into the configured e2e directory; signed-out execution explicitly skips protected assertions.
+- Validation: 477 Node tests and 120 Vitest tests passed (597 total); TypeScript and targeted ESLint clean. These are unit/mocked integration checks, not full authenticated browser coverage.
+- Remaining launch gates: authenticated responsive journey checks, checkout/webhooks/portal, analytics live canary and measured infrastructure cost reduction. No production replacement or resource deletion in this batch.

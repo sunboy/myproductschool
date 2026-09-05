@@ -1,3 +1,4 @@
+import { safeAuthRedirect } from '@/lib/auth/redirect'
 import { NextResponse, type NextRequest } from 'next/server'
 import { AFFILIATE_COOKIE_NAME, affiliatesEnabled } from '@/lib/affiliate/config'
 import { applyReferralAttribution } from '@/lib/affiliate/server'
@@ -14,7 +15,7 @@ function safeNextPath(request: NextRequest) {
   try {
     const candidate = new URL(raw, request.url)
     if (candidate.origin !== request.nextUrl.origin) return null
-    return `${candidate.pathname}${candidate.search}${candidate.hash}`
+    return safeAuthRedirect(`${candidate.pathname}${candidate.search}${candidate.hash}`) ?? null
   } catch {
     return null
   }

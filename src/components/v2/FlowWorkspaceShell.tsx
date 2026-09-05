@@ -10,6 +10,7 @@ import { workspaceExitHref } from '@/lib/workspace/breadcrumbs'
 export interface FlowWorkspaceShellProps {
   challengeId: string
   challengeSlug?: string
+  initialAttemptId?: string
   initialRoleId: UserRoleV2
   fromPlan?: string
   fromDomain?: string
@@ -17,7 +18,7 @@ export interface FlowWorkspaceShellProps {
   returnTo?: string
 }
 
-export function FlowWorkspaceShell({ challengeId, challengeSlug, initialRoleId, fromPlan, fromDomain, nextChallengeSlug, returnTo }: FlowWorkspaceShellProps) {
+export function FlowWorkspaceShell({ challengeId, challengeSlug, initialAttemptId, initialRoleId, fromPlan, fromDomain, nextChallengeSlug, returnTo }: FlowWorkspaceShellProps) {
   const router = useRouter()
   const [paywallData, setPaywallData] = useState<{ used: number; limit: number } | null>(null)
   const exitHref = workspaceExitHref({ fromPlan, fromDomain }, returnTo)
@@ -28,6 +29,7 @@ export function FlowWorkspaceShell({ challengeId, challengeSlug, initialRoleId, 
         mode="api"
         challengeId={challengeId}
         challengeSlug={challengeSlug}
+        initialAttemptId={initialAttemptId}
         initialRoleId={initialRoleId}
         fromPlan={fromPlan}
         fromDomain={fromDomain}

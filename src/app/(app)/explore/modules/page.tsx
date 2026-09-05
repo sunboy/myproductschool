@@ -70,7 +70,7 @@ export default async function ModulesPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 24px 48px' }}>
-      <BackButton href="/explore" label="Back to Explore" className="mb-4" />
+      <BackButton href="/explore" label="Back to Library" className="mb-4" />
 
       {/* ── Compact dense dark hero band (guides-hub-1440.png) ── */}
       <div
@@ -91,7 +91,7 @@ export default async function ModulesPage() {
               Guides
             </div>
             <h1 className="mb-2 max-w-[26ch] font-headline text-[30px] font-semibold leading-[1.18] text-on-hero-strong">
-              Read the theory. Then go train it.
+              Read the ideas. Put them into practice.
             </h1>
             <p className="max-w-[54ch] text-[13px] leading-[1.5] text-white/72">
               Short, sharp chapters on the frameworks behind every challenge

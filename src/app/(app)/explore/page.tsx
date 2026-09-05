@@ -18,13 +18,14 @@ export const metadata: Metadata = {
 export default async function ExplorePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const [modulesResult, planCatalogResult, planDetailsResult, companiesResult, storiesResult, bookmarksResult] = await Promise.allSettled([
+  const [modulesResult, planCatalogResult, planDetailsResult, companiesResult, storiesResult, bookmarksResult, guideProgressResult] = await Promise.allSettled([
     getLearnModuleSummaries(),
     getStudyPlanSummaries(),
     getStudyPlans(user?.id),
     getAutopsyCompanies(),
     getPublishedAutopsyStories(),
     getUserBookmarks(),
+    user ? supabase.from('user_learn_progress').select('module_id').eq('user_id', user.id) : Promise.resolve({ data: [], error: null }),
   ])
   const modules = modulesResult.status === 'fulfilled' ? modulesResult.value : []
   const planCatalog = planCatalogResult.status === 'fulfilled' ? planCatalogResult.value : []
@@ -52,6 +53,10 @@ export default async function ExplorePage() {
     storiesResult.status === 'rejected' ? 'autopsy' : null,
   ].filter(Boolean) as Array<'guide' | 'autopsy' | 'plan'>
 
+  const completedByModule = new Map<string, number>()
+  const guideProgress = guideProgressResult.status === 'fulfilled' && !guideProgressResult.value.error ? guideProgressResult.value.data ?? [] : []
+  for (const row of guideProgress) completedByModule.set(row.module_id, (completedByModule.get(row.module_id) ?? 0) + 1)
+
   const readableCompanies = getReadableAppCompanies(companies)
   const companyBySlug = new Map(readableCompanies.map(company => [company.slug, company]))
   const savedStories = new Set(bookmarks.map(item => `${item.companySlug}/${item.storySlug}`))
@@ -59,6 +64,7 @@ export default async function ExplorePage() {
   const guideItems: LibraryItem[] = modules.map(module => ({
     id: `guide:${module.id}`,
     kind: 'guide',
+    progress: completedByModule.has(module.id) && module.chapter_count > 0 ? Math.min(100, Math.round((completedByModule.get(module.id)! / module.chapter_count) * 100)) : undefined,
     title: module.name,
     description: module.tagline,
     href: `/explore/modules/${module.slug}`,

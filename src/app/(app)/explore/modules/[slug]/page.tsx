@@ -67,7 +67,7 @@ function TocRail({
               disabled={locked}
               onClick={() => !locked && onSelect(ch.slug)}
               className={cn(
-                'flex items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm leading-[1.4]',
+                'flex min-h-11 items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm leading-[1.4]',
                 isActive ? 'bg-forest-800' : locked ? 'opacity-40 cursor-not-allowed' : 'text-ink-secondary hover:bg-surface-container',
               )}
             >
@@ -92,7 +92,7 @@ function TocRail({
         className="flex items-center gap-1.5 border-t border-hairline pt-3 font-body text-sm font-bold text-ink-secondary no-underline"
       >
         <ArrowLeft size={14} strokeWidth={2} />
-        Module overview
+        All guides
       </Link>
     </aside>
   )
@@ -117,8 +117,9 @@ function ReadingColumn({
   onComplete: () => void
   bodyRef: React.RefObject<HTMLDivElement | null>
 }) {
-  const { data, isLoading, markComplete, isMarkingComplete } = useLearnChapter(moduleSlug, chapterSlug)
+  const { data, isLoading, error, refetch, markComplete, isMarkingComplete } = useLearnChapter(moduleSlug, chapterSlug)
   const [markedDone, setMarkedDone] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const currentIdx = chapters.findIndex(c => c.slug === chapterSlug)
   const nextChapter = chapters[currentIdx + 1]
@@ -138,11 +139,16 @@ function ReadingColumn({
     )
   }
 
-  if (!data) return null
+  if (error || !data) return (
+    <div role="alert" className="rounded-xl border border-hairline bg-white p-6">
+      <p className="text-base text-ink-secondary">{error ?? 'This chapter could not be loaded.'}</p>
+      <button type="button" onClick={() => void refetch()} className="mt-3 min-h-11 rounded-lg border border-forest-800 px-4 text-sm font-bold text-forest-800">Try again</button>
+    </div>
+  )
 
   return (
     <div className="reading-col mx-auto w-full max-w-[760px] min-w-0" ref={bodyRef}>
-      <div className="mb-3.5 flex items-center gap-2 font-body text-sm font-extrabold uppercase tracking-[0.08em] text-dm-fg">
+      <div className="mb-3.5 flex flex-wrap items-center gap-2 font-body text-sm font-extrabold uppercase tracking-[0.08em] text-dm-fg">
         {module.name.toUpperCase()}
         <span className="size-1 shrink-0 rounded-full bg-ink-muted" />
         <span className="font-bold tracking-[0.06em] text-ink-muted">
@@ -164,6 +170,8 @@ function ReadingColumn({
         <ChapterBody body_mdx={data.body_mdx} figures={data.figures ?? []} hatchContextLabel="Active chapter body" />
       </div>
 
+      {saveError && <p role="alert" className="mt-6 text-sm font-bold text-error">{saveError}</p>}
+
       {/* Chapter footer nav — real prev/next titles. Per-chapter prev
           navigation lives in the left TOC rail (current pill), so the footer
           "back" affordance points at the module overview, matching the
@@ -174,17 +182,22 @@ function ReadingColumn({
           className="flex items-center gap-1.5 font-body text-sm font-bold text-ink-secondary no-underline"
         >
           <ArrowLeft size={15} strokeWidth={1.9} />
-          Module overview
+          All guides
         </Link>
 
-        <div className="flex items-center gap-3">
-          {!markedDone ? (
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
+          {!markedDone && !chapters[currentIdx]?.is_completed ? (
             <button
               onClick={async () => {
-                await markComplete()
-                setMarkedDone(true)
-                trackEvent(EVENT_CHAPTER_COMPLETED, { module_slug: moduleSlug, chapter_slug: chapterSlug })
-                onComplete()
+                setSaveError(null)
+                try {
+                  await markComplete()
+                  setMarkedDone(true)
+                  trackEvent(EVENT_CHAPTER_COMPLETED, { module_slug: moduleSlug, chapter_slug: chapterSlug })
+                  onComplete()
+                } catch (cause) {
+                  setSaveError(cause instanceof Error ? cause.message : 'Your progress could not be saved. Please try again.')
+                }
               }}
               disabled={isMarkingComplete}
               className="inline-flex items-center gap-1.5 rounded-lg bg-forest-950 px-[18px] py-3 font-body text-sm font-bold text-white disabled:opacity-50"
@@ -224,25 +237,15 @@ function ModulePageInner({ slug }: { slug: string }) {
 
   const searchParams = useSearchParams()
   const { data, isLoading, error, refetch } = useLearnModule(slug)
-  const [activeChapterSlug, setActiveChapterSlug] = useState<string | null>(null)
+  const [completedChapterSlug, setCompletedChapterSlug] = useState<string | null>(null)
+  const requestedChapter = searchParams.get('chapter') ?? completedChapterSlug
+  const activeChapterSlug = data?.chapters.find(chapter => chapter.slug === requestedChapter)?.slug
+    ?? data?.chapters.find(chapter => (chapter.is_unlocked || chapter.sort_order === 1) && !chapter.is_completed)?.slug
+    ?? data?.chapters[0]?.slug
+    ?? null
   const bodyRef = useRef<HTMLDivElement>(null)
 
-  // Sync active chapter from URL param or auto-select on data load
-  useEffect(() => {
-    if (!data) return
-    const paramChapter = searchParams.get('chapter')
-    if (paramChapter) {
-      const exists = data.chapters.find(c => c.slug === paramChapter)
-      if (exists) { setActiveChapterSlug(paramChapter); return }
-    }
-    // Auto-select first unlocked+incomplete chapter, or first chapter
-    const next = data.chapters.find(c => (c.is_unlocked || c.sort_order === 1) && !c.is_completed)
-      ?? data.chapters[0]
-    if (next) setActiveChapterSlug(next.slug)
-  }, [data]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleSelectChapter = (chSlug: string) => {
-    setActiveChapterSlug(chSlug)
     router.replace(`/explore/modules/${slug}?chapter=${chSlug}`, { scroll: false })
     window.scrollTo({ top: 0 })
     const idx = data?.chapters.findIndex(c => c.slug === chSlug) ?? -1
@@ -305,14 +308,21 @@ function ModulePageInner({ slug }: { slug: string }) {
         />
 
         <div className="min-w-0 flex-1" data-hatch-page-title>
+          <div className="mb-7 lg:hidden">
+            <label htmlFor="guide-chapter" className="mb-2 block text-sm font-bold text-ink-secondary">Chapters · {completedCount} of {chapters.length} complete</label>
+            <select id="guide-chapter" value={activeChapterSlug ?? ''} onChange={event => handleSelectChapter(event.target.value)} className="min-h-11 w-full min-w-0 rounded-xl border border-hairline bg-white px-3 text-base text-ink-strong">
+              {chapters.map((chapter, index) => <option key={chapter.id} value={chapter.slug} disabled={!chapter.is_unlocked && !chapter.is_completed}>{index + 1}. {chapter.title}{chapter.is_completed ? ' · Complete' : !chapter.is_unlocked ? ' · Locked' : ''}</option>)}
+            </select>
+          </div>
           {activeChapterSlug ? (
             <ReadingColumn
+              key={activeChapterSlug}
               moduleSlug={slug}
               module={module}
               chapterSlug={activeChapterSlug}
               chapters={chapters}
               onNext={handleNext}
-              onComplete={refetch}
+              onComplete={() => { setCompletedChapterSlug(activeChapterSlug); void refetch(); router.refresh() }}
               bodyRef={bodyRef}
             />
           ) : (
@@ -333,7 +343,7 @@ export default function LearnModulePage({ params }: { params: Promise<{ slug: st
   const { slug } = use(params)
   return (
     <Suspense fallback={<div className="min-h-screen animate-pulse bg-page-field" />}>
-      <ModulePageInner slug={slug} />
+      <ModulePageInner key={slug} slug={slug} />
     </Suspense>
   )
 }

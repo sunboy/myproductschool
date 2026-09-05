@@ -35,7 +35,7 @@ const INLINE_IMAGE_ROLES: AutopsyImageRole[] = ['hatch-narrator', 'failure-mecha
 export function CinematicReader({ story, companyName, companyAccent, initialBookmarked, prevNext }: CinematicReaderProps) {
   const contentRef = useRef<HTMLElement>(null);
   const lede = story.flow[0];
-  const bodySections = story.flow.slice(1);
+  const bodySections = useMemo(() => story.flow.slice(1), [story.flow]);
   const sectionIds = useMemo(() => [
     lede ? 'lede' : null,
     story.quickRead.length ? 'quick-read' : null,
@@ -96,8 +96,10 @@ export function CinematicReader({ story, companyName, companyAccent, initialBook
       return () => clearTimeout(timer);
     }
     didRestoreRef.current = true;
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    if (maxScroll > 0) window.scrollTo({ top: Math.round((resumeScrollPct / 100) * maxScroll), behavior: 'auto' });
+    const article = contentRef.current;
+    const articleTop = article ? window.scrollY + article.getBoundingClientRect().top : 0;
+    const maxScroll = Math.max(0, (article?.scrollHeight ?? document.documentElement.scrollHeight) - window.innerHeight);
+    window.scrollTo({ top: Math.round(articleTop + (resumeScrollPct / 100) * maxScroll), behavior: 'auto' });
     const timer = setTimeout(() => setPersistReady(true), 600);
     return () => clearTimeout(timer);
   }, [resumeScrollPct, restored]);

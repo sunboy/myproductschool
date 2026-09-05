@@ -41,6 +41,8 @@ export const GET = withRoute(async (req: NextRequest) => {
     .limit(limit)
 
   if (challengeId) query = query.eq('challenge_id', challengeId)
+  const attemptId = searchParams.get('attempt_id')
+  if (attemptId) query = query.eq('id', attemptId)
 
   const { data } = await query
 

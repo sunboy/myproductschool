@@ -2,10 +2,11 @@
 
 import { use, useState } from 'react'
 import Link from 'next/link'
+import { authRedirectFromParams } from '@/lib/auth/redirect'
 import { HatchImage } from '@/components/redesign/HatchImage'
 
 type VerifyEmailPageProps = {
-  searchParams: Promise<{ email?: string | string[] | undefined }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
 function firstParam(value: string | string[] | undefined) {
@@ -15,6 +16,7 @@ function firstParam(value: string | string[] | undefined) {
 export default function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) {
   const params = use(searchParams)
   const email = firstParam(params.email)?.trim() ?? ''
+  const destination = authRedirectFromParams(params) ?? '/dashboard'
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -29,26 +31,31 @@ export default function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) 
     setMessage(null)
     setError(null)
 
-    const response = await fetch('/api/auth/resend-verification', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        redirectTo: `${window.location.origin}/dashboard`,
-      }),
-    })
-    const data = await response.json().catch(() => ({})) as { error?: string }
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(destination)}`,
+        }),
+      })
+      const data = await response.json().catch(() => ({})) as { error?: string }
 
-    if (!response.ok) {
-      setError(data.error === 'rate_limited'
-        ? 'Too many attempts. Try again in a minute.'
-        : data.error ?? 'Could not resend the email. Try again.'
-      )
-    } else {
-      setMessage('Verification email sent.')
+      if (!response.ok) {
+        setError(data.error === 'rate_limited'
+          ? 'Too many attempts. Try again in a minute.'
+          : data.error ?? 'Could not resend the email. Try again.'
+        )
+      } else {
+        setMessage('Verification email sent.')
+      }
+
+    } catch {
+      setError('Could not resend the email. Check your connection and try again.')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
@@ -80,7 +87,7 @@ export default function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) 
 
         <p className="text-sm text-on-surface-variant">
           Already verified?{' '}
-          <Link href="/login" className="font-medium text-primary hover:underline">
+          <Link href={`/login?returnTo=${encodeURIComponent(destination)}`} className="font-medium text-primary hover:underline">
             Log in
           </Link>
         </p>

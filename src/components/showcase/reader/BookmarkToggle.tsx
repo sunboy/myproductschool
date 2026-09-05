@@ -12,9 +12,11 @@ interface BookmarkToggleProps {
 
 export function BookmarkToggle({ companySlug, storySlug, initialBookmarked }: BookmarkToggleProps) {
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
 
   const handleToggle = () => {
+    setError(null);
     const previous = bookmarked;
     setBookmarked(!previous);
     startTransition(async () => {
@@ -23,11 +25,13 @@ export function BookmarkToggle({ companySlug, storySlug, initialBookmarked }: Bo
         setBookmarked(result.bookmarked);
       } catch {
         setBookmarked(previous);
+        setError('Could not save your change. Please try again.');
       }
     });
   };
 
   return (
+    <div className="flex max-w-full flex-col items-end gap-1">
     <button
       onClick={handleToggle}
       disabled={pending}
@@ -38,5 +42,7 @@ export function BookmarkToggle({ companySlug, storySlug, initialBookmarked }: Bo
       <Bookmark aria-hidden size={17} fill={bookmarked ? 'currentColor' : 'none'} />
       <span>{bookmarked ? 'Saved' : 'Save'}</span>
     </button>
+    {error && <span role="alert" className="max-w-56 text-right text-sm text-error">{error}</span>}
+    </div>
   );
 }

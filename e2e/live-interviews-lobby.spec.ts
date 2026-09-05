@@ -1,7 +1,7 @@
-// tests/live-interviews-lobby.spec.ts
+// Discovered by the standard Playwright e2e configuration.
 import { test, expect } from '@playwright/test'
 
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000'
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3002'
 
 // Mock the profile endpoint so the TopBar does not trigger a /login redirect.
 // The proxy still requires a Supabase session, so page-level tests that navigate

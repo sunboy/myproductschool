@@ -1,5 +1,6 @@
 'use client'
 
+import { safeAuthRedirect } from '@/lib/auth/redirect'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -49,9 +50,7 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
   }
 
   function resolvedRedirectTo(fallback: string) {
-    if (!redirectTo) return fallback
-    if (redirectTo.startsWith('/') && !redirectTo.startsWith('//')) return redirectTo
-    return fallback
+    return safeAuthRedirect(redirectTo) ?? fallback
   }
 
   async function postAuthAction<T>(path: string, payload: Record<string, unknown>): Promise<T> {
@@ -145,7 +144,7 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
         await postAuthAction('/api/auth/magic-link', {
           email: validation.data.email,
           turnstileToken,
-          redirectTo: `${oauthOrigin()}/auth/callback`,
+          redirectTo: `${oauthOrigin()}/auth/callback?next=${encodeURIComponent(resolvedRedirectTo('/dashboard'))}`,
         })
         play('success')
         router.push(`/magic-link-sent?email=${encodeURIComponent(validation.data.email)}`)
@@ -229,7 +228,7 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
         } else {
           resetTurnstile()
           play('success')
-          router.push(`/verify-email?email=${encodeURIComponent(validation.data.email)}`)
+          router.push(`/verify-email?email=${encodeURIComponent(validation.data.email)}&next=${encodeURIComponent(dest)}`)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')

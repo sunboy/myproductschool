@@ -80,14 +80,14 @@ export function LibraryCatalog({ items, unavailableKinds = [] }: { items: Librar
             <div className="flex h-14 items-center gap-3 rounded-2xl border border-[#cfc6b5] bg-white/90 px-4 shadow-[0_18px_50px_-38px_rgba(22,58,43,.55)] focus-within:border-[#2f6b4f] focus-within:ring-2 focus-within:ring-[#2f6b4f]/12">
               <Search aria-hidden size={20} className="shrink-0 text-[#6b756d]" />
               <input id="library-search" type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search guides, companies, or skills" className="min-w-0 flex-1 bg-transparent text-base text-[#223f32] outline-none placeholder:text-[#8a8f89]" />
-              {query && <button type="button" onClick={() => setQuery('')} aria-label="Clear search" className="rounded-full p-1.5 text-[#687168] hover:bg-[#f1ece2]"><X aria-hidden size={18} /></button>}
+              {query && <button type="button" onClick={() => setQuery('')} aria-label="Clear search" className="grid size-11 shrink-0 place-items-center rounded-full text-[#687168] hover:bg-[#f1ece2]"><X aria-hidden size={18} /></button>}
             </div>
           </div>
         </header>
 
         <nav aria-label="Library categories" className="mt-6 flex gap-2 overflow-x-auto pb-2">
           {(Object.keys(categoryCopy) as Array<LibraryKind | 'all'>).map(key => (
-            <button key={key} type="button" onClick={() => setCategory(key)} aria-pressed={category === key} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-extrabold transition-colors ${category === key ? 'border-[#174a34] bg-[#174a34] text-white' : 'border-[#d4ccbd] bg-white/70 text-[#3f5b4c] hover:border-[#8da494]'}`}>
+            <button key={key} type="button" onClick={() => setCategory(key)} aria-pressed={category === key} className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm font-extrabold transition-colors ${category === key ? 'border-[#174a34] bg-[#174a34] text-white' : 'border-[#d4ccbd] bg-white/70 text-[#3f5b4c] hover:border-[#8da494]'}`}>
               {categoryCopy[key].label} <span className={category === key ? 'text-white/65' : 'text-[#8b918b]'}>{counts[key]}</span>
             </button>
           ))}
@@ -113,7 +113,7 @@ export function LibraryCatalog({ items, unavailableKinds = [] }: { items: Librar
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-[#8b672d]">{categoryCopy[category].description}</p>
-              <h2 className="mt-1 font-headline text-3xl font-semibold tracking-[-0.02em] text-[#183f2e]">{query ? `Results for “${query}”` : category === 'all' ? 'Browse the collection' : categoryCopy[category].label}</h2>
+              <h2 className="mt-1 break-words font-headline text-3xl font-semibold tracking-[-0.02em] text-[#183f2e]">{query ? `Results for “${query}”` : category === 'all' ? 'Browse the collection' : categoryCopy[category].label}</h2>
             </div>
             <p aria-live="polite" className="text-sm font-bold tabular-nums text-[#737b74]">{visible.length} {visible.length === 1 ? 'item' : 'items'}</p>
           </div>
@@ -128,7 +128,7 @@ export function LibraryCatalog({ items, unavailableKinds = [] }: { items: Librar
             <div className="rounded-[24px] border border-dashed border-[#cfc6b5] bg-white/60 px-6 py-16 text-center">
               <h3 className="font-headline text-2xl font-semibold text-[#204632]">No matches yet</h3>
               <p className="mt-2 text-base text-[#6e766f]">Try a company, discipline, or broader phrase.</p>
-              <button type="button" onClick={() => { setQuery(''); setCategory('all') }} className="mt-5 rounded-full border border-[#1f563d] px-4 py-2 text-sm font-extrabold text-[#1f563d]">Clear filters</button>
+              <button type="button" onClick={() => { setQuery(''); setCategory('all') }} className="mt-5 min-h-11 rounded-full border border-[#1f563d] px-4 py-2 text-sm font-extrabold text-[#1f563d]">Clear filters</button>
             </div>
           )}
         </section>
