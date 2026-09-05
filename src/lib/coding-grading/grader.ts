@@ -34,7 +34,7 @@ Return ONLY a JSON object with this exact structure:
   "summary": "A brief overall assessment",
   "next_actions": ["One concrete next action"]
 }
-The numbers above illustrate the format only. Choose scores from the actual evidence. Do not use markdown fences or return an alternative schema.`
+The numbers above illustrate the format only. Choose scores from the actual evidence. Omit dimensions with no observable evidence. Hatch use is optional: never penalize independent work for having no chat. No chat means collaboration and interview communication are unassessed; no recorded runs means verification discipline is unassessed. Base the overall score on observed dimensions only, renormalizing their weights. Do not use markdown fences or return an alternative schema.`
 
 const CODING_FEEDBACK_CONTRACT = `User-facing feedback contract:
 - Keep the response crisp, direct, and useful to a real learner.
@@ -314,6 +314,31 @@ function buildProcessSummary(input: GradingInput, processScore: number): string 
   return 'The process is partly visible. Make the reasoning and verification trail easier to inspect.'
 }
 
+/** An absent interaction is not evidence of a weak skill. Enforce this even
+ * when the model supplies speculative scores for an unobserved dimension. */
+export function retainObservedCodingDimensions(feedback: GradingFeedback, input: GradingInput): GradingFeedback {
+  const dimensions = { ...feedback.dimensions }
+  const hasUserChat = effectiveChatHistory(input).some(message => message.role === 'user' && message.content.trim())
+  if (!hasUserChat) {
+    delete dimensions.ai_collaboration
+    delete dimensions.interview_communication
+  }
+  if (!input.sessionEvents.some(event => event.type === 'code_run')) delete dimensions.verification_discipline
+  const weights: Record<GradingDimensionKey, number> = {
+    problem_approach: 25, ai_collaboration: 30, code_quality: 15,
+    verification_discipline: 15, interview_communication: 15,
+  }
+  let totalWeight = 0
+  let weightedScore = 0
+  for (const key of Object.keys(weights) as GradingDimensionKey[]) {
+    const score = dimensions[key]?.score
+    if (typeof score !== 'number' || !Number.isFinite(score)) continue
+    weightedScore += score * weights[key]
+    totalWeight += weights[key]
+  }
+  return { ...feedback, dimensions, overall_score: totalWeight ? roundTenth(weightedScore / totalWeight) : feedback.overall_score }
+}
+
 function withCodingScoreBreakdown(feedback: GradingFeedback, input: GradingInput): GradingFeedback {
   const correctnessScore = input.correctness.testsTotal > 0
     ? roundTenth(1 + (input.correctness.testsPassed / input.correctness.testsTotal) * 4)
@@ -554,7 +579,7 @@ export async function gradeCodingAttempt(input: GradingInput): Promise<GradingFe
   let lastErr: unknown
   for (let attempt = 0; attempt < nudges.length; attempt++) {
     try {
-      return withCodingScoreBreakdown(await callGrader(nudges[attempt]), input)
+      return withCodingScoreBreakdown(retainObservedCodingDimensions(await callGrader(nudges[attempt]), input), input)
     } catch (err) {
       // Budget/plan-limit errors are not model-output failures — let the route
       // surface them as a 402 instead of masking them with a fallback grade.

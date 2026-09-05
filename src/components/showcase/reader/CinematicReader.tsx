@@ -10,6 +10,7 @@ import { useReaderScroll } from '@/hooks/useReaderScroll';
 import { useReaderResume } from '@/hooks/useReaderResume';
 import { ReaderDock } from './ReaderDock';
 import { LearningArtwork } from '@/components/redesign/LearningGeometry';
+import { readerTopicTags } from '@/lib/autopsies/display-tags';
 import { ResumeBanner } from './ResumeBanner';
 import { BookmarkToggle } from './BookmarkToggle';
 import { PrevNextChips } from './PrevNextChips';
@@ -128,7 +129,7 @@ export function CinematicReader({ story, companyName, companyAccent, initialBook
             <div className="reader-kicker">Product autopsy · {story.estimatedReadTime}</div>
             <h1>{story.title}</h1>
             <p className="reader-dek">{story.dek}</p>
-            <div className="reader-tags">{story.tags.slice(0, 4).map(tag => <span key={tag}>{tag}</span>)}</div>
+            <div className="reader-tags">{readerTopicTags(story.tags).slice(0, 4).map(tag => <span key={tag}>{tag}</span>)}</div>
           </div>
           <div className="learning-reader-cover"><LearningArtwork /></div>
         </div>

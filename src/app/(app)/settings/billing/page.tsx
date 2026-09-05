@@ -69,6 +69,7 @@ export default function BillingSettingsPage() {
     setError(null)
     try {
       const res = await fetch('/api/stripe/portal', { method: 'POST' })
+      if (res.status >= 500) throw new Error('Billing is temporarily unavailable. Please try again shortly. Your membership has not changed.')
       const data = await res.json().catch(() => ({}))
       if (!res.ok || !data.url) {
         throw new Error(data.error ?? 'Could not open billing portal.')

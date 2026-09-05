@@ -442,7 +442,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
         return { kind: 'connected' }
       }
 
-      // Kick off the heavy provision request (its own 60s budget). Not awaited for
+      // Kick off the heavy provision request (its own 180s budget). Not awaited for
       // the UI — the poll below is the source of truth for readiness — but a 402
       // still routes to the paywall.
       let provisionRequestFailed = false
@@ -1603,16 +1603,16 @@ const SERVER_PHASE_TO_UI: Record<string, 'waking' | 'booting' | 'connecting'> = 
   ready: 'connecting',
 }
 
-// Failure codes that are cold-transient: the SQL wake or the gateway key mint
-// timed out because the infra was cold. The PATCH-to-ALWAYS from the failed
-// attempt means the DB is already warming, so a silent retry usually lands.
+// Only a warehouse wake timeout is safe to retry automatically. A gateway key
+// failure can mean broken configuration, not a cold start; surface it promptly
+// instead of creating several sessions and repeating costly startup work.
 // readiness_timeout and create_session are NOT retried here (the /state poll
 // already carries readiness across polls; a true readiness failure is a
 // different problem worth surfacing).
-const COLD_RETRYABLE_CODES = new Set(['sql_wake_timeout', 'gateway_key_mint'])
+const COLD_RETRYABLE_CODES = new Set(['sql_wake_timeout'])
 
 // Max silent cold-start retries before surfacing a real failure.
-const MAX_COLD_RETRIES = 2
+const MAX_COLD_RETRIES = 1
 
 // Per-attempt poll ceiling. Must exceed the real cold path (SQL wake up to ~40s +
 // gateway cold mint + revision boot up to ~40s). Widened from 150s so a genuinely
@@ -1628,7 +1628,7 @@ const TOTAL_DEADLINE_MS = 240_000
 
 // Shown only when the cold-start retries are genuinely exhausted. Honest and
 // actionable; progress is autosaved so a later retry resumes where they left off.
-const FAILURE_COPY = 'We could not start your session. Your progress is saved. Try again in a minute.'
+const FAILURE_COPY = 'Your analytics session could not connect. Your saved work is safe. You can retry or return to practice.'
 
 function SandboxStartupProgress({
   phase,
@@ -1662,8 +1662,8 @@ function SandboxStartupProgress({
         </span>
         <span style={{ fontSize: 11.5, color: 'rgba(232,228,220,0.55)' }}>
           {retrying
-            ? 'Still waking things up. Almost there.'
-            : 'First session in a while can take about a minute. Hang tight.'}
+            ? 'Setup is taking longer than usual. We are still checking the connection.'
+            : 'A cold start can take a few minutes. You can keep reading the brief while it connects.'}
         </span>
       </div>
 

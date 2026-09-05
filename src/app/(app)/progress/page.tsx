@@ -15,16 +15,16 @@ import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
 import { levelFromXp } from '@/lib/utils'
+import { normalizeToTen } from '@/lib/feedback/score'
 import { useLearnerDNAData } from './LearnerDNASection'
 
 /* ── Humanize snake_case archetype labels ─────────────────────────── */
 
 
-/** Display an interview score on the canonical /100 scale. */
+/** Interview history returns the stored /5 score; match the debrief's /10 display. */
 function formatInterviewScore(score: number | null | undefined): string | null {
-  if (score == null) return null
-  // overallScore from the API is on a 0–100 scale; show it as "82/100"
-  return `${Math.round(score)}/100`
+  if (score == null || !Number.isFinite(score)) return null
+  return `${normalizeToTen(score, 5).toFixed(1)}/10`
 }
 
 /* ── Event label map for activity feed ────────────────────────────── */

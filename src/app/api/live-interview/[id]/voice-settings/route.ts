@@ -167,7 +167,8 @@ export async function GET(
                 type: 'deepgram',
                 model: 'flux-general-en',
                 version: 'v2',
-                language: 'en',
+                // Flux infers language from its model; the Voice Agent schema
+                // rejects the Nova-only language option for this provider.
                 eot_threshold: 0.7,
                 eager_eot_threshold: 0.5,
                 eot_timeout_ms: 4000,

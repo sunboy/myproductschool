@@ -547,6 +547,9 @@ export default function SessionPage({
   // stream instead of reassigning the refs and recreating a preview stream.
   const preflightGenerationRef = useRef(0)
   const [voiceFallback, setVoiceFallback] = useState(false) // user chose "Continue in chat instead"
+  const [voiceChosen, setVoiceChosen] = useState(false)
+  const voiceChosenRef = useRef(false)
+  useEffect(() => { voiceChosenRef.current = voiceChosen }, [voiceChosen])
 
   const eventSourceRef = useRef<EventSource | null>(null)
   const lastSignalTurnIndexRef = useRef<number>(-1)
@@ -701,7 +704,8 @@ export default function SessionPage({
   }, [turns, isThinking])
 
   // Start session - if autostart=1 the session was already created by StartInterviewButton
-  // so we use the id directly and skip the POST, going straight to active.
+  // so we use the id directly and skip the POST. Always show the mode choice
+  // before opening an audio connection, including newly created sessions.
   useEffect(() => {
     if (IS_MOCK) return
     const isAutostart = autostart === '1'
@@ -711,8 +715,7 @@ export default function SessionPage({
       setCompanyName(company ?? '')
       setRoleName(roleParam ?? '')
       setScenarioTitle(scenarioTitleParam ?? null)
-      setInterviewPhase('active')
-      setInterviewStartedAt(Date.now())
+      setInterviewPhase('ready')
       return
     }
 
@@ -730,8 +733,7 @@ export default function SessionPage({
           if (data.session?.company_id) setCompanyName(company ?? data.session.company_id)
           else setCompanyName(company ?? '')
           setRoleName(roleParam ?? '')
-          setInterviewPhase('active')
-          setInterviewStartedAt(Date.now())
+          setInterviewPhase('ready')
         } catch {
           // Fall through silently - UI will still render in 'starting' phase
         }
@@ -849,7 +851,7 @@ export default function SessionPage({
         }])
         setTotalTurns((prev) => Math.max(prev, 1))
         setCurrentCaption(openingContent)
-        if (!isVoiceAvailable) {
+        if (!voiceChosenRef.current) {
           setIsChatOpen(true)
           setTimeout(() => chatInputRef.current?.focus(), 50)
         }
@@ -868,7 +870,7 @@ export default function SessionPage({
       })
 
     return () => { cancelled = true }
-  }, [buildCurrentArtifactSnapshot, interviewPhase, isVoiceAvailable, sessionId, turns.length])
+  }, [buildCurrentArtifactSnapshot, interviewPhase, sessionId, turns.length])
 
   useEffect(() => {
     if (
@@ -1207,6 +1209,8 @@ export default function SessionPage({
   const [voiceError, setVoiceError] = useState<string | null>(null)
 
   const handleVoiceError = useCallback((err: string) => {
+    setVoiceChosen(false)
+    setVoiceFallback(true)
     setVoiceError(err)
     setIsVoiceAvailable(false)
     setIsVoiceActive(false)
@@ -1310,6 +1314,7 @@ export default function SessionPage({
   }, [teardownPreflight])
 
   const handleStartWithChatFallback = useCallback(() => {
+    setVoiceChosen(false)
     setVoiceFallback(true)
     teardownPreflight()
     setIsChatOpen(true)
@@ -1317,6 +1322,8 @@ export default function SessionPage({
   }, [teardownPreflight, handleStartInterview])
 
   const handleStartWithVoice = useCallback(() => {
+    setVoiceChosen(true)
+    setVoiceFallback(false)
     teardownPreflight()
     handleStartInterview()
   }, [teardownPreflight, handleStartInterview])
@@ -1702,14 +1709,15 @@ export default function SessionPage({
     const levelColor = micLevel > 0.04 ? '#7ee099' : 'rgba(255,255,255,0.25)'
 
     const canStartWithVoice = micCheckState === 'ok' && micSeenSignal
-    const isMicDenied = micCheckState === 'denied'
-    const isReadyBtnEnabled = canStartWithVoice || isMicDenied
+    const isReadyBtnEnabled = canStartWithVoice
 
     return (
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Choose voice or chat"
         className="fixed inset-0 flex items-center justify-center overflow-y-auto py-6"
         style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 200 }}
-        onClick={(e) => { if (e.target === e.currentTarget) leaveReadyModal() }}
       >
         <div
           className="relative flex flex-col items-center gap-5 text-center mx-4 w-full"
@@ -2883,7 +2891,7 @@ export default function SessionPage({
           onConnected={handleConnected}
           onError={handleVoiceError}
           onAnalyserReady={(analyser) => talkingHeadRef.current?.setAnalyser(analyser)}
-          disabled={IS_MOCK || interviewPhase !== 'active' || voiceFallback}
+          disabled={IS_MOCK || interviewPhase !== 'active' || voiceFallback || !voiceChosen}
           preferredDeviceId={preferredDeviceId}
         />
       )}

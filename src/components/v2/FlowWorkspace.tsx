@@ -674,9 +674,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     correctness?: RunResult | null
   }>>(new Map())
   const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
+  const [submittedCanvasScene, setSubmittedCanvasScene] = useState<{ attemptId: string; elements: unknown[] } | null>(null)
   const [contextPackOpen, setContextPackOpen] = useState(true)
   const [contextPack, setContextPack] = useState<ContextPackState>(EMPTY_CONTEXT_PACK_FIELDS)
   const [isSubmittingInterview, setIsSubmittingInterview] = useState(false)
+  const [interviewSubmitError, setInterviewSubmitError] = useState<string | null>(null)
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const contextPackRef = useRef<HTMLDivElement>(null)
 
@@ -2226,6 +2228,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Excalidraw's initialData restore. Falls back to the last SUBMITTED scene
   // when there is no in-progress draft (re-entry after submit).
   const canvasInitialData = useMemo(() => {
+    // The just-submitted scene is newer than the server detail fetched on mount.
+    // Preserve it even when intentionally empty, and only for its own attempt.
+    if (submittedCanvasScene?.attemptId === attemptId) {
+      return { elements: submittedCanvasScene.elements }
+    }
     const snap = detail?.current_attempt?.draft_snapshot as
       | { type?: string; elements?: unknown[] }
       | undefined
@@ -2240,7 +2247,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
     return undefined
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detail?.current_attempt?.id, detail?.latest_completed_attempt?.id])
+  }, [detail?.current_attempt?.id, detail?.latest_completed_attempt?.id, submittedCanvasScene, attemptId])
 
   // useCodeRunner hook - always called (React rules of hooks); only active for coding challenges
   const codeChallenge = (isCodingChallenge && detail?.challenge)
@@ -2778,6 +2785,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const handleInterviewSubmit = useCallback(async () => {
     const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
     if (!challengeId || !attemptId || isSubmittingInterview) return
+    setInterviewSubmitError(null)
     playHatchSound('submit')
     setIsSubmittingInterview(true)
     try {
@@ -2800,10 +2808,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           stepAnswers,
         }),
       })
-      if (!res.ok) throw new Error('Submit failed')
+      if (!res.ok) {
+        const failure = await res.json().catch(() => ({}))
+        throw new Error(typeof failure.error === 'string' ? failure.error : 'We could not finish the review. Please retry.')
+      }
       const data = await res.json()
       playHatchSound('success')
       setInterviewGrade(data.grade)
+      setSubmittedCanvasScene({ attemptId, elements: canvasScene?.elements ?? [] })
       setPhase('complete')
       // Surface this submission in the history tab immediately (canvas types:
       // system_design / data_modeling). Optimistic; the refetch reconciles the
@@ -2827,6 +2839,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } catch (err) {
       playHatchSound('error')
       console.error('Interview submit error:', err)
+      setInterviewSubmitError(err instanceof Error ? err.message : 'We could not finish the review. Please retry.')
     } finally {
       setIsSubmittingInterview(false)
     }
@@ -4071,7 +4084,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 </span>
               </div>
               <p style={{ margin: '2px 0 0', fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
-                Assumptions and tradeoffs Hatch should grade with your diagram.
+                Assumptions and tradeoffs Hatch should consider with your diagram.
               </p>
             </div>
             <span
@@ -5506,7 +5519,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   grade={interviewGrade}
                   challengeType={apiChallengeType ?? 'system_design'}
                   canvasPngUrl={submittedCanvasPngUrl}
-                  canvasElements={canvasScene?.elements ?? null}
+                  canvasElements={submittedCanvasScene?.attemptId === attemptId ? submittedCanvasScene.elements : canvasScene?.elements ?? null}
                   nextChallengeHref={nextChallengeHref}
                   backToListHref={workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)}
                   onRetry={() => window.location.reload()}
@@ -5758,10 +5771,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               canvas lives in a full-screen overlay that stays MOUNTED when
               closed (display:none) so scene, undo history, and the chat thread
               survive every round trip between drawing and writing. */}
-          {isCanvasChallenge && !isSubmittingInterview && (
+          {isCanvasChallenge && (
             <div
               className={canvasMaximised ? 'canvas-overlay-scrim' : undefined}
-              style={canvasMaximised
+              style={isSubmittingInterview ? { display: 'none' } : canvasMaximised
               ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2vh 2vw', background: 'rgba(5, 35, 22, 0.35)' }
               : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
               }>
@@ -5825,7 +5838,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 <div style={{ flex: 1, display: 'flex', minWidth: 0, minHeight: 0 }}>
                   {/* Write-up column (inline only, kept mounted so scroll and
                       focus state survive the overlay round trip) */}
-                  <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflowY: 'auto', display: canvasMaximised ? 'none' : 'flex', flexDirection: 'column', padding: '2px 8px 16px' }}>
+                  <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflowY: 'auto', scrollPaddingBottom: 96, display: canvasMaximised ? 'none' : 'flex', flexDirection: 'column', padding: '2px 8px 96px' }}>
                     {/* Full-width card: with the old 300px rail folded into the
                         Hatch dock this column owns the center, so the write-up
                         stretches instead of floating at 780px in empty space. */}
@@ -6393,16 +6406,18 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         }}>
           {/* Readiness folded into the DesignRail's progress ring; the footer
               keeps a one-line summary so submit intent stays informed. */}
-          <span className="font-label text-xs font-semibold text-ink-secondary">
-            {designSectionTotals.done} of {designSectionTotals.total} sections have enough substance to grade
-            {guidance.phase === 'ready' ? ' · reads ready to submit' : ''}
-          </span>
+          <div>
+            <span className="font-label text-xs font-semibold text-ink-secondary">
+              {designSectionTotals.done} of {designSectionTotals.total} sections ready for feedback
+            </span>
+            {interviewSubmitError && <p role="alert" className="mt-1 font-body text-sm text-error">{interviewSubmitError}</p>}
+          </div>
           <button
             onClick={handleInterviewSubmit}
             disabled={isSubmittingInterview}
             className="rounded-full bg-primary text-on-primary font-label font-semibold px-6 py-2 disabled:opacity-60 hover:opacity-90 transition-opacity shrink-0"
           >
-            {isSubmittingInterview ? 'Submitting…' : 'Submit'}
+            {isSubmittingInterview ? 'Submitting…' : interviewSubmitError ? 'Retry submission' : 'Submit'}
           </button>
         </div>
       )}

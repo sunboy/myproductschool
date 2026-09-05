@@ -1,5 +1,5 @@
 // The canonical score language for every feedback surface. Stored scales stay
-// per-medium (/5 canvas+coding, /100 debrief+CC, 0-1 quick-take, /10 FLOW);
+// per-medium (/5 canvas+coding+live interview, /100 CC, 0-1 quick-take, /10 FLOW);
 // display normalizes to /10 with one grade lexicon, so a learner moving
 // between mediums reads one coherent coach.
 

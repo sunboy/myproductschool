@@ -1,6 +1,6 @@
 # HackProduct visual overhaul — locked execution plan
 
-Status: visual direction approved by the owner; stages 4 and 5 real-route integration in progress; stage 6 verification remains open. This plan supersedes earlier implementation sequencing, including docs/platform-rebuild-20260905.md. Prior repairs remain preserved; they do not count as visual overhaul delivery.
+Status: visual direction approved by the owner; stages 4 and 5 core real-route integration published; stage 6 authenticated verification and observed-defect fixes remain open. See INTEGRATION_STATUS.md for current evidence and service blockers. This plan supersedes earlier implementation sequencing, including docs/platform-rebuild-20260905.md. Prior repairs remain preserved; they do not count as visual overhaul delivery.
 
 ## Product contract
 Professional learning and upskilling for tech workers, including interview preparation. Main navigation: Home, Practice, Library, Progress. Hatch is the universal contextual companion; Claude Code belongs only to analytics. No gym/reps/loops/graded language. Preserve existing work, content, auth and payment contracts during subsequent integration.
