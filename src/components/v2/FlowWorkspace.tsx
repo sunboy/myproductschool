@@ -74,6 +74,7 @@ import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import type { ChallengeDiscussion } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import { buildChallengeBrief, type ChallengeBriefSection } from '@/lib/challenges/presentation'
+import { mdRemarkPlugins, mdRehypePlugins, safeMarkdownUrl } from '@/components/ui/md-shared'
 import { codingMarkdownComponents } from '@/components/challenge/markdownComponents'
 import { SolutionsPane } from '@/components/solutions/SolutionsPane'
 import type { SolutionTabResponse } from '@/lib/solutions/schema'
@@ -336,7 +337,7 @@ function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
       {/* The body as one continuous document; headings come from the content */}
       {contextSections.map((section) => (
         <div key={section.id} style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
-          <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
         </div>
       ))}
 
@@ -353,7 +354,7 @@ function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
           fontWeight: 600,
           color: 'var(--color-on-surface)',
         }}>
-          <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
         </div>
       ))}
 
@@ -378,7 +379,7 @@ function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
             {section.title}
           </div>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.68, fontWeight: 650, color: 'var(--color-on-surface)' }}>
-            <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
           </div>
         </section>
       ))}
@@ -392,7 +393,7 @@ function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
           lineHeight: 1.6,
           color: 'var(--color-on-surface-variant)',
         }}>
-          <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
         </div>
       ))}
     </div>
@@ -447,7 +448,7 @@ function BriefSectionCard({ section }: { section: ChallengeBriefSection }) {
           fontWeight: bodyWeight,
         }}
       >
-        <ReactMarkdown components={briefMarkdownComponents}>
+        <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={briefMarkdownComponents}>
           {section.body}
         </ReactMarkdown>
       </div>
@@ -739,7 +740,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // answer panel + centered FLOW stepper + the Description/Discussions/Submissions
   // tab row) needs ≥1024px; at 768px it collided ("Frame" sitting on the tab row).
   const isMobile = useIsMobile('(max-width: 1023px)')
-  const [mobileDescOpen, setMobileDescOpen] = useState(false)
+  const [mobileDescOpen, setMobileDescOpen] = useState(true)
 
   // Derived: dock fade-out fires when answer has been submitted (phase leaves 'question')
   const dockSubmitted = phase === 'reveal' || phase === 'complete'
@@ -4567,7 +4568,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     <div style={{ padding: '0 12px 4px', borderTop: '1px solid var(--color-outline-variant)' }}>
                       {part.coding_subtask_prompt && (
                         <div style={{ padding: '10px 0 6px' }}>
-                          <ReactMarkdown components={codingMarkdownComponents}>
+                          <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={codingMarkdownComponents}>
                             {part.coding_subtask_prompt}
                           </ReactMarkdown>
                         </div>
@@ -4709,7 +4710,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const examplesPane = problemSections?.examples ? (
     <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
       <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
-        <ReactMarkdown components={documentMarkdownComponents}>{problemSections.examples}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{problemSections.examples}</ReactMarkdown>
       </div>
     </div>
   ) : null
@@ -4717,7 +4718,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const constraintsPane = problemSections?.constraints ? (
     <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
       <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
-        <ReactMarkdown components={documentMarkdownComponents}>{problemSections.constraints}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{problemSections.constraints}</ReactMarkdown>
       </div>
     </div>
   ) : null
@@ -5608,38 +5609,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   ) : null
 
-  // Collapsible description drawer (collapsed by default so the question shows first).
+  // On phones the brief is a full-height reading surface, not a drawer above
+  // the answer. The answer remains mounted below (hidden while reading).
   const mobileDrawer = isMobile ? (
-    <div style={{ flexShrink: 0, borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)' }}>
+    <>
       <div className="learning-workspace-mobile-tabs" role="group" aria-label="Workspace view">
         <button type="button" aria-pressed={mobileDescOpen} onClick={() => { setLeftTab('Description'); setMobileDescOpen(true) }}>The brief</button>
         <button type="button" aria-pressed={!mobileDescOpen} onClick={() => setMobileDescOpen(false)}>Your work</button>
       </div>
-      <button
-        onClick={() => setMobileDescOpen(v => !v)}
-        aria-expanded={mobileDescOpen}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-      >
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 18, color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>description</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-on-surface)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {mobileDescOpen
-              ? `Hide ${leftTab.toLowerCase()}`
-              : (leftTab === 'Description' ? (challengeTitle ?? 'Show brief') : `Show ${leftTab.toLowerCase()}`)}
-          </span>
-        </span>
-        <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
-          {mobileDescOpen ? 'expand_less' : 'expand_more'}
-        </span>
-      </button>
       {mobileDescOpen && (
-        <div style={{ maxHeight: '55vh', overflowY: 'auto', borderTop: '1px solid var(--color-outline-faint)' }}>
+        <div className="flex-1 min-h-0 overflow-y-auto" aria-label={leftTab === 'Description' ? 'The brief' : leftTab}>
           {leftTab === 'Description' && descriptionPane}
+          {leftTab === 'Solutions' && solutionsPane}
           {leftTab === 'Discussions' && discussionsPane}
           {leftTab === 'Submissions' && submissionsPane}
         </div>
       )}
-    </div>
+    </>
   ) : null
 
   // FLOW step bar in a horizontally scrollable wrapper.
@@ -5994,7 +5980,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         <>
           {mobileChrome}
           {mobileDrawer}
-          {mobileStepperBar}
+          {!mobileDescOpen && mobileStepperBar}
         </>
       ) : (
         <>
@@ -6004,7 +5990,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       )}
 
       {/* Middle: resizable two-pane on desktop, single column on mobile */}
-      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden p-2 bg-page-field'}>
+      <div ref={containerRef} style={mobileStacked && mobileDescOpen ? { display: 'none' } : undefined} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden p-2 bg-page-field'}>
         {!mobileStacked && leftDescriptionPanel}
         {!mobileStacked && dragHandle}
 
@@ -6692,7 +6678,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
       {/* Full-width bottom footer: left actions + submit - only for MCQ FLOW challenges.
           Mobile uses a compact full-width footer (no left stats column). */}
-      {!isInterviewChallenge && (mobileStacked ? mobileFooter : bottomFooter)}
+      {!isInterviewChallenge && (!mobileStacked || !mobileDescOpen) && (mobileStacked ? mobileFooter : bottomFooter)}
     </div>
   )
 }

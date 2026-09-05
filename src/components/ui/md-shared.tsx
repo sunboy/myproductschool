@@ -6,6 +6,8 @@ import type { Components } from 'react-markdown'
 import rehypeSanitize from 'rehype-sanitize'
 import type { Options as RehypeSanitizeOptions } from 'rehype-sanitize'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { twMerge } from 'tailwind-merge'
 import type { PluggableList } from 'unified'
 
@@ -42,23 +44,32 @@ const ALLOWED_TAGS = [
   'th',
   'td',
   'del',
+  'img',
 ]
 
 export const mdSanitizeSchema: RehypeSanitizeOptions = {
   tagNames: ALLOWED_TAGS,
   attributes: {
     a: ['href', 'title'],
+    img: ['src', 'alt', 'title'],
+    code: [['className', /^language-./, 'math-inline', 'math-display']],
     th: ['align'],
     td: ['align'],
   },
   protocols: {
     href: ['https', 'mailto'],
+    src: ['https'],
   },
   strip: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input'],
 }
 
-export const mdRemarkPlugins: PluggableList = [remarkGfm]
-export const mdRehypePlugins: PluggableList = [[rehypeSanitize, mdSanitizeSchema]]
+export const mdRemarkPlugins: PluggableList = [remarkGfm, remarkMath]
+// Sanitize user content first; only the trusted math renderer may emit MathML
+// and layout styles. Never allow raw HTML or enable KaTeX's trusted commands.
+export const mdRehypePlugins: PluggableList = [
+  [rehypeSanitize, mdSanitizeSchema],
+  [rehypeKatex, { trust: false, maxExpand: 1000, maxSize: 20 }],
+]
 
 const variantClass = {
   default: {
@@ -171,12 +182,15 @@ export function getMdComponents(variant: MdVariant = 'default', tone: MdTone = '
     h5: ({ children, className, ...props }) => <h5 className={cn(classes.h3, inheritedText, className)} {...withoutNode(props)}>{children}</h5>,
     h6: ({ children, className, ...props }) => <h6 className={cn(classes.h3, inheritedText, className)} {...withoutNode(props)}>{children}</h6>,
     code: ({ children, className, ...props }) => <code className={cn(classes.code, className)} {...withoutNode(props)}>{children}</code>,
-    pre: ({ children, className, ...props }) => <pre className={cn(classes.pre, className)} {...withoutNode(props)}>{children}</pre>,
+    // Keyboard users must be able to focus and horizontally scroll long code.
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+    pre: ({ children, className, ...props }) => <pre tabIndex={0} aria-label="Code block" className={cn('md-code-block', classes.pre, className)} {...withoutNode(props)}>{children}</pre>,
     blockquote: ({ children, className, ...props }) => <blockquote className={cn(classes.blockquote, className)} {...withoutNode(props)}>{children}</blockquote>,
     hr: ({ className, ...props }) => <hr className={cn('my-3 border-outline-variant', className)} {...withoutNode(props)} />,
-    table: ({ children, className, ...props }) => <table className={cn(classes.table, className)} {...withoutNode(props)}>{children}</table>,
+    // The scroll container needs a keyboard focus stop, not a button role.
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+    table: ({ children, className, ...props }) => <div className="md-table-scroll" tabIndex={0} role="region" aria-label="Table"><table className={cn(classes.table, className)} {...withoutNode(props)}>{children}</table></div>,
     th: ({ children, className, ...props }) => <th className={cn(classes.cell, 'font-bold bg-surface-container-high', className)} {...withoutNode(props)}>{children}</th>,
     td: ({ children, className, ...props }) => <td className={cn(classes.cell, className)} {...withoutNode(props)}>{children}</td>,
   }
 }
-
