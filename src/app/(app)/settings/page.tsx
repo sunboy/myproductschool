@@ -446,9 +446,9 @@ export default function SettingsPage() {
     ? googleIdentity.identity_data.email
     : null
   const canUnlinkGoogle = !!googleIdentity && linkedIdentities.length > 1
-  const inputClass = 'w-full rounded-[8px] border border-hairline bg-card-bright px-3 py-2 font-body text-sm text-ink-strong placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-forest-600/25 focus:border-forest-600/50'
-  const quietButtonClass = 'inline-flex items-center gap-1.5 rounded-[10px] border border-hairline bg-card-bright px-3.5 py-2 font-label text-xs font-bold text-ink-secondary transition-colors hover:border-forest-600/40 hover:text-ink-strong disabled:cursor-not-allowed disabled:opacity-50'
-  const primaryButtonClass = 'inline-flex items-center justify-center gap-2 rounded-[10px] bg-forest-950 px-4 py-2.5 font-label text-sm font-bold text-white transition-colors hover:bg-forest-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60'
+  const inputClass = 'w-full min-h-11 rounded-[8px] border border-hairline bg-card-bright px-3 py-2 font-body text-base text-ink-strong placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-forest-600/25 focus:border-forest-600/50'
+  const quietButtonClass = 'inline-flex min-h-11 items-center gap-1.5 rounded-[10px] border border-hairline bg-card-bright px-3.5 py-2 font-label text-sm font-bold text-ink-secondary transition-colors hover:border-forest-600/40 hover:text-ink-strong disabled:cursor-not-allowed disabled:opacity-50'
+  const primaryButtonClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] bg-forest-950 px-4 py-2.5 font-label text-sm font-bold text-white transition-colors hover:bg-forest-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60'
   const passwordFields: Array<{
     field: PasswordField
     label: string
@@ -519,7 +519,6 @@ export default function SettingsPage() {
               {editingName ? (
                 <div className="flex items-center gap-2">
                   <input
-                    autoFocus
                     value={displayName}
                     onChange={e => setDisplayName(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingName(false) }}
@@ -528,14 +527,14 @@ export default function SettingsPage() {
                   <button
                     onClick={saveDisplayName}
                     disabled={profileSaving}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-forest-950 text-white transition-opacity disabled:opacity-50"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-[8px] bg-forest-950 text-white transition-opacity disabled:opacity-50"
                     aria-label="Save display name"
                   >
                     <Check className="h-4 w-4" strokeWidth={2} />
                   </button>
                   <button
                     onClick={() => setEditingName(false)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] text-ink-secondary transition-colors hover:bg-page-field"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-[8px] text-ink-secondary transition-colors hover:bg-page-field"
                     aria-label="Cancel display name edit"
                   >
                     <X className="h-4 w-4" strokeWidth={2} />
@@ -553,7 +552,7 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => setEditingName(true)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-ink-secondary transition-colors hover:bg-page-field hover:text-ink-strong"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-[8px] text-ink-secondary transition-colors hover:bg-page-field hover:text-ink-strong"
                     aria-label="Edit display name"
                   >
                     <Pencil className="h-3.5 w-3.5" strokeWidth={1.8} />
@@ -669,7 +668,7 @@ export default function SettingsPage() {
                       <button
                         type="button"
                         onClick={() => togglePasswordVisibility(field)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted transition-colors hover:text-ink-strong"
+                        className="absolute right-2 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center text-ink-muted transition-colors hover:text-ink-strong"
                         aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
                       >
                         {visible
@@ -929,7 +928,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={deleteSaving}
-                className="rounded-[10px] bg-error px-4 py-2.5 font-label text-sm font-bold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-11 rounded-[10px] bg-error px-4 py-2.5 font-label text-sm font-bold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {deleteSaving ? 'Deleting' : 'Continue'}
               </button>

@@ -69,11 +69,11 @@ export function QuickRoleSelect({
           Pick your role
         </p>
         <h2 className="mt-1.5 font-body text-[19px] font-extrabold leading-tight text-ink-strong">
-          Where do you work today?
+          Which role best matches your work?
         </h2>
         <p className="mt-1.5 max-w-md font-body text-[13.5px] leading-relaxed text-ink-secondary">
-          One tap starts a real rep, a short written scenario Hatch reads and
-          grades. Calibration and goals stay optional, you can set them after.
+          One tap starts a real challenge, a short written scenario Hatch reads
+          and grades. Calibration and goals stay optional, so you can begin learning now.
         </p>
       </div>
 
@@ -109,7 +109,7 @@ export function QuickRoleSelect({
 
       {submitting ? (
         <p className="mt-5 font-body text-[12.5px] text-ink-secondary">
-          Pulling your first rep, about 5 minutes, no setup.
+          Pulling your first challenge, about 5 minutes, no setup.
         </p>
       ) : (
         <button

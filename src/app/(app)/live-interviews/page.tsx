@@ -162,54 +162,38 @@ export default async function LiveInterviewsPage() {
   ])
 
   const hatchMessage = lastSession
-    ? `Your last session scored ${lastSession.overallScore}${lastSession.disciplineLabel ? ` on ${lastSession.disciplineLabel}` : ''}. The debrief lists what to fix before the next round.`
-    : 'First session: pick a discipline below. Hatch grades it on the same four moves as your reps.'
+    ? `Your latest session scored ${lastSession.overallScore}${lastSession.disciplineLabel ? ` in ${lastSession.disciplineLabel}` : ''}. Open the debrief when you want to review the details.`
+    : 'Choose a company and discipline below. You can answer by voice or chat.'
 
   return (
     <UsageProvider>
-      <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-8 sm:py-5">
-        {/* ── Compact dense dark hero (previews/round4/interviews-hub.html) ── */}
+      <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-8 sm:py-7">
         <section
           data-tour-target="interviews-hero"
-          className="relative overflow-hidden rounded-2xl px-[26px] py-6 text-white"
-          style={{
-            background:
-              'radial-gradient(900px 400px at 88% -10%, rgba(30,71,45,.55), transparent 60%), linear-gradient(115deg, var(--color-forest-950) 0%, var(--color-forest-850) 55%, var(--color-forest-800) 100%)',
-          }}
+          className="relative isolate min-h-[196px] overflow-hidden rounded-[24px] bg-forest-950 px-5 py-6 text-white sm:px-8 sm:py-7"
         >
-          <div className="relative z-10 grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
-            <div className="min-w-0 lg:pr-32">
-              <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
+          <div aria-hidden className="absolute inset-y-0 right-0 w-[42%] bg-forest-900 [clip-path:polygon(30%_0,100%_0,100%_100%,0_100%)]" />
+          <div aria-hidden className="absolute -bottom-12 right-[30%] h-28 w-40 rotate-[-14deg] bg-gold/20 [clip-path:polygon(0_18%,100%_0,82%_100%,12%_82%)]" />
+          <div className="relative z-10 grid grid-cols-1 items-center gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+            <div className="min-w-0">
+              <div className="mb-2 font-label text-xs font-extrabold uppercase tracking-[0.11em] text-mint-glow">
                 Live interviews
               </div>
-              <h1 className="mb-2 max-w-[34ch] font-headline text-[28px] sm:text-[30px] font-semibold leading-[1.2] text-on-hero-strong">
-                A 45-minute mock with follow-ups, graded on the same rubric as your <span className="whitespace-nowrap"><span className="hl-word">reps</span>.</span>
+              <h1 className="max-w-[24ch] font-headline text-[30px] font-semibold leading-tight tracking-[-0.025em] text-on-hero-strong sm:text-[32px]">
+                Practice a focused, realistic interview.
               </h1>
-              <p className="max-w-[58ch] text-[13px] leading-[1.55] text-white/72">
-                Hatch probes, watches the canvas or editor, carries context across rounds, and writes the debrief.
+              <p className="mt-3 max-w-[58ch] text-base leading-relaxed text-white/72">
+                Choose the company context and skill area. Hatch asks follow-ups, adapts to your answer, and prepares a detailed debrief.
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="text-[12.5px] leading-none">
-                  <span className="font-extrabold text-on-hero-strong">Voice or chat</span>{' '}
-                  <span className="text-white/60">mic optional</span>
-                </span>
-                <span className="text-[12px] text-white/30">·</span>
-                <span className="text-[12.5px] leading-none">
-                  <span className="font-extrabold text-on-hero-strong">Whiteboard and CoderPad</span>{' '}
-                  <span className="text-white/60">when the question needs one</span>
-                </span>
-              </div>
             </div>
 
-            <div className="relative flex items-center lg:col-start-2">
-              <div className="pointer-events-none absolute -left-[150px] bottom-[-28px] z-[1] hidden w-[132px] lg:block">
-                <HatchImage state="thinking" size={132} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
-              </div>
+            <div className="relative flex items-center gap-3 lg:col-start-2">
+              <HatchImage state="thinking" size={62} priority className="hidden shrink-0 sm:block" />
               <HatchSays
                 className="relative z-10 w-full"
                 tint="mint"
                 message={hatchMessage}
-                ctaLabel={lastSession ? 'Start the next round' : 'Set up an interview'}
+                ctaLabel="Set up an interview"
                 ctaHref="#interview-setup"
               />
             </div>

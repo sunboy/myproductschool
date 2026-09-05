@@ -6,9 +6,8 @@ import { useRouter } from 'next/navigation'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import type { LoopDiscipline } from '@/lib/interview-loops/types'
-import SingleRoundPicker, { type SingleRoundSelection } from './SingleRoundPicker'
+import SingleRoundPicker from './SingleRoundPicker'
 import { MotionList, MotionListItem, useMotionPreference } from '@/components/motion'
-import { ProgressRing } from '@/components/redesign/ProgressRing'
 
 // ── Design tokens (exact from styles.css) ─────────────────────────────────────
 const T = {
@@ -37,177 +36,6 @@ const T = {
   btnDarkText:           '#f0ede4',
 }
 
-// ── Chip (matches .chip from styles.css) ──────────────────────────────────────
-function Chip({ label, outline, amber }: { label: string; outline?: boolean; amber?: boolean }) {
-  if (amber) return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      padding: '4px 10px', borderRadius: 999,
-      fontSize: 12, fontWeight: 600, letterSpacing: '0.01em',
-      background: T.amberSoft, color: T.tertiary,
-      border: '1px solid transparent', lineHeight: 1.4,
-    }}>{label}</span>
-  )
-  if (outline) return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      padding: '4px 10px', borderRadius: 999,
-      fontSize: 12, fontWeight: 600, letterSpacing: '0.01em',
-      background: 'transparent', color: T.onSurfaceVariant,
-      border: `1px solid ${T.outlineVariant}`, lineHeight: 1.4,
-    }}>{label}</span>
-  )
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      padding: '4px 10px', borderRadius: 999,
-      fontSize: 12, fontWeight: 600, letterSpacing: '0.01em',
-      background: T.surfaceContainer, color: T.onSurfaceVariant,
-      border: `1px solid ${T.outlineFaint}`, lineHeight: 1.4,
-    }}>{label}</span>
-  )
-}
-
-// ── Mode card ──────────────────────────────────────────────────────────────────
-function ModeCard({
-  active, onClick, activeStyle, inactiveStyle, hoverStyle, sonic = 'nudge', children,
-}: {
-  active: boolean
-  onClick: () => void
-  sonic?: string
-  activeStyle: React.CSSProperties
-  inactiveStyle: React.CSSProperties
-  hoverStyle: React.CSSProperties
-  children: React.ReactNode
-}) {
-  const [hovered, setHovered] = useState(false)
-  const computed = active ? activeStyle : hovered ? hoverStyle : inactiveStyle
-  return (
-    <button
-      onClick={onClick}
-      data-hatch-sound={active ? undefined : sonic}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        textAlign: 'left', outline: 'none', cursor: 'pointer',
-        borderRadius: 16, // spec §4 radius hierarchy: page-level containers 16px
-        padding: '20px 22px',
-        display: 'flex', flexDirection: 'column', gap: 10,
-        position: 'relative', overflow: 'hidden',
-        transition: 'all 200ms cubic-bezier(.2,.8,.2,1)',
-        transform: hovered && !active ? 'translateY(-2px)' : 'none',
-        ...computed,
-      }}
-    >
-      {/* "Select →" hint when inactive */}
-      {!active && (
-        <span style={{
-          position: 'absolute', top: 14, right: 16,
-          fontSize: 12, fontWeight: 700,
-          opacity: hovered ? 0.9 : 0.35,
-          color: 'inherit', letterSpacing: '0.04em',
-          display: 'flex', alignItems: 'center', gap: 4,
-          transition: 'opacity 200ms, transform 200ms',
-          transform: hovered ? 'translateX(2px)' : 'none',
-          pointerEvents: 'none',
-        }}>
-          Select <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
-        </span>
-      )}
-      {children}
-    </button>
-  )
-}
-
-// ── Radio dot ──────────────────────────────────────────────────────────────────
-function RadioDot({ active, dark }: { active: boolean; dark?: boolean }) {
-  return (
-    <div style={{
-      marginLeft: 'auto', flexShrink: 0,
-      width: 20, height: 20, borderRadius: '50%',
-      border: active ? 'none' : `2px solid ${dark ? 'rgba(255,255,255,0.25)' : T.outlineVariant}`,
-      background: active ? (dark ? '#7ee099' : T.primary) : 'transparent',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      transition: 'all 200ms',
-    }}>
-      {active && (
-        <span className="material-symbols-outlined" style={{ fontSize: 13, color: dark ? '#0e2818' : '#fff', fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
-          check
-        </span>
-      )}
-    </div>
-  )
-}
-
-// ── Loop stat pill ─────────────────────────────────────────────────────────────
-function LoopStatPill({ label, count, dotColor }: { label: string; count: number; dotColor: string }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, boxShadow: `0 0 0 3px ${dotColor}22`, flexShrink: 0, display: 'inline-block' }} />
-      <span style={{ fontSize: 12, color: 'rgba(243,237,224,0.85)' }}>
-        <b style={{ color: '#f3ede0' }}>{count}</b> {label}
-      </span>
-    </div>
-  )
-}
-
-function LoopSummaryStrip({ summary }: { summary: LoopSummary }) {
-  const total = summary.inProgress + summary.configured + summary.completed
-
-  if (summary.loading) {
-    return (
-      <div style={{
-        position: 'relative',
-        display: 'flex',
-        gap: 8,
-        marginTop: 6,
-        paddingTop: 12,
-        borderTop: '1px solid rgba(255,255,255,0.10)',
-      }}>
-        {[0, 1, 2].map((item) => (
-          <span
-            key={item}
-            style={{
-              width: item === 0 ? 96 : 82,
-              height: 13,
-              borderRadius: 999,
-              background: 'rgba(255,255,255,0.12)',
-            }}
-          />
-        ))}
-      </div>
-    )
-  }
-
-  if (total === 0) {
-    return (
-      <div style={{
-        position: 'relative',
-        display: 'flex',
-        gap: 8,
-        marginTop: 6,
-        paddingTop: 12,
-        borderTop: '1px solid rgba(255,255,255,0.10)',
-        fontSize: 12,
-        color: 'rgba(243,237,224,0.78)',
-      }}>
-        No loops yet. Build one when you want a full panel.
-      </div>
-    )
-  }
-
-  return (
-    <div style={{
-      position: 'relative', display: 'flex', gap: 14, marginTop: 6,
-      paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.10)',
-    }}>
-      <LoopStatPill label="In progress" count={summary.inProgress} dotColor="#c9e86e" />
-      <LoopStatPill label="Configured" count={summary.configured} dotColor="#7ee099" />
-      <LoopStatPill label="Completed" count={summary.completed} dotColor="rgba(255,255,255,0.4)" />
-    </div>
-  )
-}
-
 // ── Loop status badge ──────────────────────────────────────────────────────────
 function LoopStatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { label: string; bg: string; fg: string; dot: string; pulse?: boolean }> = {
@@ -219,7 +47,7 @@ function LoopStatusBadge({ status }: { status: string }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
-      fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
+      fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
       padding: '3px 10px', borderRadius: 999,
       background: c.bg, color: c.fg,
     }}>
@@ -260,8 +88,8 @@ function RoundRow({ round, index, isCurrent }: { round: Round; index: number; is
       padding: '12px 14px', borderRadius: 12,
       background: isCurrent ? T.amberSoft : T.surfaceContainerLow,
       border: `1px solid ${isCurrent ? '#e8c87a' : T.outlineFaint}`,
-    }}>
-      <span style={{ fontSize: 11, fontWeight: 800, color: T.onSurfaceMuted, letterSpacing: '0.06em' }}>R{index}</span>
+    }} className="max-sm:!grid-cols-[28px_minmax(0,1fr)_auto] max-sm:!gap-2">
+      <span className="max-sm:hidden" style={{ fontSize: 12, fontWeight: 800, color: T.onSurfaceMuted, letterSpacing: '0.06em' }}>R{index}</span>
       <span className="material-symbols-outlined" style={{ fontSize: 20, color: COLOR[round.status], fontVariationSettings: "'FILL' 1" }}>
         {ICON[round.status]}
       </span>
@@ -276,11 +104,11 @@ function RoundRow({ round, index, isCurrent }: { round: Round; index: number; is
         </div>
       </div>
       {round.status === 'in_progress' ? (
-        <div style={{ width: 80, height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+        <div className="max-sm:hidden" style={{ width: 80, height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.08)', overflow: 'hidden' }}>
           <div style={{ width: `${((round.elapsed ?? 0) / round.mins) * 100}%`, height: '100%', background: T.amber }} />
         </div>
       ) : (
-        <span style={{ width: 80, display: 'inline-block' }} />
+        <span className="max-sm:hidden" style={{ width: 80, display: 'inline-block' }} />
       )}
       <div>
         {round.status === 'in_progress' && (
@@ -488,13 +316,13 @@ function LoopRow({ loop, active, onClick }: { loop: Loop; active: boolean; onCli
           fontVariationSettings: "'FILL' 0",
         }}>{loop.icon}</span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: T.onSurface, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: T.onSurface, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {loop.name}
           </div>
-          <div style={{ fontSize: 11, color: T.onSurfaceMuted, marginTop: 1 }}>{loop.lastActive}</div>
+          <div style={{ fontSize: 12, color: T.onSurfaceMuted, marginTop: 1 }}>{loop.lastActive}</div>
         </div>
         {loop.status === 'completed' && loop.grade && (
-          <span style={{ fontSize: 11, fontWeight: 800, color: T.primary, background: T.primaryFixed, padding: '2px 8px', borderRadius: 999 }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: T.primary, background: T.primaryFixed, padding: '2px 8px', borderRadius: 999 }}>
             {loop.grade}
           </span>
         )}
@@ -518,7 +346,7 @@ function LoopRow({ loop, active, onClick }: { loop: Loop; active: boolean; onCli
           )
         })}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.onSurfaceMuted }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.onSurfaceMuted }}>
         <span>{done}/{loop.rounds.length} rounds {inProg && '· 1 active'}</span>
         <span>~{loop.totalMins} min</span>
       </div>
@@ -530,7 +358,7 @@ function LoopRow({ loop, active, onClick }: { loop: Loop; active: boolean; onCli
 function LoopGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <div style={{ padding: '4px 8px 6px', fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.onSurfaceMuted }}>{label}</div>
+      <div style={{ padding: '4px 8px 6px', fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.onSurfaceMuted }}>{label}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{children}</div>
     </div>
   )
@@ -547,7 +375,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
   return (
     <div style={{ display: 'flex', flexDirection: 'column', padding: '28px 32px', gap: 22, overflow: 'auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }} className="max-sm:!flex-col">
         <div style={{
           width: 52, height: 52, borderRadius: 14, flexShrink: 0,
           background: T.primaryContainer, color: T.onPrimaryContainer,
@@ -582,6 +410,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
             <button
               onClick={() => router.push(href)}
               data-hatch-sound="submit"
+              className="max-sm:w-full max-sm:justify-center"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 padding: '14px 24px', borderRadius: 999, border: 'none', cursor: 'pointer',
@@ -598,6 +427,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
           <button
             onClick={() => router.push(`/live-interviews/loop/${loop.loopDbId}`)}
             data-hatch-sound="submit"
+            className="max-sm:w-full max-sm:justify-center"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '14px 24px', borderRadius: 999, border: 'none', cursor: 'pointer',
@@ -606,13 +436,14 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>play_arrow</span>
-            Start loop
+            Start series
           </button>
         )}
         {isCompleted && (
           <button
             onClick={() => router.push(`/live-interviews/loop/${loop.loopDbId}`)}
             data-hatch-sound="nudge"
+            className="max-sm:w-full max-sm:justify-center"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '14px 24px', borderRadius: 999, cursor: 'pointer',
@@ -629,7 +460,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
 
       {/* Rounds */}
       <div>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.onSurfaceMuted, marginBottom: 10 }}>Rounds</div>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.onSurfaceMuted, marginBottom: 10 }}>Rounds</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {loop.rounds.map((r, i) => (
             <RoundRow key={i} round={r} index={i + 1} isCurrent={r === nextRound && isInProgress} />
@@ -642,10 +473,10 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
         marginTop: 'auto', display: 'flex', gap: 8, padding: '12px 14px',
         background: T.surfaceContainerLow, border: `1px solid ${T.outlineFaint}`,
         borderRadius: 12, alignItems: 'center',
-      }}>
+      }} className="max-sm:flex-wrap">
         <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.onSurfaceMuted }}>tune</span>
         <span style={{ fontSize: 12, color: T.onSurfaceVariant }}>
-          Persona: <b>{loop.company}</b> · Difficulty <b>Staff+</b> · Chat mode · Auto-save every round
+          Persona: <b>{loop.company}</b>{loop.targetRole ? <> · Difficulty <b>{loop.targetRole}</b></> : null}
         </span>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
           {loop.status === 'configured' && (
@@ -738,9 +569,8 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
     if (initialDifficulty) return diffLabelToKey(initialDifficulty)
     return 'hard'
   })
-  const [voiceMode, setVoiceMode] = useState(true)
-  const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const toggleRound = (id: string) =>
     setSelectedRounds((prev) => prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id])
@@ -752,56 +582,49 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
   async function handleSave() {
     if (selectedRounds.length < 2 || saving) return
     setSaving(true)
-    const roundOrder = selectedRounds.map((id) => UI_TO_DISCIPLINE[id] ?? 'product_sense')
-    const isEdit = Boolean(editLoopId)
-    const url = isEdit ? `/api/interview-loops/${editLoopId}` : '/api/interview-loops/create'
-    const method = isEdit ? 'PATCH' : 'POST'
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        targetCompany: selectedCo,
-        targetRole: DIFF_LABELS[difficulty] ?? difficulty,
-        roundOrder,
-      }),
-    })
-    const json = await res.json()
-    setSaving(false)
-    if (res.ok && json.loopId) {
+    setSaveError(null)
+    try {
+      const roundOrder = selectedRounds.map((id) => UI_TO_DISCIPLINE[id] ?? 'product_sense')
+      const isEdit = Boolean(editLoopId)
+      const url = isEdit ? `/api/interview-loops/${editLoopId}` : '/api/interview-loops/create'
+      const method = isEdit ? 'PATCH' : 'POST'
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetCompany: selectedCo,
+          targetRole: DIFF_LABELS[difficulty] ?? difficulty,
+          roundOrder,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json.loopId) {
+        throw new Error(typeof json.error === 'string' ? json.error : 'Could not save this interview series.')
+      }
       onSaved(json.loopId)
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Could not save this interview series.')
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', padding: '28px 32px', gap: 20, overflow: 'auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', padding: '28px 32px', gap: 20, overflow: 'auto' }} className="max-sm:!px-4">
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.primary, marginBottom: 6 }}>{editLoopId ? 'Edit loop' : 'New loop'}</div>
-          <h2 style={{ margin: 0, fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 26, fontWeight: 600, letterSpacing: '-0.015em', color: T.onSurface }}>{editLoopId ? 'Update configuration' : 'Configure your loop'}</h2>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.primary, marginBottom: 6 }}>{editLoopId ? 'Edit series' : 'New series'}</div>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 26, fontWeight: 600, letterSpacing: '-0.015em', color: T.onSurface }}>{editLoopId ? 'Update configuration' : 'Configure your interview series'}</h2>
         </div>
         <button onClick={onCancel} data-hatch-sound="close" style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: T.onSurfaceMuted, padding: 6 }}>
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
 
-      {/* Name */}
-      <div>
-        <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 6 }}>Loop name</label>
-        <input
-          value={name} onChange={(e) => setName(e.target.value)}
-          placeholder={`${selectedCo} - ${DIFF_LABELS[difficulty]} loop`}
-          style={{
-            width: '100%', padding: '10px 14px', borderRadius: 10,
-            border: `1px solid ${T.outlineVariant}`, background: T.surfaceContainerLow,
-            fontFamily: 'inherit', fontSize: 14, color: T.onSurface, boxSizing: 'border-box',
-          }}
-        />
-      </div>
-
       {/* Company */}
       <div>
-        <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Company persona</label>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Company persona</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {COMPANIES.map((c) => (
             <button key={c.name} onClick={() => setSelectedCo(c.name)} data-hatch-sound={selectedCo === c.name ? undefined : 'nudge'} style={{
@@ -821,9 +644,9 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
 
       {/* Rounds */}
       <div>
-        <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>
           Rounds <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>- pick 2–5</span>
-        </label>
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {ROUND_OPTIONS.map((r) => {
             const on = selectedRounds.includes(r.id)
@@ -840,13 +663,13 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
                   background: on ? T.primary : T.surfaceContainer,
                   color: on ? '#fff' : T.onSurfaceMuted,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, fontWeight: 800,
+                  fontSize: 12, fontWeight: 800,
                 }}>
                   {on ? `R${order + 1}` : <span className="material-symbols-outlined" style={{ fontSize: 14 }}>{r.icon}</span>}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: on ? 700 : 500, color: on ? T.onPrimaryContainer : T.onSurface }}>{r.label}</div>
-                  <div style={{ fontSize: 11, color: T.onSurfaceMuted }}>~{r.mins} min</div>
+                  <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>~{r.mins} min</div>
                 </div>
                 <span className="material-symbols-outlined" style={{ fontSize: 18, color: on ? T.primary : T.outlineVariant, fontVariationSettings: "'FILL' 1" }}>
                   {on ? 'check_circle' : 'radio_button_unchecked'}
@@ -857,10 +680,10 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
         </div>
       </div>
 
-      {/* Difficulty + options */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      {/* Difficulty */}
+      <div>
         <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Difficulty</label>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Difficulty</div>
           <div style={{ display: 'flex', gap: 6 }}>
             {Object.entries(DIFF_LABELS).map(([k, label]) => (
               <button key={k} onClick={() => setDifficulty(k)} data-hatch-sound={difficulty === k ? undefined : 'nudge'} style={{
@@ -871,30 +694,27 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
             ))}
           </div>
         </div>
-        <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Options</label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: T.onSurface }}>
-              <input type="checkbox" checked={voiceMode} onChange={(e) => setVoiceMode(e.target.checked)} style={{ accentColor: T.primary, width: 15, height: 15 }} />
-              Voice mode on
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: T.onSurface }}>
-              <input type="checkbox" defaultChecked style={{ accentColor: T.primary, width: 15, height: 15 }} />
-              Auto-save each round
-            </label>
-          </div>
-        </div>
       </div>
+
+      <p style={{ margin: 0, color: T.onSurfaceVariant, fontSize: 14, lineHeight: 1.5 }}>
+        Each round supports voice or chat. Microphone access is requested only when you choose voice.
+      </p>
+
+      {saveError && (
+        <p role="alert" style={{ margin: 0, color: T.danger, fontSize: 14, lineHeight: 1.5 }}>
+          {saveError}
+        </p>
+      )}
 
       {/* Footer CTA */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '14px 16px', borderRadius: 12,
         background: T.surfaceContainerLow, border: `1px solid ${T.outlineFaint}`,
-      }}>
-        <div style={{ flex: 1 }}>
+      }} className="max-sm:flex-wrap">
+        <div style={{ flex: 1 }} className="max-sm:basis-full">
           <div style={{ fontSize: 13, fontWeight: 700, color: T.onSurface }}>{selectedRounds.length} rounds · ~{totalMins} min total</div>
-          <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>{selectedCo} · {DIFF_LABELS[difficulty]}{voiceMode ? ' · Voice on' : ''}</div>
+          <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>{selectedCo} · {DIFF_LABELS[difficulty]}</div>
         </div>
         <button onClick={onCancel} data-hatch-sound="close" style={{
           padding: '8px 16px', borderRadius: 999, cursor: 'pointer', fontSize: 13, fontWeight: 700,
@@ -908,7 +728,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
           cursor: selectedRounds.length < 2 || saving ? 'not-allowed' : 'pointer',
         }}>
           <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{saving ? 'hourglass_empty' : 'save'}</span>
-          {saving ? 'Saving…' : 'Save loop'}
+          {saving ? 'Saving…' : 'Save series'}
         </button>
       </div>
     </div>
@@ -938,7 +758,7 @@ function FullLoopPanel() {
     } catch {
       setLoops([])
       setSelectedLoop('')
-      setLoopLoadError('Loops could not load. You can still build a new loop.')
+      setLoopLoadError('Interview series could not load. You can still create a new one.')
     } finally {
       setLoadingLoops(false)
     }
@@ -980,7 +800,7 @@ function FullLoopPanel() {
       {/* Left roster */}
       <div style={{ borderRight: `1px solid ${T.outlineFaint}`, display: 'flex', flexDirection: 'column', background: T.surfaceContainerLow }}>
         <div style={{ padding: '16px 18px 10px', borderBottom: `1px solid ${T.outlineFaint}` }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.onSurfaceMuted }}>Your loops</div>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.onSurfaceMuted }}>Your interview series</div>
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px 10px' }}>
           {loadingLoops ? (
@@ -1009,7 +829,7 @@ function FullLoopPanel() {
               fontSize: 13,
               lineHeight: 1.5,
             }}>
-              No loops yet. Build one when you want a multi-round interview with shared memory.
+              No interview series yet. Create one when you want several rounds with shared context.
             </div>
           ) : (
             <>
@@ -1046,7 +866,7 @@ function FullLoopPanel() {
             fontWeight: 700, fontSize: 13, cursor: 'pointer',
           }}>
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
-            Build new loop
+            Create new series
           </button>
         </div>
       </div>
@@ -1102,7 +922,7 @@ function EmptyLoopDetail({ onBuild }: { onBuild: () => void }) {
           laps
         </span>
         <h3 style={{ margin: '16px 0 8px', color: T.onSurface, fontSize: 24, fontWeight: 850, lineHeight: 1.1 }}>
-          Build your first loop.
+          Build your first interview series.
         </h3>
         <p style={{ margin: 0, color: T.onSurfaceVariant, fontSize: 14, lineHeight: 1.6 }}>
           Choose the rounds you want, then Hatch will carry memory from one interview into the next.
@@ -1126,65 +946,9 @@ function EmptyLoopDetail({ onBuild }: { onBuild: () => void }) {
             cursor: 'pointer',
           }}
         >
-          Build loop
+          Create series
           <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
         </button>
-      </div>
-    </div>
-  )
-}
-
-// ── Prep check (previews/round4/interviews-hub.html .prep-card) ───────────────
-// Real client state only: mirrors the picker's own three setup steps.
-function PrepCheckCard({ selection }: { selection: SingleRoundSelection }) {
-  const items = [
-    { label: 'Company selected', done: selection.company },
-    { label: 'Discipline selected', done: selection.discipline },
-    { label: 'Prompt options ready', done: selection.company && selection.discipline },
-  ]
-  const done = items.filter((item) => item.done).length
-
-  return (
-    <div className="note-mint" style={{ borderRadius: 12, padding: '18px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div style={{ alignSelf: 'flex-start', fontSize: 16, fontWeight: 700, color: T.onSurface }}>Prep check</div>
-
-      <div style={{ margin: '10px 0 14px' }}>
-        <ProgressRing
-          percent={(done / items.length) * 100}
-          size={110}
-          strokeWidth={11}
-          trackColor="#b9d9a6"
-          color="#fdb41f"
-        >
-          <span style={{ fontSize: 24, fontWeight: 800, color: T.onSurface, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
-            {done}/{items.length}
-          </span>
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: T.onSurfaceVariant }}>
-            {done === items.length ? 'Ready' : 'Setup'}
-          </span>
-        </ProgressRing>
-      </div>
-
-      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {items.map((item) => (
-          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontWeight: 600, color: item.done ? T.onSurface : T.onSurfaceMuted }}>
-            {item.done ? (
-              <span style={{
-                width: 23, height: 23, borderRadius: '50%', flexShrink: 0,
-                background: '#266235', color: '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1, 'wght' 600" }}>check</span>
-              </span>
-            ) : (
-              <span style={{
-                width: 19, height: 19, borderRadius: '50%', flexShrink: 0,
-                border: '1.4px solid #c8c2b6', background: '#fff',
-              }} />
-            )}
-            {item.label}
-          </div>
-        ))}
       </div>
     </div>
   )
@@ -1207,7 +971,10 @@ function PastSessionsTable() {
 
   useEffect(() => {
     fetch('/api/live-interview/history')
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        if (!r.ok) throw new Error('History request failed')
+        return r.json()
+      })
       .then((data) => {
         if (data?.sessions) {
           setSessions(data.sessions.map((s: {
@@ -1243,7 +1010,7 @@ function PastSessionsTable() {
   )
 
   if (error) return (
-    <div style={{ borderRadius: 20, padding: 18, background: T.surface, border: `1px solid ${T.outlineFaint}`, color: T.onSurfaceVariant, fontSize: 13 }}>
+    <div role="alert" style={{ borderRadius: 20, padding: 18, background: T.surface, border: `1px solid ${T.outlineFaint}`, color: T.onSurfaceVariant, fontSize: 14 }}>
       {error}
     </div>
   )
@@ -1268,7 +1035,7 @@ function PastSessionsTable() {
       </span>
       <span>
         <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: T.onSurface }}>No past sessions yet.</span>
-        <span style={{ display: 'block', marginTop: 4, fontSize: 13, lineHeight: 1.55, color: T.onSurfaceMuted }}>
+        <span style={{ display: 'block', marginTop: 4, fontSize: 14, lineHeight: 1.55, color: T.onSurfaceMuted }}>
           Completed interviews will appear here with company, role, prompt, discipline, score, and debrief access.
         </span>
       </span>
@@ -1328,7 +1095,7 @@ function PastSessionsTable() {
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginTop: 10 }}>
-                  <div style={{ fontSize: 11.5, color: T.onSurfaceMuted }}>
+                  <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>
                     {[s.duration, s.date || 'Date unavailable', statusLabel].filter(Boolean).join(' · ')}
                   </div>
                   {isScored ? (
@@ -1364,7 +1131,6 @@ export function LiveInterviewsShell({
   scenarios: ScenarioBrief[]
 }) {
   const [mode, setMode] = useState<'single' | 'loop'>('single')
-  const [pickerSelection, setPickerSelection] = useState<SingleRoundSelection>({ company: false, discipline: false })
   const [loopSummary, setLoopSummary] = useState<LoopSummary>({
     loading: true,
     inProgress: 0,
@@ -1408,178 +1174,57 @@ export function LiveInterviewsShell({
   }, [prefersReducedMotion])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-
-      {/* ── Mode switcher ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16 }}>
-
-        {/* Single Round */}
-        <ModeCard
-          active={mode === 'single'}
-          onClick={() => selectMode('single')}
-          activeStyle={{
-            background: T.surface,
-            border: `2px solid ${T.primary}`,
-            boxShadow: '0 6px 20px -8px rgba(30,27,20,0.12), 0 1px 2px rgba(30,27,20,0.04)',
-          }}
-          inactiveStyle={{
-            background: T.surfaceContainerLow,
-            border: '2px solid transparent',
-            boxShadow: 'none',
-          }}
-          hoverStyle={{
-            background: T.surface,
-            border: `2px solid ${T.outlineVariant}`,
-            boxShadow: 'none',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: mode === 'single' ? T.primaryContainer : T.surfaceContainer,
-              transition: 'background 200ms',
-            }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.primary, fontVariationSettings: "'FILL' 1" }}>graphic_eq</span>
-            </div>
-            <span style={{ fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 20, fontWeight: 600, color: T.onSurface }}>Single round</span>
-            <RadioDot active={mode === 'single'} />
-          </div>
-          <div style={{ fontSize: 13.5, color: T.onSurfaceVariant, lineHeight: 1.5 }}>
-            One AI-run interview type with a company persona. 25-45 min.
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
-            <Chip label="Product sense" />
-            <Chip label="System design" />
-            <Chip label="Data modeling" outline />
-            <Chip label="Coding" outline />
-            <Chip label="SQL" outline />
-          </div>
-        </ModeCard>
-
-        {/* Full Loop */}
-        <ModeCard
-          active={mode === 'loop'}
-          onClick={() => selectMode('loop')}
-          activeStyle={{
-            background: 'linear-gradient(135deg, #1e3528 0%, #14241c 100%)',
-            color: '#f3ede0',
-            border: '2px solid #7ee099',
-            boxShadow: '0 8px 32px -12px rgba(74,124,89,0.5)',
-          }}
-          inactiveStyle={{
-            background: 'linear-gradient(135deg, #243d2e 0%, #182c21 100%)',
-            color: '#f3ede0',
-            border: '2px solid transparent',
-            boxShadow: 'none',
-          }}
-          hoverStyle={{
-            background: 'linear-gradient(135deg, #1e3528 0%, #14241c 100%)',
-            color: '#f3ede0',
-            border: '2px solid rgba(126,224,153,0.4)',
-            boxShadow: 'none',
-          }}
-        >
-          {/* Dot grid overlay */}
-          <div aria-hidden style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
-            backgroundSize: '18px 18px',
-            maskImage: 'radial-gradient(ellipse 70% 100% at 90% 50%, black 30%, transparent 75%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 70% 100% at 90% 50%, black 30%, transparent 75%)',
-          }} />
-
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(126,224,153,0.15)', flexShrink: 0,
-            }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#7ee099', fontVariationSettings: "'FILL' 1" }}>laps</span>
-            </div>
-            <span style={{ fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 20, fontWeight: 600, color: '#f3ede0' }}>Full loop</span>
-            <span style={{
-              fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-              background: '#7ee099', color: '#0e2818', padding: '3px 8px', borderRadius: 999,
-            }}>New</span>
-            <RadioDot active={mode === 'loop'} dark />
-          </div>
-          <div style={{ position: 'relative', fontSize: 13.5, color: 'rgba(243,237,224,0.78)', lineHeight: 1.5 }}>
-            Sequential rounds with shared memory. Pause, resume, and let Hatch synthesize the loop-level signal.
-          </div>
-          <LoopSummaryStrip summary={loopSummary} />
-        </ModeCard>
-      </div>
-
-      {/* One container with hairline-separated cells (spec §4 "de-card list
-          content") instead of four identical icon tiles. */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        borderRadius: 12,
-        background: T.surface,
-        border: `1px solid ${T.outlineFaint}`,
-        overflow: 'hidden',
-      }}>
-        {[
-          { label: 'Live pressure', sub: 'Fast probing, no scheduling' },
-          { label: 'Artifacts watched', sub: 'Canvas, schema, code, SQL' },
-          { label: 'Round memory', sub: 'Signals carry into the loop' },
-          { label: 'Debrief engine', sub: 'Scores, transcript, next drills' },
-        ].map((item, i) => (
-          <div
-            key={item.label}
-            style={{
-              minWidth: 0,
-              padding: '11px 16px',
-              borderLeft: i > 0 ? `1px solid ${T.outlineFaint}` : 'none',
-            }}
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-label text-xs font-extrabold uppercase tracking-[0.11em] text-forest-700">Choose a format</p>
+          <h2 className="mt-1 font-headline text-2xl font-semibold text-ink-strong">Set up your session</h2>
+        </div>
+        <div className="inline-grid w-full grid-cols-2 rounded-xl border border-hairline bg-card-bright p-1 sm:w-auto" role="tablist" aria-label="Interview format">
+          <button
+            type="button"
+            role="tab"
+            id="interview-single-tab"
+            aria-controls="interview-format-panel"
+            aria-selected={mode === 'single'}
+            onClick={() => selectMode('single')}
+            className={`rounded-lg px-4 py-2.5 text-sm font-extrabold transition-colors ${mode === 'single' ? 'bg-forest-800 text-white' : 'text-ink-secondary hover:bg-page-field'}`}
           >
-            <span style={{ display: 'block', fontSize: 12.5, fontWeight: 800, color: T.onSurface, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {item.label}
-            </span>
-            <span style={{ display: 'block', marginTop: 2, fontSize: 11.5, color: T.onSurfaceMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {item.sub}
-            </span>
-          </div>
-        ))}
+            Single interview
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="interview-multi-tab"
+            aria-controls="interview-format-panel"
+            aria-selected={mode === 'loop'}
+            onClick={() => selectMode('loop')}
+            className={`rounded-lg px-4 py-2.5 text-sm font-extrabold transition-colors ${mode === 'loop' ? 'bg-forest-800 text-white' : 'text-ink-secondary hover:bg-page-field'}`}
+          >
+            Multi-round
+            {!loopSummary.loading && loopSummary.inProgress > 0 ? ` · ${loopSummary.inProgress} active` : ''}
+          </button>
+        </div>
       </div>
 
-      {/* ── Body ── */}
       <div
         ref={activePanelRef}
         tabIndex={-1}
-        aria-label={mode === 'loop' ? 'Full loop setup panel' : 'Single round setup panel'}
+        role="tabpanel"
+        id="interview-format-panel"
+        aria-label={mode === 'loop' ? 'Multi-round interview setup' : 'Single interview setup'}
         style={{ scrollMarginTop: 96, outline: 'none' }}
       >
         {mode === 'loop' ? (
           <FullLoopPanel />
         ) : (
-          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-            <SingleRoundPicker
-              personas={personas}
-              scenarios={scenarios}
-              onSelectionChange={setPickerSelection}
-            />
-            <PrepCheckCard selection={pickerSelection} />
-          </div>
+          <SingleRoundPicker personas={personas} scenarios={scenarios} />
         )}
       </div>
 
-      {/* ── Recent sessions + after-the-session note ── */}
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.15fr_1fr]">
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.onSurface, marginBottom: 10 }}>
-            Recent sessions
-          </div>
-          <PastSessionsTable />
-        </div>
-        <div className="note-teal" style={{ borderRadius: 12, padding: '18px 20px' }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.onSurface, marginBottom: 6 }}>After the session</div>
-          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: T.onSurfaceVariant }}>
-            Hatch scores the session on the same four moves as your reps: Frame, List, Optimize, Win. The debrief has per-move scores, the full transcript, and what to fix before your next round.
-          </p>
-        </div>
+      <div>
+        <h2 className="mb-3 font-headline text-2xl font-semibold text-ink-strong">Recent sessions</h2>
+        <PastSessionsTable />
       </div>
     </div>
   )

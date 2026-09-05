@@ -42,5 +42,13 @@ Home /dashboard; Practice /challenges (interviews and analytics accessible insid
 - Analytics code now bounds session duration/spend, fails closed on absent gateway in production, and protects shared Cloud Run traffic updates using etags. Infrastructure migration remains a separate live canary gate.
 - Full production build completed locally. Existing Turbopack dynamic file-tracing warnings remain. Deferred notes admin-client initialization until request use so build does not require service-role secrets.
 - Unit suite: 467 Node tests + 106 Vitest tests passed (573 total), including new provider/provisioning and dashboard action checks.
-- Browser checks so far: public landing, sign-in navigation, actual computed heading/body font families, restored anonymous challenge form. Public catalog filter state did not update in the local dev browser despite valid source handlers; investigate hydration and retest on the production-built preview. Authenticated and responsive device coverage is not yet complete.
+- Browser checks so far: public landing, sign-in navigation, actual computed heading/body font families, restored anonymous challenge form. Hosted Vercel preview verifies catalog filtering: Analytics aria-pressed=true and Showing 1 of 6 challenges. Local dev had an unhydrated runtime; hosted behavior is correct. Authenticated and responsive device coverage is not yet complete.
 - No production deployment or cloud resource deletion has been performed. No current dollar savings are claimed.
+
+## Hosted checkpoint
+- Preview1699668 is READY on Vercel; PR20 holds the durable source.
+- Runtime reset restored from this branch; no committed work lost.
+- Second pass refines first-run wording, settings touch targets, evidence-only profile insight and interview selection. These changes preserve existing API/security contracts.
+
+- Hosted anonymous feedback form successfully accepted a generated sample answer and returned specific live feedback. Authenticated sign-in handoff requested through the secure browser form.
+- Public preview detail links now preserve returnTo and connect three verified published challenge slugs directly; marketing-only scenarios go to a discipline catalog with honest related-challenge wording.

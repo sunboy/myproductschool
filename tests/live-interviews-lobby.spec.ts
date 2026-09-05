@@ -30,61 +30,30 @@ test.describe('Live Interviews lobby', () => {
     )
   })
 
-  test('renders two entry mode cards when authenticated', async ({ page }) => {
+  test('offers single and multi-round interviews when authenticated', async ({ page }) => {
     await page.goto(`${BASE_URL}/live-interviews`)
-    await page.waitForLoadState('networkidle')
-
-    // If the proxy redirected us to /login, the content will not be present.
-    // Verify we're on the right page first.
-    const url = page.url()
-    if (url.includes('/login')) {
-      // Auth redirect — skip assertion, route is protected as expected
-      console.log('Redirected to /login — auth required, skipping content assertions')
-      return
-    }
-
-    await expect(page.getByText('Single Round')).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText('Full Loop')).toBeVisible()
+    test.skip(page.url().includes('/login'), 'Provide an authenticated Supabase storage state to verify the lobby')
+    await expect(page.getByRole('tab', { name: 'Single interview', exact: true })).toBeVisible()
+    await expect(page.getByRole('tab', { name: /^Multi-round/ })).toBeVisible()
+    await expect(page.getByRole('tabpanel', { name: 'Single interview setup' })).toBeVisible()
   })
 
-  test('discipline filter strip is present when authenticated', async ({ page }) => {
+  test('switches to the multi-round builder when authenticated', async ({ page }) => {
     await page.goto(`${BASE_URL}/live-interviews`)
-    await page.waitForLoadState('networkidle')
-
-    const url = page.url()
-    if (url.includes('/login')) {
-      console.log('Redirected to /login — auth required, skipping content assertions')
-      return
-    }
-
-    // DisciplineFilterStrip renders chip buttons for each discipline
-    await expect(page.getByRole('button', { name: /Product Sense/i })).toBeVisible({ timeout: 15000 })
-    await expect(page.getByRole('button', { name: /System Design/i })).toBeVisible()
+    test.skip(page.url().includes('/login'), 'Provide an authenticated Supabase storage state to verify the builder')
+    const multiRound = page.getByRole('tab', { name: /^Multi-round/ })
+    await multiRound.click()
+    await expect(multiRound).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByRole('tabpanel', { name: 'Multi-round interview setup' })).toBeVisible()
+    await expect(page.getByRole('tabpanel', { name: 'Single interview setup' })).toHaveCount(0)
   })
 
-  test('Full Loop card links to loop builder when authenticated', async ({ page }) => {
-    await page.goto(`${BASE_URL}/live-interviews`)
-    await page.waitForLoadState('networkidle')
-
-    const url = page.url()
-    if (url.includes('/login')) {
-      console.log('Redirected to /login — auth required, skipping content assertions')
-      return
-    }
-
-    // The EntryModeCards renders a Link with href="/live-interviews/loop/new"
-    const loopLink = page.locator('a[href="/live-interviews/loop/new"]')
-    await expect(loopLink).toBeVisible({ timeout: 15000 })
-    await expect(loopLink.getByText(/Build your loop/i)).toBeVisible()
-  })
-
-  test('no JS errors on page load', async ({ page }) => {
+  test('has no JavaScript errors on the rendered lobby when authenticated', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (e) => errors.push(e.message))
-
     await page.goto(`${BASE_URL}/live-interviews`)
-    await page.waitForLoadState('networkidle')
-
+    test.skip(page.url().includes('/login'), 'Provide an authenticated Supabase storage state to verify the lobby runtime')
+    await expect(page.getByRole('tab', { name: 'Single interview', exact: true })).toBeVisible()
     expect(errors).toHaveLength(0)
   })
 })

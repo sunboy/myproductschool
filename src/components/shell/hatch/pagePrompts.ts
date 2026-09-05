@@ -77,7 +77,7 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   {
     pattern: /^\/challenges\/[^/]+\/feedback/,
     message: 'Want to dig into your feedback?',
-    cta: { label: 'Unpack my feedback', action: 'open-chat', prompt: 'Walk me through the biggest miss in my feedback and how to fix it next rep.' },
+    cta: { label: 'Unpack my feedback', action: 'open-chat', prompt: 'Walk me through the biggest miss in my feedback and how to fix it next time.' },
   },
   {
     pattern: /^\/explore\/modules\//,
@@ -127,7 +127,7 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   {
     pattern: /^\/dashboard/,
     message: 'Ready to pick your first challenge today?',
-    cta: { label: 'Pick my rep', action: 'open-chat', prompt: 'Pick my next challenge and tell me why that one.' },
+    cta: { label: 'Pick my challenge', action: 'open-chat', prompt: 'Pick my next challenge and tell me why that one.' },
   },
   {
     pattern: /^\/cohort/,

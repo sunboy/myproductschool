@@ -14,11 +14,11 @@
  *     a returning not-yet-onboarded user is never stranded on a "calibrated"
  *     dashboard having done nothing.
  *  2. Returns the curated first-rep challenge URL for that role — a written,
- *     graded FLOW rep that grades in place with no microphone and no Run
+ *     graded challenge that works in place with no microphone or setup
  *     round-trip. First value must never depend on hardware.
  *
  * The live voice interview is not the first thing anymore; it is a celebrated
- * step 2 offered on the rep's completion screen, where the mic gate meets an
+ * step 2 offered on the challenge completion screen, where the mic gate meets an
  * already-activated user. Full calibration is likewise deferred: it stays
  * available afterward as a dashboard CTA, never as a wall before first value.
  */
@@ -78,7 +78,7 @@ export default function FirstRunPage() {
       router.push(challengeHref)
     } catch {
       setBusyRole(null)
-      setError('Could not set up your first rep. Try that again.')
+      setError('Could not set up your first challenge. Try that again.')
     }
   }
 
@@ -91,7 +91,7 @@ export default function FirstRunPage() {
           <div className="flex flex-col justify-between bg-page-field p-6">
             <div>
               <h1 className="font-headline text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink-strong">
-                Let&apos;s do a real <span className="hl-word">rep</span> first
+                Let&apos;s start with a real <span className="hl-word">challenge</span>
               </h1>
               <p className="mt-3 font-body text-[13.5px] leading-relaxed text-ink-secondary">
                 A short product scenario you work through in writing.
@@ -113,11 +113,11 @@ export default function FirstRunPage() {
               Pick your role
             </p>
             <h2 className="mt-1.5 font-body text-[18px] font-extrabold leading-tight text-ink-strong">
-              Where do you work today?
+              Which role best matches your work?
             </h2>
             <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-secondary">
               Hatch pulls a scenario that fits. Goals and calibration stay
-              optional, you can set them after this rep.
+              optional, so you can start learning before answering more questions.
             </p>
 
             <div className="mt-4 grid grid-cols-2 gap-2">
@@ -130,7 +130,7 @@ export default function FirstRunPage() {
                     type="button"
                     onClick={() => pickRole(role.id)}
                     disabled={busyRole !== null}
-                    aria-label={`Start a ${role.label} rep`}
+                    aria-label={`Start a ${role.label} challenge`}
                     className={[
                       'flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left transition-all duration-150 active:scale-[0.98]',
                       isBusy
@@ -154,7 +154,7 @@ export default function FirstRunPage() {
             {busyRole && (
               <p className="mt-4 flex items-center gap-1.5 font-body text-[12.5px] text-ink-secondary">
                 <Check className="h-3.5 w-3.5 text-forest-600" strokeWidth={2.2} />
-                Pulling your first rep
+                Pulling your first challenge
               </p>
             )}
 

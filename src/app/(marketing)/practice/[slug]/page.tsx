@@ -74,6 +74,25 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
   const practice = getPractice(slug)
   if (!practice) notFound()
 
+  // Published workspace slugs verified against the content catalog. Other
+  // public examples lead to the relevant catalog rather than implying an
+  // exact workspace exists for a marketing-only scenario.
+  const workspaceSlugs: Record<string, string> = {
+    'spotify-session-drop-product-sense': 'spotifys-15-session-drop',
+    'realtime-notification-system': 'design-a-notification-system',
+    'analytics-funnel-drop-investigation': 'checkout-funnel-drop',
+  }
+  const disciplines: Record<string, string> = {
+    'Product sense': 'product_sense', 'System design': 'system_design',
+    'Data modeling': 'data_modeling', SQL: 'sql', Coding: 'coding', Analytics: 'analytics',
+  }
+  const workspaceSlug = workspaceSlugs[practice.slug]
+  const destination = workspaceSlug
+    ? `/workspace/challenges/${workspaceSlug}`
+    : `/challenges?discipline=${disciplines[practice.discipline] ?? 'all'}`
+  const entryHref = `/login?returnTo=${encodeURIComponent(destination)}`
+  const entryLabel = workspaceSlug ? 'Open this challenge' : 'Browse related challenges'
+
   const learningResourceJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'LearningResource',
@@ -106,7 +125,7 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
         eyebrow={practice.discipline}
         title={practice.title}
         subtitle={practice.summary}
-        ctas={[{ label: 'Practice in the app', href: '/login' }]}
+        ctas={[{ label: entryLabel, href: entryHref }]}
       />
 
       <V3Section eyebrow="Scenario" title="Challenge prompt">
@@ -158,9 +177,9 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
       </V3Section>
 
       <V3CtaBand
-        title="Open the full workspace to answer, run, and get scored."
+        title="Continue learning in the app."
         subtitle="Public previews show the challenge. The app gives you guided feedback, Hatch follow-ups, FLOW scoring, and a clear next step."
-        ctas={[{ label: 'Start a free challenge', href: '/login' }]}
+        ctas={[{ label: entryLabel, href: entryHref }]}
       />
     </V3PageShell>
   )

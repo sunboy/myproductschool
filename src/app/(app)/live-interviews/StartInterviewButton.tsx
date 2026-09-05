@@ -81,7 +81,7 @@ export default function StartInterviewButton({
 
       if (!res.ok) throw new Error('Failed to start interview')
       const data = await res.json()
-      // Starting an interview consumes an interview rep server-side
+      // Starting an interview consumes one interview usage unit server-side
       // (recordUsageEvent in /api/live-interview/start), so refresh the usage
       // surfaces now. profile-stats-updated re-pulls SessionContext (which backs
       // useUsage / the at-limit check) and the usage pill, which both listen for
@@ -98,7 +98,7 @@ export default function StartInterviewButton({
       setShowReadyModal(true)
     } catch {
       play('error')
-      setSessionError('Failed to start - please try again.')
+      setSessionError('We could not start this interview. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -116,8 +116,8 @@ export default function StartInterviewButton({
     router.push(`/live-interviews/${sessionId}?${params.toString()}`)
   }
 
-  const heroLabel = label ?? 'Start a random interview'
-  const chipLabel = label ?? 'Start Interview →'
+  const heroLabel = label ?? 'Start interview'
+  const chipLabel = label ?? 'Start interview'
   const sessionDisciplineMeta = sessionDiscipline
     ? DISCIPLINE_META[sessionDiscipline as LiveInterviewDiscipline]
     : null
@@ -131,7 +131,6 @@ export default function StartInterviewButton({
     <div
       className="fixed inset-0 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', zIndex: 200 }}
-      onClick={(e) => { if (e.target === e.currentTarget) setShowReadyModal(false) }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="live-interview-ready-title"
@@ -197,21 +196,12 @@ export default function StartInterviewButton({
           </p>
         </div>
 
-        {sessionError && (
-          <div
-            className="rounded-lg px-4 py-2 w-full"
-            style={{ background: 'rgba(178,58,42,0.15)', border: '1px solid rgba(178,58,42,0.3)' }}
-          >
-            <p className="font-body text-sm" style={{ color: '#e37d4a' }}>{sessionError}</p>
-          </div>
-        )}
-
         <div
           className="flex items-center gap-2 rounded-xl px-3 py-2 w-full"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
           <span className="material-symbols-outlined text-[16px]" style={{ color: 'rgba(255,255,255,0.3)' }}>mic</span>
-          <span className="font-body text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          <span className="font-body text-sm leading-5" style={{ color: 'rgba(255,255,255,0.5)' }}>
             Voice or chat, your pick. The mic is optional; typing runs the same interview.
           </span>
         </div>
@@ -222,7 +212,7 @@ export default function StartInterviewButton({
             className="w-full rounded-xl py-3 font-label font-semibold text-base transition-opacity hover:opacity-90"
             style={{ background: '#4a7c59', color: '#ffffff' }}
           >
-            Start Interview
+            Start interview
           </button>
           <button
             onClick={() => { play('close'); setShowReadyModal(false) }}
@@ -278,7 +268,7 @@ export default function StartInterviewButton({
           onClick={handleClick}
           disabled={loading}
           className={cn(
-            'inline-flex items-center gap-1 bg-primary text-on-primary rounded-lg px-3 py-1 text-xs font-label font-semibold transition-opacity',
+            'inline-flex items-center gap-1 bg-primary text-on-primary rounded-lg px-3 py-2 text-sm font-label font-semibold transition-opacity',
             loading && 'opacity-60 cursor-not-allowed',
             isAtLimit && 'bg-surface-container-high text-on-surface-variant'
           )}
@@ -290,6 +280,12 @@ export default function StartInterviewButton({
             </>
           ) : loading ? 'Starting…' : chipLabel}
         </button>
+      )}
+
+      {sessionError && (
+        <p role="alert" className="mt-2 max-w-sm font-body text-sm leading-5 text-error">
+          {sessionError}
+        </p>
       )}
 
       {mounted && readyModal ? createPortal(readyModal, document.body) : null}

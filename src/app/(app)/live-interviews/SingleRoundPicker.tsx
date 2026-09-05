@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import {
@@ -80,20 +80,12 @@ function groupPersonasByCompany(personas: LiveInterviewPersona[]): CompanyEntry[
   return Array.from(map.values())
 }
 
-export interface SingleRoundSelection {
-  company: boolean
-  discipline: boolean
-}
-
 export default function SingleRoundPicker({
   personas,
   scenarios,
-  onSelectionChange,
 }: {
   personas: LiveInterviewPersona[]
   scenarios: ScenarioBrief[]
-  /** Chrome-only: reports which setup steps are done so the shell's Prep check ring can render real state. */
-  onSelectionChange?: (selection: SingleRoundSelection) => void
 }) {
   const companies = useMemo(() => groupPersonasByCompany(personas), [personas])
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
@@ -102,17 +94,6 @@ export default function SingleRoundPicker({
 
   const selectedCompany = companies.find((c) => c.companyId === selectedCompanyId) ?? null
   const selectedPersona = selectedCompany ? selectedCompany.roles[selectedRoleIdx] ?? selectedCompany.roles[0] : null
-  const quickStartPersona = selectedPersona ?? companies[0]?.roles[0] ?? personas[0] ?? null
-  const activeDiscipline = selectedDiscipline ?? 'product_sense'
-  const quickStartScenario = scenarios.find((s) => s.discipline === activeDiscipline) ?? scenarios[0] ?? null
-
-  useEffect(() => {
-    onSelectionChange?.({
-      company: selectedCompanyId !== null,
-      discipline: selectedDiscipline !== null,
-    })
-  }, [onSelectionChange, selectedCompanyId, selectedDiscipline])
-
   const filteredScenarios = useMemo(
     () => selectedDiscipline ? scenarios.filter((s) => s.discipline === selectedDiscipline).slice(0, 8) : [],
     [scenarios, selectedDiscipline]
@@ -131,23 +112,18 @@ export default function SingleRoundPicker({
         overflow: 'hidden',
         border: `1px solid ${T.outlineFaint}`,
         background: T.surface,
-        minHeight: 560,
       }}
     >
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(0, 0.86fr) minmax(0, 1fr) minmax(0, 1.18fr)',
-          minHeight: 560,
         }}
         className="max-lg:!grid-cols-1"
       >
         <CompanyPanel
           companies={companies}
           selectedCompanyId={selectedCompanyId}
-          quickStartPersona={quickStartPersona}
-          quickStartScenario={quickStartScenario}
-          selectedDiscipline={activeDiscipline}
           onSelectCompany={handleSelectCompany}
         />
 
@@ -174,16 +150,10 @@ export default function SingleRoundPicker({
 function CompanyPanel({
   companies,
   selectedCompanyId,
-  quickStartPersona,
-  quickStartScenario,
-  selectedDiscipline,
   onSelectCompany,
 }: {
   companies: CompanyEntry[]
   selectedCompanyId: string | null
-  quickStartPersona: LiveInterviewPersona | null
-  quickStartScenario: ScenarioBrief | null
-  selectedDiscipline: LiveInterviewDiscipline
   onSelectCompany: (companyId: string) => void
 }) {
   return (
@@ -191,41 +161,25 @@ function CompanyPanel({
       style={{
         borderRight: `1px solid ${T.outlineFaint}`,
         background: T.surfaceContainerLow,
-        minHeight: 560,
         display: 'flex',
         flexDirection: 'column',
       }}
-      className="max-lg:!border-r-0 max-lg:!border-b"
+      className="max-h-[620px] overflow-y-auto max-lg:max-h-[360px] max-lg:!border-r-0 max-lg:!border-b"
     >
       <div
         style={{
           position: 'sticky',
           top: 0,
           zIndex: 1,
-          padding: 18,
-          background: 'rgba(244,238,226,0.92)',
-          backdropFilter: 'blur(10px)',
+          padding: '18px 18px 14px',
+          background: T.surfaceContainerLow,
           borderBottom: `1px solid ${T.outlineFaint}`,
         }}
       >
         <SectionEyebrow step="1" label="Company" />
-        <div style={{ marginTop: 12 }}>
-          {quickStartPersona ? (
-            <StartInterviewButton
-              variant="hero"
-              label="Start random interview"
-              companyId={quickStartPersona.companyId}
-              roleId={quickStartPersona.role}
-              challengeId={quickStartScenario?.id}
-              companyName={quickStartPersona.companyName}
-              discipline={selectedDiscipline}
-            />
-          ) : (
-            <div style={{ borderRadius: 14, padding: 14, background: T.surfaceContainer, color: T.onSurfaceMuted, fontSize: 13 }}>
-              Interview personas are loading.
-            </div>
-          )}
-        </div>
+        <p style={{ margin: '8px 0 0', color: T.onSurfaceVariant, fontSize: 14, lineHeight: 1.45 }}>
+          Choose the context you want to practice.
+        </p>
       </div>
 
       <MotionList layoutKey="live-company-panel" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 14 }}>
@@ -237,6 +191,21 @@ function CompanyPanel({
             onClick={() => onSelectCompany(company.companyId)}
           />
         ))}
+        {companies.length === 0 && (
+          <div
+            role="status"
+            style={{
+              border: `1px dashed ${T.outlineVariant}`,
+              borderRadius: 14,
+              padding: 16,
+              color: T.onSurfaceVariant,
+              fontSize: 14,
+              lineHeight: 1.5,
+            }}
+          >
+            No company interview profiles are available right now.
+          </div>
+        )}
       </MotionList>
     </aside>
   )
@@ -292,10 +261,10 @@ function CompanyButton({
           {company.icon}
         </span>
         <span style={{ minWidth: 0 }}>
-          <span style={{ display: 'block', color: active ? T.onPrimaryContainer : T.onSurface, fontSize: 13.5, fontWeight: 800, lineHeight: 1.2 }}>
+          <span style={{ display: 'block', color: active ? T.onPrimaryContainer : T.onSurface, fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>
             {company.companyName}
           </span>
-          <span style={{ display: 'block', marginTop: 3, color: T.onSurfaceMuted, fontSize: 11.5 }}>
+          <span style={{ display: 'block', marginTop: 3, color: T.onSurfaceMuted, fontSize: 12 }}>
             {company.roles.length === 1 ? company.roles[0].role : `${company.roles.length} roles`}
           </span>
         </span>
@@ -331,7 +300,6 @@ function DisciplinePanel({
         borderRight: `1px solid ${T.outlineFaint}`,
         background: T.surface,
         padding: 20,
-        minHeight: 560,
       }}
       className="max-lg:!border-r-0 max-lg:!border-b"
     >
@@ -351,10 +319,10 @@ function DisciplinePanel({
                     return (
                       <button
                         key={`${role.slug}-${role.role}`}
-                      type="button"
-                      onClick={() => onSelectRole(index)}
-                      aria-label={`Use ${role.role} role`}
-                      data-hatch-sound={active ? undefined : 'nudge'}
+                        type="button"
+                        onClick={() => onSelectRole(index)}
+                        aria-label={`Use ${role.role} role`}
+                        data-hatch-sound={active ? undefined : 'nudge'}
                         style={{
                           padding: '6px 12px',
                           borderRadius: 999,
@@ -500,7 +468,7 @@ function InterviewOptions({
             <div style={{ color: T.onSurface, fontSize: 18, fontWeight: 850, lineHeight: 1.15 }}>
               {company.companyName} · {persona.role}
             </div>
-            <div style={{ marginTop: 4, color: T.onSurfaceMuted, fontSize: 12.5 }}>
+            <div style={{ marginTop: 4, color: T.onSurfaceMuted, fontSize: 14 }}>
               {meta.label} · {persona.estimatedMins ?? 35} min
             </div>
           </div>
@@ -524,14 +492,14 @@ function InterviewOptions({
         </div>
 
         {persona.interviewStyle && (
-          <p style={{ margin: 0, color: T.onSurfaceVariant, fontSize: 13, lineHeight: 1.55 }}>
+          <p style={{ margin: 0, color: T.onSurfaceVariant, fontSize: 14, lineHeight: 1.55 }}>
             {persona.interviewStyle}
           </p>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, lineHeight: 1.45, color: T.onSurfaceVariant }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 14, lineHeight: 1.45, color: T.onSurfaceVariant }}>
           <span className="material-symbols-outlined" style={{ fontSize: 15, color: T.onSurfaceMuted }}>mic</span>
-          Voice or chat, your pick. The mic is optional; typing runs the same interview and the same grading.
+          Voice or chat, your choice. The microphone is optional and can be enabled after the session opens.
         </div>
 
         <StartInterviewButton
@@ -547,7 +515,7 @@ function InterviewOptions({
 
       {scenarios.length > 0 ? (
         <div style={{ borderTop: `1px solid ${T.outlineFaint}`, paddingTop: 16 }}>
-          <div style={{ color: T.onSurfaceMuted, fontSize: 11, fontWeight: 850, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>
+          <div style={{ color: T.onSurfaceMuted, fontSize: 12, fontWeight: 850, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>
             Pick a specific prompt
           </div>
           <div style={{ position: 'relative' }}>
@@ -578,7 +546,7 @@ function InterviewOptions({
           </div>
         </div>
       ) : (
-        <div style={{ borderRadius: 18, padding: 16, background: T.surface, border: `1px dashed ${T.outlineVariant}`, color: T.onSurfaceMuted, fontSize: 13, lineHeight: 1.5 }}>
+        <div style={{ borderRadius: 18, padding: 16, background: T.surface, border: `1px dashed ${T.outlineVariant}`, color: T.onSurfaceMuted, fontSize: 14, lineHeight: 1.5 }}>
           No published {meta.label.toLowerCase()} scenarios yet. Hatch can still run a persona-led interview for this company.
         </div>
       )}
@@ -612,7 +580,7 @@ function ScenarioRow({
         className="max-sm:!grid-cols-1"
       >
         <div style={{ minWidth: 0 }}>
-          <div style={{ color: T.onSurface, fontSize: 13.5, fontWeight: 800, lineHeight: 1.3 }}>
+          <div style={{ color: T.onSurface, fontSize: 14, fontWeight: 800, lineHeight: 1.3 }}>
             {scenario.title}
           </div>
           <div style={{ color: T.onSurfaceMuted, fontSize: 12, marginTop: 5, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -642,7 +610,7 @@ function ScenarioRow({
 
 function DefaultDisciplineState() {
   return (
-    <div style={{ minHeight: 500, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 22 }}>
+    <div>
       <div>
         <SectionEyebrow step="2" label="Discipline" />
         <div style={{ marginTop: 28 }}>
@@ -654,22 +622,6 @@ function DefaultDisciplineState() {
           </p>
         </div>
       </div>
-
-      <div style={{ display: 'grid', gap: 10 }}>
-        {[
-          { icon: 'domain', title: 'Company context', body: 'Persona, expectations, and pressure style.' },
-          { icon: 'psychology', title: 'Discipline lens', body: 'Product sense, systems, data, SQL, or coding.' },
-          { icon: 'fact_check', title: 'Prompt choice', body: 'Start broad or pick the exact scenario.' },
-        ].map((item) => (
-          <div key={item.title} style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: 10, padding: 12, borderRadius: 16, background: T.surfaceContainerLow, border: `1px solid ${T.outlineFaint}` }}>
-            <span className="material-symbols-outlined" style={{ color: T.primary, fontSize: 20, fontVariationSettings: "'FILL' 1" }}>{item.icon}</span>
-            <span>
-              <span style={{ display: 'block', color: T.onSurface, fontSize: 12.5, fontWeight: 850 }}>{item.title}</span>
-              <span style={{ display: 'block', color: T.onSurfaceMuted, fontSize: 11.5, lineHeight: 1.45, marginTop: 2 }}>{item.body}</span>
-            </span>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }
@@ -678,14 +630,12 @@ function DefaultOptionsState({ hasCompany }: { hasCompany: boolean }) {
   return (
     <div
       style={{
-        minHeight: 500,
         borderRadius: 22,
         border: `1px dashed ${T.outlineVariant}`,
         background: T.surface,
         padding: 22,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
         gap: 24,
       }}
     >
@@ -715,30 +665,10 @@ function DefaultOptionsState({ hasCompany }: { hasCompany: boolean }) {
           </h2>
           <p style={{ margin: '10px 0 0', color: T.onSurfaceVariant, fontSize: 14, lineHeight: 1.65 }}>
             {hasCompany
-              ? 'The right panel will show recommended scenarios, persona-led starts, and exact prompt choices.'
+              ? 'Choose a discipline to see recommended scenarios, persona-led starts, and specific prompts.'
               : 'Select a company on the left, then choose a discipline. Hatch will show the best next start point here.'}
           </p>
         </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }} className="max-sm:!grid-cols-1">
-        <PreviewMetric label="Path" value="Company → discipline → prompt" />
-        <PreviewMetric label="Mode" value="Single round" />
-        <PreviewMetric label="Duration" value="25-45 min" />
-        <PreviewMetric label="Output" value="Debrief + next drill" />
-      </div>
-    </div>
-  )
-}
-
-function PreviewMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={{ borderRadius: 14, padding: 12, background: T.surfaceContainerLow, border: `1px solid ${T.outlineFaint}` }}>
-      <div style={{ color: T.onSurfaceMuted, fontSize: 10.5, fontWeight: 850, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-        {label}
-      </div>
-      <div style={{ color: T.onSurface, fontSize: 12.5, fontWeight: 800, marginTop: 4, lineHeight: 1.3 }}>
-        {value}
       </div>
     </div>
   )
@@ -757,7 +687,7 @@ function SectionEyebrow({ step, label }: { step: string; label: string }) {
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 850,
         }}
       >
@@ -765,7 +695,7 @@ function SectionEyebrow({ step, label }: { step: string; label: string }) {
       </span>
       <span
         style={{
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 850,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
