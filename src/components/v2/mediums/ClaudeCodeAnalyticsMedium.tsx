@@ -1073,7 +1073,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           <div className="analytics-studio-title"><span>AI analytics</span><h1>{challenge.title || 'Your analysis'}</h1></div>
           <button type="button" className="analytics-help" onClick={() => setShowBrief(true)}>How it works</button>
           <button type="button" className="analytics-help" onClick={() => { setBriefPanel('findings'); setMobilePanel('brief') }}>{artifactDone}/{artifactTotal} complete</button>
-          <span className="analytics-session-state" role="status">{wssUrl && mcpConnected && replRunning ? 'Ready to analyze' : wssUrl ? 'Connecting…' : resuming ? 'Checking session…' : started ? 'Preparing session…' : 'Ready when you are'}</span>
+          <span className="analytics-session-state" role="status">{sessionError ? 'Connection unavailable' : wssUrl && mcpConnected && replRunning ? 'Ready to analyze' : wssUrl ? 'Connecting…' : resuming ? 'Checking session…' : started ? 'Preparing session…' : 'Ready when you are'}</span>
         </header>
 
         {/* Body split. position: relative so the floating Hatch bubble anchors

@@ -32,6 +32,9 @@ Tested against the branch preview, including READY deployment `dpl_8pdLh27V2gcEJ
 Test-owned examples used existing authorized browser authentication. Earlier user work was not deleted or overwritten. These examples are not user achievement claims.
 
 ## Code verification
+- Final deployed follow-up: chat-mode interview opened without a microphone request, exchanged a real answer/follow-up, and saved a 5.6/10 debrief. Lobby scores now match debriefs. `/simulation` loads its real page. Reader bookmark, outline and restored section remain available, with internal metadata removed.
+- Analytics failure canary now stops at the retry panel while the brief remains readable. It did not establish a terminal connection. Header status was then corrected to report connection unavailable instead of continuing to say preparing.
+- The deployed canvas check exposed continued overlap at the far-right Next button. Navigation is now grouped at the left edge, clear of the Hatch dock; final deployment verification remains required.
 - Deployment `dpl_F4gCp8nj1BVpjHCnG4e6RYWKYShw` (commit `a8c5a05e27eef9670d0b01410baf40f90071f478`) reached READY. Fresh SQL feedback passed: 5/5 tests, detailed 8.0/10 review, and no unsupported collaboration or interview-communication dimension for an independent attempt. New interview entry displayed the explicit voice/chat choice, with voice disabled until microphone checking.
 - Final route audit removed two redirects into nonexistent `/prep` pages, restoring the existing simulation and company interview-prep routes. Interview lobby scores now use the same /10 scale as debriefs.
 - TypeScript passed after the final submission-error and scoring refinements.
