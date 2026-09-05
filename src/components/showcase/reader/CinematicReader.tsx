@@ -9,6 +9,7 @@ import { EVENT_AUTOPSY_OPENED, EVENT_AUTOPSY_SECTION_VIEWED, EVENT_AUTOPSY_FINIS
 import { useReaderScroll } from '@/hooks/useReaderScroll';
 import { useReaderResume } from '@/hooks/useReaderResume';
 import { ReaderDock } from './ReaderDock';
+import { LearningArtwork } from '@/components/redesign/LearningGeometry';
 import { ResumeBanner } from './ResumeBanner';
 import { BookmarkToggle } from './BookmarkToggle';
 import { PrevNextChips } from './PrevNextChips';
@@ -87,7 +88,7 @@ export function CinematicReader({ story, companyName, companyAccent, initialBook
     }
   }, [activeSection, sectionIds, story.companySlug]);
 
-  const scrollToSection = (id: string) => document.querySelector(`[data-section-id="${id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const scrollToSection = (id: string) => document.querySelector(`[data-section-id="${id}"]`)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
   const didRestoreRef = useRef(false);
   useEffect(() => {
     if (didRestoreRef.current || !restored) return;
@@ -111,7 +112,7 @@ export function CinematicReader({ story, companyName, companyAccent, initialBook
   return (
     <article
       ref={contentRef}
-      className="reader-article"
+      className="reader-article learning-reader"
       style={{ '--reader-accent': accent } as CSSProperties}
       data-hatch-context-root
       data-hatch-context={activeLabel ? `Reading "${story.title}" — section: ${activeLabel}` : `Reading "${story.title}"`}
@@ -122,11 +123,21 @@ export function CinematicReader({ story, companyName, companyAccent, initialBook
           <Link href={backHref} className="reader-back"><ArrowLeft aria-hidden size={17} /> {companyName}</Link>
           <BookmarkToggle companySlug={story.companySlug} storySlug={story.slug} initialBookmarked={initialBookmarked} />
         </div>
-        <div className="reader-kicker">Product autopsy · {story.estimatedReadTime}</div>
-        <h1>{story.title}</h1>
-        <p className="reader-dek">{story.dek}</p>
-        <div className="reader-tags">{story.tags.slice(0, 4).map(tag => <span key={tag}>{tag}</span>)}</div>
+        <div className="learning-reader-hero">
+          <div>
+            <div className="reader-kicker">Product autopsy · {story.estimatedReadTime}</div>
+            <h1>{story.title}</h1>
+            <p className="reader-dek">{story.dek}</p>
+            <div className="reader-tags">{story.tags.slice(0, 4).map(tag => <span key={tag}>{tag}</span>)}</div>
+          </div>
+          <div className="learning-reader-cover"><LearningArtwork /></div>
+        </div>
       </header>
+
+      <details className="learning-reader-mobile-contents">
+        <summary>In this autopsy</summary>
+        <nav aria-label="Article contents">{tocItems.map(item => <button key={item.id} onClick={() => scrollToSection(item.id)}>{item.label}</button>)}</nav>
+      </details>
 
       <div className="reader-layout">
         <aside className="reader-outline" aria-label="Article outline">
@@ -139,7 +150,7 @@ export function CinematicReader({ story, companyName, companyAccent, initialBook
               <span>{visited ? <Check aria-hidden size={13} /> : String(index + 1).padStart(2, '0')}</span>{item.label}<ChevronRight aria-hidden size={14} />
             </button>;
           })}</nav>
-          <div className="reader-hatch-note"><Sparkles aria-hidden size={17} /><p><strong>Hatch note</strong>Look for the constraint that made the unusual choice rational.</p></div>
+          <button type="button" className="reader-hatch-note" onClick={() => window.dispatchEvent(new CustomEvent('open-ask-hatch', { detail: { prompt: `Help me understand ${activeLabel ?? 'the main decision'} in ${story.title}.` } }))}><Sparkles aria-hidden size={17} /><span>Ask Hatch about this section</span></button>
         </aside>
 
         <div className="reader-content">

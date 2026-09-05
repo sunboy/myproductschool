@@ -4,6 +4,7 @@ import type { ResumeOrStartAction } from '@/components/dashboard/cards/resume-or
 import { ContinueLearning } from '@/components/redesign/dashboard/ContinueLearning'
 import { DashboardHero } from '@/components/redesign/dashboard/DashboardHero'
 import { HatchSuggestionCard } from '@/components/redesign/dashboard/HatchSuggestionCard'
+import { LearningGeometry } from '@/components/redesign/LearningGeometry'
 import { PracticeAreaGrid } from '@/components/redesign/dashboard/PracticeAreaGrid'
 import { ProgressSnapshot, type WeekDay } from '@/components/redesign/dashboard/ProgressSnapshot'
 import { QuickTakePanel } from '@/components/redesign/dashboard/QuickTakePanel'
@@ -280,7 +281,18 @@ async function DashboardContent() {
   const data = await getDashboard()
   return (
     <div className="space-y-6 sm:space-y-7">
-      <DashboardHero displayName={data.displayName} action={data.action} firstScenario={data.firstScenario} />
+      <section className="learning-home-stage">
+        <LearningGeometry />
+        <div className="learning-welcome">
+          <p>{data.action?.kind === 'first' ? 'Welcome' : 'Welcome back'}, {data.displayName}</p>
+          <h1>{data.action?.kind === 'first' ? 'Find your' : 'Keep your'}<br /><em>{data.action?.kind === 'first' ? 'next possibility.' : 'curiosity going.'}</em></h1>
+          <p>Pick up a good problem, follow a question, and make a little more progress.</p>
+        </div>
+        <div className="learning-home-primary">
+          <DashboardHero displayName={data.displayName} action={data.action} firstScenario={data.firstScenario} />
+          <HatchSuggestionCard message={data.hatchMessage} prompt={data.hatchPrompt} />
+        </div>
+      </section>
       <PracticeAreaGrid />
       <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(290px,.7fr)]">
         <div className="grid min-w-0 content-start gap-5">
@@ -291,7 +303,6 @@ async function DashboardContent() {
         </div>
         <div className="grid content-start gap-5 sm:grid-cols-2 lg:grid-cols-1">
           <ProgressSnapshot week={data.week} streakDays={data.streakDays} focusMove={data.focusMove} />
-          <HatchSuggestionCard message={data.hatchMessage} prompt={data.hatchPrompt} />
         </div>
       </div>
     </div>

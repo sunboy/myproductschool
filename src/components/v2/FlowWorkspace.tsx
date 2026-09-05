@@ -3892,7 +3892,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Left pane description content
   const descriptionPane = (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
+    <div className="learning-workspace-brief" style={{ flex: 1, overflowY: 'auto', padding: '24px 24px' }}>
       {!isInterviewChallenge && (
         <div className="font-label" style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-ink-strong)', marginBottom: 12 }}>
           Problem Brief
@@ -3984,7 +3984,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
       {/* Title */}
       {challengeTitle && (
-        <h2 style={{ fontFamily: 'var(--font-headline)', fontSize: 23, fontWeight: 700, lineHeight: 1.22, letterSpacing: '-0.01em', color: 'var(--color-on-surface)', marginBottom: 10 }}>
+        <h2 style={{ fontFamily: 'var(--font-headline)', fontSize: 30, fontWeight: 500, lineHeight: 1.22, letterSpacing: '-0.025em', color: 'var(--color-on-surface)', marginBottom: 18 }}>
           {challengeTitle}
         </h2>
       )}
@@ -5611,6 +5611,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Collapsible description drawer (collapsed by default so the question shows first).
   const mobileDrawer = isMobile ? (
     <div style={{ flexShrink: 0, borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)' }}>
+      <div className="learning-workspace-mobile-tabs" role="group" aria-label="Workspace view">
+        <button type="button" aria-pressed={mobileDescOpen} onClick={() => { setLeftTab('Description'); setMobileDescOpen(true) }}>The brief</button>
+        <button type="button" aria-pressed={!mobileDescOpen} onClick={() => setMobileDescOpen(false)}>Your work</button>
+      </div>
       <button
         onClick={() => setMobileDescOpen(v => !v)}
         aria-expanded={mobileDescOpen}

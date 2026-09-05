@@ -1,6 +1,6 @@
 # HackProduct visual overhaul — locked execution plan
 
-Status: visual milestone in progress. This plan supersedes earlier implementation sequencing, including docs/platform-rebuild-20260905.md. Prior repairs remain preserved; they do not count as visual overhaul delivery.
+Status: visual direction approved by the owner; stage 4 real-route integration in progress. This plan supersedes earlier implementation sequencing, including docs/platform-rebuild-20260905.md. Prior repairs remain preserved; they do not count as visual overhaul delivery.
 
 ## Product contract
 Professional learning and upskilling for tech workers, including interview preparation. Main navigation: Home, Practice, Library, Progress. Hatch is the universal contextual companion; Claude Code belongs only to analytics. No gym/reps/loops/graded language. Preserve existing work, content, auth and payment contracts during subsequent integration.
@@ -36,7 +36,7 @@ Literata headings400–600; Nunito Sans body400–700. Main body16px+, secondary
 Entrance: independent background planes400–700ms, movement8–18px, short stagger; heading/content280–420ms. Controls usable immediately; animate opacity/transform only; no layout shifts, perpetual drift, scroll hijacking or repeated entrance during routine navigation. Motion replay is available only in the review controls. prefers-reduced-motion removes entrance/transforms; focus remains visible. Rich motion on Home/landing, minimal in reading/workspaces.
 
 ## Drift control
-Allowed current edits: review pages/components/styles, reference assets, this plan, visual verification notes and routing needed to expose the review. Excluded: analytics infrastructure, database migrations, billing/backend refactors, unrelated bug hunts, dependency upgrades and wholesale component pruning. Record newly noticed defects separately; change scope only with owner direction or a blocker to this visual milestone.
+Allowed current edits: approved shared visual components and styling, real Home/Practice/workspace/reading integration, existing interaction bindings, focused regression tests and verification notes. Preserve auth, data and payment contracts. Excluded: analytics infrastructure, database migrations, billing/backend refactors, unrelated bug hunts, dependency upgrades and wholesale component pruning. Record newly noticed defects separately; change scope only with owner direction or a blocker to this integration stage.
 
 ## Acceptance evidence
 Each review lists reference, composition changes, responsive comparison evidence at three widths and representative screenshots, tested interactions and limitations. No claims of exact mockup replication, authenticated functionality or production deployment without that evidence. First milestone ends at a concrete review package; broad integration follows visual review as agreed.

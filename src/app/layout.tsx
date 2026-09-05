@@ -10,6 +10,7 @@ import { PostHogProvider } from "@/components/PostHogProvider";
 import { HatchSonicSurface } from "@/components/shell/HatchSonicSurface";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, imageUrl, SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
+import "@/components/redesign/learning-design.css";
 import "../styles/shepherd-theme.css";
 
 export const metadata: Metadata = {

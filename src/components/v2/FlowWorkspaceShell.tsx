@@ -24,7 +24,7 @@ export function FlowWorkspaceShell({ challengeId, challengeSlug, initialAttemptI
   const exitHref = workspaceExitHref({ fromPlan, fromDomain }, returnTo)
 
   return (
-    <div className="relative h-full">
+    <div className="learning-workspace relative h-full">
       <FlowWorkspace
         key={`${challengeId}:${initialAttemptId ?? 'practice'}`}
         mode="api"
