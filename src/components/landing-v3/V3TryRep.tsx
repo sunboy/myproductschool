@@ -137,7 +137,7 @@ export function V3TryRep() {
           Create your free account <span aria-hidden>→</span>
         </button>
         <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-4)', textAlign: 'center' }}>
-          Keep this result and get the full four-step breakdown.
+          Create an account to explore full challenges and personalized feedback.
         </p>
       </div>
     )

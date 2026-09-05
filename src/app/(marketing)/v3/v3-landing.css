@@ -7,7 +7,7 @@
   /* Round-4 deep-forest palette (docs/redesign/round4-codex-direction/spec.md).
      Page field + near-white cards, hairline borders, deep forest structural
      surfaces, gold for achievement accents. */
-  --bg:                    #faf8f4;
+  --bg:                    #f8f5ef;
   --surface:               #fffdfa;
   --surface-2:             #f4f0e8;
   --surface-3:             #ece7dd;
@@ -22,13 +22,13 @@
   --ink-3:                 #5b685e;
   --ink-4:                 #a6a9a4;
 
-  --forest:                #123b20;
+  --forest:                #103e30;
   --forest-2:              #1d432b;
   --forest-deep:           #052316;
   --forest-soft:           #dff3d0;
   --forest-bright:         #a3ebb1;
 
-  --amber:                 #fdb41f;
+  --amber:                 #d8962c;
   --amber-2:               #b96914;
   --amber-soft:            #fef3e2;
   --amber-bright:          #fe9817;
@@ -57,9 +57,9 @@
   --r-xs: 8px;
   --r-sm: 12px;
   --r-md: 18px;
-  --r-lg: 24px;
-  --r-xl: 32px;
-  --r-2xl: 44px;
+  --r-lg: 18px;
+  --r-xl: 18px;
+  --r-2xl: 18px;
 
   --tr-fast:  140ms cubic-bezier(0.2, 0.8, 0.2, 1);
   --tr:       240ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -283,7 +283,7 @@
   box-shadow:
     0 0 0 4px rgba(245, 167, 108, 0.10),
     0 8px 24px -8px rgba(217, 130, 17, 0.35);
-  animation: v3-pill-glow 2.4s ease-in-out infinite;
+  animation: none;
 }
 .v3 .hero-pill .hero-pill-dot {
   width: 7px; height: 7px;
@@ -291,7 +291,7 @@
   background: var(--amber);
   box-shadow: 0 0 10px var(--amber-bright);
   flex-shrink: 0;
-  animation: v3-pill-dot 1.6s ease-in-out infinite;
+  animation: none;
 }
 .v3 .hero-pill-text {
   position: relative;
@@ -551,7 +551,7 @@
   width: 6px; height: 6px;
   background: var(--amber-bright);
   border-radius: 50%;
-  animation: v3-live-pulse 1.6s ease-in-out infinite;
+  animation: none;
 }
 @keyframes v3-live-pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 
@@ -856,7 +856,7 @@
   width: max-content;
   gap: 18px;
   will-change: transform;
-  animation: v3-company-marquee 42s linear infinite;
+  animation: none;
 }
 .v3 .context-logo-group {
   display: flex;
@@ -1964,7 +1964,7 @@
   inset: -7px;
   border-radius: 999px;
   border: 1px solid rgba(126,224,153,0.58);
-  animation: v3-live-dot-pulse 1.6s ease-out infinite;
+  animation: none;
 }
 .v3 .live-loop-rail {
   display: grid;
@@ -2057,7 +2057,7 @@
   transform-origin: 50% 50%;
 }
 .v3 .live-waveform.is-active span {
-  animation: v3-live-wave 930ms ease-in-out infinite;
+  animation: none;
   animation-delay: calc(var(--wave-index) * -62ms);
 }
 .v3 .live-audio-row {
@@ -3143,3 +3143,8 @@
 .v3 .hp-try-challenge p { font-size:1rem; line-height:1.7; max-width:40ch; }
 .v3 .hp-try-challenge .lm-card { border:1px solid #e5dfd3; border-radius:1rem; padding:1.5rem; background:#fffdfa; }
 @media(max-width:800px) { .v3 .hp-try-challenge { grid-template-columns:1fr; gap:1.5rem; } }
+
+/* Brand logos remain readable without a perpetual ticker. */
+.v3 .context-logo-marquee { overflow-x:auto; mask-image:none; }
+.v3 .context-logo-track { width:auto; transform:none; }
+.v3 .context-logo-group { flex-wrap:wrap; justify-content:center; }

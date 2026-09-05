@@ -30,8 +30,9 @@ function readProgress(key?: string): number | undefined {
   } catch { return undefined }
 }
 
-export function LibraryCatalog({ items, unavailableKinds = [] }: { items: LibraryItem[]; unavailableKinds?: LibraryKind[] }) {
+export function LibraryCatalog({ items, unavailableKinds = [], savedUnavailable = false }: { items: LibraryItem[]; unavailableKinds?: LibraryKind[]; savedUnavailable?: boolean }) {
   const [query, setQuery] = useState('')
+  const [savedOnly, setSavedOnly] = useState(false)
   const [category, setCategory] = useState<LibraryKind | 'all'>('all')
   const [deviceProgress, setDeviceProgress] = useState<Record<string, number>>({})
 
@@ -47,7 +48,7 @@ export function LibraryCatalog({ items, unavailableKinds = [] }: { items: Librar
   const resolved = useMemo(() => items.map(item => ({ ...item, progress: deviceProgress[item.id] ?? item.progress })), [deviceProgress, items])
   const needle = query.trim().toLowerCase()
   const visible = resolved.filter(item =>
-    (category === 'all' || item.kind === category)
+    (!savedOnly || item.bookmarked) && (category === 'all' || item.kind === category)
     && (!needle || `${item.title} ${item.description} ${item.eyebrow} ${item.searchText}`.toLowerCase().includes(needle)),
   )
   const continueItems = resolved.filter(item => item.progress && item.progress < 100).sort((a, b) => (b.progress ?? 0) - (a.progress ?? 0)).slice(0, 3)
@@ -59,7 +60,7 @@ export function LibraryCatalog({ items, unavailableKinds = [] }: { items: Librar
     plan: items.filter(item => item.kind === 'plan').length,
   }), [items])
 
-  const activeUnavailable = category !== 'all' && unavailableKinds.includes(category)
+  const activeUnavailable = (savedOnly && savedUnavailable) || (category !== 'all' && unavailableKinds.includes(category))
 
   return (
     <div className="relative isolate min-h-full overflow-hidden bg-[#fbf8f1] px-4 pb-20 pt-8 text-[#18392b] sm:px-7 lg:px-10">
@@ -72,7 +73,7 @@ export function LibraryCatalog({ items, unavailableKinds = [] }: { items: Librar
         <header className="grid items-end gap-8 border-b border-[#ddd5c6] pb-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,480px)]">
           <div>
             <p className="mb-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#8b672d]">Study Library</p>
-            <h1 className="max-w-[720px] font-headline text-[clamp(2.6rem,6vw,5.2rem)] font-semibold leading-[0.98] tracking-[-0.045em] text-[#123d2b]">Ideas worth keeping close.</h1>
+            <h1 className="max-w-[720px] font-headline text-[clamp(2rem,4vw,3rem)] font-medium leading-[1.2] tracking-[-0.045em] text-[#123d2b]">Ideas worth keeping close.</h1>
             <p className="mt-5 max-w-[650px] text-[17px] leading-7 text-[#5f675f]">Read a sharp guide, study a product decision, or follow a focused plan. Everything here connects back to the work you practise.</p>
           </div>
           <div>
@@ -87,10 +88,11 @@ export function LibraryCatalog({ items, unavailableKinds = [] }: { items: Librar
 
         <nav aria-label="Library categories" className="mt-6 flex gap-2 overflow-x-auto pb-2">
           {(Object.keys(categoryCopy) as Array<LibraryKind | 'all'>).map(key => (
-            <button key={key} type="button" onClick={() => setCategory(key)} aria-pressed={category === key} className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm font-extrabold transition-colors ${category === key ? 'border-[#174a34] bg-[#174a34] text-white' : 'border-[#d4ccbd] bg-white/70 text-[#3f5b4c] hover:border-[#8da494]'}`}>
+            <button key={key} type="button" onClick={() => { setCategory(key); setSavedOnly(false) }} aria-pressed={category === key} className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm font-extrabold transition-colors ${category === key ? 'border-[#174a34] bg-[#174a34] text-white' : 'border-[#d4ccbd] bg-white/70 text-[#3f5b4c] hover:border-[#8da494]'}`}>
               {categoryCopy[key].label} <span className={category === key ? 'text-white/65' : 'text-[#8b918b]'}>{counts[key]}</span>
             </button>
           ))}
+          <button type="button" aria-pressed={savedOnly} onClick={() => { setSavedOnly(!savedOnly); setCategory(savedOnly ? 'all' : 'autopsy') }} className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm font-bold ${savedOnly ? 'bg-[#174a34] text-white' : 'bg-white/70 text-[#3f5b4c]'}`}>Saved stories</button>
         </nav>
 
         {unavailableKinds.length > 0 && category === 'all' && (
@@ -99,11 +101,11 @@ export function LibraryCatalog({ items, unavailableKinds = [] }: { items: Librar
           </div>
         )}
 
-        {!query && category === 'all' && featured && <Featured item={featured} />}
+        {!query && !savedOnly && category === 'all' && featured && <Featured item={featured} />}
 
-        {!query && category === 'all' && continueItems.length > 0 && (
+        {!query && !savedOnly && category === 'all' && continueItems.length > 0 && (
           <section className="mt-10">
-            <p className="text-sm font-extrabold uppercase tracking-[0.1em] text-[#8b672d]">Your reading</p>
+            <p className="text-sm font-extrabold uppercase tracking-[0.1em] text-[#8b672d]">Your learning</p>
             <h2 className="mt-1 font-headline text-2xl font-semibold text-[#183f2e]">Continue where you left off</h2>
             <div className="mt-4 grid gap-3 lg:grid-cols-3">{continueItems.map(item => <ContinueCard key={item.id} item={item} />)}</div>
           </section>
@@ -120,15 +122,15 @@ export function LibraryCatalog({ items, unavailableKinds = [] }: { items: Librar
           {activeUnavailable ? (
             <div role="status" className="rounded-[24px] border border-[#d5b978] bg-[#fbf1dc] px-6 py-12 text-center">
               <h3 className="font-headline text-2xl font-semibold text-[#5f481f]">This collection could not be loaded</h3>
-              <p className="mt-2 text-base text-[#78653e]">Try again shortly, or browse another Library category.</p>
+              <p className="mt-2 text-base text-[#78653e]">Try again, or browse another Library category.</p><button type="button" className="mt-4 min-h-11 rounded-lg border px-4" onClick={() => window.location.reload()}>Retry loading</button>
             </div>
           ) : visible.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{visible.map(item => <LibraryCard key={item.id} item={item} />)}</div>
           ) : (
             <div className="rounded-[24px] border border-dashed border-[#cfc6b5] bg-white/60 px-6 py-16 text-center">
-              <h3 className="font-headline text-2xl font-semibold text-[#204632]">No matches yet</h3>
-              <p className="mt-2 text-base text-[#6e766f]">Try a company, discipline, or broader phrase.</p>
-              <button type="button" onClick={() => { setQuery(''); setCategory('all') }} className="mt-5 min-h-11 rounded-full border border-[#1f563d] px-4 py-2 text-sm font-extrabold text-[#1f563d]">Clear filters</button>
+              <h3 className="font-headline text-2xl font-semibold text-[#204632]">{savedOnly ? 'No saved stories match' : 'No matches yet'}</h3>
+              <p className="mt-2 text-base text-[#6e766f]">{savedOnly && !query ? 'Save an autopsy while reading to find it here.' : 'Try a company, discipline, or broader phrase.'}</p>
+              <button type="button" onClick={() => { setQuery(''); setCategory('all'); setSavedOnly(false) }} className="mt-5 min-h-11 rounded-full border border-[#1f563d] px-4 py-2 text-sm font-extrabold text-[#1f563d]">Clear filters</button>
             </div>
           )}
         </section>
@@ -141,10 +143,10 @@ function Featured({ item }: { item: LibraryItem }) {
   return (
     <section className="mt-8 grid overflow-hidden rounded-[28px] border border-[#d9d0c0] bg-[#163f2e] text-white shadow-[0_28px_70px_-54px_rgba(12,48,33,.8)] lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,.8fr)]">
       <div className="p-7 sm:p-9 lg:p-11">
-        <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#e1b45c]">Editor’s pick · {categoryCopy[item.kind].label}</p>
+        <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#e1b45c]">{item.bookmarked ? 'Saved for you' : 'From the Library'} · {categoryCopy[item.kind].label}</p>
         <h2 className="mt-4 max-w-[18ch] font-headline text-[clamp(2rem,4vw,3.65rem)] font-semibold leading-[1.04] tracking-[-0.035em]">{item.title}</h2>
         <p className="mt-4 max-w-[58ch] text-base leading-7 text-white/72">{item.description}</p>
-        <Link href={item.href} className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#f8f3e9] px-5 py-3 text-sm font-extrabold text-[#163f2e] transition-transform hover:-translate-y-0.5">Start reading <ArrowRight aria-hidden size={17} /></Link>
+        <Link href={item.href} className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#f8f3e9] px-5 py-3 text-sm font-extrabold text-[#163f2e] transition-transform hover:-translate-y-0.5">{item.kind === 'plan' ? 'View study plan' : 'Start reading'} <ArrowRight aria-hidden size={17} /></Link>
       </div>
       <div className="relative min-h-56 overflow-hidden border-t border-white/10 bg-[#0f3023] lg:min-h-full lg:border-l lg:border-t-0">
         <div className="absolute -right-16 -top-16 size-72 rotate-12 rounded-[52px] border border-white/12 bg-white/[.035]" />

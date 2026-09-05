@@ -78,18 +78,19 @@ export async function toggleBookmark(
  * Fetch all story slugs bookmarked by the current user.
  * Returns an empty array for unauthenticated visitors.
  */
-export async function getUserBookmarks(): Promise<Array<{ companySlug: string; storySlug: string }>> {
+export async function getUserBookmarks(strict = false): Promise<Array<{ companySlug: string; storySlug: string }>> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) return [];
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('autopsy_bookmarks')
     .select('company_slug, story_slug')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
+  if (strict && error) throw new Error('Could not load saved stories')
   return (data ?? []).map(row => ({
     companySlug: row.company_slug,
     storySlug: row.story_slug,

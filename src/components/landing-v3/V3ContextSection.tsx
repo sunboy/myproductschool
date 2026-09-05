@@ -71,7 +71,7 @@ const cards = [
     title: 'Honest feedback',
     body: 'Hatch reads your answer and shows you the exact gap to close.',
     image: '/landing-v3/section-2/calibrated-feedback.png',
-    alt: 'Abstract organized feedback loop with rubric signals.',
+    alt: 'An illustrated view of personalized learning feedback.',
     width: 1536,
     height: 1024,
     hasHatch: true,
@@ -86,7 +86,7 @@ export function V3ContextSection() {
           <div className="context-logo-label">Practice for interviews at</div>
           <div className="context-logo-marquee" tabIndex={0}>
             <div className="context-logo-track">
-              {tickerLoops.map((companies, loopIndex) => (
+              {tickerLoops.slice(0, 1).map((companies, loopIndex) => (
                 <div className="context-logo-group" aria-hidden={loopIndex > 0} key={loopIndex}>
                   {companies.map((company) => (
                     <div className="context-logo" key={`${loopIndex}-${company.name}`}>

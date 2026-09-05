@@ -25,7 +25,7 @@ const proFeatures = [
 const analyticsFeatures = [
   'Everything in Pro',
   'Live Claude Code sessions on real BigQuery data',
-  'Hatch coaching inside the terminal',
+  'Contextual Hatch guidance alongside your analysis',
   'Reusable skills and shareable analyst reports',
 ]
 

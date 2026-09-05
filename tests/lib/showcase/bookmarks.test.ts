@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({ createClient: vi.fn(), revalidatePath: vi.fn() }))
 vi.mock('@/lib/supabase/server', () => ({ createClient: mocks.createClient }))
 vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidatePath }))
-import { toggleBookmark } from '../../../src/lib/showcase/bookmarks'
+import { toggleBookmark, getUserBookmarks } from '../../../src/lib/showcase/bookmarks'
 
 function client({ signedIn = true, existing = false, lookupError = false, writeError = false } = {}) {
   const lookup = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn().mockResolvedValue({ data: existing ? { id: 'bookmark-1' } : null, error: lookupError ? { message: 'Unavailable' } : null }) }
@@ -47,4 +47,13 @@ describe('bookmark persistence', () => {
     await expect(toggleBookmark('acme', 'launch')).resolves.toEqual({ bookmarked: false })
     expect(db.deletion.eq).toHaveBeenCalledWith('user_id', 'user-1')
   })
+})
+
+
+it('reports saved-story load failures instead of returning a false empty collection', async () => {
+  const query = { select: vi.fn(), eq: vi.fn(), order: vi.fn().mockResolvedValue({ data: null, error: { message: 'Unavailable' } }) }
+  query.select.mockReturnValue(query)
+  query.eq.mockReturnValue(query)
+  mocks.createClient.mockResolvedValue({ auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } }) }, from: vi.fn().mockReturnValue(query) })
+  await expect(getUserBookmarks(true)).rejects.toThrow('load saved stories')
 })

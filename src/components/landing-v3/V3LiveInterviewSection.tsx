@@ -26,13 +26,12 @@ const modes = [
   { label: 'Canvas', icon: PenTool },
 ]
 
-const loopSteps = ['Company brief', 'Live round', 'Artifact work', 'Rubric score', 'Next step']
+const loopSteps = ['Company brief', 'Live round', 'Artifact work', 'Personalized feedback', 'Next step']
 
 export function V3LiveInterviewSection() {
   const sectionRef = useRef<HTMLElement | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const isActiveRef = useRef(false)
-  const autoAttemptedRef = useRef(false)
   const [isActive, setIsActive] = useState(false)
   const [audioBlocked, setAudioBlocked] = useState(false)
   const [audioPlayed, setAudioPlayed] = useState(false)
@@ -75,11 +74,7 @@ export function V3LiveInterviewSection() {
     isActiveRef.current = true
     setIsActive(true)
 
-    if (!autoAttemptedRef.current) {
-      autoAttemptedRef.current = true
-      void playIntro()
-    }
-  }, [playIntro])
+  }, [])
 
   useEffect(() => {
     const audio = new Audio(INTRO_AUDIO_SRC)
@@ -114,9 +109,7 @@ export function V3LiveInterviewSection() {
         isActiveRef.current = nextActive
         setIsActive(nextActive)
 
-        if (nextActive) {
-          void playIntro()
-        }
+
       },
       { threshold: 0.22 },
     )
@@ -124,7 +117,7 @@ export function V3LiveInterviewSection() {
     observer.observe(section)
 
     return () => observer.disconnect()
-  }, [activateSection, playIntro])
+  }, [activateSection])
 
   useEffect(() => {
     let frame = 0
@@ -176,25 +169,6 @@ export function V3LiveInterviewSection() {
     }
   }, [activateSection])
 
-  useEffect(() => {
-    const retryAfterUserActivation = () => {
-      if (!isActiveRef.current) {
-        return
-      }
-
-      void playIntro()
-    }
-
-    window.addEventListener('pointerdown', retryAfterUserActivation, { passive: true })
-    window.addEventListener('keydown', retryAfterUserActivation)
-    window.addEventListener('touchstart', retryAfterUserActivation, { passive: true })
-
-    return () => {
-      window.removeEventListener('pointerdown', retryAfterUserActivation)
-      window.removeEventListener('keydown', retryAfterUserActivation)
-      window.removeEventListener('touchstart', retryAfterUserActivation)
-    }
-  }, [playIntro])
 
   return (
     <section className="live-interview-section" id="live" ref={sectionRef} aria-labelledby="live-interview-heading">
@@ -270,13 +244,11 @@ export function V3LiveInterviewSection() {
 
               <div className="live-audio-row">
                 <Sparkles aria-hidden="true" strokeWidth={2} />
-                <span>{audioPlayed ? 'Intro played' : 'Hatch voice ready'}</span>
-                {audioBlocked ? (
-                  <button type="button" onClick={() => void playIntro({ force: true })}>
+                <span>{audioBlocked ? 'Audio unavailable. Try again.' : audioPlayed ? 'Intro played' : 'Preview Hatch’s voice'}</span>
+                <button type="button" onClick={() => void playIntro({ force: true })}>
                     <Play aria-hidden="true" fill="currentColor" size={12} />
                     Play Hatch intro
                   </button>
-                ) : null}
               </div>
             </div>
 

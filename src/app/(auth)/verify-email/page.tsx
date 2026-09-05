@@ -59,7 +59,7 @@ export default function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) 
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="learning-auth-utility flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6 rounded-2xl border border-outline-variant bg-surface p-6 text-center shadow-sm">
         <div className="flex justify-center">
           <HatchImage size={40} state="speaking" />

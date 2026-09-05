@@ -3,8 +3,10 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 const BASE_URL = 'http://localhost:3002'
-const E2E_EMAIL = process.env.E2E_EMAIL || 'test-e2e-1774745731@hackproduct.dev'
-const E2E_PASSWORD = process.env.E2E_PASSWORD || 'e2etest123!'
+const E2E_EMAIL = process.env.E2E_EMAIL || ''
+const E2E_PASSWORD = process.env.E2E_PASSWORD || ''
+
+
 const SCREENSHOT_DIR = path.join(__dirname, '../.playwright-screenshots')
 
 function ss(name: string) {
@@ -146,3 +148,6 @@ test('Full user journey', async ({ page }) => {
   console.log(`\nScreenshots saved to: ${SCREENSHOT_DIR}`)
   console.log('Files:', fs.readdirSync(SCREENSHOT_DIR).filter(f => f.endsWith('.png')).join(', '))
 })
+
+// Missing credentials are reported as skipped, without blocking public test discovery.
+test.beforeEach(() => { test.skip(!E2E_EMAIL || !E2E_PASSWORD, 'Requires explicit authorized E2E credentials.') })

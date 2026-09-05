@@ -24,7 +24,7 @@ export default async function ExplorePage() {
     getStudyPlans(user?.id),
     getAutopsyCompanies(),
     getPublishedAutopsyStories(),
-    getUserBookmarks(),
+    getUserBookmarks(true),
     user ? supabase.from('user_learn_progress').select('module_id').eq('user_id', user.id) : Promise.resolve({ data: [], error: null }),
   ])
   const modules = modulesResult.status === 'fulfilled' ? modulesResult.value : []
@@ -104,5 +104,5 @@ export default async function ExplorePage() {
     searchText: [plan.title, plan.description, plan.difficulty, ...(plan.role_tags ?? []), ...(plan.disciplines ?? [])].filter(Boolean).join(' '),
   }))
 
-  return <LibraryCatalog items={[...guideItems, ...autopsyItems, ...planItems]} unavailableKinds={unavailableKinds} />
+  return <LibraryCatalog items={[...guideItems, ...autopsyItems, ...planItems]} unavailableKinds={unavailableKinds} savedUnavailable={bookmarksResult.status === 'rejected'} />
 }
