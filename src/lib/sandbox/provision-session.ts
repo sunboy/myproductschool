@@ -1,3 +1,4 @@
+import { activateProvisioning } from './provisioning-lease'
 // Shared provisioning core for Claude Code Analytics sessions.
 //
 // Why this exists: Vercel Hobby caps a function at 60s and KILLS it at the
@@ -349,13 +350,12 @@ export async function provisionSession(
   // a cold one does not, and that's fine — the client's /state poll takes over. ---
   const ready = await sandbox.awaitReady(provision.hostInstanceId, READINESS_OPTIMISTIC_MS)
   if (ready) {
-    await markActiveAndMeter(admin, sessionId, input, provision.provider)
-    return { ok: true, wssUrl: provision.wssUrl, expiresAt }
+    const activated = await markActiveAndMeter(admin, sessionId, input, provision.provider)
+    if (activated) return { ok: true, wssUrl: provision.wssUrl, expiresAt }
   }
 
-  // Not Ready yet — the revision is still booting. Leave the row `provisioning`
-  // (host/wss persisted) and let /state finish it. This is a SUCCESS for the
-  // request: the client keeps showing progress and polling.
+  // Not ready, or another lifecycle transition won activation. Let /state read
+  // the authoritative status; do not claim this request activated the sandbox.
   return { ok: true, wssUrl: provision.wssUrl, expiresAt, pending: true }
 }
 
@@ -377,8 +377,8 @@ export async function probeAndActivate(
   // Single short probe (a few seconds) — the /state route is called repeatedly.
   const ready = await sandbox.awaitReady(hostInstanceId, 3000)
   if (!ready) return null
-  await markActiveAndMeter(admin, sessionId, { userId, challengeId } as ProvisionInput, provider)
-  return wssUrl
+  const activated = await markActiveAndMeter(admin, sessionId, { userId, challengeId } as ProvisionInput, provider)
+  return activated ? wssUrl : null
 }
 
 async function markActiveAndMeter(
@@ -386,22 +386,17 @@ async function markActiveAndMeter(
   sessionId: string,
   input: Pick<ProvisionInput, 'userId' | 'challengeId'>,
   provider: string,
-): Promise<void> {
+): Promise<boolean> {
   // Guard: only the first transition out of `provisioning` records usage, so a
   // race between the provision wait and a /state probe can't double-count.
-  const { data: flipped } = await admin
-    .from('claude_code_sessions')
-    .update({ status: 'active', started_at: new Date().toISOString(), provision_phase: 'ready' })
-    .eq('id', sessionId)
-    .eq('status', 'provisioning')
-    .select('id')
-  if (!flipped || flipped.length === 0) return
+  if (!(await activateProvisioning(admin, sessionId))) return false
 
   await recordUsageEvent(input.userId, 'claude_code_sessions', 1, {
     challenge_id: input.challengeId,
     session_id: sessionId,
     provider,
   })
+  return true
 }
 
 async function markFailed(

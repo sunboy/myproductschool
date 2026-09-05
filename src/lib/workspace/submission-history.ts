@@ -23,3 +23,10 @@ export async function loadWorkspaceHistory<T extends { id: string }>(
   }
   return rows
 }
+
+/** History URLs remain read-only even when the requested row cannot be loaded.
+ * Only a deliberate start action can move that visit into an active attempt.
+ */
+export function canStartWorkspaceAttempt(initialAttemptId: string | undefined, practiceRequested: boolean): boolean {
+  return !initialAttemptId || practiceRequested
+}

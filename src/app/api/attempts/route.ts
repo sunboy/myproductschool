@@ -9,7 +9,11 @@ export const GET = withRoute(async (req: NextRequest) => {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
-  const limit = Math.min(parseInt(searchParams.get('limit') ?? '5'), 20)
+  const rawLimit = searchParams.get('limit')
+  if (rawLimit !== null && (!/^\d+$/.test(rawLimit) || !Number.isSafeInteger(Number(rawLimit)) || Number(rawLimit) < 1)) {
+    return NextResponse.json({ error: 'limit must be a positive integer' }, { status: 400 })
+  }
+  const limit = Math.min(Number(rawLimit ?? 5), 20)
   const includePatterns = searchParams.get('include_patterns') === 'true'
   const challengeId = searchParams.get('challenge_id')
   // Workspace Submissions tab uses only challenges.challenge_type + feedback_json
@@ -28,7 +32,8 @@ export const GET = withRoute(async (req: NextRequest) => {
       .eq('user_id', user.id)
       .eq('status', 'completed')
     if (challengeId) countQuery = countQuery.eq('challenge_id', challengeId)
-    const { count } = await countQuery
+    const { count, error } = await countQuery
+    if (error) return NextResponse.json({ error: 'Submission history could not be loaded. Please try again.' }, { status: 503 })
     return NextResponse.json({ count: count ?? 0 })
   }
 
@@ -44,7 +49,8 @@ export const GET = withRoute(async (req: NextRequest) => {
   const attemptId = searchParams.get('attempt_id')
   if (attemptId) query = query.eq('id', attemptId)
 
-  const { data } = await query
+  const { data, error } = await query
+  if (error) return NextResponse.json({ error: 'Submission history could not be loaded. Please try again.' }, { status: 503 })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows = data ?? [] as any[]

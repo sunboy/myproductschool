@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
-import { loadWorkspaceHistory } from '@/lib/workspace/submission-history'
+import { canStartWorkspaceAttempt, loadWorkspaceHistory } from '@/lib/workspace/submission-history'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/posthog/client'
@@ -584,6 +584,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const { stepData, loading: stepLoading, submitting, error: stepError, clearStepData, loadStep, submitStep, fetchCoaching } = useFlowStep(challengeId, currentStep)
 
   const [attemptId, setAttemptId] = useState<string | null>(null)
+  const attemptStartPending = useRef(false)
   const [completedSteps, setCompletedSteps] = useState<FlowStep[]>([])
   const [phase, setPhase] = useState<'loading' | 'question' | 'reveal' | 'complete'>('loading')
 
@@ -950,6 +951,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([])
   const [selectedHistoryIdx, setSelectedHistoryIdx] = useState<number | null>(null)
   const [submissionsLoaded, setSubmissionsLoaded] = useState(false)
+  const [submissionsError, setSubmissionsError] = useState<string | null>(null)
+  const [historyPracticeRequested, setHistoryPracticeRequested] = useState(false)
   const [submissionsLoading, setSubmissionsLoading] = useState(false)
   const [submissionsCount, setSubmissionsCount] = useState(0)
 
@@ -1057,6 +1060,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const loadSubmissionHistory = useCallback(async () => {
     if (!isApiMode || !challengeId) return
     setSubmissionsLoading(true)
+    setSubmissionsError(null)
     let rows: Array<{
       id: string
       challenge_id: string
@@ -1077,9 +1081,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }>
     try {
       const loaded = await loadWorkspaceHistory<(typeof rows)[number]>(challengeId, initialAttemptId)
-      if (!loaded) { setSubmissionsLoading(false); return }
+      if (!loaded) {
+        setSubmissionsError('Submission history could not be loaded. Please try again.')
+        setSubmissionsLoading(false)
+        return
+      }
       rows = loaded
     } catch {
+      setSubmissionsError('Submission history could not be loaded. Please try again.')
       setSubmissionsLoading(false)
       return // preserve existing history on network failure
     }
@@ -1129,6 +1138,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         setSelectedHistoryIdx(index)
         setPhase('question')
         historyDeepLinkApplied.current = initialAttemptId
+      } else {
+        setSubmissionsError('The linked submission could not be opened. Try again or choose another submission below.')
       }
     }
     setSubmissionsLoaded(true)
@@ -1140,10 +1151,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // the workspace mount critical path (mirrors Discussions/Solutions). Post-submit
   // reconciliation still calls loadSubmissionHistory directly.
   useEffect(() => {
-    if (leftTab === 'Submissions' && !submissionsLoaded && !submissionsLoading) {
+    if (leftTab === 'Submissions' && !submissionsLoaded && !submissionsLoading && !submissionsError) {
       void loadSubmissionHistory()
     }
-  }, [leftTab, submissionsLoaded, submissionsLoading, loadSubmissionHistory])
+  }, [leftTab, submissionsLoaded, submissionsLoading, submissionsError, loadSubmissionHistory])
 
   // Cheap count for the Submissions tab pill — a head-only count query, no
   // feedback_json payload — so the pill can show the prior-attempt count on
@@ -2273,14 +2284,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   }, [])
 
   // Viewing existing feedback must not create a new attempt or consume a quota.
-  // Start normally after the user leaves the selected history entry.
+  // A missing record or closing feedback is not consent to start practice.
   useEffect(() => {
     if (!isApiMode) return
-    if (initialAttemptId && (!submissionsLoaded || selectedHistoryIdx !== null)) {
+    if (!canStartWorkspaceAttempt(initialAttemptId, historyPracticeRequested)) {
       if (detail) setPhase('question')
       return
     }
-    if (detail && !attemptId) {
+    if (detail && !challengeLoading && !attemptId && !attemptStartPending.current) {
       if (detail.current_attempt?.status === 'in_progress') {
         setAttemptId(detail.current_attempt.id)
         const resumeStep = detail.current_attempt.current_step === 'done' ? 'frame' : detail.current_attempt.current_step as FlowStep
@@ -2290,6 +2301,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         if (resumeIdx > 0) setCompletedSteps(FLOW_STEPS.slice(0, resumeIdx))
         setPhase('question')
       } else {
+        attemptStartPending.current = true
         startAttempt(initialRoleId).then((attempt) => {
           if (attempt) {
             setAttemptId(attempt.id)
@@ -2297,10 +2309,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             setPhase('question')
             trackEvent(EVENT_CHALLENGE_STARTED, { challenge_id: challengeId, attempt_id: attempt.id })
           }
-        })
+        }).finally(() => { attemptStartPending.current = false })
       }
     }
-  }, [detail, attemptId, isApiMode, initialRoleId, startAttempt, initialAttemptId, submissionsLoaded, selectedHistoryIdx])
+  }, [detail, challengeLoading, attemptId, isApiMode, initialRoleId, startAttempt, initialAttemptId, historyPracticeRequested, challengeId])
 
   // Load step data when step changes - clear stale data immediately so no
   // previous step's questions flash while the new step loads
@@ -3787,6 +3799,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   })
 
   const handleRunAnother = () => {
+    setHistoryPracticeRequested(true)
+    setLeftTab('Description')
     setMirrorStepResults([])
     setSelectedHistoryIdx(null)
     setAttemptId(null)
@@ -4882,8 +4896,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
       <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>history</span>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
-        No submissions yet.
+        {submissionsError ?? 'No submissions yet.'}
       </p>
+      {submissionsError && <button type="button" onClick={() => void loadSubmissionHistory()} className="min-h-11 rounded-lg border border-hairline px-4 text-sm font-bold">Try again</button>}
     </div>
   ) : (
     <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -5701,6 +5716,26 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       </section>
     </div>
   )
+
+  // A historical deep link is a read-only visit, including failed/missing rows.
+  // Do not mount coding/analytics practice surfaces until the user asks to start.
+  if (!canStartWorkspaceAttempt(initialAttemptId, historyPracticeRequested) && selectedHistoryIdx === null) {
+    return (
+      <div className="flex h-full min-h-0 flex-col overflow-hidden pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
+        {topChrome}
+        <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col p-4 sm:p-6">
+          <h1 className="font-headline text-2xl font-semibold text-ink-strong">Your submissions</h1>
+          <p className="mt-2 text-base text-ink-secondary">Review your previous work or start a new attempt when you are ready.</p>
+          {submissionsError && <p role="alert" className="mt-4 text-sm text-error">{submissionsError}</p>}
+          <div className="my-4 flex flex-wrap gap-3">
+            <button type="button" disabled={submissionsLoading} onClick={() => void loadSubmissionHistory()} className="min-h-11 rounded-lg border border-hairline px-4 text-sm font-bold disabled:opacity-50">{submissionsLoading ? 'Loading…' : 'Refresh submissions'}</button>
+            <button type="button" onClick={handleRunAnother} className="min-h-11 rounded-lg bg-forest-950 px-4 text-sm font-bold text-white">{detail?.current_attempt?.status === 'in_progress' ? 'Continue your attempt' : 'Start a new attempt'}</button>
+          </div>
+          {submissionsPane}
+        </div>
+      </div>
+    )
+  }
 
   if (phase === 'reveal' || phase === 'complete' || selectedHistoryIdx !== null) {
     const historyRecord = selectedHistoryIdx !== null ? sessionHistory[selectedHistoryIdx] : null

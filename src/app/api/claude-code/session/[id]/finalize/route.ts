@@ -6,7 +6,7 @@
 // and marks the session terminated.
 
 import { randomUUID } from 'crypto'
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
@@ -82,9 +82,12 @@ export async function POST(
   // --- Best-effort sandbox teardown ---
   if (session.host_instance_id) {
     const sandbox = getSandbox()
-    sandbox.destroySession(session.host_instance_id as string).catch((err) => {
+    const teardown = sandbox.destroySession(session.host_instance_id as string).catch((err) => {
       console.error('[cc/finalize] destroySession failed (best-effort):', err)
     })
+    // Begin cleanup alongside grading, and retain it after early responses.
+    // The orphan reaper remains the backstop for failures or platform timeouts.
+    after(() => teardown)
   }
 
   // --- Record Claude spend BEFORE grading ---

@@ -1,8 +1,8 @@
 // GET /api/cron/cc-reap
 //
 // Idle reaper for Claude Code Analytics sandboxes. Each active session pins one
-// Cloud Run instance (1 vCPU, min=max=1) until its 30-min TTL — so an abandoned
-// or idle session holds an instance the whole time, which is the real cap on
+// Cloud Run instance (1 vCPU, min=max=1) until revision deletion. The request
+// timeout alone does not release pinned compute, which is the real cap on
 // concurrent users. This sweep frees the INSTANCE of any `active` session whose
 // last_activity_at is stale, WITHOUT losing work: the workspace autosaves every
 // 30s, so the session is set to `idle` (resumable), not `terminated` (finalized).
@@ -20,6 +20,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
+import { canStopGatewaySql, claimExpiredProvisioning, provisioningLeaseCutoff } from '@/lib/sandbox/provisioning-lease'
 import { recordSessionSpend } from '@/lib/sandbox/record-spend'
 import { runSpendSnapshot } from '@/lib/sandbox/spend-snapshot'
 import { stopSqlInstance, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
@@ -47,7 +48,8 @@ export async function GET(request: NextRequest) {
 
   // Active sessions whose last activity is older than the idle cutoff. Also
   // catch any past their TTL that the lazy /state flip never ran for.
-  const nowIso = new Date().toISOString()
+  const now = new Date()
+  const nowIso = now.toISOString()
   const { data: stale, error } = await admin
     .from('claude_code_sessions')
     .select('id, user_id, host_instance_id, last_activity_at, expires_at')
@@ -60,7 +62,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  const sessions = stale ?? []
+  let expiredStarts: Awaited<ReturnType<typeof claimExpiredProvisioning>>
+  try {
+    // CAS before teardown: a readiness poll that already activated the session
+    // wins and is excluded; a claim winner cannot subsequently be activated.
+    expiredStarts = await claimExpiredProvisioning(admin, now)
+  } catch (err) {
+    console.error('[cc-reap] stale provisioning claim failed:', err)
+    return NextResponse.json({ error: 'Could not reclaim stale provisioning' }, { status: 500 })
+  }
+  const sessions = [...(stale ?? []), ...expiredStarts]
   const sandbox = getSandbox()
   let reaped = 0
   const failures: string[] = []
@@ -90,6 +101,7 @@ export async function GET(request: NextRequest) {
         .from('claude_code_sessions')
         .update({ status: 'idle', ended_at: nowIso })
         .eq('id', s.id as string)
+        .eq('status', 'active') // failed provisioning stays failed; never overwrite a concurrent transition
       reaped++
     } catch (err) {
       failures.push(`${s.id}: ${String(err)}`)
@@ -191,18 +203,20 @@ export async function GET(request: NextRequest) {
   let activeCount: number | null = null
   let freshProvisioning: number | null = null
   try {
-    const provisioningCutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    const provisioningCutoff = provisioningLeaseCutoff(now)
     const activeRes = await admin
       .from('claude_code_sessions')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'active')
-    activeCount = activeRes.count ?? 0
+    if (activeRes.error) throw new Error(activeRes.error.message)
+    activeCount = activeRes.count
     const provisioningRes = await admin
       .from('claude_code_sessions')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'provisioning')
       .gte('created_at', provisioningCutoff)
-    freshProvisioning = provisioningRes.count ?? 0
+    if (provisioningRes.error) throw new Error(provisioningRes.error.message)
+    freshProvisioning = provisioningRes.count
   } catch (err) {
     console.error('[cc-reap] liveness count failed (best-effort):', err)
   }
@@ -239,12 +253,9 @@ export async function GET(request: NextRequest) {
   // idempotent (stopSqlInstance no-ops if already stopped). A session starting
   // concurrently re-wakes it via session-start; a brief race (stop just as one
   // starts) is self-correcting on the next start.
-  // Stop when NObody is provably live. A null count means the read failed; treat
-  // that as "not known live" and still stop — failing toward stopped is the
-  // cost-safe default for an idle reaper (matches the prior behavior, which read
-  // a failed count as 0). stopSqlInstance is idempotent and no-ops if already
-  // stopped, so a spurious stop during a race self-corrects on the next start.
-  const noneLive = (activeCount ?? 0) === 0 && (freshProvisioning ?? 0) === 0
+  // A failed or incomplete count is not proof of idleness. Never interrupt a
+  // working analytics session because the database could not answer this read.
+  const noneLive = canStopGatewaySql(activeCount, freshProvisioning)
   let sqlStopped = false
   if (isSqlAutostartConfigured() && noneLive) {
     try {

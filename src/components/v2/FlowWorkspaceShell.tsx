@@ -26,6 +26,7 @@ export function FlowWorkspaceShell({ challengeId, challengeSlug, initialAttemptI
   return (
     <div className="relative h-full">
       <FlowWorkspace
+        key={`${challengeId}:${initialAttemptId ?? 'practice'}`}
         mode="api"
         challengeId={challengeId}
         challengeSlug={challengeSlug}

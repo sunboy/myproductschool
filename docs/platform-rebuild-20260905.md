@@ -60,3 +60,11 @@ Home /dashboard; Practice /challenges (interviews and analytics accessible insid
 - Moved interview browser spec into the configured e2e directory; signed-out execution explicitly skips protected assertions.
 - Validation: 477 Node tests and 120 Vitest tests passed (597 total); TypeScript and targeted ESLint clean. These are unit/mocked integration checks, not full authenticated browser coverage.
 - Remaining launch gates: authenticated responsive journey checks, checkout/webhooks/portal, analytics live canary and measured infrastructure cost reduction. No production replacement or resource deletion in this batch.
+
+## Lifecycle and failure-state follow-up
+- Hosted cd266f9a preview production build passed. Browser verified public catalog filter6-to1, selected analytics detail and correct workspace returnTo at sign-in. Authentication itself remains pending.
+- History API now returns503 for database failures and validates pagination. Historical deep links require an explicit practice action before starting/mounting a new workspace, including missing-record and failure cases. Added start-request and workspace-identity guards.
+- Analytics reaper atomically claims provisioning rows older than five minutes before teardown. Activation uses the same state predicate, so cleanup losers cannot advertise an active connection. Gateway SQL shutdown requires confirmed zero active and fresh-provisioning counts; unknown liveness preserves service.
+- Finalization starts teardown alongside grading and registers the promise with Next.js after, retaining it through early responses. Cron remains the timeout/failure backstop.
+- Combined validation: 484 Node tests +131 Vitest tests passed (615 total), TypeScript clean. Existing unrelated FlowWorkspace lint errors remain; changed lifecycle/API modules pass targeted lint.
+- Remaining operational risks: bounded reaper wall-clock/network waits and session-key revocation need a further pass before live analytics canary. Current changes do not remove Cloud SQL or claim reduced invoices.
