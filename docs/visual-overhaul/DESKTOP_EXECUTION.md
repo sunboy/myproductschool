@@ -6,6 +6,14 @@ Status: implementation and launch verification in progress. Production promotion
 
 ## Plan interpretation
 
+### Capture provenance and interview completion follow-up
+
+The checked-in smoke script adds an atomic completion marker for its loopback stub to avoid a test-only metadata-read race. Its final in-image rerun also passed, in Cloud Build `b1d918a2-60e5-42c0-b484-ff2a4a3ba6fe`.
+
+Commits `b7931542` and `69fc7099` replace upload-time freshness with immutable capture identity and keep failed interview completion retryable. The combined candidate passes 498 Node tests, 229 Vitest tests, four Progress tests, and the production build. The interview server now returns a retryable error before completion rewards when debrief persistence fails; automatic and manual end paths require a successful response before navigating. Failed resume exposes Retry and Back controls.
+
+Sandbox image build `ad2765ea-76e2-4573-9e0d-976ded932273` succeeded with digest `sha256:3e03c5c6933adbba0bb3affc0485f8287748f2eec270bb9face37ebce7e82004`. Build `37aad791-5661-4f5a-b92d-69c0656fca85` ran the real image entrypoint with external networking disabled and passed archive/header/retry smoke checks. This proves the container emits capture-start metadata and preserves retry identity; it does not replace the hosted grading canary. The immutable image is selected only by this feature branch's preview `CLOUD_RUN_IMAGE`. The sterile base selector is preserved. A fresh database check found zero active/provisioning sessions before this selection.
+
 The pasted Codex web handoff identifies the core rebuild as complete and asks for focused recovery and deployed verification. `LOCKED_PLAN.md` supersedes the earlier rebuild sequence: Home, Practice, Library, and Progress are the primary destinations; Hatch is contextual; Claude Code belongs to analytics. Preserve current authentication, saved attempts, feedback, learning progress, and payment contracts. The owner additionally requested integrating Claude's landing and login presentation from `feat/full-product-redesign`.
 
 The source branch exists locally at `c60fc650`; its presentation is absent from the current rebuild. Integrate the presentation while retaining the rebuild's newer safe redirects, verification continuation, and authentication failure handling. Do not replace the completed application with the source branch wholesale.
