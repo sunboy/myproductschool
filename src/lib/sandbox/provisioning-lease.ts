@@ -4,6 +4,18 @@ import type { createAdminClient } from '@/lib/supabase/admin'
 // five minutes to become active before abandoned infrastructure is reclaimed.
 export const PROVISIONING_LEASE_MS = 5 * 60 * 1000
 
+/** A retry replaces the old session row, including its expired lease clock. */
+export function freshProvisioningState(sessionId: string, now = new Date()) {
+  return {
+    id: sessionId,
+    status: 'provisioning' as const,
+    created_at: now.toISOString(),
+    host_instance_id: null,
+    wss_url: null,
+    ended_at: null,
+  }
+}
+
 export function provisioningLeaseCutoff(now: Date): string {
   return new Date(now.getTime() - PROVISIONING_LEASE_MS).toISOString()
 }

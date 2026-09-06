@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { apiError } from '@/lib/api/error'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createStripeClient } from '@/lib/stripe/config'
 import {
@@ -25,6 +26,13 @@ import { subscriptionEntitlesPlan, type SubscriptionEntitlementRow } from '@/lib
 import { isAnalyticsPlanId } from '@/lib/billing/plans'
 import { captureServerImmediate } from '@/lib/posthog/server'
 import { EVENT_UPGRADED } from '@/lib/posthog/events'
+import {
+  claimStripeEvent,
+  completeStripeEvent,
+  recordStripePaymentFailure,
+  releaseStripeEvent,
+  requireStripeDbResult,
+} from '@/lib/stripe/webhook-processing'
 
 function subscriptionPlanForStatus(status: Stripe.Subscription.Status): 'free' | 'pro' {
   return status === 'active' || status === 'trialing' || status === 'past_due' ? 'pro' : 'free'
@@ -56,10 +64,19 @@ async function userHasOtherProEntitlingSubscription(
       .eq('user_id', userId),
   ])
 
-  const subscriptions = (subscriptionsResult.data ?? []) as Array<
+  const profileData = requireStripeDbResult(
+    'load profile entitlement state',
+    profileResult
+  )
+  const subscriptionData = requireStripeDbResult(
+    'load sibling subscription entitlement state',
+    subscriptionsResult
+  )
+
+  const subscriptions = (subscriptionData ?? []) as Array<
     SubscriptionEntitlementRow & { stripe_subscription_id?: string | null }
   >
-  const pastDueSince = (profileResult.data as { past_due_since?: string | null } | null)?.past_due_since
+  const pastDueSince = (profileData as { past_due_since?: string | null } | null)?.past_due_since
 
   return subscriptions
     .filter((subscription) => subscription.stripe_subscription_id !== excludedSubscriptionId)
@@ -82,20 +99,26 @@ async function findUserIdForStripeObject(
   if (input.metadata?.user_id) return input.metadata.user_id
 
   if (input.subscriptionId) {
-    const { data } = await supabase
-      .from('subscriptions')
-      .select('user_id')
-      .eq('stripe_subscription_id', input.subscriptionId)
-      .maybeSingle()
+    const data = requireStripeDbResult(
+      'find subscription owner by Stripe subscription',
+      await supabase
+        .from('subscriptions')
+        .select('user_id')
+        .eq('stripe_subscription_id', input.subscriptionId)
+        .maybeSingle()
+    )
     if (data?.user_id) return data.user_id as string
   }
 
   if (input.customerId) {
-    const { data } = await supabase
-      .from('subscriptions')
-      .select('user_id')
-      .eq('stripe_customer_id', input.customerId)
-      .maybeSingle()
+    const data = requireStripeDbResult(
+      'find subscription owner by Stripe customer',
+      await supabase
+        .from('subscriptions')
+        .select('user_id')
+        .eq('stripe_customer_id', input.customerId)
+        .maybeSingle()
+    )
     if (data?.user_id) return data.user_id as string
   }
 
@@ -108,6 +131,12 @@ function unixToIso(value?: number | null) {
 
 function subscriptionFirstItem(subscription: Stripe.Subscription) {
   return subscription.items.data[0]
+}
+
+function subscriptionCustomerId(subscription: Stripe.Subscription) {
+  return typeof subscription.customer === 'string'
+    ? subscription.customer
+    : subscription.customer.id
 }
 
 function invoiceCustomerId(invoice: Stripe.Invoice) {
@@ -205,26 +234,32 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient()
 
-  // Idempotency: insert event.id immediately. Unique violation = duplicate
-  // delivery (Stripe retry) → short-circuit so we don't double-write incremental
-  // counters (payment_failures, affiliate commission, etc).
-  const { error: dupeError } = await supabase.from('stripe_events').insert({
-    id: event.id,
-    type: event.type,
-    payload: event as unknown as Record<string, unknown>,
-  })
-  if (dupeError) {
-    if ((dupeError as { code?: string }).code === '23505') {
-      return NextResponse.json({ received: true, duplicate: true })
-    }
-    // Other errors (e.g. table missing, transient network) — log but proceed
-    // so legitimate first deliveries aren't blocked on infra hiccups.
-    console.error('[stripe.webhook] stripe_events insert failed:', dupeError)
+  let claim
+  try {
+    claim = await claimStripeEvent(supabase, {
+      id: event.id,
+      type: event.type,
+      payload: event as unknown as Record<string, unknown>,
+    })
+  } catch (error) {
+    console.error('[stripe.webhook] event claim failed:', error)
+    return apiError(503, 'stripe_event_claim_failed', 'Webhook processing is temporarily unavailable')
   }
 
+  if (claim.status === 'processed') {
+    return NextResponse.json({ received: true, duplicate: true })
+  }
+  if (claim.status === 'in_progress') {
+    // Do not acknowledge an in-flight duplicate: the active worker may still
+    // fail. A retryable response preserves delivery until one worker finishes.
+    return apiError(409, 'stripe_event_in_progress', 'Webhook event is already processing')
+  }
+
+  const processingToken = claim.token
   const eventType = event.type as string
 
-  switch (eventType) {
+  try {
+    switch (eventType) {
 
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
@@ -242,16 +277,22 @@ export async function POST(req: NextRequest) {
       }
       if (analyticsPlan) profileUpdates.cc_analytics_access = true
 
-      await supabase.from('profiles').update(profileUpdates).eq('id', userId)
+      requireStripeDbResult(
+        'grant checkout profile entitlement',
+        await supabase.from('profiles').update(profileUpdates).eq('id', userId)
+      )
 
-      await supabase.from('subscriptions').upsert({
-        user_id: userId,
-        stripe_customer_id: checkoutCustomerId(session),
-        stripe_subscription_id: checkoutSubscriptionId(session),
-        plan: analyticsPlan ?? 'pro',
-        status: 'active',
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+      requireStripeDbResult(
+        'store checkout subscription entitlement',
+        await supabase.from('subscriptions').upsert({
+          user_id: userId,
+          stripe_customer_id: checkoutCustomerId(session),
+          stripe_subscription_id: checkoutSubscriptionId(session),
+          plan: analyticsPlan ?? 'pro',
+          status: 'active',
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+      )
 
       await upsertAffiliateReferralFromCheckoutSession(supabase, session)
 
@@ -286,18 +327,24 @@ export async function POST(req: NextRequest) {
     // ── Subscription lifecycle (handles renewal, cancellation, etc.) ──────────
     case 'customer.subscription.created':
     case 'customer.subscription.updated': {
-      const subscription = event.data.object as Stripe.Subscription
+      const deliveredSubscription = event.data.object as Stripe.Subscription
+      // Stripe does not guarantee event ordering. Resolve the resource's current
+      // state before changing access so a delayed snapshot cannot win.
+      const subscription = await stripe.subscriptions.retrieve(deliveredSubscription.id)
       // user_id comes from metadata (set by custom checkout) OR we look it up
       // from the subscriptions table by stripe_subscription_id / stripe_customer_id
-      let userId = subscription.metadata?.user_id
+      let userId = subscription.metadata?.user_id ?? deliveredSubscription.metadata?.user_id
 
       if (!userId) {
         // Buy Button path: look up via customer ID
-        const { data } = await supabase
-          .from('subscriptions')
-          .select('user_id')
-          .eq('stripe_customer_id', subscription.customer as string)
-          .single()
+        const data = requireStripeDbResult(
+          'find subscription owner for lifecycle update',
+          await supabase
+            .from('subscriptions')
+            .select('user_id')
+            .eq('stripe_customer_id', subscriptionCustomerId(subscription))
+            .single()
+        )
         userId = data?.user_id
       }
 
@@ -315,22 +362,25 @@ export async function POST(req: NextRequest) {
         : false
 
       if (!(analyticsRevoked && hasOtherProEntitlingSubscription)) {
-        await supabase.from('subscriptions').upsert({
-          user_id: userId,
-          stripe_customer_id: subscription.customer as string,
-          stripe_subscription_id: subscription.id,
-          stripe_price_id: priceId,
-          billing_interval: interval,
-          plan: analyticsPlan ?? plan,
-          // subscriptions.status does not accept 'unpaid' / 'incomplete_expired'.
-          // Store analytics revocations as canceled so entitlement helpers do not grant grace.
-          status: analyticsRevoked ? 'canceled' : subscription.status,
-          current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-          cancel_at_period_end: subscription.cancel_at_period_end ?? false,
-          cancel_at: unixToIso(subscription.cancel_at),
-          canceled_at: unixToIso(subscription.canceled_at),
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' })
+        requireStripeDbResult(
+          'store canonical subscription lifecycle state',
+          await supabase.from('subscriptions').upsert({
+            user_id: userId,
+            stripe_customer_id: subscriptionCustomerId(subscription),
+            stripe_subscription_id: subscription.id,
+            stripe_price_id: priceId,
+            billing_interval: interval,
+            plan: analyticsPlan ?? plan,
+            // subscriptions.status does not accept 'unpaid' / 'incomplete_expired'.
+            // Store analytics revocations as canceled so entitlement helpers do not grant grace.
+            status: analyticsRevoked ? 'canceled' : subscription.status,
+            current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+            cancel_at_period_end: subscription.cancel_at_period_end ?? false,
+            cancel_at: unixToIso(subscription.cancel_at),
+            canceled_at: unixToIso(subscription.canceled_at),
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+        )
       }
 
       // Sync profile entitlement flags so dashboards / dunning / entitlements
@@ -364,28 +414,36 @@ export async function POST(req: NextRequest) {
         // to unpaid/canceled (handled by the plan === 'free' branch above).
         profileUpdates.subscription_status = subscription.status
       }
-      await supabase.from('profiles').update(profileUpdates).eq('id', userId)
+      requireStripeDbResult(
+        'store canonical profile subscription state',
+        await supabase.from('profiles').update(profileUpdates).eq('id', userId)
+      )
 
       if (event.type === 'customer.subscription.updated') {
         const previous = event.data.previous_attributes as Partial<Stripe.Subscription> | undefined
         const previousPrice = previous?.items?.data?.[0]?.price?.id
         const currentPrice = priceId
+        const deliveredPrice = subscriptionFirstItem(deliveredSubscription)?.price?.id ?? null
+        const deliveredSnapshotIsCurrent =
+          deliveredSubscription.status === subscription.status &&
+          deliveredSubscription.cancel_at_period_end === subscription.cancel_at_period_end &&
+          deliveredPrice === currentPrice
 
-        if (previous?.cancel_at_period_end === false && subscription.cancel_at_period_end) {
+        if (deliveredSnapshotIsCurrent && previous?.cancel_at_period_end === false && subscription.cancel_at_period_end) {
           await sendCancellationScheduledEmail(supabase, {
             dedupeKey: `${event.id}:cancellation_scheduled`,
             userId,
             planLabel: planLabelFromInterval(interval),
             periodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
           })
-        } else if (previous?.cancel_at_period_end === true && !subscription.cancel_at_period_end) {
+        } else if (deliveredSnapshotIsCurrent && previous?.cancel_at_period_end === true && !subscription.cancel_at_period_end) {
           await sendSubscriptionReactivatedEmail(supabase, {
             dedupeKey: `${event.id}:subscription_reactivated`,
             userId,
             planLabel: planLabelFromInterval(interval),
             periodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
           })
-        } else if (previousPrice && currentPrice && previousPrice !== currentPrice) {
+        } else if (deliveredSnapshotIsCurrent && previousPrice && currentPrice && previousPrice !== currentPrice) {
           await sendPlanChangedEmail(supabase, {
             dedupeKey: `${event.id}:plan_changed`,
             userId,
@@ -398,25 +456,73 @@ export async function POST(req: NextRequest) {
     }
 
     case 'customer.subscription.deleted': {
-      const subscription = event.data.object as Stripe.Subscription
-      let userId = subscription.metadata?.user_id
+      const deliveredSubscription = event.data.object as Stripe.Subscription
+      const subscription = await stripe.subscriptions.retrieve(deliveredSubscription.id)
+      let userId = subscription.metadata?.user_id ?? deliveredSubscription.metadata?.user_id
 
       if (!userId) {
-        const { data } = await supabase
-          .from('subscriptions')
-          .select('user_id')
-          .eq('stripe_subscription_id', subscription.id)
-          .single()
+        const data = requireStripeDbResult(
+          'find subscription owner for deletion',
+          await supabase
+            .from('subscriptions')
+            .select('user_id')
+            .eq('stripe_subscription_id', subscription.id)
+            .single()
+        )
         userId = data?.user_id
       }
 
       if (!userId) break
 
-      const { data: existingSubscription } = await supabase
-        .from('subscriptions')
-        .select('plan')
-        .eq('stripe_subscription_id', subscription.id)
-        .maybeSingle()
+      const canonicalPlan = subscriptionPlanForStatus(subscription.status)
+      if (canonicalPlan === 'pro') {
+        const item = subscriptionFirstItem(subscription)
+        const analyticsPlan = metadataAnalyticsPlan(subscription.metadata)
+        requireStripeDbResult(
+          'preserve canonical subscription after stale deletion',
+          await supabase.from('subscriptions').upsert({
+            user_id: userId,
+            stripe_customer_id: subscriptionCustomerId(subscription),
+            stripe_subscription_id: subscription.id,
+            stripe_price_id: item?.price?.id ?? null,
+            billing_interval: item?.plan?.interval ?? null,
+            plan: analyticsPlan ?? 'pro',
+            status: subscription.status,
+            current_period_end: item?.current_period_end
+              ? new Date(item.current_period_end * 1000).toISOString()
+              : null,
+            cancel_at_period_end: subscription.cancel_at_period_end ?? false,
+            cancel_at: unixToIso(subscription.cancel_at),
+            canceled_at: unixToIso(subscription.canceled_at),
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+        )
+        requireStripeDbResult(
+          'preserve canonical profile after stale deletion',
+          await supabase.from('profiles').update({
+            plan: 'pro',
+            ...(analyticsPlan ? { cc_analytics_access: true } : {}),
+            ...(subscription.status === 'active' || subscription.status === 'trialing'
+              ? {
+                  pro_access: true,
+                  subscription_status: 'active',
+                  payment_failures: 0,
+                  past_due_since: null,
+                }
+              : { subscription_status: subscription.status }),
+          }).eq('id', userId)
+        )
+        break
+      }
+
+      const existingSubscription = requireStripeDbResult(
+        'load deleted subscription entitlement',
+        await supabase
+          .from('subscriptions')
+          .select('plan')
+          .eq('stripe_subscription_id', subscription.id)
+          .maybeSingle()
+      )
       const existingPlan = (existingSubscription as { plan?: string | null } | null)?.plan
       const analyticsPlan = metadataAnalyticsPlan(subscription.metadata)
         ?? (isAnalyticsPlanId(existingPlan) ? existingPlan : null)
@@ -425,15 +531,18 @@ export async function POST(req: NextRequest) {
         : false
 
       if (!(analyticsPlan && hasOtherProEntitlingSubscription)) {
-        await supabase.from('subscriptions').upsert({
-          user_id: userId,
-          plan: analyticsPlan ?? 'free',
-          status: 'canceled',
-          cancel_at_period_end: false,
-          cancel_at: null,
-          canceled_at: unixToIso(subscription.canceled_at),
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' })
+        requireStripeDbResult(
+          'store canonical deleted subscription state',
+          await supabase.from('subscriptions').upsert({
+            user_id: userId,
+            plan: analyticsPlan ?? 'free',
+            status: 'canceled',
+            cancel_at_period_end: false,
+            cancel_at: null,
+            canceled_at: unixToIso(subscription.canceled_at),
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+        )
       }
 
       const profileUpdates: Record<string, unknown> = analyticsPlan
@@ -445,7 +554,10 @@ export async function POST(req: NextRequest) {
         profileUpdates.subscription_status = 'canceled'
       }
 
-      await supabase.from('profiles').update(profileUpdates).eq('id', userId)
+      requireStripeDbResult(
+        'store canonical profile deletion state',
+        await supabase.from('profiles').update(profileUpdates).eq('id', userId)
+      )
 
       await sendCancellationConfirmedEmail(supabase, {
         dedupeKey: `${event.id}:cancellation_confirmed`,
@@ -501,50 +613,44 @@ export async function POST(req: NextRequest) {
         customerId,
       })
 
-      const { data: subscription } = userId
-        ? await supabase
-          .from('subscriptions')
-          .select('billing_interval')
-          .eq('user_id', userId)
-          .maybeSingle()
-        : { data: null }
+      const subscription = userId
+        ? requireStripeDbResult(
+            'load subscription for payment failure',
+            await supabase
+              .from('subscriptions')
+              .select('billing_interval')
+              .eq('user_id', userId)
+              .maybeSingle()
+          )
+        : null
 
       if (userId) {
-        // Track failure count and grace period on profiles
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, payment_failures, subscription_status')
-          .eq('id', userId)
-          .single()
+        requireStripeDbResult(
+          'store past-due subscription state',
+          await supabase.from('subscriptions').upsert({
+            user_id: userId,
+            stripe_customer_id: customerId,
+            stripe_subscription_id: subscriptionId,
+            plan: 'pro',
+            status: 'past_due',
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+        )
 
-        if (profile) {
-          const failures = (profile.payment_failures || 0) + 1
-          const updates: Record<string, unknown> = {
-            payment_failures: failures,
-            subscription_status: 'past_due',
-          }
-          // First failure: record grace period start. Suspension is NOT driven by
-          // failure count — the user keeps Pro access for the full GRACE_DAYS window
-          // (entitlements.subscriptionEntitlesPro returns false once that lapses, and
-          // computeDunningStatus flips the banner to 'suspended' at the same point).
-          // Leaving status at 'past_due' through the window keeps the dunning banner
-          // visible with a live countdown. See docs/notes/stripe-paywall-audit.md.
-          if (failures === 1) {
-            updates.past_due_since = new Date().toISOString()
-          }
-          await supabase.from('profiles').update(updates).eq('id', userId)
-        }
+        requireStripeDbResult(
+          'preserve Pro plan during payment grace',
+          await supabase.from('profiles').update({ plan: 'pro' }).eq('id', userId)
+        )
 
-        await supabase.from('subscriptions').upsert({
-          user_id: userId,
-          stripe_customer_id: customerId,
-          stripe_subscription_id: subscriptionId,
-          plan: 'pro',
-          status: 'past_due',
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' })
-
-        await supabase.from('profiles').update({ plan: 'pro' }).eq('id', userId)
+        // The RPC records this incremental effect on stripe_events in the same
+        // transaction as the profile update. If later completion fails and Stripe
+        // retries the event, the counter is not incremented twice.
+        await recordStripePaymentFailure(supabase, {
+          eventId: event.id,
+          processingToken,
+          userId,
+          failedAt: new Date(event.created * 1000).toISOString(),
+        })
       }
 
       await sendPaymentFailedEmail(supabase, {
@@ -578,14 +684,20 @@ export async function POST(req: NextRequest) {
           console.warn('[Stripe webhook] charge.refunded: no subscription row found for customer', customerId, 'event', event.id)
           break
         }
-        await supabase
-          .from('profiles')
-          .update({ subscription_status: 'cancelled', pro_access: false, plan: 'free' })
-          .eq('id', userId)
-        await supabase
-          .from('subscriptions')
-          .update({ plan: 'free', status: 'canceled', updated_at: new Date().toISOString() })
-          .eq('user_id', userId)
+        requireStripeDbResult(
+          'revoke profile entitlement after full refund',
+          await supabase
+            .from('profiles')
+            .update({ subscription_status: 'cancelled', pro_access: false, plan: 'free' })
+            .eq('id', userId)
+        )
+        requireStripeDbResult(
+          'revoke subscription entitlement after full refund',
+          await supabase
+            .from('subscriptions')
+            .update({ plan: 'free', status: 'canceled', updated_at: new Date().toISOString() })
+            .eq('user_id', userId)
+        )
       }
       break
     }
@@ -615,17 +727,23 @@ export async function POST(req: NextRequest) {
         console.warn('[Stripe webhook] customer.subscription.paused: no subscription row found for customer', customerId, 'subscription', sub.id, 'event', event.id)
         break
       }
-      await supabase
-        .from('profiles')
-        .update({ subscription_status: 'paused', pro_access: false })
-        .eq('id', userId)
+      requireStripeDbResult(
+        'pause profile entitlement',
+        await supabase
+          .from('profiles')
+          .update({ subscription_status: 'paused', pro_access: false })
+          .eq('id', userId)
+      )
       // NOTE: subscriptions.status CHECK constraint doesn't accept 'paused' — use 'past_due'
       // as the closest valid value. The authoritative paused-state signal lives on
       // profiles.subscription_status / pro_access (updated above).
-      await supabase
-        .from('subscriptions')
-        .update({ status: 'past_due', updated_at: new Date().toISOString() })
-        .eq('user_id', userId)
+      requireStripeDbResult(
+        'pause subscription entitlement',
+        await supabase
+          .from('subscriptions')
+          .update({ status: 'past_due', updated_at: new Date().toISOString() })
+          .eq('user_id', userId)
+      )
       break
     }
 
@@ -641,19 +759,25 @@ export async function POST(req: NextRequest) {
         console.warn('[Stripe webhook] customer.subscription.resumed: no subscription row found for customer', customerId, 'subscription', sub.id, 'event', event.id)
         break
       }
-      await supabase
-        .from('profiles')
-        .update({
-          subscription_status: 'active',
-          pro_access: true,
-          payment_failures: 0,
-          past_due_since: null,
-        })
-        .eq('id', userId)
-      await supabase
-        .from('subscriptions')
-        .update({ status: sub.status, updated_at: new Date().toISOString() })
-        .eq('user_id', userId)
+      requireStripeDbResult(
+        'resume profile entitlement',
+        await supabase
+          .from('profiles')
+          .update({
+            subscription_status: 'active',
+            pro_access: true,
+            payment_failures: 0,
+            past_due_since: null,
+          })
+          .eq('id', userId)
+      )
+      requireStripeDbResult(
+        'resume subscription entitlement',
+        await supabase
+          .from('subscriptions')
+          .update({ status: sub.status, updated_at: new Date().toISOString() })
+          .eq('user_id', userId)
+      )
       break
     }
 
@@ -727,14 +851,20 @@ export async function POST(req: NextRequest) {
         console.warn('[Stripe webhook] charge.dispute.funds_withdrawn: no subscription row found for customer', customerId, 'dispute', dispute.id, 'event', event.id)
         break
       }
-      await supabase
-        .from('profiles')
-        .update({ pro_access: false, subscription_status: 'disputed' })
-        .eq('id', userId)
-      await supabase
-        .from('subscriptions')
-        .update({ status: 'past_due', updated_at: new Date().toISOString() })
-        .eq('user_id', userId)
+      requireStripeDbResult(
+        'revoke profile entitlement after dispute funds withdrawn',
+        await supabase
+          .from('profiles')
+          .update({ pro_access: false, subscription_status: 'disputed' })
+          .eq('id', userId)
+      )
+      requireStripeDbResult(
+        'revoke subscription entitlement after dispute funds withdrawn',
+        await supabase
+          .from('subscriptions')
+          .update({ status: 'past_due', updated_at: new Date().toISOString() })
+          .eq('user_id', userId)
+      )
       console.warn('[Stripe webhook] dispute funds withdrawn — Pro access revoked', {
         userId,
         chargeId,
@@ -755,11 +885,14 @@ export async function POST(req: NextRequest) {
         console.warn('[Stripe webhook] charge.dispute.funds_reinstated: no subscription row found for customer', customerId, 'dispute', dispute.id, 'event', event.id)
         break
       }
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('payment_failures, subscription_status')
-        .eq('id', userId)
-        .single()
+      const profile = requireStripeDbResult(
+        'load profile state before dispute funds reinstatement',
+        await supabase
+          .from('profiles')
+          .select('payment_failures, subscription_status')
+          .eq('id', userId)
+          .single()
+      )
       const failures = profile?.payment_failures ?? 0
       if (failures >= 3) {
         console.info('[Stripe webhook] dispute funds reinstated — skipping restore due to active payment failures', {
@@ -769,14 +902,20 @@ export async function POST(req: NextRequest) {
         })
         break
       }
-      await supabase
-        .from('profiles')
-        .update({ pro_access: true, subscription_status: 'active' })
-        .eq('id', userId)
-      await supabase
-        .from('subscriptions')
-        .update({ status: 'active', updated_at: new Date().toISOString() })
-        .eq('user_id', userId)
+      requireStripeDbResult(
+        'restore profile entitlement after dispute funds reinstated',
+        await supabase
+          .from('profiles')
+          .update({ pro_access: true, subscription_status: 'active' })
+          .eq('id', userId)
+      )
+      requireStripeDbResult(
+        'restore subscription entitlement after dispute funds reinstated',
+        await supabase
+          .from('subscriptions')
+          .update({ status: 'active', updated_at: new Date().toISOString() })
+          .eq('user_id', userId)
+      )
       console.info('[Stripe webhook] dispute funds reinstated — Pro access restored', {
         userId,
         disputeId: dispute.id,
@@ -809,7 +948,23 @@ export async function POST(req: NextRequest) {
       await updateAffiliateAccountFromStripeAccount(supabase, account)
       break
     }
-  }
+    }
 
-  return NextResponse.json({ received: true })
+    await completeStripeEvent(supabase, event.id, processingToken)
+    return NextResponse.json({ received: true })
+  } catch (error) {
+    console.error('[stripe.webhook] event processing failed:', {
+      eventId: event.id,
+      eventType: event.type,
+      error,
+    })
+    try {
+      await releaseStripeEvent(supabase, event.id, processingToken, error)
+    } catch (releaseError) {
+      // The processing lease expires, so a failed release cannot poison the
+      // event permanently. Keep the response retryable either way.
+      console.error('[stripe.webhook] event release failed:', releaseError)
+    }
+    return apiError(500, 'stripe_event_processing_failed', 'Webhook processing failed')
+  }
 }

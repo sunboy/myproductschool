@@ -105,7 +105,7 @@ export function V5Header() {
         <nav className="desktop-nav reference-nav" aria-label="Primary navigation">
           <Link href="/">Home</Link>
           <NavDropdown label="Practice" links={practiceLinks} viewAllHref="/practice" />
-          <NavDropdown label="Library" links={resourceLinks} viewAllHref="/study-plans" />
+          <NavDropdown label="Library" links={resourceLinks} viewAllHref="/explore" />
           <Link href="/progress">Progress</Link>
         </nav>
         <div className="header-actions reference-header-actions">
@@ -123,7 +123,7 @@ export function V5Header() {
           <nav>
             <Link onClick={() => setOpen(false)} href="/">Home</Link>
             <Link onClick={() => setOpen(false)} href="/practice">Practice</Link>
-            <Link onClick={() => setOpen(false)} href="/study-plans">Library</Link>
+            <Link onClick={() => setOpen(false)} href="/explore">Library</Link>
             <Link onClick={() => setOpen(false)} href="/progress">Progress</Link>
           </nav>
           <button className="button" onClick={() => { setOpen(false); openSignup(); }} type="button">

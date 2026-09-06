@@ -48,6 +48,9 @@ export function ConceptProductEvidence({ mode, redirectTo, archetype }: ConceptP
         </Link>
       </header>
       <section className="concept-one-grid">
+        <div className="form-zone">
+          <AuthCard mode={mode} redirectTo={redirectTo} archetype={archetype} turnstileTheme="light" />
+        </div>
         <div className="story">
           <div className="story-kicker">BUILD SKILL. BUILD WHAT&apos;S NEXT.</div>
           <h2>
@@ -80,7 +83,7 @@ export function ConceptProductEvidence({ mode, redirectTo, archetype }: ConceptP
               <strong>SYSTEM DESIGN</strong>
               <i>·</i>
               <strong>URL SHORTENER</strong>
-              <time>Example feedback</time>
+              <span className="example-label">Example feedback</span>
             </header>
             <div className="review-main">
               <div className="score">86</div>
@@ -115,9 +118,6 @@ export function ConceptProductEvidence({ mode, redirectTo, archetype }: ConceptP
             ))}
             <Link href="/pricing">View full feedback →</Link>
           </aside>
-        </div>
-        <div className="form-zone">
-          <AuthCard mode={mode} redirectTo={redirectTo} archetype={archetype} turnstileTheme="light" />
         </div>
       </section>
       <footer className="benefit-strip">

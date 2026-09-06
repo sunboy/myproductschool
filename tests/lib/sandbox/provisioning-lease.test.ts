@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import type { createAdminClient } from '../../../src/lib/supabase/admin'
-import { activateProvisioning, canStopGatewaySql, claimExpiredProvisioning } from '../../../src/lib/sandbox/provisioning-lease'
+import { activateProvisioning, canStopGatewaySql, claimExpiredProvisioning, freshProvisioningState } from '../../../src/lib/sandbox/provisioning-lease'
 
 const now = new Date('2026-09-05T12:00:00Z')
 
@@ -64,4 +64,20 @@ test('gateway shutdown requires two confirmed zero counts; errors and active wor
   for (const [active, provisioning] of [[null, null], [null, 0], [0, null], [1, 0], [0, 1]] as const) {
     assert.equal(canStopGatewaySql(active, provisioning), false)
   }
+})
+
+
+test('retry replaces an expired lease and dead host while preserving the attempt', async () => {
+  const previous = {
+    id: 'old-session', status: 'failed', created_at: '2026-09-05T10:00:00Z',
+    attempt_id: 'same-attempt', host_instance_id: 'deleted-revision',
+    wss_url: 'wss://deleted.example', ended_at: '2026-09-05T11:00:00Z',
+  }
+  const retried = { ...previous, ...freshProvisioningState('new-session', now) }
+  assert.equal(retried.attempt_id, previous.attempt_id)
+  assert.equal(retried.host_instance_id, null)
+  assert.equal(retried.wss_url, null)
+  assert.equal(retried.ended_at, null)
+  assert.deepEqual(await claimExpiredProvisioning(fakeAdmin([retried]), now), [])
+  assert.equal(await activateProvisioning(fakeAdmin([retried]), 'new-session'), true)
 })

@@ -224,7 +224,7 @@ export function FreemiumUsageSummary({ plan, compact = false, className = '' }: 
     <div className={`rounded-[12px] border border-hairline bg-page-field px-3.5 py-2.5 ${className}`}>
       <div className="mb-2 flex items-center gap-2">
         <span className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
-          Free reps left
+          Free practice remaining
         </span>
       </div>
       <div className={compact ? 'flex gap-3' : 'grid grid-cols-1 gap-3 sm:grid-cols-2'}>
