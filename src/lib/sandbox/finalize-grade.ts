@@ -3,6 +3,93 @@ import type { AnalystGradeResult } from '@/lib/coding-grading/analytics-grader'
 
 type Admin = ReturnType<typeof createAdminClient>
 
+export interface FreshSnapshot {
+  transcriptUri: string | null
+  lastSnapshotAt: string | null
+}
+
+export interface FreshUserState {
+  uri: string
+  updatedAt: string
+}
+
+/**
+ * Wait briefly for the container's periodic autosave to include work completed
+ * before the final checkpoint. A timeout leaves the live session untouched so
+ * the client can retry once the next snapshot lands.
+ */
+export async function waitForFreshSnapshot(
+  admin: Admin,
+  sessionId: string,
+  checkpointAt: string,
+  options: { timeoutMs?: number; pollMs?: number } = {},
+): Promise<FreshSnapshot | null> {
+  const checkpointMs = Date.parse(checkpointAt)
+  if (!Number.isFinite(checkpointMs)) return null
+
+  const timeoutMs = options.timeoutMs ?? 8_000
+  const pollMs = options.pollMs ?? 500
+  const deadline = Date.now() + timeoutMs
+
+  do {
+    const { data, error } = await admin
+      .from('claude_code_sessions')
+      .select('transcript_uri, last_snapshot_at')
+      .eq('id', sessionId)
+      .maybeSingle()
+
+    if (error) throw new Error('Latest workspace snapshot could not be checked. Please retry submission.')
+
+    const lastSnapshotAt = (data?.last_snapshot_at as string | null | undefined) ?? null
+    if (lastSnapshotAt && Date.parse(lastSnapshotAt) >= checkpointMs) {
+      return {
+        transcriptUri: (data?.transcript_uri as string | null | undefined) ?? null,
+        lastSnapshotAt,
+      }
+    }
+
+    if (Date.now() >= deadline) return null
+    await new Promise((resolve) => setTimeout(resolve, pollMs))
+  } while (Date.now() <= deadline)
+
+  return null
+}
+
+/** Wait for the stable per-user Claude state object to be overwritten after the final checkpoint. */
+export async function waitForFreshUserState(
+  admin: Admin,
+  uri: string,
+  checkpointAt: string,
+  options: { timeoutMs?: number; pollMs?: number } = {},
+): Promise<FreshUserState | null> {
+  const checkpointMs = Date.parse(checkpointAt)
+  if (!uri || !Number.isFinite(checkpointMs)) return null
+
+  const slash = uri.lastIndexOf('/')
+  const prefix = slash >= 0 ? uri.slice(0, slash) : ''
+  const filename = slash >= 0 ? uri.slice(slash + 1) : uri
+  const timeoutMs = options.timeoutMs ?? 4_000
+  const pollMs = options.pollMs ?? 500
+  const deadline = Date.now() + timeoutMs
+
+  do {
+    const { data, error } = await admin.storage
+      .from('cc-user-state')
+      .list(prefix, { limit: 10, search: filename })
+
+    if (error) throw new Error('Reusable skill snapshot could not be checked. Please retry submission.')
+
+    const object = data?.find((entry) => entry.name === filename)
+    const updatedAt = object?.updated_at ?? null
+    if (updatedAt && Date.parse(updatedAt) >= checkpointMs) return { uri, updatedAt }
+
+    if (Date.now() >= deadline) return null
+    await new Promise((resolve) => setTimeout(resolve, pollMs))
+  } while (Date.now() <= deadline)
+
+  return null
+}
+
 /** Reuse only a complete, server-persisted grading result after a DB failure. */
 export function savedAnalyticsGrade(sessionId: string, artifact: unknown): AnalystGradeResult | null {
   if (!artifact || typeof artifact !== 'object') return null

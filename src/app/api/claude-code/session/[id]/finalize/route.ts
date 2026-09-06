@@ -6,7 +6,7 @@
 // and marks the session terminated.
 
 import { randomUUID } from 'crypto'
-import { pauseForFinalization, persistAnalyticsGrade, savedAnalyticsGrade } from '@/lib/sandbox/finalize-grade'
+import { pauseForFinalization, persistAnalyticsGrade, savedAnalyticsGrade, waitForFreshSnapshot, waitForFreshUserState } from '@/lib/sandbox/finalize-grade'
 import { after, NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -20,6 +20,8 @@ import { DEBUG_RUBRIC_SPEC } from '@/lib/coding-grading/debug-rubric'
 import { labIdForChallengeType } from '@/lib/labs/types'
 import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
 import type { LearnerCompetency, RoleLens } from '@/lib/types'
+import { readAnalyticsProgress } from '@/lib/sandbox/analytics-progress'
+import { inspectWorkspace, listUserSkills } from '@/lib/coding-grading/workspace-inspector'
 
 export const dynamic = 'force-dynamic'
 // Grading invokes an AI model — budget headroom.
@@ -88,6 +90,103 @@ export async function POST(
     // Recover legacy partial finalizations instead of returning an ungraded success.
   }
 
+  const adaptive = (session.final_artifact as {
+    adaptive?: { updated_at?: string; arc?: Array<{ id?: string; kind?: string }> }
+  } | null)?.adaptive
+  const progress = readAnalyticsProgress(session.final_artifact)
+  let transcriptUri = session.transcript_uri as string | null
+  const reportStepIds = new Set(
+    (adaptive?.arc ?? [])
+      .filter((step) => step.kind === 'report')
+      .map((step) => step.id)
+      .filter((id): id is string => Boolean(id)),
+  )
+  const skillStepIds = new Set(
+    (adaptive?.arc ?? [])
+      .filter((step) => step.kind === 'skill')
+      .map((step) => step.id)
+      .filter((id): id is string => Boolean(id)),
+  )
+  const reportWasSubmitted = progress?.findings.some(
+    (finding) => reportStepIds.has(finding.id) && finding.verdict !== 'retry',
+  )
+  const skillWasSubmitted = progress?.findings.some(
+    (finding) => skillStepIds.has(finding.id) && finding.verdict !== 'retry',
+  )
+  const fileEvidenceWasSubmitted = reportWasSubmitted || skillWasSubmitted
+
+  // File signals reach the browser immediately, while the authoritative
+  // workspace tarball uploads every 30 seconds. Do not tear down and grade an
+  // older snapshot. A timeout leaves the live session intact for a safe retry.
+  if (session.status === 'active' && fileEvidenceWasSubmitted && adaptive?.updated_at) {
+    try {
+      const fresh = await waitForFreshSnapshot(admin, sessionId, adaptive.updated_at)
+      if (!fresh?.transcriptUri) {
+        return NextResponse.json(
+          { error: 'Your latest report is still saving. Retry submission in a few seconds.', reason: 'snapshot_pending' },
+          { status: 409 },
+        )
+      }
+      transcriptUri = fresh.transcriptUri
+    } catch (error) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 503 })
+    }
+  }
+
+  // Terminal output is only a fast UI signal. Confirm a submitted report is
+  // present in the same uploaded workspace the grader will inspect.
+  if (reportWasSubmitted) {
+    const evidence = await inspectWorkspace(transcriptUri)
+    const hasReport = evidence.artifacts.some((artifact) => /report[\w./-]*\.md$/i.test(artifact.filename))
+    if (!hasReport) {
+      return NextResponse.json(
+        { error: 'The report checkpoint was saved, but report.md is not in the workspace snapshot yet. Retry submission after it saves.', reason: 'report_missing' },
+        { status: 409 },
+      )
+    }
+  }
+
+  const { data: claudeProfile } = await admin
+    .from('profiles')
+    .select('cc_claude_state_uri')
+    .eq('id', user.id)
+    .maybeSingle()
+  const profileClaudeStateUri = (claudeProfile?.cc_claude_state_uri as string | null | undefined) ?? null
+  // The upload path is stable, so a learner's first skill can be awaited before
+  // the profile pointer write becomes visible.
+  const claudeStateUri = skillWasSubmitted
+    ? profileClaudeStateUri ?? `${user.id}/claude.tar.gz`
+    : profileClaudeStateUri
+  if (session.status === 'active' && skillWasSubmitted && adaptive?.updated_at) {
+    try {
+      const freshState = claudeStateUri
+        ? await waitForFreshUserState(admin, claudeStateUri, adaptive.updated_at)
+        : null
+      if (!freshState) {
+        return NextResponse.json(
+          { error: 'Your reusable skill is still saving. Retry submission in a few seconds.', reason: 'skill_pending' },
+          { status: 409 },
+        )
+      }
+    } catch (error) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 503 })
+    }
+  }
+  const persistedSkills = await listUserSkills(claudeStateUri)
+  const normalizeSkillName = (value: string) => value
+    .replace(/^.*\.claude\/skills\//, '')
+    .replace(/^\/+/, '')
+  const expectedSkillNames = new Set((progress?.skillsWritten ?? []).map(normalizeSkillName))
+  const currentSkillPersisted = expectedSkillNames.size > 0
+    ? persistedSkills.some((skill) => expectedSkillNames.has(normalizeSkillName(skill.filename)))
+    : persistedSkills.length > 0
+  if (skillWasSubmitted && !currentSkillPersisted) {
+    return NextResponse.json(
+      { error: 'Your reusable skill is still saving. Retry submission in a few seconds.', reason: 'skill_missing' },
+      { status: 409 },
+    )
+  }
+
   try {
     await pauseForFinalization(admin, sessionId)
   } catch (error) {
@@ -116,7 +215,7 @@ export async function POST(
   // --- Run the lab grader (analyst_v1 / debug_v1 by lab) ---
   const { data: challenge } = await admin
     .from('challenges')
-    .select('title, prompt_text, challenge_type')
+    .select('title, prompt_text, scenario_context, scenario_trigger, scenario_question, challenge_type')
     .eq('id', session.challenge_id as string)
     .maybeSingle()
   const labId = labIdForChallengeType(challenge?.challenge_type as string | undefined)
@@ -129,9 +228,16 @@ export async function POST(
     gradeResult ??= await gradeAnalystSession({
       rubric: rubricSpec,
       sessionId,
-      transcriptUri: session.transcript_uri as string | null,
+      transcriptUri,
       challengeTitle: challenge?.title ?? 'Analytics challenge',
-      challengePrompt: challenge?.prompt_text ?? '',
+      challengePrompt: [
+        challenge?.scenario_context,
+        challenge?.scenario_trigger,
+        challenge?.scenario_question,
+        challenge?.prompt_text,
+      ].filter(Boolean).join('\n\n'),
+      markedFindings: progress?.findings,
+      persistedSkills,
       budget: { userId: user.id, userPlan, route: 'claude_code_analytics_grade' },
     })
   } catch (err) {
@@ -225,7 +331,7 @@ export async function POST(
           type: 'claude_code_session',
           session_id: sessionId,
           attempt_id: session.attempt_id,
-          transcript_uri: session.transcript_uri,
+          transcript_uri: transcriptUri,
         }),
       })
     } catch {

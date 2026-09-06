@@ -206,7 +206,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
   // share page reuses the existing /workspace/challenges/[id]/share/[shareId]
   // route). Null until then, so the mirror shows Download but not Share.
   const [shareUrl, setShareUrl] = useState<string | null>(null)
-  const [usage, setUsage] = useState<{ spent_usd: number; budget_usd: number; input_tokens: number; output_tokens: number } | null>(null)
+  const [usage, setUsage] = useState<{ spent_usd: number | null; budget_usd: number; input_tokens: number | null; output_tokens: number | null } | null>(null)
   // The floating Hatch dock: closed by default, opens to a bubble the user can
   // dock to the right. Hatch sees the live session (terminal tail, active step,
   // MCP + skills state) on every turn via the analytics context props below.
@@ -329,9 +329,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           }
           if (data.guidance) setGuidance(data.guidance)
           const restored = readAnalyticsProgress({ adaptive: { progress: data.progress } })
-          if (restored) {
-            setMarkedFindings(restored.findings)
-            const index = data.sub_problems?.findIndex(step => step.id === restored.activeStepId) ?? -1
+      if (restored) {
+        setMarkedFindings(restored.findings)
+        setReportPath(restored.reportPath ?? null)
+        setSkillsWritten(restored.skillsWritten ?? [])
+        const index = data.sub_problems?.findIndex(step => step.id === restored.activeStepId) ?? -1
             if (index >= 0) setActiveSubProblemIdx(index)
           }
           sessionStartRef.current = Date.now()
@@ -428,9 +430,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
       }
       if (data.guidance) setGuidance(data.guidance)
           const restored = readAnalyticsProgress({ adaptive: { progress: data.progress } })
-          if (restored) {
-            setMarkedFindings(restored.findings)
-            const index = data.sub_problems?.findIndex(step => step.id === restored.activeStepId) ?? -1
+            if (restored) {
+              setMarkedFindings(restored.findings)
+              setReportPath(restored.reportPath ?? null)
+              setSkillsWritten(restored.skillsWritten ?? [])
+              const index = data.sub_problems?.findIndex(step => step.id === restored.activeStepId) ?? -1
             if (index >= 0) setActiveSubProblemIdx(index)
           }
       sessionStartRef.current = Date.now()
@@ -903,7 +907,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
         if (sessionId && !USE_DEV_STUB) {
           const saved = await fetch(`/api/claude-code/session/${sessionId}/adaptive`, {
             method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ guidance: nextGuidance, arc: nextArc, injected: log.injected, adjustments: log.adjustments, progress: { findings: allFindings, activeStepId: nextArc[Math.min(nextIdx, nextArc.length - 1)]?.id ?? null } }),
+          body: JSON.stringify({ guidance: nextGuidance, arc: nextArc, injected: log.injected, adjustments: log.adjustments, progress: { findings: allFindings, activeStepId: nextArc[Math.min(nextIdx, nextArc.length - 1)]?.id ?? null, reportPath, skillsWritten } }),
           }).catch(() => null)
           if (!saved?.ok) {
             setProgressSaveError('Your finding is still here, but could not be saved. Retry saving before continuing.')
@@ -1073,7 +1077,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
           <div className="analytics-studio-title"><span>AI analytics</span><h1>{challenge.title || 'Your analysis'}</h1></div>
           <button type="button" className="analytics-help" onClick={() => setShowBrief(true)}>How it works</button>
           <button type="button" className="analytics-help" onClick={() => { setBriefPanel('findings'); setMobilePanel('brief') }}>{artifactDone}/{artifactTotal} complete</button>
-          <span className="analytics-session-state" role="status">{sessionError ? 'Connection unavailable' : wssUrl && mcpConnected && replRunning ? 'Ready to analyze' : wssUrl ? 'Connecting…' : resuming ? 'Checking session…' : started ? 'Preparing session…' : 'Ready when you are'}</span>
+          <span className="analytics-session-state" role="status">{sessionError ? 'Connection unavailable' : wssUrl && mcpConnected && replRunning ? 'Ready to analyze' : wssUrl ? 'Set up your analyst' : resuming ? 'Checking session…' : started ? 'Preparing session…' : 'Ready when you are'}</span>
         </header>
 
         {/* Body split. position: relative so the floating Hatch bubble anchors
@@ -1519,11 +1523,11 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                   </span>
                 )}
                 {usage && usage.budget_usd > 0 && (() => {
-                  const ratio = Math.min(usage.spent_usd / usage.budget_usd, 1)
+                  const ratio = Math.min((usage.spent_usd ?? 0) / usage.budget_usd, 1)
                   const fill = ratio >= 0.85 ? 'var(--color-error)' : ratio >= 0.6 ? 'var(--color-tertiary)' : 'var(--color-primary)'
                   return (
                     <span
-                      title={`AI usage: $${usage.spent_usd.toFixed(2)} of $${usage.budget_usd.toFixed(2)} · ${usage.input_tokens.toLocaleString()} in / ${usage.output_tokens.toLocaleString()} out tokens`}
+                      title={usage.spent_usd === null ? 'AI usage is temporarily unavailable. Your session budget is still enforced.' : `AI usage: $${usage.spent_usd.toFixed(2)} of $${usage.budget_usd.toFixed(2)}`}
                       style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                     >
                       <span className="material-symbols-outlined" style={{ fontSize: 14, color: fill, fontVariationSettings: "'FILL' 1" }}>bolt</span>
@@ -1531,7 +1535,7 @@ export function ClaudeCodeAnalyticsMedium({ challenge, attemptId, scenario, exit
                         <span style={{ display: 'block', width: `${Math.round(ratio * 100)}%`, height: '100%', background: fill, transition: 'width 600ms' }} />
                       </span>
                       <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>
-                        ${usage.spent_usd.toFixed(2)}
+                        {usage.spent_usd === null ? 'Usage unavailable' : `$${usage.spent_usd.toFixed(2)}`}
                       </span>
                     </span>
                   )

@@ -72,3 +72,24 @@ Combined tests before the lease fix: 496 Node tests and 206 Vitest tests passed.
 5. Review migration compatibility, gateway scale-to-zero rollout, release order, and rollback before any production promotion. Keep the draft PR unmerged until those decisions.
 
 Final local build for the pending reliability/mobile patch passed. TypeScript is clean; the 13 signed webhook cases passed again after the type correction. Hosted billing gates remain open regardless of this result.
+
+## Analytics terminal canary and mobile journeys (08:16 UTC)
+
+Deployment `dpl_AVUXgv84bEUGZnxhjZnBqAGbHU3j` is READY for commit `6f4da4a1`. Its Home contrast fix was visually checked at actual browser widths 390 and 768; document widths were 384 and 762 with no horizontal overflow.
+
+The dedicated analytics canary `d9204b5c-026a-4c59-a596-4e658bb14110` reached an active terminal. Shell input, guidance insertion, BigQuery MCP registration, Claude Code launch, and a real read-only schema/funnel query succeeded. Guidance → Mark this step → Review finding saved the schema evidence and advanced to `data_layout`. A new browser connection restored the saved finding and active step. The connection milestone resets until terminal signals are detected again; the apparent 3/9 → 2/9 change was not lost checkpoint evidence.
+
+The canary's observed gateway spend was $0.3959818 against a $0.50 key budget. Its 40-cent rounded spend was already recorded idempotently. The session expired at 08:05 UTC, its revision was absent on fresh GCP inspection, and Supabase showed zero active/provisioning sessions. Cloud SQL was then restored to STOPPED/NEVER. Key expiration is provided by the existing TTL; explicit key deletion after expiration was not independently verified after database shutdown. This canary establishes terminal, query, checkpoint, reconnect, spend recording, and expired-compute cleanup; it does not establish the full report/skill/final-grade journey.
+
+Observed defects addressed in the pending patch:
+
+- The usage meter previously read token columns that the container never emits, displaying $0.00 after real requests. It now performs a bounded, exact-alias gateway lookup and shows unavailable state instead of invented zero usage when that lookup fails.
+- Retried provisioning also clears stale failure codes/phases. A live shell awaiting setup is labeled “Set up your analyst.”
+- Finalization now includes saved findings and complete scenario context, verifies uploaded report/current-skill evidence, and waits for post-checkpoint storage timestamps before teardown. Report/skill signals persist in the existing artifact; normal Claude write output and absolute persistent skill paths are supported.
+- Storage timestamps describe upload completion, not archive capture start. Rewriting an existing file during an overlapping upload still needs capture metadata or a content hash for a strict freshness guarantee. This remains a release limitation, not proof of exact final-snapshot synchronization.
+- The checkout seed copy now matches the real `event_name` and `ts` schema. Existing hosted challenge metadata remains stale until a deliberate content update; the broad seeding script was not run.
+- Practice fallback recommendations no longer use “rep” language, and its stacked header geometry uses the same lighter opacity as Home. The new Practice CSS still needs deployed visual verification.
+
+On the 390px browser viewport, Library → Gmail Undo Send, story saving, mobile contents expansion and Sources jump worked without document overflow. Progress's first-challenge empty state and Practice's SQL filter worked. The SQL refund-rate workspace switched Brief/Your work, accepted query input, passed 3/3 visible cases and 5/5 submitted cases (including hidden zero-order sellers). SQL feedback then returned 7.2/10 with correctness, approach and code-quality evidence. These checks used the dedicated canary account. The completed SQL attempt appears in Recent work, but the overview incorrectly reports zero completed challenges; a targeted Progress fix is in progress. Physical devices and full tablet/desktop journey coverage remain open.
+
+The pending patch passes 498 Node tests and 220 Vitest tests across 26 Vitest suites. Targeted lint and TypeScript pass; the production build passes. Hosted test billing remains disabled pending isolated staging cost approval. Full deployed spoken voice remains unverified. PR #20 stays draft and unmerged.

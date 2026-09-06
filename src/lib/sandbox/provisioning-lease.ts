@@ -10,6 +10,8 @@ export function freshProvisioningState(sessionId: string, now = new Date()) {
     id: sessionId,
     status: 'provisioning' as const,
     created_at: now.toISOString(),
+    failure_code: null,
+    provision_phase: null,
     host_instance_id: null,
     wss_url: null,
     ended_at: null,

@@ -46,8 +46,9 @@
 @media(max-width:1000px){.learning-reader .reader-layout{display:block;max-width:68ch}.learning-reader-mobile-contents{display:block;max-width:68ch;margin:20px auto 0;border-block:1px solid #e5e0d6;padding:12px 0;font-size:14px}.learning-reader-mobile-contents summary{cursor:pointer;min-height:30px}.learning-reader-mobile-contents nav{display:grid}.learning-reader-mobile-contents button{text-align:left;min-height:44px;padding:8px 0}.learning-reader-hero{gap:24px;grid-template-columns:minmax(0,1.3fr) minmax(210px,.8fr)}}
 @media(max-width:650px){.learning-reader-hero{grid-template-columns:1fr}.learning-reader-cover{min-height:210px}.learning-reader .reader-article-header h1{font-size:40px}.learning-reader .reader-header-actions{margin-bottom:28px}.learning-reader .reader-dek{font-size:17px}}
 
-/* Stacked Home layouts must keep decorative planes behind readable copy. */
+/* Stacked Home and Practice layouts must keep decorative planes behind readable copy. */
 @media (max-width:1250px){
   .learning-home-stage>.learning-geometry{inset:0;max-height:480px;opacity:.22}
+  .learning-page-heading>.learning-geometry{opacity:.22}
   .learning-welcome>p:last-child{color:#435348}
 }

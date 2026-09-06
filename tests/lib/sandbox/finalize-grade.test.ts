@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { createAdminClient } from '../../../src/lib/supabase/admin'
 import type { AnalystGradeResult } from '../../../src/lib/coding-grading/analytics-grader'
-import { pauseForFinalization, persistAnalyticsGrade, savedAnalyticsGrade } from '../../../src/lib/sandbox/finalize-grade'
+import { pauseForFinalization, persistAnalyticsGrade, savedAnalyticsGrade, waitForFreshSnapshot, waitForFreshUserState } from '../../../src/lib/sandbox/finalize-grade'
 
 const grade = { total_score: 80, grade_label: 'strong', final_artifact: { rubric: 'analyst_v1', dimensions: {}, overall_note: 'Feedback', skills_written: [], workspace_ok: true } } as AnalystGradeResult
 const session = { id: 'session-1', attempt_id: 'attempt-1', final_artifact: { adaptive: { guidance: 'guided' } } }
@@ -27,6 +27,58 @@ function database(failAt?: string) {
 }
 
 describe('durable analytics finalization', () => {
+  it('waits for a snapshot at or after the final checkpoint', async () => {
+    const checkpointAt = '2026-09-06T07:30:00.000Z'
+    const snapshots = [
+      { transcript_uri: 'old.tar.gz', last_snapshot_at: '2026-09-06T07:29:59.000Z' },
+      { transcript_uri: 'fresh.tar.gz', last_snapshot_at: checkpointAt },
+    ]
+    const query = {
+      select() { return this },
+      eq() { return this },
+      async maybeSingle() { return { data: snapshots.shift(), error: null } },
+    }
+    const admin = { from: () => query } as unknown as ReturnType<typeof createAdminClient>
+
+    await expect(waitForFreshSnapshot(admin, 'session-1', checkpointAt, { timeoutMs: 20, pollMs: 0 }))
+      .resolves.toEqual({ transcriptUri: 'fresh.tar.gz', lastSnapshotAt: checkpointAt })
+  })
+
+  it('does not accept a stale snapshot when the bounded wait expires', async () => {
+    const query = {
+      select() { return this },
+      eq() { return this },
+      async maybeSingle() {
+        return { data: { transcript_uri: 'old.tar.gz', last_snapshot_at: '2026-09-06T07:29:59.000Z' }, error: null }
+      },
+    }
+    const admin = { from: () => query } as unknown as ReturnType<typeof createAdminClient>
+
+    await expect(waitForFreshSnapshot(admin, 'session-1', '2026-09-06T07:30:00.000Z', { timeoutMs: 0, pollMs: 0 }))
+      .resolves.toBeNull()
+  })
+
+  it('requires the user-state object to be overwritten after the checkpoint', async () => {
+    const objects = [
+      [{ name: 'claude.tar.gz', updated_at: '2026-09-06T07:29:59.000Z' }],
+      [{ name: 'claude.tar.gz', updated_at: '2026-09-06T07:30:01.000Z' }],
+    ]
+    const list = async () => ({ data: objects.shift(), error: null })
+    const admin = {
+      storage: { from: () => ({ list }) },
+    } as unknown as ReturnType<typeof createAdminClient>
+
+    await expect(waitForFreshUserState(
+      admin,
+      'user-1/claude.tar.gz',
+      '2026-09-06T07:30:00.000Z',
+      { timeoutMs: 20, pollMs: 0 },
+    )).resolves.toEqual({
+      uri: 'user-1/claude.tar.gz',
+      updatedAt: '2026-09-06T07:30:01.000Z',
+    })
+  })
+
   it('pauses before teardown without dropping the saved workspace', async () => {
     const db = database()
     await pauseForFinalization(db.admin, session.id)

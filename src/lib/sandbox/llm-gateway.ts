@@ -167,6 +167,32 @@ export interface KeySpend {
   budgetUsd: number | null
 }
 
+/** Query only this session's alias; never expose gateway credentials to the client. */
+export async function getSessionKeySpend(sessionId: string): Promise<KeySpend | null> {
+  if (!isGatewayConfigured()) return null
+  const alias = `cc-${sessionId}`
+  const query = new URLSearchParams({ key_alias: alias, return_full_object: 'true', size: '100' })
+  try {
+    const res = await fetch(`${process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')}/key/list?${query}`, {
+      headers: { Authorization: `Bearer ${process.env.LLM_GATEWAY_MASTER_KEY!}` },
+      signal: AbortSignal.timeout(2500),
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    const data = await res.json() as { keys?: Array<{ key_alias?: string; spend?: number; max_budget?: number | null }> }
+    // Gateway filtering is a substring match. Require the exact alias before using spend.
+    const key = data.keys?.find(candidate => candidate.key_alias === alias)
+    if (!key || typeof key.spend !== 'number' || !Number.isFinite(key.spend) || key.spend < 0) return null
+    return {
+      spentUsd: key.spend,
+      budgetUsd: typeof key.max_budget === 'number' && Number.isFinite(key.max_budget) && key.max_budget > 0
+        ? key.max_budget : null,
+    }
+  } catch {
+    return null
+  }
+}
+
 /**
  * Read current spend + budget for a session's virtual key. Powers the live usage
  * meter. Returns null if the gateway is unconfigured or the lookup fails (the UI

@@ -9,7 +9,12 @@ vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({ from: () =>
   return query
 } }) }))
 import { PATCH } from '@/app/api/claude-code/session/[id]/adaptive/route'
-const progress = { findings: [{ id: 'step-1', text: 'Conversion fell by 12%.', verdict: 'pass' }], activeStepId: 'step-2' }
+const progress = {
+  findings: [{ id: 'step-1', text: 'Conversion fell by 12%.', verdict: 'pass' }],
+  activeStepId: 'step-2',
+  reportPath: '/workspace/report.md',
+  skillsWritten: ['funnel-analyst/SKILL.md'],
+}
 const body = { guidance: 'guided', arc: [{ id: 'step-1', sequence: 1, title: 'Analyze', objective: 'Find evidence', successCriterion: 'Explain', suggestedPrompts: [], kind: 'investigate' }], injected: [], adjustments: [], progress }
 const save = (value: unknown = body) => PATCH(new NextRequest('https://example.test/api/claude-code/session/s/adaptive', { method: 'PATCH', body: JSON.stringify(value) }), { params: Promise.resolve({ id: 's' }) })
 beforeEach(() => { vi.clearAllMocks(); mocks.user = 'owner'; mocks.session.user_id = 'owner'; mocks.session.status = 'active'; mocks.saved = true })

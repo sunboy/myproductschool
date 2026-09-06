@@ -25,7 +25,7 @@ const MOCK_NEXT = {
   reason: 'Targets your weakest move: Frame',
   targets_move: 'frame' as FlowMove,
   recommendation_type: 'weakest_move',
-  hatch_insight: 'Your list move is at Level 1 - this challenge drills exactly that.',
+  hatch_insight: 'Your List move is at Level 1. This challenge focuses on that skill.',
 }
 
 // Generate a topic-based tip from challenge data (used when user is uncalibrated)
@@ -39,7 +39,7 @@ function topicTip(challenge: { title?: string; move_tags?: string[]; prompt_text
     win: 'how to communicate decisions to stakeholders',
   }
   const movePhrase = move ? movePhrases[move] ?? 'product thinking' : 'product thinking'
-  return `Start with ${title}. It gives you a clean ${discipline} rep on ${movePhrase}.`
+  return `Start with ${title}. It is a focused ${discipline} challenge for practicing ${movePhrase}.`
 }
 
 // Generate a move-targeted tip (used when user is calibrated)
@@ -73,7 +73,7 @@ function deriveHatchInsight(
     win: 'Win',
   }
   const label = moveLabels[weakestFlowMove] ?? weakestFlowMove
-  return `Your ${label} move is at Level ${level}. This is the next useful rep.`
+  return `Your ${label} move is at Level ${level}. This is the next useful challenge.`
 }
 
 export async function GET() {

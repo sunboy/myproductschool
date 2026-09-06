@@ -4,6 +4,8 @@ import { z } from 'zod'
 export const analyticsProgressSchema = z.object({
   findings: z.array(z.object({ id: z.string().min(1).max(200), text: z.string().max(8000), verdict: z.enum(['pass', 'partial', 'retry']) })).max(100),
   activeStepId: z.string().max(200).nullable(),
+  reportPath: z.string().max(500).nullable().optional(),
+  skillsWritten: z.array(z.string().min(1).max(500)).max(20).optional(),
 })
 export type AnalyticsProgress = z.infer<typeof analyticsProgressSchema>
 
