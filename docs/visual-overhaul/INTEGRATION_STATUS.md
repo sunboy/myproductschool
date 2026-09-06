@@ -54,3 +54,13 @@ Test-owned examples used existing authorized browser authentication. Earlier use
 - Analytics exact adaptive branching continuity after refresh still needs the canary; persisted findings and active step alone do not prove the complete session lifecycle.
 - Historical feedback can contain scores from the old fallback/collaboration rubric. This batch prevents new unsupported scores; it does not silently rewrite existing learning history.
 - Infrastructure consolidation and cost savings require live provider verification. No new monthly savings claim is made.
+
+## Continuation checkpoint — September 6, 2026
+
+- Restored the existing branch at `f3ec9f887be022386506f75cd6d1f4810346a270` in a fresh workspace. GitHub reports its Vercel status as successful. The implementation checkpoint above remains authoritative; the earlier full-rebuild plan is not evidence that implemented work must be restarted.
+- Restored preview authentication through secure sign-in. The protected ski-rental workspace destination was retained.
+- Rechecked the published canvas workspace: Frame → Next: List opens List. A fresh desktop screenshot shows the section navigation at the left of the work panel, clear of the Hatch dock. This closes the desktop Next-button placement check, not phone/tablet coverage.
+- Rechecked the interview lobby: the latest existing debrief is displayed as 5.6/10. Google → Product Sense → recommended scenario → Start interview opens the explicit voice/chat chooser. It offers Allow mic and Continue in chat, no mic; the voice-start button remains disabled pending the microphone check. No voice conversation was exercised in this pass.
+- The browser API still offers no viewport resizing. Phone/tablet checks remain open; desktop evidence must not be relabeled as device coverage.
+- No callable GCP administration tool or installed `gcloud` was available in the continuation runtime. Gateway repair/live analytics canary remains blocked on provider access. The prior `stripe_not_configured` finding remains an unresolved billing gate, not a newly repeated test result.
+- No application code, production deployment, cloud configuration, schema, billing settings, or existing answers were changed in this continuation pass.
