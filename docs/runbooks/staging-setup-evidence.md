@@ -45,13 +45,15 @@ Supabase's automatic branch replay applied `001_initial_schema.sql` and stopped 
 
 The repository also contains older numeric migrations that depend on objects created later by timestamped migrations. Those statements were deferred until their dependencies existed and then applied. This includes the response-vector functions and scaffold options, live-interview links and Hatch role constraint, study-plan chapter ID conversion, user-setting preferences, reading-path seed, interview loops and discipline constraints, FLOW score rescaling and credit registry, and community/cohort tables. Security migrations were applied conditionally to the functions that exist. Legacy policy migrations whose pipeline tables do not exist were recorded as repaired; absence of those unused tables is stricter than exposing them without policy.
 
-The resulting migration state is:
+The historical migration state immediately after the initial schema repair was:
 
 - source migrations recorded: `178`
 - latest migration: `20260906130000`
 - `supabase db push --include-all --dry-run`: `Remote database is up to date`
 - public base tables: `117`
 - deferred-object verification: passed
+
+The current source and repaired staging state is `181` recorded migrations through `20260906160000_scope_catalog_admin_policies.sql`. The additional migrations add the missing profile subscription-status mirror, private snapshot buckets, and scoped catalog admin policies. The `178` count above remains the timestamped historical snapshot; it is not the current release count.
 
 The additive Stripe event migration is present with columns `status`, `processing_started_at`, `processing_token`, `processed_at`, `attempt_count`, `last_error`, and `effects`. All four RPCs exist: `claim_stripe_event`, `complete_stripe_event`, `release_stripe_event`, and `record_stripe_payment_failure`.
 

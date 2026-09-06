@@ -88,4 +88,46 @@ The final cancellation exposed a source defect. The subscription row became `pla
 
 The forward fix makes regular Pro deletion write `plan=free`, `pro_access=false`, `subscription_status=canceled`, `payment_failures=0`, and `past_due_since=null`. Before writing either the subscription row or shared profile mirrors, every deletion now checks whether a distinct current subscription still entitles the user. An old deleted subscription cannot overwrite a newer active subscription that owns the user row. An old Analytics deletion clears `cc_analytics_access` when the remaining entitlement is regular Pro, while a distinct current Analytics subscription preserves that paid Analytics access. Both sibling cases preserve shared Pro state. No production backfill, event-row deletion, duplicate replay, or direct profile repair was performed. A clean subscription lifecycle rerun must wait for a READY preview containing the fix and a new explicit GO.
 
-The reviewed deletion repair also protects a distinct newer entitling subscription from an old deletion event. An old regular Pro deletion cannot overwrite the newer subscription row or downgrade its profile. An old Analytics deletion clears only Analytics access when the newer entitlement is regular Pro, and preserves Analytics access when the newer entitlement is also Analytics. The existing same-subscription canonical-state guard remains. The focused suite passes 38 tests and the production build passes; a clean hosted rerun is still pending.
+## Clean genuine lifecycle rerun — pass
+
+Candidate commit `471b7ada1ecad6ec1c45338f81b16e6a3c277ab7` was READY with the branch alias attached and the dedicated TEST endpoint enabled. The first failed-run state remained preserved under its run ID; this rerun used a separate `0600` state file.
+
+| Object | ID | Final evidence |
+| --- | --- | --- |
+| Trial subscription | `sub_1UCjXxEGJUB78L7nfBk03Asw` | TEST seven-day trial created, then canceled |
+| Subscription created event | `evt_1UCjXyEGJUB78L7nVxRsc7bl` | Processed, attempt count 1 |
+| Older delayed update | `evt_1UCjY3EGJUB78L7nGu3MweFO` | Absent before explicit resend; then processed, attempt count 1 |
+| Newer canonical update | `evt_1UCjY4EGJUB78L7nooTQlXcB` | Processed before older resend, attempt count 1 |
+| Subscription deleted event | `evt_1UCjY8EGJUB78L7nMnQkE3n5` | Processed, attempt count 1 |
+
+The actual Stripe-signed `customer.subscription.created` delivery changed the staging profile and authenticated hosted effective plan to Pro. A genuine Stripe CLI resend of that event returned through the same hosted endpoint; the event row remained processed with `attempt_count=1`, and the billing email audit count did not change.
+
+For the delayed test, the dedicated endpoint was briefly disabled for the older `cancel_at_period_end=true` update. The older event had no staging processing row before explicit resend. After re-enabling the endpoint, the newer `cancel_at_period_end=false` event processed first. Resending the older real event through Stripe preserved the newer canonical state and produced no stale email side effect.
+
+The actual `customer.subscription.deleted` delivery then produced the expected final state:
+
+- Stripe subscription: `canceled`.
+- Staging subscription row: `plan=free`, `status=canceled`, `cancel_at_period_end=false`, with the expected customer, subscription, and TEST price IDs.
+- Staging profile: `plan=free`, `pro_access=false`, `subscription_status=canceled`, `payment_failures=0`, `past_due_since=null`.
+- Authenticated hosted `/api/profile`: HTTP 200 with `plan=free`, `pro_access=false`, and `subscription_status=canceled`.
+- All four event rows: processed, attempt count 1, non-null `processed_at`, and null processing token, processing start, and last error.
+- Billing email audit rows for these event IDs: zero.
+- Dedicated endpoint after the run: enabled and TEST mode.
+
+The hosted Checkout session remains open and was not completed. This API-only lifecycle does not claim `checkout.session.completed`, Stripe-hosted payment UI, or browser redirect evidence.
+
+The reviewed deletion repair also protects a distinct newer entitling subscription from an old deletion event. An old regular Pro deletion cannot overwrite the newer subscription row or downgrade its profile. An old Analytics deletion clears only Analytics access when the newer entitlement is regular Pro, and preserves Analytics access when the newer entitlement is also Analytics. The existing same-subscription canonical-state guard remains. The focused suite passed 38 tests and the production build passed for the deployed candidate.
+
+## Hosted portal-session API probe — pass with bounded evidence
+
+One authenticated `POST /api/stripe/portal` against the branch alias returned HTTP 200, `mode=test`, and an HTTPS URL on `billing.stripe.com`. Before that single POST, the guarded probe verified:
+
+- Supabase ref `fkqsjjiunvvclwtgjqyc`, excluding production.
+- Stripe TEST account `acct_1PnserEGJUB78L7n`.
+- Staging subscription customer `cus_VD8uoGxB0kKnmM` and matching Stripe customer user and TEST-mode metadata.
+- Active default TEST portal configuration `bpc_1TTwgyEGJUB78L7nAlA5nFxu`; invoice history, payment-method updates, customer updates, and end-of-period cancellation are enabled, while subscription price changes are disabled.
+- Authenticated identity matched the configured synthetic staging user.
+
+Stripe's SDK exposes portal-session creation but no retrieve or list operation. The deployed route and `tests/unit/stripe-portal-route.test.ts` prove the creation request uses the resolved customer and preview `/settings` return URL. The hosted response proves Stripe accepted the authenticated request and returned a TEST-mode portal URL on its billing host. It does not independently read back those creation parameters.
+
+The local canary asserted an overly specific pathname shape after the successful response and therefore did not persist the tokenized URL. A mode-`0600` ignored state record preserves the safe IDs and observed response status without the URL; the POST was not repeated. Browser render, displayed customer, return navigation, and portal-scheduled cancellation UI remain open.
