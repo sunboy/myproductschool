@@ -5731,7 +5731,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // All challenge types use the same brief/work switching on compact screens.
 
   return (
-    <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
+    <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] lg:pb-0">
       {/* Desktop: full-width chrome (tabs + stepper). Mobile: stacked chrome -
           scrollable tabs, collapsible description drawer, scrollable step bar. */}
       {mobileStacked ? (
