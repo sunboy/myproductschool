@@ -45,3 +45,9 @@ The real interview room `36f5455a-1905-4e87-a54e-402aaceeb955` reaches the expli
 | Reactivation | **Failed on `cf7e9fee`**: after successful password reauthentication, Keep Pro displays “Billing update failed.” The provider request correction is pending deployment and recheck. | [settings-keep-pro-failure-cf7e9fee.png](./settings-keep-pro-failure-cf7e9fee.png) |
 
 On `b01d6585`, Keep Pro succeeded and the signed webhook cleared cancellation fields. The immediate Settings view stayed stale; reloading showed **NEXT BILLING** and **Cancel at renewal**. [Reconciled Settings](./settings-reactivation-confirmed-b01d6585.png). A follow-up fix addresses that immediate refresh race. Exact fixture cleanup restored Free and zero nonterminal subscriptions; see the billing runbook.
+
+## Immediate Settings reconciliation — 7e3c4d28
+
+READY deployment `dpl_4gzMyq6K7V9xeAxaS5C8qHfJECpS` serves `7e3c4d2822abee64560fc9db3d12734729618457`, with all 31 branch-only preview bindings unchanged. A fresh exact Stripe TEST fixture displayed **ACCESS ENDS** and **Keep Pro**. After Keep Pro and password confirmation, the first post-action browser read displayed **NEXT BILLING** and **Cancel at renewal** without reload. [Immediate success screenshot](./settings-immediate-reactivation-7e3c4d28.png).
+
+The fix applies Stripe-confirmed fields immediately and reconciles only a matching webhook-backed profile within a ten-second window including network time. Fourteen focused billing tests, TypeScript, production build (595 pages), and staged secret scans pass; targeted lint has zero errors and two pre-existing Settings warnings.
