@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { usePlanLimits } from '@/lib/usage/use-plan-limits'
+import { scheduledCancellationState } from '@/lib/billing/subscription-cancellation'
 
 type SubscriptionInfo = {
   status?: string | null
@@ -96,8 +97,9 @@ export default function BillingSettingsPage() {
     ? `${priceFormatted}/${subscription?.billing_interval === 'year' ? 'yr' : 'mo'}`
     : null
   const nextBillingDate = formatDate(subscription?.current_period_end)
-  const cancelScheduled = !!subscription?.cancel_at_period_end
-  const cancelDate = formatDate(subscription?.cancel_at ?? subscription?.current_period_end)
+  const cancellation = scheduledCancellationState(subscription)
+  const cancelScheduled = cancellation.scheduled
+  const cancelDate = formatDate(cancellation.endsAt)
 
   return (
     <main className="learning-account mx-auto max-w-[720px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">

@@ -41,7 +41,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === 'reactivate') {
-    const subscription = await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: false })
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: false,
+      cancel_at: null,
+    })
     return NextResponse.json({ subscription })
   }
 
@@ -62,6 +65,7 @@ export async function POST(req: NextRequest) {
 
     const subscription = await stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: false,
+      cancel_at: null,
       proration_behavior: 'create_prorations',
       items: [{ id: itemId, price: planConfig.priceId }],
     })

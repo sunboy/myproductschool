@@ -1,29 +1,33 @@
-# Staging browser evidence — 2026-09-06
+# Staging browser evidence — September 6, 2026
 
-These screenshots capture browser checks against staging deployment commit `1ae7b4bc02d35aa1f11cc4d995aeaaf678c6b7c0`. They are **before-fix evidence** for two responsive layout issues found during the pass. Two local, uncommitted style fixes were pending deployment and require a fresh staging recheck.
+The before-fix checks ran against commit `1ae7b4bc02d35aa1f11cc4d995aeaaf678c6b7c0`. The responsive layout fixes were then deployed and rechecked at commit `ebd506fd6a3b636cb7d62382294d8fedafb15531` in deployment `dpl_5oJMNrYbo1jsShYamDzETgp9RN4h`.
 
-The data-modeling checks and the TEST-mode billing checks below were exercised against commit `1ae7b4bc02d35aa1f11cc4d995aeaaf678c6b7c0`. The independent billing helper also verified that the signed checkout-completion event was processed exactly once. These screenshots do not establish analytics-sandbox readiness; that canary remains a separate gate.
+Billing screenshots use the isolated Supabase staging branch and Stripe TEST mode described in [the staging billing runbook](../../../runbooks/staging-ui-billing-20260906.md). They do not establish analytics sandbox readiness; that canary remains a separate gate.
 
-## Results
+## Before-fix results
 
 | Viewport | Check | Result | Evidence |
 | --- | --- | --- | --- |
-| Tablet | The write-up page scrolls vertically and the **Next: List** action remains reachable. | Passed before the pending style fixes. | [canvas-tablet-navigation.png](./canvas-tablet-navigation.png) |
-| Phone | The collapsed Hatch control overlaps the lower navigation/action area. | Failed before fix; requires deployed recheck. | [canvas-phone-overlap-before.png](./canvas-phone-overlap-before.png) |
-| Desktop | A 223-character write-up persisted and was restored on the List step. | Passed before the pending style fixes. | [canvas-desktop-restored-writeup.png](./canvas-desktop-restored-writeup.png) |
-| Desktop canvas | The starter diagram loaded with two tables and one relationship link. | Passed before the pending style fixes. | [canvas-desktop-header-before.png](./canvas-desktop-header-before.png) |
-| Desktop canvas | The canvas header/title area is clipped at the top edge. | Failed before fix; requires deployed recheck. | [canvas-desktop-header-before.png](./canvas-desktop-header-before.png) |
-| Billing checkout | TEST checkout completed and the application returned with Pro access visible. | Passed on commit `1ae7b4bc`. | [billing-checkout-pro-success.png](./billing-checkout-pro-success.png) |
-| Billing portal | The Stripe TEST portal showed the active HackProduct Pro trial, renewal details, and payment method. | Passed on commit `1ae7b4bc`. | [billing-test-portal.png](./billing-test-portal.png) |
-| Billing portal | Scheduling cancellation updated the TEST portal to show the cancellation date and the option to reverse it. | Passed on commit `1ae7b4bc`. | [billing-test-portal-canceled.png](./billing-test-portal-canceled.png) |
+| Tablet | The write-up page scrolls vertically and the **Next: List** action remains reachable. | Passed. | [canvas-tablet-navigation.png](./canvas-tablet-navigation.png) |
+| Phone | The collapsed Hatch control overlaps the lower navigation area. | Failed; fixed and rechecked below. | [canvas-phone-overlap-before.png](./canvas-phone-overlap-before.png) |
+| Desktop | A 223-character write-up persists after returning to the List step. | Passed. | [canvas-desktop-restored-writeup.png](./canvas-desktop-restored-writeup.png) |
+| Desktop canvas | The starter diagram loads two tables and one relationship link. | Passed. | [canvas-desktop-header-before.png](./canvas-desktop-header-before.png) |
+| Desktop canvas | The canvas header and title are clipped at the top edge. | Failed; fixed and rechecked below. | [canvas-desktop-header-before.png](./canvas-desktop-header-before.png) |
 
-## Pending deployed recheck
+## Post-fix results
 
-After the two style fixes are deployed, repeat the phone and desktop canvas checks against the new exact deployment SHA:
+| Viewport | Check | Result | Evidence |
+| --- | --- | --- | --- |
+| Desktop canvas | The header, title, and **Done** action stay in bounds; the starter diagram still shows two tables and one relationship link. | Passed on `ebd506fd`. | [canvas-desktop-header-fixed-ebd506fd.png](./canvas-desktop-header-fixed-ebd506fd.png) |
+| Phone | At maximum List-step scroll, **Back** and **Next: Optimize** clear the Hatch control and footer. Selecting **Next: Optimize** advances successfully. | Passed on `ebd506fd`. | [canvas-phone-clearance-fixed-ebd506fd.png](./canvas-phone-clearance-fixed-ebd506fd.png) |
+| Tablet | At maximum List-step scroll, **Back** and **Next: Optimize** clear the Hatch control and footer. Selecting **Next: Optimize** advances successfully. | Passed on `ebd506fd`. | [canvas-tablet-clearance-fixed-ebd506fd.png](./canvas-tablet-clearance-fixed-ebd506fd.png) |
+| Phone reader | The contents drawer renders and scrolls above the bottom navigation. | Passed on `ebd506fd`. | [reader-phone-contents.png](./reader-phone-contents.png) |
+| Desktop coding | A failed assertion and a corrected submission both ran real tests; the final submission scored 7/7 tests and Hatch returned grounded feedback with a 7.4/10 score. | Passed on `ebd506fd`; reload persistence was not part of this capture. | [coding-desktop-feedback-ebd506fd.png](./coding-desktop-feedback-ebd506fd.png) |
 
-1. Confirm the Hatch control no longer covers write-up navigation or actions at phone width.
-2. Confirm the canvas header and title are fully visible at desktop width.
-3. Reconfirm tablet scrolling and **Next** navigation.
-4. Reconfirm the 223-character write-up restoration and the starter diagram's two tables and one link.
+## Stripe TEST billing results
 
-Keep any post-fix screenshots separate from these files so the before/after evidence remains unambiguous.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Checkout | Stripe TEST checkout completed and the application returned with Pro access visible. | [billing-checkout-pro-success.png](./billing-checkout-pro-success.png) |
+| Customer portal | The Stripe TEST portal showed the active HackProduct Pro trial, renewal details, and TEST payment method. | [billing-test-portal.png](./billing-test-portal.png) |
+| Scheduled cancellation | The portal showed the cancellation date and offered a reversal action. | [billing-test-portal-canceled.png](./billing-test-portal-canceled.png) |

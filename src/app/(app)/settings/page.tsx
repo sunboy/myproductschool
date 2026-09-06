@@ -23,6 +23,7 @@ import { ReauthModal } from '@/components/auth/ReauthModal'
 import { newPasswordSchema, zodFieldErrors } from '@/lib/auth/validation'
 import { clearOnboardingState } from '@/lib/onboarding/state-client'
 import { useOnboardingModal } from '@/context/OnboardingModalContext'
+import { scheduledCancellationState } from '@/lib/billing/subscription-cancellation'
 
 type SubscriptionInfo = {
   plan?: string | null
@@ -436,7 +437,9 @@ export default function SettingsPage() {
     ? subscription.status.replaceAll('_', ' ')
     : isPro ? 'active' : 'free'
   const periodEndLabel = formatBillingDate(subscription?.current_period_end)
-  const cancelScheduled = !!subscription?.cancel_at_period_end
+  const cancellation = scheduledCancellationState(subscription)
+  const cancelScheduled = cancellation.scheduled
+  const accessEndLabel = formatBillingDate(cancellation.endsAt)
   const currentPrice = subscription?.billing_interval === 'year'
     ? prices?.annual?.formatted
     : prices?.monthly?.formatted
@@ -752,8 +755,12 @@ export default function SettingsPage() {
                 </p>
               </div>
               <div className="px-4 py-3">
-                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">Next billing</p>
-                <p className="mt-1.5 font-body text-sm font-bold tabular-nums text-ink-strong">{isPro ? periodEndLabel : 'None'}</p>
+                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
+                  {cancelScheduled ? 'Access ends' : 'Next billing'}
+                </p>
+                <p className="mt-1.5 font-body text-sm font-bold tabular-nums text-ink-strong">
+                  {isPro ? cancelScheduled ? accessEndLabel : periodEndLabel : 'None'}
+                </p>
               </div>
               <div className="px-4 py-3">
                 <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">Switch price</p>
@@ -769,7 +776,7 @@ export default function SettingsPage() {
 
             {cancelScheduled && (
               <div className="note-amber mt-4 px-4 py-3 font-body text-sm text-ink-strong">
-                Pro remains active until {periodEndLabel}, then your account moves to Free.
+                Pro remains active until {accessEndLabel}, then your account moves to Free.
               </div>
             )}
 
