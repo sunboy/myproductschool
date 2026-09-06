@@ -504,6 +504,8 @@ export default function SettingsPage() {
               {editingName ? (
                 <div className="flex items-center gap-2">
                   <input
+                    aria-label="Display name"
+                    autoComplete="nickname"
                     value={displayName}
                     onChange={e => setDisplayName(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingName(false) }}

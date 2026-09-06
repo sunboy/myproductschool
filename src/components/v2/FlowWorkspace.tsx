@@ -1429,7 +1429,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const canvasExportRef = useRef<(() => Promise<Blob | null>) | null>(null)
   const libraryItemsRef = useRef<Array<{ id: string; name?: string; elements: unknown[] }>>([])
 
-  const handleCanvasActions = useCallback(async (response: { message: string; actions: unknown[] }) => {
+  const handleCanvasActions = useCallback(async (
+    response: { message: string; actions: unknown[] },
+    options?: { fitViewport?: boolean }
+  ) => {
     if (!excalidrawApiRef.current) return
     const actions = Array.isArray(response.actions) ? response.actions : []
     if (actions.length === 0) return
@@ -1463,6 +1466,26 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         appState: excalidrawApiRef.current.getAppState() as unknown,
       })
     } catch { /* non-fatal - the debounced snapshot will catch up */ }
+
+    // Template scenes are laid out in scene coordinates, which can leave part
+    // of a horizontal diagram outside a phone viewport. Fit only after an
+    // explicit template action so normal drawing and Hatch edits keep the
+    // user's current pan/zoom. This changes viewport state only; scene elements
+    // and Excalidraw's undo history are untouched.
+    if (options?.fitViewport) {
+      window.requestAnimationFrame(() => {
+        const api = excalidrawApiRef.current
+        if (!api) return
+        const elements = api.getSceneElements() as unknown[]
+        if (elements.length === 0) return
+        api.scrollToContent(elements, {
+          fitToContent: true,
+          viewportZoomFactor: 0.82,
+          maxZoom: 1,
+          animate: false,
+        })
+      })
+    }
   }, [apiChallengeType])
 
   const queueHatchPrompt = useCallback((text: string, autoSend = true) => {
@@ -1485,10 +1508,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const handleUseTemplate = useCallback(() => {
     if (apiChallengeType !== 'system_design' && apiChallengeType !== 'data_modeling') return
     setEmptyStateDismissed(true)
-    handleCanvasActions({
+    void handleCanvasActions({
       message: 'starter template',
       actions: canvasStarterTemplate(apiChallengeType),
-    })
+    }, { fitViewport: true })
   }, [apiChallengeType, handleCanvasActions])
 
   // Overlay template chips — same executeActions path as Hatch and the
@@ -1497,7 +1520,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     (template: CanvasTemplate) => {
       if (template.actions.length === 0) return
       setEmptyStateDismissed(true)
-      void handleCanvasActions({ message: template.label, actions: template.actions })
+      void handleCanvasActions(
+        { message: template.label, actions: template.actions },
+        { fitViewport: true }
+      )
     },
     [handleCanvasActions]
   )
@@ -5923,7 +5949,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       {/* Template chips (approved overlay preview): one tap drops a
                           starting shape through the same executeActions path Hatch
                           uses. Blank templates are filtered — nothing to draw. */}
-                      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5">
+                      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5 max-[1023px]:bottom-[calc(76px+env(safe-area-inset-bottom))] max-[1023px]:left-3 max-[1023px]:right-3 max-[1023px]:overflow-x-auto max-[1023px]:pb-1">
                         {canvasTemplatesFor(canvasType)
                           .filter((t) => t.actions.length > 0)
                           .map((t) => (
@@ -5931,7 +5957,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                               key={t.id}
                               type="button"
                               onClick={() => applyCanvasTemplate(t)}
-                              className="rounded-full border border-hairline bg-card-bright px-3 py-1.5 font-label text-[11.5px] font-bold text-ink-secondary shadow-sm hover:text-ink-strong transition-colors"
+                              className="shrink-0 whitespace-nowrap rounded-full border border-hairline bg-card-bright px-3 py-1.5 font-label text-[11.5px] font-bold text-ink-secondary shadow-sm hover:text-ink-strong transition-colors"
                             >
                               {t.label}
                             </button>
