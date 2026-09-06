@@ -22,7 +22,7 @@ export const MAIN_TOUR: TourConfig = {
       route: '/dashboard',
       // No anchor: centered popover with the large waving Hatch mascot.
       title: "Hi, I'm Hatch",
-      body: "I'm your coach here. I'll point you at the right reps, push on your thinking, and keep score so you can see yourself get sharper. Let me show you around.",
+      body: "I'm your learning companion. I'll help you choose useful challenges, explore your thinking, and see how your skills develop. Let me show you around.",
       mascot: true,
     },
     {

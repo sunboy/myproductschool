@@ -3,10 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { apiError } from '@/lib/api/error'
 import { createLiveInterviewVoiceToken, signingSecretSource } from '@/lib/live-interview/voice-token'
+import {
+  buildLiveInterviewVoiceSettings,
+} from '@/lib/live-interview/voice-settings'
 
 export const runtime = 'nodejs'
 
-const SAMPLE_RATE = 16000
 const DEEPGRAM_TOKEN_TTL_SECONDS = 3600
 
 function isLocalOrigin(origin: string) {
@@ -137,65 +139,13 @@ export async function GET(
     deepgramToken,
     requestId,
     callbackOrigin: callback.origin,
-    settings: {
-      type: 'Settings',
-      tags: ['hackproduct', 'live_interview'],
-      mip_opt_out: true,
-      flags: { history: true },
-      audio: {
-        input: { encoding: 'linear16', sample_rate: SAMPLE_RATE },
-        output: { encoding: 'linear16', sample_rate: SAMPLE_RATE },
-      },
-      agent: {
-        // Flux is Deepgram's turn-aware STT: it detects end-of-turn from the
-        // speech itself instead of a fixed silence timeout, which removes most
-        // of the dead air between the candidate finishing and Hatch replying.
-        // eager_eot starts the think call before the turn fully closes (more
-        // LLM calls, lower perceived latency). LIVE_VOICE_FLUX=0 reverts to
-        // nova-3 if Flux misbehaves for an account or region.
-        listen: process.env.LIVE_VOICE_FLUX === '0'
-          ? {
-              provider: {
-                type: 'deepgram',
-                model: 'nova-3',
-                language: 'en-US',
-                smart_format: true,
-              },
-            }
-          : {
-              provider: {
-                type: 'deepgram',
-                model: 'flux-general-en',
-                version: 'v2',
-                // Flux infers language from its model; the Voice Agent schema
-                // rejects the Nova-only language option for this provider.
-                eot_threshold: 0.7,
-                eager_eot_threshold: 0.5,
-                eot_timeout_ms: 4000,
-              },
-            },
-        think: {
-          provider: {
-            type: 'open_ai',
-            model: 'hackproduct-live-interview',
-            temperature: 0.7,
-          },
-          endpoint: {
-            url: `${callback.origin}/api/live-interview/${id}/voice-think`,
-            headers: {
-              authorization: `Bearer ${token}`,
-              'x-hp-voice-request-id': requestId,
-            },
-          },
-          context_length: 'max',
-        },
-        speak: {
-          provider: {
-            type: 'deepgram',
-            model: 'aura-2-asteria-en',
-          },
-        },
-      },
-    },
+    // Flux is Deepgram's turn-aware STT. LIVE_VOICE_FLUX=0 keeps a documented
+    // Nova v1 escape hatch for account- or region-specific Flux failures.
+    settings: buildLiveInterviewVoiceSettings({
+      thinkUrl: `${callback.origin}/api/live-interview/${id}/voice-think`,
+      authorization: `Bearer ${token}`,
+      requestId,
+      useFlux: process.env.LIVE_VOICE_FLUX !== '0',
+    }),
   })
 }

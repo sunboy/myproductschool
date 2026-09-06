@@ -146,7 +146,7 @@ export function AppSidebar({
           <div className="rounded-xl border border-hairline bg-card-bright p-4 text-ink-strong">
             <div className="mb-[3px] text-[14.5px] font-bold">Go Pro</div>
             <div className="mb-3 text-xs leading-[1.4] text-ink-secondary">
-              Free plan: 20 challenges, 5 interviews, and 30 gradings a month. Pro removes the caps.
+              Free plan: 20 challenges, 5 interviews, and 30 feedback reviews a month. Pro removes the caps.
             </div>
             <button
               type="button"

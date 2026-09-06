@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-vi.mock('@/components/auth/AuthForm', () => ({ AuthForm: () => null }))
+vi.mock('@/components/auth/editorial/ActiveLoginConcept', () => ({ ActiveLoginConcept: () => null }))
 import LoginPage from '../../../src/app/(auth)/login/page'
 import SignupPage from '../../../src/app/(auth)/signup/page'
 
