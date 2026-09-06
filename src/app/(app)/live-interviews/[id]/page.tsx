@@ -179,10 +179,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
-async function liveInterviewErrorMessage(response: Response) {
-  const fallback = response.status === 503
+async function liveInterviewErrorMessage(response: Response, fallbackMessage?: string) {
+  const fallback = fallbackMessage ?? (response.status === 503
     ? 'Hatch is temporarily unavailable. Try again in a moment.'
-    : 'Failed to send message. Please try again.'
+    : 'Failed to send message. Please try again.')
   const body = await response.json().catch(() => null) as { error?: unknown } | null
   return typeof body?.error === 'string' && body.error.trim() ? body.error : fallback
 }
@@ -475,6 +475,7 @@ export default function SessionPage({
   const { isPro, isAdmin } = useEntitlements()
 
   const [sessionId, setSessionId] = useState<string>(IS_MOCK ? 'mock-session-id' : id)
+  const [sessionStartAttempt, setSessionStartAttempt] = useState(0)
   const [companyName, setCompanyName] = useState(IS_MOCK ? MOCK_LIVE_SESSION.companyName ?? '' : '')
   const [roleName, setRoleName] = useState(IS_MOCK ? MOCK_LIVE_SESSION.role ?? '' : '')
   const [scenarioTitle, setScenarioTitle] = useState<string | null>(null)
@@ -727,15 +728,21 @@ export default function SessionPage({
       ;(async () => {
         try {
           const res = await fetch(`/api/live-interview/${id}/resume`, { method: 'POST' })
-          if (!res.ok) return
+          if (!res.ok) {
+            throw new Error(await liveInterviewErrorMessage(
+              res,
+              'Failed to resume this interview. Please try again.'
+            ))
+          }
           const data = await res.json()
           if (cancelled) return
           if (data.session?.company_id) setCompanyName(company ?? data.session.company_id)
           else setCompanyName(company ?? '')
           setRoleName(roleParam ?? '')
           setInterviewPhase('ready')
-        } catch {
-          // Fall through silently - UI will still render in 'starting' phase
+        } catch (err) {
+          if (cancelled) return
+          setError(err instanceof Error ? err.message : 'Failed to resume this interview. Please try again.')
         }
       })()
       return () => { cancelled = true }
@@ -774,7 +781,7 @@ export default function SessionPage({
     startSession()
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [sessionStartAttempt])
 
   useEffect(() => {
     if (IS_MOCK) return
@@ -977,12 +984,18 @@ export default function SessionPage({
             setInterviewPhase('ended')
             es.close()
             fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
-              .then(() => {
+              .then(async (response) => {
+                if (!response.ok) {
+                  throw new Error(await liveInterviewErrorMessage(
+                    response,
+                    'Failed to generate your debrief. Please try again.'
+                  ))
+                }
                 window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'live-interview' } }))
                 router.push(`/live-interviews/${sessionId}/debrief`)
               })
-              .catch(() => {
-                setError('Failed to generate debrief')
+              .catch((err) => {
+                setError(err instanceof Error ? err.message : 'Failed to generate your debrief. Please try again.')
                 setIsEnding(false)
                 // Allow a retry after a failed end; without this the interview is
                 // permanently locked out of ending (the ref stays true).
@@ -1051,13 +1064,18 @@ export default function SessionPage({
             }).catch(() => { /* non-fatal, end still proceeds */ })
           }
         }
-        await fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
+        const endResponse = await fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
+        if (!endResponse.ok) {
+          throw new Error(await liveInterviewErrorMessage(
+            endResponse,
+            'Failed to generate your debrief. Please try again.'
+          ))
+        }
         window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'live-interview' } }))
         router.push(`/live-interviews/${sessionId}/debrief`)
-      } catch {
-        setError('Failed to generate debrief')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to generate your debrief. Please try again.')
         setIsEnding(false)
-        setInterviewPhase('active')
         // Allow a retry after a failed end.
         endTriggeredRef.current = false
       }
@@ -1557,13 +1575,18 @@ export default function SessionPage({
         }
       }
 
-      await fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
+      const endResponse = await fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
+      if (!endResponse.ok) {
+        throw new Error(await liveInterviewErrorMessage(
+          endResponse,
+          'Failed to generate your debrief. Please try again.'
+        ))
+      }
       window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'live-interview' } }))
       router.push(`/live-interviews/${sessionId}/debrief`)
-    } catch {
-      setError('Failed to generate debrief')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate your debrief. Please try again.')
       setIsEnding(false)
-      setInterviewPhase('active')
       // Allow a retry after a failed end.
       endTriggeredRef.current = false
     }
@@ -1622,17 +1645,49 @@ export default function SessionPage({
             border: '1px solid rgba(255,255,255,0.08)',
           }}
         >
-          <div
-            className="w-8 h-8 rounded-full"
-            style={{
-              border: '2px solid rgba(74,124,89,0.2)',
-              borderTopColor: '#4a7c59',
-              animation: 'spin 1s linear infinite',
-            }}
-          />
-          <p className="font-body text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            Starting interview session...
-          </p>
+          {error ? (
+            <>
+              <span className="material-symbols-outlined text-3xl" style={{ color: '#e37d4a' }}>error</span>
+              <p className="font-body text-sm text-center" style={{ color: 'rgba(255,255,255,0.72)' }}>
+                {error}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(null)
+                    setSessionStartAttempt((attempt) => attempt + 1)
+                  }}
+                  className="rounded-full px-4 py-2 font-label text-sm font-semibold"
+                  style={{ background: '#4a7c59', color: '#fff' }}
+                >
+                  Retry
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push('/live-interviews')}
+                  className="rounded-full px-4 py-2 font-label text-sm font-semibold"
+                  style={{ border: '1px solid rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.8)' }}
+                >
+                  Back to interviews
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div
+                className="w-8 h-8 rounded-full"
+                style={{
+                  border: '2px solid rgba(74,124,89,0.2)',
+                  borderTopColor: '#4a7c59',
+                  animation: 'spin 1s linear infinite',
+                }}
+              />
+              <p className="font-body text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                Starting interview session...
+              </p>
+            </>
+          )}
         </div>
         <style jsx>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -1676,11 +1731,11 @@ export default function SessionPage({
             >
               <p className="font-body text-sm" style={{ color: '#e37d4a' }}>{error}</p>
               <button
-                onClick={() => { setError(null); setIsEnding(false); setInterviewPhase('active') }}
+                onClick={() => { setError(null); autoEndToDebrief() }}
                 className="text-xs underline mt-1"
                 style={{ color: 'rgba(227,125,74,0.7)' }}
               >
-                Return to interview
+                Retry debrief
               </button>
             </div>
           )}
