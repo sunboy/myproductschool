@@ -23,17 +23,16 @@ import { ReauthModal } from '@/components/auth/ReauthModal'
 import { newPasswordSchema, zodFieldErrors } from '@/lib/auth/validation'
 import { clearOnboardingState } from '@/lib/onboarding/state-client'
 import { useOnboardingModal } from '@/context/OnboardingModalContext'
-import { scheduledCancellationState } from '@/lib/billing/subscription-cancellation'
+import {
+  mergeStripeSubscriptionSnapshot,
+  scheduledCancellationState,
+  subscriptionReflectsBillingAction,
+  type BillingSubscriptionAction,
+  type BillingSubscriptionState,
+  type StripeSubscriptionSnapshot,
+} from '@/lib/billing/subscription-cancellation'
 
-type SubscriptionInfo = {
-  plan?: string | null
-  status?: string | null
-  current_period_end?: string | null
-  billing_interval?: 'month' | 'year' | null
-  cancel_at_period_end?: boolean | null
-  cancel_at?: string | null
-  canceled_at?: string | null
-}
+type SubscriptionInfo = BillingSubscriptionState
 
 type ProfileResponse = {
   display_name?: string
@@ -74,6 +73,9 @@ type ReauthRequest = {
   confirmLabel?: string
   onVerified: (password: string) => Promise<void>
 }
+
+const BILLING_RECONCILIATION_WINDOW_MS = 10_000
+const BILLING_RECONCILIATION_DELAYS_MS = [250, 500, 1_000, 2_000, 4_000]
 
 function formatBillingDate(value?: string | null) {
   if (!value) return 'Not available'
@@ -123,6 +125,7 @@ export default function SettingsPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deleteSaving, setDeleteSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const billingReconciliationId = useRef(0)
 
   async function handleRedoCalibration() {
     setRedoingCalibration(true)
@@ -134,10 +137,12 @@ export default function SettingsPage() {
     }
   }
 
-  async function refreshProfile() {
-    const data: ProfileResponse | null = await fetch('/api/profile')
-      .then(r => r.ok ? r.json() : null)
-    if (!data) return
+  async function fetchProfile(signal?: AbortSignal): Promise<ProfileResponse | null> {
+    const response = await fetch('/api/profile', { cache: 'no-store', signal })
+    return response.ok ? response.json() : null
+  }
+
+  function applyProfile(data: ProfileResponse) {
     if (data.display_name) {
       setDisplayName(data.display_name)
       setProfileInitial(data.display_name[0]?.toUpperCase() ?? '?')
@@ -146,6 +151,39 @@ export default function SettingsPage() {
     if (data.avatar_url) setAvatarUrl(data.avatar_url)
     if (data.plan) setPlan(data.plan)
     setSubscription(data.subscription ?? null)
+  }
+
+  async function refreshProfile() {
+    const data = await fetchProfile()
+    if (!data) return
+    applyProfile(data)
+  }
+
+  async function reconcileBillingAction(
+    reconciliationId: number,
+    action: BillingSubscriptionAction,
+    requestedPlan: unknown,
+  ) {
+    const deadline = Date.now() + BILLING_RECONCILIATION_WINDOW_MS
+
+    for (const delayMs of BILLING_RECONCILIATION_DELAYS_MS) {
+      const remainingBeforeDelay = deadline - Date.now()
+      if (remainingBeforeDelay <= 0) return
+
+      await new Promise(resolve => setTimeout(resolve, Math.min(delayMs, remainingBeforeDelay)))
+      const remainingBeforeFetch = deadline - Date.now()
+      if (billingReconciliationId.current !== reconciliationId || remainingBeforeFetch <= 0) return
+
+      const data = await fetchProfile(AbortSignal.timeout(remainingBeforeFetch)).catch(() => null)
+      if (!data?.subscription || !subscriptionReflectsBillingAction(data.subscription, action, requestedPlan)) {
+        continue
+      }
+
+      if (billingReconciliationId.current !== reconciliationId) return
+      applyProfile(data)
+      window.dispatchEvent(new CustomEvent('profile-stats-updated'))
+      return
+    }
   }
 
   async function refreshIdentities() {
@@ -170,6 +208,10 @@ export default function SettingsPage() {
       .then(r => r.ok ? r.json() : null)
       .then((data: BillingPrices | null) => setPrices(data))
       .catch(() => {})
+  }, [])
+
+  useEffect(() => () => {
+    billingReconciliationId.current += 1
   }, [])
 
   const saveDisplayName = async () => {
@@ -319,7 +361,7 @@ export default function SettingsPage() {
     })
   }
 
-  async function runBillingAction(action: string, body: Record<string, unknown> = {}) {
+  async function runBillingAction(action: BillingSubscriptionAction, body: Record<string, unknown> = {}) {
     const title = action === 'cancel' ? 'Confirm cancellation' : 'Confirm billing change'
     const description = action === 'cancel'
       ? 'Enter your current password before scheduling Pro cancellation.'
@@ -334,7 +376,9 @@ export default function SettingsPage() {
     })
   }
 
-  async function performBillingAction(action: string, body: Record<string, unknown> = {}) {
+  async function performBillingAction(action: BillingSubscriptionAction, body: Record<string, unknown> = {}) {
+    const reconciliationId = billingReconciliationId.current + 1
+    billingReconciliationId.current = reconciliationId
     setBillingAction(action)
     setBillingError(null)
     try {
@@ -343,10 +387,14 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, ...body }),
       })
-      const data = await res.json().catch(() => ({}))
+      const data: { error?: string; subscription?: StripeSubscriptionSnapshot } = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error ?? 'Billing update failed')
-      await refreshProfile()
-      window.dispatchEvent(new CustomEvent('profile-stats-updated'))
+
+      if (data.subscription) {
+        setSubscription(current => mergeStripeSubscriptionSnapshot(current, data.subscription))
+      }
+
+      void reconcileBillingAction(reconciliationId, action, body.plan)
     } catch (error) {
       setBillingError(error instanceof Error ? error.message : 'Billing update failed')
     } finally {

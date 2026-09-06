@@ -28,7 +28,7 @@ Billing screenshots use the isolated Supabase staging branch and Stripe TEST mod
 
 Actual viewport overrides were 390×844 (phone), 768×1024 (tablet), and 1440×1000 (desktop). These are browser viewport checks, not physical-device testing. Reduced-motion emulation is not exposed by the available browser capabilities and remains unverified.
 
-The bare coding workspace URL starts a fresh attempt after a completed submission. Submitted work is preserved, but refreshing immediately after completion unexpectedly shows starter code. A pending fix pins the completed attempt in the URL; its deployed refresh behavior still requires verification.
+The bare coding workspace previously started a fresh attempt after completion. On READY candidate `b01d65855e1620731a950cfe26a980b2e98ceb8b` (`dpl_3Mhe4EHhhtsCVNW3Lcyj8tTm8oJh`), a new Python attempt passed 5/5 visible tests and 7/7 submission tests, then received 7.4/10 feedback. Completion added `?attempt=d2094b0c-1273-4fd6-a10e-d165e188dca6` to the URL. Direct reload retained that exact attempt, seven passing tests, score, feedback, and expanded submitted source. [Reload evidence](./coding-completed-reload-b01d6585.png).
 
 ## Voice readiness only
 
@@ -43,3 +43,5 @@ The real interview room `36f5455a-1905-4e87-a54e-402aaceeb955` reaches the expli
 | Scheduled cancellation | The portal showed the cancellation date and offered a reversal action. | [billing-test-portal-canceled.png](./billing-test-portal-canceled.png) |
 | Explicit cancellation date | On `cf7e9fee`, Settings shows **Access ends**, the September 13 date, and **Keep Pro** when Stripe supplies `cancel_at` with `cancel_at_period_end=false`. | [settings-explicit-cancel-date-cf7e9fee.png](./settings-explicit-cancel-date-cf7e9fee.png) |
 | Reactivation | **Failed on `cf7e9fee`**: after successful password reauthentication, Keep Pro displays “Billing update failed.” The provider request correction is pending deployment and recheck. | [settings-keep-pro-failure-cf7e9fee.png](./settings-keep-pro-failure-cf7e9fee.png) |
+
+On `b01d6585`, Keep Pro succeeded and the signed webhook cleared cancellation fields. The immediate Settings view stayed stale; reloading showed **NEXT BILLING** and **Cancel at renewal**. [Reconciled Settings](./settings-reactivation-confirmed-b01d6585.png). A follow-up fix addresses that immediate refresh race. Exact fixture cleanup restored Free and zero nonterminal subscriptions; see the billing runbook.
