@@ -47,7 +47,7 @@ function isProEntitlingPlan(plan: string | null | undefined) {
   return plan === 'pro' || isAnalyticsPlanId(plan)
 }
 
-async function userHasOtherProEntitlingSubscription(
+async function otherProEntitlingSubscriptions(
   supabase: ReturnType<typeof createAdminClient>,
   userId: string,
   excludedSubscriptionId: string
@@ -80,12 +80,24 @@ async function userHasOtherProEntitlingSubscription(
 
   return subscriptions
     .filter((subscription) => subscription.stripe_subscription_id !== excludedSubscriptionId)
-    .some((subscription) => subscriptionEntitlesPlan(
+    .filter((subscription) => subscriptionEntitlesPlan(
       subscription,
       isProEntitlingPlan,
       new Date(),
       pastDueSince
     ))
+}
+
+async function userHasOtherProEntitlingSubscription(
+  supabase: ReturnType<typeof createAdminClient>,
+  userId: string,
+  excludedSubscriptionId: string
+) {
+  return (await otherProEntitlingSubscriptions(
+    supabase,
+    userId,
+    excludedSubscriptionId
+  )).length > 0
 }
 
 async function findUserIdForStripeObject(
@@ -526,11 +538,17 @@ export async function POST(req: NextRequest) {
       const existingPlan = (existingSubscription as { plan?: string | null } | null)?.plan
       const analyticsPlan = metadataAnalyticsPlan(subscription.metadata)
         ?? (isAnalyticsPlanId(existingPlan) ? existingPlan : null)
-      const hasOtherProEntitlingSubscription = analyticsPlan
-        ? await userHasOtherProEntitlingSubscription(supabase, userId, subscription.id)
-        : false
+      const otherEntitlingSubscriptions = await otherProEntitlingSubscriptions(
+        supabase,
+        userId,
+        subscription.id
+      )
+      const hasOtherProEntitlingSubscription = otherEntitlingSubscriptions.length > 0
+      const hasOtherAnalyticsEntitlingSubscription = otherEntitlingSubscriptions.some(
+        ({ plan }) => isAnalyticsPlanId(plan)
+      )
 
-      if (!(analyticsPlan && hasOtherProEntitlingSubscription)) {
+      if (!hasOtherProEntitlingSubscription) {
         requireStripeDbResult(
           'store canonical deleted subscription state',
           await supabase.from('subscriptions').upsert({
@@ -546,18 +564,23 @@ export async function POST(req: NextRequest) {
       }
 
       const profileUpdates: Record<string, unknown> = analyticsPlan
+        && !hasOtherAnalyticsEntitlingSubscription
         ? { cc_analytics_access: false }
-        : { plan: 'free' }
-      if (analyticsPlan && !hasOtherProEntitlingSubscription) {
+        : {}
+      if (!hasOtherProEntitlingSubscription) {
         profileUpdates.plan = 'free'
         profileUpdates.pro_access = false
         profileUpdates.subscription_status = 'canceled'
+        profileUpdates.payment_failures = 0
+        profileUpdates.past_due_since = null
       }
 
-      requireStripeDbResult(
-        'store canonical profile deletion state',
-        await supabase.from('profiles').update(profileUpdates).eq('id', userId)
-      )
+      if (Object.keys(profileUpdates).length > 0) {
+        requireStripeDbResult(
+          'store canonical profile deletion state',
+          await supabase.from('profiles').update(profileUpdates).eq('id', userId)
+        )
+      }
 
       await sendCancellationConfirmedEmail(supabase, {
         dedupeKey: `${event.id}:cancellation_confirmed`,

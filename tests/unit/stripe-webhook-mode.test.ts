@@ -48,6 +48,7 @@ interface WebhookHarnessOptions {
   retrieveFailures?: number
   stealLeaseOnFirstComplete?: boolean
   subscription?: Record<string, unknown>
+  subscriptionRows?: Array<Record<string, unknown>>
 }
 
 function createWebhookHarness(options: WebhookHarnessOptions = {}) {
@@ -134,6 +135,9 @@ function createWebhookHarness(options: WebhookHarnessOptions = {}) {
       if (operation !== 'select') return { data: null, error: null }
 
       if (table === 'subscriptions') {
+        if (filters.has('user_id') && !filters.has('stripe_subscription_id')) {
+          return { data: options.subscriptionRows ?? [], error: null }
+        }
         return {
           data: { user_id: 'user_1', plan: 'pro', billing_interval: 'month' },
           error: null,
@@ -465,5 +469,164 @@ describe('webhook delivery reliability', () => {
     }))
     expect(harness.mutations.some(({ values }) => values.plan === 'free' || values.pro_access === false)).toBe(false)
     expect(mocks.sendCancellationConfirmedEmail).not.toHaveBeenCalled()
+  })
+
+  it('clears the profile entitlement and dunning mirrors for a deleted Pro subscription', async () => {
+    const canceled = subscription({ status: 'canceled' })
+    const harness = createWebhookHarness({ subscription: canceled })
+    mocks.createStripeClient.mockReturnValue({ stripe: harness.stripeClient, config: { mode: 'test' } })
+    mocks.createAdminClient.mockReturnValue(harness.admin)
+
+    const response = await POST(signedRequest(event('customer.subscription.deleted', canceled)))
+
+    expect(response.status).toBe(200)
+    expect(harness.mutations).toContainEqual(expect.objectContaining({
+      table: 'subscriptions',
+      operation: 'upsert',
+      values: expect.objectContaining({ plan: 'free', status: 'canceled' }),
+    }))
+    expect(harness.mutations).toContainEqual(expect.objectContaining({
+      table: 'profiles',
+      operation: 'update',
+      values: expect.objectContaining({
+        plan: 'free',
+        pro_access: false,
+        subscription_status: 'canceled',
+        payment_failures: 0,
+        past_due_since: null,
+      }),
+    }))
+  })
+
+  it('does not let an old Pro deletion overwrite a distinct current entitling subscription', async () => {
+    const canceled = subscription({ id: 'sub_old', status: 'canceled' })
+    const harness = createWebhookHarness({
+      subscription: canceled,
+      subscriptionRows: [{
+        stripe_subscription_id: 'sub_new',
+        plan: 'pro',
+        status: 'active',
+        current_period_end: 1_800_000_000,
+        cancel_at_period_end: false,
+      }],
+    })
+    mocks.createStripeClient.mockReturnValue({ stripe: harness.stripeClient, config: { mode: 'test' } })
+    mocks.createAdminClient.mockReturnValue(harness.admin)
+
+    const response = await POST(signedRequest(event('customer.subscription.deleted', canceled)))
+
+    expect(response.status).toBe(200)
+    expect(harness.retrieveSubscription).toHaveBeenCalledWith('sub_old')
+    expect(harness.mutations.some(({ table, operation }) => (
+      table === 'subscriptions' && operation === 'upsert'
+    ))).toBe(false)
+    expect(harness.mutations.some(({ table, values }) => (
+      table === 'profiles'
+      && (values.plan === 'free'
+        || values.pro_access === false
+        || values.subscription_status === 'canceled')
+    ))).toBe(false)
+  })
+
+  it('revokes Analytics access and clears shared Pro mirrors when no other subscription entitles access', async () => {
+    const canceled = subscription({
+      status: 'canceled',
+      metadata: { user_id: 'user_1', plan: 'analytics_monthly' },
+    })
+    const harness = createWebhookHarness({
+      subscription: canceled,
+      subscriptionRows: [{
+        stripe_subscription_id: 'sub_123',
+        plan: 'analytics_monthly',
+        status: 'canceled',
+        current_period_end: null,
+        cancel_at_period_end: false,
+      }],
+    })
+    mocks.createStripeClient.mockReturnValue({ stripe: harness.stripeClient, config: { mode: 'test' } })
+    mocks.createAdminClient.mockReturnValue(harness.admin)
+
+    const response = await POST(signedRequest(event('customer.subscription.deleted', canceled)))
+
+    expect(response.status).toBe(200)
+    expect(harness.mutations).toContainEqual(expect.objectContaining({
+      table: 'subscriptions',
+      operation: 'upsert',
+      values: expect.objectContaining({ plan: 'analytics_monthly', status: 'canceled' }),
+    }))
+    expect(harness.mutations).toContainEqual(expect.objectContaining({
+      table: 'profiles',
+      operation: 'update',
+      values: expect.objectContaining({
+        plan: 'free',
+        pro_access: false,
+        subscription_status: 'canceled',
+        payment_failures: 0,
+        past_due_since: null,
+        cc_analytics_access: false,
+      }),
+    }))
+  })
+
+  it('revokes Analytics access without clearing a distinct current Pro subscription', async () => {
+    const canceled = subscription({
+      id: 'sub_analytics_old',
+      status: 'canceled',
+      metadata: { user_id: 'user_1', plan: 'analytics_monthly' },
+    })
+    const harness = createWebhookHarness({
+      subscription: canceled,
+      subscriptionRows: [{
+        stripe_subscription_id: 'sub_pro_new',
+        plan: 'pro',
+        status: 'active',
+        current_period_end: 1_800_000_000,
+        cancel_at_period_end: false,
+      }],
+    })
+    mocks.createStripeClient.mockReturnValue({ stripe: harness.stripeClient, config: { mode: 'test' } })
+    mocks.createAdminClient.mockReturnValue(harness.admin)
+
+    const response = await POST(signedRequest(event('customer.subscription.deleted', canceled)))
+
+    expect(response.status).toBe(200)
+    expect(harness.mutations.some(({ table, operation }) => (
+      table === 'subscriptions' && operation === 'upsert'
+    ))).toBe(false)
+    expect(harness.mutations).toContainEqual(expect.objectContaining({
+      table: 'profiles',
+      operation: 'update',
+      values: { cc_analytics_access: false },
+    }))
+  })
+
+  it('preserves Analytics access for a distinct current Analytics subscription', async () => {
+    const canceled = subscription({
+      id: 'sub_analytics_old',
+      status: 'canceled',
+      metadata: { user_id: 'user_1', plan: 'analytics_monthly' },
+    })
+    const harness = createWebhookHarness({
+      subscription: canceled,
+      subscriptionRows: [{
+        stripe_subscription_id: 'sub_analytics_new',
+        plan: 'analytics_annual',
+        status: 'active',
+        current_period_end: 1_800_000_000,
+        cancel_at_period_end: false,
+      }],
+    })
+    mocks.createStripeClient.mockReturnValue({ stripe: harness.stripeClient, config: { mode: 'test' } })
+    mocks.createAdminClient.mockReturnValue(harness.admin)
+
+    const response = await POST(signedRequest(event('customer.subscription.deleted', canceled)))
+
+    expect(response.status).toBe(200)
+    expect(harness.mutations.some(({ table, operation }) => (
+      table === 'subscriptions' && operation === 'upsert'
+    ))).toBe(false)
+    expect(harness.mutations.some(({ table, values }) => (
+      table === 'profiles' && values.cc_analytics_access === false
+    ))).toBe(false)
   })
 })
