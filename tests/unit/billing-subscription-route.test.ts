@@ -61,18 +61,42 @@ beforeEach(() => {
   })
   mocks.hasValidReauthToken.mockReturnValue(true)
   mocks.getStripePlanConfig.mockReturnValue({ priceId: 'price_monthly' })
-  mocks.subscriptionRetrieve.mockResolvedValue({ items: { data: [{ id: 'si_1' }] } })
+  mocks.subscriptionRetrieve.mockResolvedValue({
+    cancel_at: null,
+    cancel_at_period_end: false,
+    items: { data: [{ id: 'si_1' }] },
+  })
   mocks.subscriptionUpdate.mockResolvedValue({ id: 'sub_1' })
 })
 
 describe('billing subscription updates', () => {
-  it('clears either Stripe cancellation representation when reactivating', async () => {
+  it('clears an explicit cancellation date without also sending cancel_at_period_end', async () => {
+    mocks.subscriptionRetrieve.mockResolvedValue({
+      cancel_at: 1_800_000_000,
+      cancel_at_period_end: false,
+      items: { data: [{ id: 'si_1' }] },
+    })
+
+    const response = await POST(request('reactivate'))
+
+    expect(response.status).toBe(200)
+    expect(mocks.subscriptionUpdate).toHaveBeenCalledWith('sub_1', {
+      cancel_at: null,
+    })
+  })
+
+  it('clears a period-end cancellation without also sending cancel_at', async () => {
+    mocks.subscriptionRetrieve.mockResolvedValue({
+      cancel_at: 1_800_000_000,
+      cancel_at_period_end: true,
+      items: { data: [{ id: 'si_1' }] },
+    })
+
     const response = await POST(request('reactivate'))
 
     expect(response.status).toBe(200)
     expect(mocks.subscriptionUpdate).toHaveBeenCalledWith('sub_1', {
       cancel_at_period_end: false,
-      cancel_at: null,
     })
   })
 
@@ -85,13 +109,35 @@ describe('billing subscription updates', () => {
     })
   })
 
-  it('clears either Stripe cancellation representation when switching price', async () => {
+  it('clears an explicit cancellation date when switching price', async () => {
+    mocks.subscriptionRetrieve.mockResolvedValue({
+      cancel_at: 1_800_000_000,
+      cancel_at_period_end: false,
+      items: { data: [{ id: 'si_1' }] },
+    })
+
+    const response = await POST(request('change-plan', 'monthly'))
+
+    expect(response.status).toBe(200)
+    expect(mocks.subscriptionUpdate).toHaveBeenCalledWith('sub_1', {
+      cancel_at: null,
+      proration_behavior: 'create_prorations',
+      items: [{ id: 'si_1', price: 'price_monthly' }],
+    })
+  })
+
+  it('clears a period-end cancellation when switching price', async () => {
+    mocks.subscriptionRetrieve.mockResolvedValue({
+      cancel_at: 1_800_000_000,
+      cancel_at_period_end: true,
+      items: { data: [{ id: 'si_1' }] },
+    })
+
     const response = await POST(request('change-plan', 'monthly'))
 
     expect(response.status).toBe(200)
     expect(mocks.subscriptionUpdate).toHaveBeenCalledWith('sub_1', {
       cancel_at_period_end: false,
-      cancel_at: null,
       proration_behavior: 'create_prorations',
       items: [{ id: 'si_1', price: 'price_monthly' }],
     })

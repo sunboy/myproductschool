@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { canStartWorkspaceAttempt, loadWorkspaceHistory } from '@/lib/workspace/submission-history'
+import { workspaceAttemptUrl } from '@/lib/workspace/attempt-url'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/posthog/client'
@@ -508,6 +509,11 @@ function scoreToGradeLabel(score: number): string {
   if (score >= 4.5) return 'best'
   if (score >= 3) return 'good'
   return 'surface'
+}
+
+function replaceWorkspaceAttemptUrl(attemptId: string | null) {
+  if (typeof window === 'undefined') return
+  window.history.replaceState(null, '', workspaceAttemptUrl(window.location.href, attemptId))
 }
 
 type FlowWorkspaceProps =
@@ -1201,6 +1207,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       return [record, ...withoutDupe]
     })
     setSelectedHistoryIdx(0)
+    if (record.attemptId && (record.challengeType === 'algorithm' || record.challengeType === 'sql')) {
+      replaceWorkspaceAttemptUrl(record.attemptId)
+    }
     // A successful submit (coding / canvas / interview) consumes a rep. Refresh
     // every usage surface: profile-stats-updated re-pulls SessionContext (which
     // backs useUsage / the at-limit checks) and the usage pill; usageEventBus is
@@ -3847,6 +3856,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   }).slice(0, 20000) : undefined
 
   const handleRunAnother = () => {
+    if (isCodingChallenge) replaceWorkspaceAttemptUrl(null)
     setHistoryPracticeRequested(true)
     setLeftTab('Description')
     setMirrorStepResults([])
@@ -4705,6 +4715,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       const data = await res.json().catch(() => null)
                       if (res.ok) {
                         setFinalizeResult(data)
+                        replaceWorkspaceAttemptUrl(attemptId)
                         setPhase('complete')
                       } else if (data?.status === 'not_ready') {
                         const nextAction = Array.isArray(data.next_actions) ? data.next_actions[0] : undefined
@@ -5619,6 +5630,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       setOutputPanelError(undefined)
                       const nextAttempt = await startAttempt(initialRoleId)
                       if (nextAttempt) {
+                        replaceWorkspaceAttemptUrl(null)
                         setAttemptId(nextAttempt.id)
                         setPhase('question')
                       }

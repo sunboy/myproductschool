@@ -17,9 +17,9 @@ The Stripe-hosted Checkout page accepted a standard TEST Visa ending in `4242`, 
 
 Signed `checkout.session.completed` event `evt_1UCmgZEGJUB78L7nfW7G8iOx` was processed once in staging with `attempt_count=1`, a non-null `processed_at`, a cleared processing lease, and no error. The authenticated `/api/profile` response reported Pro access.
 
-## Payment-method challenge — pass
+## Optional 3DS challenge — untested
 
-Stripe's standard TEST card that requires 3DS completed its hosted challenge for a $39 TEST payment. The browser returned to the application successfully.
+The verified Checkout Session used the standard TEST Visa ending in `4242`; it completed with `payment_status=paid` and returned to the application. No 3DS challenge-card journey was performed, so optional 3DS remains untested.
 
 ## Customer portal cancellation — pass
 
@@ -45,3 +45,16 @@ Signed TEST deletion event `evt_1UCmlDEGJUB78L7nqPKDHFCU` was processed once wit
 An earlier owned API-canary Checkout Session, `cs_test_b1mVlbXX9cmmO5NxbkilSbOJi2CEwiOpGdGQSs69WIB4BRP1bgPVMduzlH`, was still open after subscription cleanup. Its TEST account, customer, user metadata, plan, and staging ownership were reverified at `2026-09-06T16:44:02Z` before it alone was expired. It was not used as failed-event evidence.
 
 The screenshots are indexed in [the staging browser evidence](../visual-overhaul/evidence/staging-20260906/README.md).
+
+## Settings explicit-cancellation representation — display pass, reactivation failure
+
+Candidate `cf7e9fee` correctly rendered Stripe's explicit end-of-trial cancellation representation: subscription `sub_1UCnbmEGJUB78L7nBviwSiZK` was `trialing` with `cancel_at=1789334894`, `cancel_at_period_end=false`, and `current_period_end=1789334894`. Both Settings surfaces showed **Access ends**, the September 13 date, and **Keep Pro**. The browser evidence is [settings-explicit-cancel-date-cf7e9fee.png](../visual-overhaul/evidence/staging-20260906/settings-explicit-cancel-date-cf7e9fee.png).
+
+After password reauthentication succeeded, selecting **Keep Pro** failed with “Billing update failed.” Vercel request `tlw44-1788730280579-8e48797339ea` at `2026-09-06T21:31:20Z` returned HTTP 500 from `POST /api/billing/subscription`. Stripe request `req_83iaFtD4bk29o3` reported `StripeInvalidRequestError` / `invalid_request_error`: “Received both cancel_at_period_end and cancel_at parameters. Please pass in only one.” Stripe supplied no `code` or `param`. The failure screenshot is [settings-keep-pro-failure-cf7e9fee.png](../visual-overhaul/evidence/staging-20260906/settings-keep-pro-failure-cf7e9fee.png). A route correction that sends only `cancel_at: null` for this provider state is pending deployment and browser recheck.
+
+The exact failed fixture was cleaned up after evidence capture. Its pre-cleanup state is preserved at `.vercel/staging-settings-reactivate-failed-cf7e9fee.json` with mode `0600`. Guarded cleanup canceled only `sub_1UCnbmEGJUB78L7nBviwSiZK`; signed TEST deletion event `evt_1UCnn3EGJUB78L7naSvJ71Y0` was processed once with `attempt_count=1`, non-null `processed_at`, cleared processing lease and token, and no error. Final independent verification found:
+
+- Stripe subscription state: `canceled`, TEST mode.
+- Staging subscription mirror: `plan=free`, `status=canceled`, `cancel_at_period_end=false`, `cancel_at=null`.
+- Staging profile and authenticated hosted profile: Free, `pro_access=false`, `subscription_status=canceled`.
+- Nonterminal Stripe subscriptions for staging customer `cus_VD8uoGxB0kKnmM`: zero.
