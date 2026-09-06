@@ -14,6 +14,7 @@
 //   LLM_GATEWAY_MASTER_KEY admin key authorizing /key/generate
 //   CC_SESSION_BUDGET_USD  hard cap per session (default 0.50)
 
+import { createHash, createHmac } from 'node:crypto'
 import { resolveSessionBudgetUsd, resolveSessionTtlSeconds } from './cost-policy'
 
 export interface VirtualKey {
@@ -28,113 +29,256 @@ export function isGatewayConfigured(): boolean {
   return Boolean(process.env.LLM_GATEWAY_URL && process.env.LLM_GATEWAY_MASTER_KEY)
 }
 
+const SESSION_KEY_DERIVATION = 'hmac-sha256-v1'
+const SESSION_KEY_DOMAIN = 'myproductschool:cc-session-key:v1\0'
+const EXPIRY_PRECISION_MS = 1000
+const KEY_LOOKUP_TIMEOUT_MS = 4000
+
+type GatewayMintKey = {
+  key_alias?: unknown
+  token?: unknown
+  metadata?: unknown
+  max_budget?: unknown
+  models?: unknown
+  blocked?: unknown
+  expires?: unknown
+}
+
+type MintRecovery = 'owned' | 'absent' | 'unavailable' | 'mismatch'
+
+class TerminalKeyError extends Error {}
+
+function deriveSessionKey(master: string, sessionId: string): string {
+  return `sk-${createHmac('sha256', master)
+    .update(SESSION_KEY_DOMAIN)
+    .update(sessionId)
+    .digest('base64url')}`
+}
+
+function sessionKeyHash(key: string): string {
+  return createHash('sha256').update(key).digest('hex')
+}
+
+function sameModelSet(actual: unknown, expected: string[]): boolean {
+  if (!Array.isArray(actual) || actual.some((model) => typeof model !== 'string')) return false
+  const actualSet = new Set(actual as string[])
+  const expectedSet = new Set(expected)
+  return actualSet.size === expectedSet.size
+    && [...expectedSet].every((model) => actualSet.has(model))
+}
+
+async function recoverOwnedSessionKey(input: {
+  baseUrl: string
+  master: string
+  alias: string
+  sessionId: string
+  expectedTokenHash: string
+  budgetUsd: number
+  models: string[]
+  ttlSeconds: number
+  invocationExpiryUpperMs: number
+  deadline: number
+}): Promise<MintRecovery> {
+  const remainingMs = input.deadline - Date.now()
+  if (remainingMs <= 0) return 'unavailable'
+  const query = new URLSearchParams({
+    key_alias: input.alias,
+    return_full_object: 'true',
+    size: '100',
+  })
+  let key: GatewayMintKey | undefined
+  try {
+    const response = await fetch(`${input.baseUrl}/key/list?${query}`, {
+      headers: { Authorization: `Bearer ${input.master}` },
+      signal: AbortSignal.timeout(Math.min(KEY_LOOKUP_TIMEOUT_MS, remainingMs)),
+      cache: 'no-store',
+    })
+    if (!response.ok) return 'unavailable'
+    const body = (await response.json()) as { keys?: GatewayMintKey[] }
+    key = body.keys?.find((candidate) => candidate.key_alias === input.alias)
+  } catch {
+    return 'unavailable'
+  }
+  if (!key) return 'absent'
+
+  if (!key.metadata || typeof key.metadata !== 'object' || Array.isArray(key.metadata)) {
+    return 'mismatch'
+  }
+  const metadata = key.metadata as Record<string, unknown>
+  const metadataKeys = Object.keys(metadata).sort()
+  const expectedMetadataKeys = [
+    'expires_at',
+    'feature',
+    'key_derivation',
+    'session_id',
+    'ttl_seconds',
+  ]
+  if (
+    metadataKeys.length !== expectedMetadataKeys.length
+    || metadataKeys.some((name, index) => name !== expectedMetadataKeys[index])
+    || metadata.feature !== 'claude_code_analytics'
+    || metadata.session_id !== input.sessionId
+    || metadata.key_derivation !== SESSION_KEY_DERIVATION
+    || metadata.ttl_seconds !== input.ttlSeconds
+    || typeof metadata.expires_at !== 'string'
+  ) {
+    return 'mismatch'
+  }
+
+  const now = Date.now()
+  const storedExpiryMs = Date.parse(metadata.expires_at)
+  const providerExpiryMs = typeof key.expires === 'string' ? Date.parse(key.expires) : Number.NaN
+  if (
+    key.token !== input.expectedTokenHash
+    || key.max_budget !== input.budgetUsd
+    || key.blocked !== false
+    || !sameModelSet(key.models, input.models)
+    || !Number.isFinite(storedExpiryMs)
+    || storedExpiryMs <= now
+    || storedExpiryMs > input.invocationExpiryUpperMs + EXPIRY_PRECISION_MS
+    || !Number.isFinite(providerExpiryMs)
+    || providerExpiryMs <= now
+    || providerExpiryMs > storedExpiryMs + EXPIRY_PRECISION_MS
+  ) {
+    return 'mismatch'
+  }
+  return 'owned'
+}
+
 /**
- * Mint a virtual key scoped to one session with a hard budget. Returns null if
- * the gateway is not configured. Production provisioning treats that as a hard
- * failure; only an explicitly opted-in local environment may use a direct key.
+ * Mint a virtual key scoped to one session with a hard budget. The raw key is
+ * deterministically derived for this session, so a successful gateway insert
+ * whose response is lost can be recovered without deleting or replacing an
+ * alias. Recovery always proves ownership and the original cap/expiry first.
  */
 export async function mintSessionVirtualKey(
   sessionId: string,
   ttlSeconds: number,
-  /**
-   * Models this key may access. Default `['all-proxy-models']` = whatever the
-   * gateway currently serves — so the key never 403s when the CLI requests a
-   * model name (e.g. claude-opus-4-7) that the gateway remaps. Pass a narrowed
-   * list (e.g. ['claude-haiku-4-5']) to force a degraded tier for the future
-   * monthly-cap downgrade. (project_cc_gateway_model_mismatch: a stale per-key
-   * allowlist re-introduced the 403 even after the gateway model_list was fixed.)
-   */
+  /** Models this key may access. Keep narrowed lists stable across retries. */
   models: string[] = ['all-proxy-models'],
 ): Promise<VirtualKey | null> {
   if (!isGatewayConfigured()) return null
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(sessionId)) {
+    throw new TerminalKeyError('Invalid analytics session id')
+  }
 
   const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
   const budgetUsd = resolveSessionBudgetUsd(process.env.CC_SESSION_BUDGET_USD)
   const boundedTtlSeconds = resolveSessionTtlSeconds(ttlSeconds)
+  const perAttemptTimeoutMs = Math.min(
+    15_000,
+    Math.max(1000, Number.parseInt(process.env.CC_MINT_ATTEMPT_TIMEOUT_MS ?? '9000', 10) || 9000),
+  )
+  // Leave well over half of the provision route's 180-second budget for Cloud
+  // Run revision creation and readiness after key minting finishes.
+  const totalTimeoutMs = Math.min(
+    90_000,
+    Math.max(10_000, Number.parseInt(process.env.CC_MINT_TOTAL_TIMEOUT_MS ?? '65000', 10) || 65_000),
+  )
+  const startedAt = Date.now()
+  const deadline = startedAt + totalTimeoutMs
+  const invocationExpiryUpperMs = startedAt + boundedTtlSeconds * 1000
+  const declaredExpiry = new Date(invocationExpiryUpperMs).toISOString()
+  const expiryGuardSeconds = Math.min(
+    Math.ceil(totalTimeoutMs / 1000) + 2,
+    Math.max(2, Math.floor(boundedTtlSeconds / 10)),
+  )
+  const alias = `cc-${sessionId}`
+  const key = deriveSessionKey(master, sessionId)
+  const expectedTokenHash = sessionKeyHash(key)
+  const metadata = {
+    feature: 'claude_code_analytics',
+    session_id: sessionId,
+    key_derivation: SESSION_KEY_DERIVATION,
+    ttl_seconds: boundedTtlSeconds,
+    expires_at: declaredExpiry,
+  }
+  const recoveryInput = {
+    baseUrl,
+    master,
+    alias,
+    sessionId,
+    expectedTokenHash,
+    budgetUsd,
+    models,
+    ttlSeconds: boundedTtlSeconds,
+    invocationExpiryUpperMs,
+    deadline,
+  }
 
-  // Retry with backoff: the gateway is minScale=0 and its Cloud SQL may have just
-  // been woken on demand (see cloud-sql-admin), so the FIRST key/generate can hit
-  // a cold gateway whose Prisma connection to the fresh DB isn't ready yet (500 /
-  // connection error). A couple of retries absorb that without failing the session.
-  // A terminal error (4xx client error) is thrown directly and NOT retried; only
-  // transient failures (5xx, network) fall through to the retry loop. (A plain
-  // `throw` inside the try would be swallowed by the catch and retried 4×.)
-  class TerminalKeyError extends Error {}
+  // A later provision invocation for the same session should recover the first
+  // invocation's still-valid key without sending another generate request.
+  const existing = await recoverOwnedSessionKey(recoveryInput)
+  if (existing === 'owned') return { key, baseUrl, budgetUsd }
+  if (existing === 'mismatch') {
+    throw new TerminalKeyError('Existing analytics session key failed ownership verification')
+  }
 
-  let lastErr: unknown
-  // Each attempt has its OWN timeout: a cold gateway accepts the TCP connection
-  // but never responds while LiteLLM boots, so a fetch with no timeout HANGS for
-  // the full ~40s cold-boot and eats the route's 60s budget. A 9s per-attempt
-  // timeout + retries means we re-probe a booting gateway every ~9s and connect
-  // the moment it's up, instead of one long hang. 5 attempts × (9s + backoff)
-  // covers a ~40-50s cold boot.
-  const ATTEMPT_TIMEOUT_MS = parseInt(process.env.CC_MINT_ATTEMPT_TIMEOUT_MS ?? '9000', 10)
-  const keyAlias = `cc-${sessionId}`
-  // One-shot guard so a duplicate-alias recovery can't loop: provisionSession can
-  // run more than once per sessionId (the provision route is killed at Vercel's 60s
-  // ceiling AFTER /key/generate persisted the key in LiteLLM but BEFORE the host is
-  // saved, then the client retries). The retry re-mints the SAME alias, which newer
-  // LiteLLM rejects with 400 from _enforce_unique_key_alias. We delete the orphaned
-  // alias once and regenerate — the stale key has ~$0 spend (it was never handed to
-  // a live container), and the alias MUST stay `cc-<sessionId>` because spend
-  // tracking parses it via alias.slice(3). (Without this, the 400 was fatal and the
-  // session stuck in `provisioning` → "Sandbox took too long".)
-  let recoveredDup = false
-  for (let attempt = 0; attempt < 5; attempt++) {
-    if (attempt > 0) await new Promise((r) => setTimeout(r, 1500 * attempt))
+  let lastError = new Error('LiteLLM key generation unavailable')
+  for (let attempt = 0; attempt < 5 && Date.now() < deadline; attempt++) {
+    if (attempt > 0) {
+      const backoffMs = Math.min(1500 * attempt, Math.max(0, deadline - Date.now()))
+      if (backoffMs > 0) await new Promise((resolve) => setTimeout(resolve, backoffMs))
+    }
+    const remainingMs = deadline - Date.now()
+    const remainingLifetimeSeconds = Math.floor(
+      (invocationExpiryUpperMs - Date.now()) / 1000,
+    )
+    const durationSeconds = remainingLifetimeSeconds - expiryGuardSeconds
+    if (remainingMs <= 0 || durationSeconds < 1) break
+
+    let responseStatus: number | null = null
     try {
-      const res = await fetch(`${baseUrl}/key/generate`, {
+      const response = await fetch(`${baseUrl}/key/generate`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          key_alias: keyAlias,
+          key,
+          key_alias: alias,
           max_budget: budgetUsd,
-          // Hard duration so a key can't be reused indefinitely; matches session TTL.
-          duration: `${boundedTtlSeconds}s`,
+          duration: `${durationSeconds}s`,
           models,
-          metadata: { feature: 'claude_code_analytics', session_id: sessionId },
+          blocked: false,
+          metadata,
         }),
-        signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
+        signal: AbortSignal.timeout(Math.min(perAttemptTimeoutMs, remainingMs)),
       })
-      if (!res.ok) {
-        const detail = await res.text().catch(() => '')
-        // 5xx / connection issues are transient (cold gateway/DB) → retry. 4xx is
-        // a real client error (bad master key, bad model) → fail fast.
-        if (res.status >= 500) {
-          lastErr = new Error(`LiteLLM key/generate ${res.status}: ${detail.slice(0, 200)}`)
-          continue
+      responseStatus = response.status
+      if (response.ok) {
+        const body = (await response.json()) as { key?: unknown }
+        if (body.key !== key) {
+          throw new TerminalKeyError('LiteLLM returned an unexpected analytics session key')
         }
-        // Duplicate-alias 400: a prior (killed) provision already created this
-        // session's key. Delete it ONCE, then regenerate against the freed alias.
-        if (
-          res.status === 400 &&
-          !recoveredDup &&
-          /alias/i.test(detail) &&
-          /(exist|already|unique)/i.test(detail)
-        ) {
-          recoveredDup = true
-          await fetch(`${baseUrl}/key/delete`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key_aliases: [keyAlias] }),
-            signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
-          }).catch(() => {}) // best-effort; the regenerate is the source of truth
-          continue
-        }
-        throw new TerminalKeyError(`LiteLLM key/generate failed (${res.status}): ${detail.slice(0, 300)}`)
       }
-      const data = (await res.json()) as { key?: string }
-      if (!data.key) throw new TerminalKeyError('LiteLLM key/generate returned no key')
-      return { key: data.key, baseUrl, budgetUsd }
-    } catch (err) {
-      // Don't retry a client-side / contract error — surface it immediately.
-      if (err instanceof TerminalKeyError) throw err
-      lastErr = err
-      // Network-level throw (gateway still cold) — retry unless it's the last try.
+    } catch (error) {
+      if (error instanceof TerminalKeyError) throw error
+      // A timeout/network error is ambiguous: the insert may have committed.
+      lastError = new Error('LiteLLM key generation request was ambiguous')
+    }
+
+    const recovered = await recoverOwnedSessionKey(recoveryInput)
+    if (recovered === 'owned') return { key, baseUrl, budgetUsd }
+    if (recovered === 'mismatch') {
+      throw new TerminalKeyError('Existing analytics session key failed ownership verification')
+    }
+
+    if (responseStatus !== null) {
+      lastError = new Error(`LiteLLM key/generate ${responseStatus}`)
+      // 400/409 may be the unique-alias response after a lost success. Its
+      // exact lookup can be briefly unavailable, so retry lookup/generate under
+      // the same total deadline. Other client errors are deterministic.
+      if (
+        responseStatus >= 400
+        && responseStatus < 500
+        && responseStatus !== 400
+        && responseStatus !== 409
+      ) {
+        throw new TerminalKeyError(`LiteLLM key/generate failed (${responseStatus})`)
+      }
     }
   }
-  throw lastErr ?? new Error('LiteLLM key/generate failed after retries')
+  throw lastError
 }
 
 /**

@@ -5814,7 +5814,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               <div
                 className={canvasMaximised ? 'canvas-overlay-panel workspace-canvas-overlay' : 'workspace-design-surface'}
                 style={canvasMaximised
-                ? { width: '100%', height: '100%', maxWidth: 1440, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, boxShadow: '0 32px 80px -24px rgba(5,35,22,0.45), 0 8px 24px -8px rgba(5,35,22,0.25)', overflow: 'hidden', transformOrigin: canvasOverlayOrigin }
+                ? { width: '100%', height: '100%', maxWidth: 1440, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, boxShadow: '0 32px 80px -24px rgba(5,35,22,0.45), 0 8px 24px -8px rgba(5,35,22,0.25)', overflow: 'clip', transformOrigin: canvasOverlayOrigin }
                 : { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }
                 }>
                 {canvasMaximised && (
@@ -5868,7 +5868,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     {/* Full-width card: with the old 300px rail folded into the
                         Hatch dock this column owns the center, so the write-up
                         stretches instead of floating at 780px in empty space. */}
-                    <div className="workspace-design-writeup rounded-2xl border border-hairline bg-card-bright" style={{ width: '100%', minHeight: 'calc(100% - 2px)', padding: '20px 28px' }}>
+                      <div className="workspace-design-writeup shrink-0 rounded-2xl border border-hairline bg-card-bright" style={{ width: '100%', minHeight: 'calc(100% - 2px)', padding: '20px 28px' }}>
                       {activeDesignStepDef && (
                         <DesignStepForm
                           step={activeDesignStepDef}
