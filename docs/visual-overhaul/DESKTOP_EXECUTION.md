@@ -1,5 +1,7 @@
 # Desktop rebuild continuation — September 6, 2026
 
+Current release decision and rollback constraints: [platform rebuild release runbook](../runbooks/platform-rebuild-release.md). Later evidence supersedes earlier pending checks below: Progress at `9d286728` was verified on deployed preview `dpl_EBFK62YePEh2jsuhTuyH4oMTXBmT`, showing one completed SQL challenge at phone and tablet widths. Full analytics finalization, spoken voice, isolated hosted billing, and remaining responsive journeys are still open gates.
+
 Status: implementation and launch verification in progress. Production promotion and merging remain outside this continuation.
 
 ## Plan interpretation

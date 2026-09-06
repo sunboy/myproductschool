@@ -22,6 +22,7 @@ import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
 import type { LearnerCompetency, RoleLens } from '@/lib/types'
 import { readAnalyticsProgress } from '@/lib/sandbox/analytics-progress'
 import { inspectWorkspace, listUserSkills } from '@/lib/coding-grading/workspace-inspector'
+import { snapshotCaptureFromUri } from '@/lib/sandbox/snapshot-provenance'
 
 export const dynamic = 'force-dynamic'
 // Grading invokes an AI model — budget headroom.
@@ -118,12 +119,20 @@ export async function POST(
   // File signals reach the browser immediately, while the authoritative
   // workspace tarball uploads every 30 seconds. Do not tear down and grade an
   // older snapshot. A timeout leaves the live session intact for a safe retry.
-  if (session.status === 'active' && fileEvidenceWasSubmitted && adaptive?.updated_at) {
+  if (fileEvidenceWasSubmitted && adaptive?.updated_at) {
     try {
       const fresh = await waitForFreshSnapshot(admin, sessionId, adaptive.updated_at)
       if (!fresh?.transcriptUri) {
+        const hasCaptureProvenance = Boolean(
+          snapshotCaptureFromUri(session.transcript_uri as string | null, 'workspace'),
+        )
         return NextResponse.json(
-          { error: 'Your latest report is still saving. Retry submission in a few seconds.', reason: 'snapshot_pending' },
+          hasCaptureProvenance
+            ? { error: 'Your latest report is still saving. Retry submission in a few seconds.', reason: 'snapshot_pending' }
+            : {
+              error: 'This session cannot verify when its workspace was captured. Wait for another autosave; if this persists, restart the session before submitting.',
+              reason: 'snapshot_provenance_unavailable',
+            },
           { status: 409 },
         )
       }
@@ -152,22 +161,25 @@ export async function POST(
     .eq('id', user.id)
     .maybeSingle()
   const profileClaudeStateUri = (claudeProfile?.cc_claude_state_uri as string | null | undefined) ?? null
-  // The upload path is stable, so a learner's first skill can be awaited before
-  // the profile pointer write becomes visible.
-  const claudeStateUri = skillWasSubmitted
-    ? profileClaudeStateUri ?? `${user.id}/claude.tar.gz`
-    : profileClaudeStateUri
-  if (session.status === 'active' && skillWasSubmitted && adaptive?.updated_at) {
+  let claudeStateUri = profileClaudeStateUri
+  if (skillWasSubmitted && adaptive?.updated_at) {
     try {
-      const freshState = claudeStateUri
-        ? await waitForFreshUserState(admin, claudeStateUri, adaptive.updated_at)
-        : null
+      const freshState = await waitForFreshUserState(admin, user.id, sessionId, adaptive.updated_at)
       if (!freshState) {
+        const hasCaptureProvenance = Boolean(
+          snapshotCaptureFromUri(profileClaudeStateUri, 'user-state'),
+        )
         return NextResponse.json(
-          { error: 'Your reusable skill is still saving. Retry submission in a few seconds.', reason: 'skill_pending' },
+          hasCaptureProvenance
+            ? { error: 'Your reusable skill is still saving. Retry submission in a few seconds.', reason: 'skill_pending' }
+            : {
+              error: 'This session cannot verify when its reusable skill was captured. Wait for another autosave; if this persists, restart the session before submitting.',
+              reason: 'skill_provenance_unavailable',
+            },
           { status: 409 },
         )
       }
+      claudeStateUri = freshState.uri
     } catch (error) {
       return NextResponse.json({ error: (error as Error).message }, { status: 503 })
     }

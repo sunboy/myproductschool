@@ -1,16 +1,20 @@
 import type { createAdminClient } from '@/lib/supabase/admin'
 import type { AnalystGradeResult } from '@/lib/coding-grading/analytics-grader'
+import { snapshotCaptureFromUri } from '@/lib/sandbox/snapshot-provenance'
 
 type Admin = ReturnType<typeof createAdminClient>
 
 export interface FreshSnapshot {
   transcriptUri: string | null
   lastSnapshotAt: string | null
+  captureId: string
+  captureStartedAt: string
 }
 
 export interface FreshUserState {
   uri: string
-  updatedAt: string
+  captureId: string
+  captureStartedAt: string
 }
 
 /**
@@ -40,11 +44,14 @@ export async function waitForFreshSnapshot(
 
     if (error) throw new Error('Latest workspace snapshot could not be checked. Please retry submission.')
 
-    const lastSnapshotAt = (data?.last_snapshot_at as string | null | undefined) ?? null
-    if (lastSnapshotAt && Date.parse(lastSnapshotAt) >= checkpointMs) {
+    const transcriptUri = (data?.transcript_uri as string | null | undefined) ?? null
+    const capture = snapshotCaptureFromUri(transcriptUri, 'workspace')
+    if (capture && capture.captureStartedAtMs >= checkpointMs) {
       return {
-        transcriptUri: (data?.transcript_uri as string | null | undefined) ?? null,
-        lastSnapshotAt,
+        transcriptUri,
+        lastSnapshotAt: (data?.last_snapshot_at as string | null | undefined) ?? null,
+        captureId: capture.captureId,
+        captureStartedAt: capture.captureStartedAt,
       }
     }
 
@@ -55,19 +62,17 @@ export async function waitForFreshSnapshot(
   return null
 }
 
-/** Wait for the stable per-user Claude state object to be overwritten after the final checkpoint. */
+/** Wait for this session's exact user-state capture begun after the checkpoint. */
 export async function waitForFreshUserState(
   admin: Admin,
-  uri: string,
+  userId: string,
+  sessionId: string,
   checkpointAt: string,
   options: { timeoutMs?: number; pollMs?: number } = {},
 ): Promise<FreshUserState | null> {
   const checkpointMs = Date.parse(checkpointAt)
-  if (!uri || !Number.isFinite(checkpointMs)) return null
+  if (!Number.isFinite(checkpointMs)) return null
 
-  const slash = uri.lastIndexOf('/')
-  const prefix = slash >= 0 ? uri.slice(0, slash) : ''
-  const filename = slash >= 0 ? uri.slice(slash + 1) : uri
   const timeoutMs = options.timeoutMs ?? 4_000
   const pollMs = options.pollMs ?? 500
   const deadline = Date.now() + timeoutMs
@@ -75,13 +80,27 @@ export async function waitForFreshUserState(
   do {
     const { data, error } = await admin.storage
       .from('cc-user-state')
-      .list(prefix, { limit: 10, search: filename })
+      .list(userId, { limit: 100, sortBy: { column: 'created_at', order: 'desc' } })
 
     if (error) throw new Error('Reusable skill snapshot could not be checked. Please retry submission.')
 
-    const object = data?.find((entry) => entry.name === filename)
-    const updatedAt = object?.updated_at ?? null
-    if (updatedAt && Date.parse(updatedAt) >= checkpointMs) return { uri, updatedAt }
+    const fresh = (data ?? []).flatMap((entry) => {
+      const uri = `${userId}/${entry.name}`
+      const capture = snapshotCaptureFromUri(uri, 'user-state')
+      return capture
+        && capture.sourceSessionId === sessionId
+        && capture.captureStartedAtMs >= checkpointMs
+        ? [{ uri, capture }]
+        : []
+    }).sort((left, right) => right.capture.captureStartedAtMs - left.capture.captureStartedAtMs)[0]
+
+    if (fresh) {
+      return {
+        uri: fresh.uri,
+        captureId: fresh.capture.captureId,
+        captureStartedAt: fresh.capture.captureStartedAt,
+      }
+    }
 
     if (Date.now() >= deadline) return null
     await new Promise((resolve) => setTimeout(resolve, pollMs))

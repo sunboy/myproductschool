@@ -38,6 +38,14 @@ The Mac became locked during the subsequent browser audit. Further UI checks req
 
 ## Rollback compatibility
 
+### Preview snapshot provenance rollout
+
+Build the reviewed sandbox source under a unique Artifact Registry tag and record its immutable digest. Do not overwrite `sandbox:mvp` or use the historical README's shared-service deployment command. Set `CLOUD_RUN_IMAGE` only for this feature branch's Vercel preview, then deploy its matching API. The provider supplies that image when creating new session revisions; keep `CLOUD_RUN_BASE_REVISION=cc-sandbox-00165-p9h` as the existing sterile traffic anchor. Preserve other revision tags and the reaper.
+
+Before claiming the gate passed, use a new isolated canary session to verify capture-start headers, immutable workspace and skill archive pointers, report and skill checkpoint finalization, and cleanup. Old containers can still upload restorable legacy snapshots, but those upload timestamps cannot prove that file evidence was captured after a checkpoint. Do not claim strict freshness for those sessions. Capture timestamps also depend on the trusted runtime's synchronized clock; they are not independent proof against a modified container.
+
+### Compatibility by subsystem
+
 **Application presentation:** prefer a targeted forward revert of the affected frontend commit while keeping compatible billing/session handlers. Never replace the whole branch with the old landing source. Retain saved drafts, attempts, snapshots and new additive artifact fields.
 
 **Billing:** the prior production handler at `c2c4d6e4` inserts `stripe_events.id` before processing and acknowledges every unique-key conflict as a duplicate. New code can leave `processing` or `failed` rows for legitimate retries. Therefore a full rollback to that prior handler can acknowledge incomplete deliveries without applying their effects. The additive migration being backward-readable does not make this handler rollback safe. Keep a verified compatible handler serving while reverting presentation, or quiesce billing changes and reconcile every unfinished event with the compatible processor before re-enabling an older route. Preserve Stripe event IDs and effect markers; never delete event rows or blindly replay historical events to force delivery. Check canonical subscription state and event-specific side effects. Keep webhook signing secret, endpoint mode and runtime mode paired.
