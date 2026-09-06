@@ -8,6 +8,8 @@ Status: implementation and launch verification in progress. Production promotion
 
 ### Capture provenance and interview completion follow-up
 
+The hosted checkout exercise metadata was subsequently repaired with `scripts/content/patch-checkout-schema.ts --apply`. Before the write, `bq show` confirmed `event_id`, `user_id`, `session_id`, `ts`, `event_name`, `device`, and `region`; a bounded query confirmed all six documented event names. A reviewed dry run limited the write to `claude_md` and the three `explore_schema` instruction fields. The update used an exact-old-metadata compare-and-swap. Independent readback confirmed all unrelated metadata was preserved, and a second dry run reported no differences. No broad seeder, learner-data update, or schema migration ran.
+
 The checked-in smoke script adds an atomic completion marker for its loopback stub to avoid a test-only metadata-read race. Its final in-image rerun also passed, in Cloud Build `b1d918a2-60e5-42c0-b484-ff2a4a3ba6fe`.
 
 Commits `b7931542` and `69fc7099` replace upload-time freshness with immutable capture identity and keep failed interview completion retryable. The combined candidate passes 498 Node tests, 229 Vitest tests, four Progress tests, and the production build. The interview server now returns a retryable error before completion rewards when debrief persistence fails; automatic and manual end paths require a successful response before navigating. Failed resume exposes Retry and Back controls.
