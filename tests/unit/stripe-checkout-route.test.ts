@@ -46,10 +46,10 @@ function adminClient(stored = {
   }
 }
 
-function checkoutRequest() {
+function checkoutRequest(embedded = true) {
   return new NextRequest('https://preview.hackproduct.com/api/stripe/create-checkout', {
     method: 'POST',
-    body: JSON.stringify({ plan: 'monthly', embedded: true }),
+    body: JSON.stringify({ plan: 'monthly', embedded }),
     headers: { 'content-type': 'application/json' },
   })
 }
@@ -73,21 +73,53 @@ beforeEach(() => {
 })
 
 describe('Stripe checkout customer safety', () => {
-  it('reuses a verified customer and omits customer_email', async () => {
+  it.each([
+    { source: 'stored_customer', customerId: 'cus_stored', embedded: true },
+    { source: 'created_customer', customerId: 'cus_created', embedded: false },
+  ])('collects and persists tax address for a $source', async ({ source, customerId, embedded }) => {
     mocks.resolveOrCreateCheckoutCustomer.mockResolvedValue({
-      customerId: 'cus_user',
+      customerId,
       blockingSubscription: null,
-      source: 'stored_customer',
+      source,
+    })
+    mocks.checkoutCreate.mockResolvedValue({
+      client_secret: 'cs_test_secret',
+      url: 'https://checkout.stripe.test/session',
+    })
+
+    const response = await POST(checkoutRequest(embedded))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject(
+      embedded
+        ? { clientSecret: 'cs_test_secret', mode: 'test' }
+        : { url: 'https://checkout.stripe.test/session', mode: 'test' }
+    )
+
+    const params = mocks.checkoutCreate.mock.calls[0][0]
+    expect(params.customer).toBe(customerId)
+    expect(params.customer_update).toEqual({ address: 'auto' })
+    expect(params.billing_address_collection).toBe('required')
+    expect(params.automatic_tax).toEqual({ enabled: true })
+    expect(params).not.toHaveProperty('customer_email')
+  })
+
+  it('omits customer_update on the customer_email fallback', async () => {
+    mocks.resolveOrCreateCheckoutCustomer.mockResolvedValue({
+      customerId: null,
+      blockingSubscription: null,
+      source: 'none',
     })
     mocks.checkoutCreate.mockResolvedValue({ client_secret: 'cs_test_secret' })
 
     const response = await POST(checkoutRequest())
     expect(response.status).toBe(200)
-    expect(await response.json()).toMatchObject({ clientSecret: 'cs_test_secret', mode: 'test' })
 
     const params = mocks.checkoutCreate.mock.calls[0][0]
-    expect(params.customer).toBe('cus_user')
-    expect(params).not.toHaveProperty('customer_email')
+    expect(params.customer_email).toBe('user@example.com')
+    expect(params).not.toHaveProperty('customer')
+    expect(params).not.toHaveProperty('customer_update')
+    expect(params.billing_address_collection).toBe('required')
+    expect(params.automatic_tax).toEqual({ enabled: true })
   })
 
   it.each(['active', 'trialing', 'past_due'])(

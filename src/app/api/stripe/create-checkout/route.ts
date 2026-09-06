@@ -199,7 +199,10 @@ export async function POST(req: NextRequest) {
     mode: 'subscription',
     line_items: [lineItem],
     ...(billing.customerId
-      ? { customer: billing.customerId }
+      ? {
+          customer: billing.customerId,
+          customer_update: { address: 'auto' },
+        }
       : { customer_email: user.email }),
     client_reference_id: user.id,
     metadata,
