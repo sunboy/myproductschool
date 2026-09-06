@@ -56,3 +56,11 @@ did not change its configuration or claim that a live billing journey passed.
   modes, mismatched modes, and an invalid signature. They do not contact Stripe.
 
 These guards do not replace staging isolation or end-to-end billing verification.
+
+## Desktop continuation status
+
+Desktop Vercel CLI authentication and the local Stripe test key now work. The earlier cloud-runtime access limitation above is historical. Test prices and account are verified; billing remains deliberately unconfigured on the feature preview because it still uses the production database.
+
+An isolated Supabase branch costs $0.01344/hour (about $0.32/day); the owner's cost confirmation remains pending. An agent prematurely created a branch, whose legacy migration replay failed on duplicate RLS policies. That empty branch was removed, never attached to Vercel, and only main remains. Do not recreate it without the pending approval. A hosted schema baseline or repaired replay must be verified before billing setup.
+
+The prepared additive migration `20260906120000_stripe_event_processing_state.sql` introduces fenced event-processing claims and once-only payment-failure increments. It passed isolated PGlite checks. It must run before enabling the new webhook code; missing RPCs fail closed. No hosted migration, test webhook registration or complete checkout/portal/entitlement journey has passed. Production billing configuration and entitlements remain untouched by the preview test setup.

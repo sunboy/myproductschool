@@ -4,7 +4,7 @@ import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { ArrowRight, Check, ChevronRight, Minus, Share2, TrendingDown, TrendingUp } from 'lucide-react'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { NoteCard } from '@/components/redesign/NoteCard'
@@ -590,7 +590,22 @@ export default function ProgressPage() {
   const { data: dna } = useLearnerDNAData()
   const [recentAttempts, setRecentAttempts] = useState<RecentAttempt[]>([])
   const [recentInterviews, setRecentInterviews] = useState<RecentInterview[]>([])
-  const [masteryEntries, setMasteryEntries] = useState<Array<{ challenge_id: string; score: number | null; is_completed: boolean }>>([])
+  const [masteryEntries, setMasteryEntries] = useState<Array<{ challenge_id: string; score: number | null; is_completed: boolean; is_catalogued?: boolean }>>([])
+  const [masteryStatus, setMasteryStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const loadMastery = useCallback(async () => {
+    setMasteryStatus('loading')
+    try {
+      const response = await fetch('/api/challenges/mastery')
+      if (!response.ok) throw new Error('Mastery unavailable')
+      const data = await response.json()
+      if (!Array.isArray(data)) throw new Error('Invalid mastery response')
+      setMasteryEntries(data)
+      setMasteryStatus('ready')
+    } catch {
+      setMasteryStatus('error')
+    }
+  }, [])
+  useEffect(() => { void loadMastery() }, [loadMastery])
   const [reflection, setReflection] = useState<string | null>(null)
   const [reflectionLoading, setReflectionLoading] = useState(true)
   const [trajectory, setTrajectory] = useState<ReasoningTrajectory | null>(null)
@@ -614,10 +629,6 @@ export default function ProgressPage() {
       .then(data => { if (Array.isArray(data)) setRecentAttempts(data) })
       .catch(() => {})
       .finally(() => setAttemptsLoaded(true))
-    fetch('/api/challenges/mastery')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (Array.isArray(data)) setMasteryEntries(data) })
-      .catch(() => {})
     fetch('/api/live-interview/history?limit=3')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.sessions) setRecentInterviews(data.sessions) })
@@ -660,10 +671,12 @@ export default function ProgressPage() {
   })
 
   // Mastery stats
-  const total = masteryEntries.length
+  const catalogEntries = masteryEntries.filter(e => e.is_catalogued !== false)
+  const total = catalogEntries.length
   const attempted = masteryEntries.filter(e => e.is_completed).length
   const mastered = masteryEntries.filter(e => e.is_completed && e.score !== null && (e.score as number) >= 80).length
-  const attemptedPct = total > 0 ? Math.round((attempted / total) * 100) : 0
+  const catalogCompleted = catalogEntries.filter(e => e.is_completed).length
+  const attemptedPct = total > 0 ? Math.round((catalogCompleted / total) * 100) : 0
 
   const streakDays = profile?.streak_days ?? 0
   const xpTotal = profile?.xp_total ?? 0
@@ -806,9 +819,9 @@ export default function ProgressPage() {
       <StatStrip
         className="mb-4"
         cells={[
-          { key: 'completed', label: 'Challenges completed', value: String(attempted) },
-          { key: 'mastered', label: 'Scored 80+', value: String(mastered) },
-          { key: 'coverage', label: 'Library coverage', value: `${attemptedPct}%` },
+          { key: 'completed', label: 'Challenges completed', value: masteryStatus === 'ready' ? String(attempted) : '—' },
+          { key: 'mastered', label: 'Scored 80+', value: masteryStatus === 'ready' ? String(mastered) : '—' },
+          { key: 'coverage', label: 'Practice coverage', value: masteryStatus === 'ready' ? `${attemptedPct}%` : '—' },
           {
             key: 'xp',
             label: 'Total XP',
@@ -817,6 +830,13 @@ export default function ProgressPage() {
           },
         ]}
       />
+
+      {masteryStatus === 'error' && (
+        <p role="status" className="mb-4 text-sm text-ink-secondary">
+          Your challenge totals could not be loaded.{' '}
+          <button type="button" onClick={() => void loadMastery()} className="min-h-11 font-semibold text-forest-950 underline">Try again</button>
+        </p>
+      )}
 
       {/* ── Row 1: FLOW moves / skill profile / four-week activity ── */}
       <div className="mb-4 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1.05fr_1.05fr_1fr]">

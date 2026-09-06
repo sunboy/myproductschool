@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
+import { buildMasteryEntries, collectPages, collectPublishedChallengeIds, type MasteryAttempt } from '@/lib/progress/mastery'
 
 export async function GET() {
   // Mock mode
@@ -22,28 +23,37 @@ export async function GET() {
 
   const admin = createAdminClient()
 
-  const [{ data: challenges }, { data: attempts }] = await Promise.all([
-    admin.from('challenges').select('id').eq('is_published', true),
-    admin.from('challenge_attempts')
-      .select('challenge_id, total_score, max_score')
-      .eq('user_id', user.id)
-      .eq('status', 'completed'),
-  ])
-
-  const completedMap = new Map<string, number | null>()
-  for (const attempt of attempts ?? []) {
-    const score = attempt.total_score == null || !Number.isFinite(Number(attempt.total_score)) || !(Number(attempt.max_score) > 0)
-      ? null
-      : Math.round(Math.max(0, Math.min(1, Number(attempt.total_score) / Number(attempt.max_score))) * 100)
-    const previous = completedMap.get(attempt.challenge_id)
-    if (!completedMap.has(attempt.challenge_id) || (score != null && (previous == null || score > previous))) completedMap.set(attempt.challenge_id, score)
+  let publishedChallengeIds: string[]
+  let attempts: MasteryAttempt[]
+  try {
+    ;[publishedChallengeIds, attempts] = await Promise.all([
+      collectPublishedChallengeIds(async (from, to) => {
+        const { data, error } = await admin
+          .from('challenges')
+          .select('id')
+          .eq('is_published', true)
+          .order('id', { ascending: true })
+          .range(from, to)
+        if (error) throw error
+        return data ?? []
+      }),
+      collectPages(async (from, to) => {
+        const { data, error } = await admin
+          .from('challenge_attempts')
+          .select('challenge_id, total_score, max_score')
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+          .order('id', { ascending: true })
+          .range(from, to)
+        if (error) throw error
+        return (data ?? []) as MasteryAttempt[]
+      }),
+    ])
+  } catch {
+    return NextResponse.json({ error: 'Mastery could not be loaded.' }, { status: 503 })
   }
 
-  const result = (challenges ?? []).map(c => ({
-    challenge_id: c.id,
-    score: completedMap.has(c.id) ? (completedMap.get(c.id) ?? null) : null,
-    is_completed: completedMap.has(c.id),
-  }))
+  const result = buildMasteryEntries(publishedChallengeIds, attempts)
 
   return NextResponse.json(result)
 }
