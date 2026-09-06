@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { GRACE_DAYS } from './dunning'
+import { isAnalyticsPlanId } from './plans'
 
 export type EffectiveBillingPlan = 'free' | 'pro'
 
@@ -48,8 +49,8 @@ export function isWithinGracePeriod(
 
 /**
  * Status/grace gate for a subscription, independent of which plan it is for.
- * `planMatches` decides whether the subscription's plan counts (Pro uses an
- * exact 'pro' match; the analytics tier matches its analytics_* plan ids).
+ * `planMatches` decides whether the subscription's plan counts. Pro access
+ * includes canonical Analytics plans; the Analytics gate matches those IDs only.
  */
 export function subscriptionEntitlesPlan(
   subscription: SubscriptionEntitlementRow | null | undefined,
@@ -82,7 +83,12 @@ export function subscriptionEntitlesPro(
   // it directly on the subscription row that value is used as a fallback.
   pastDueSinceOverride?: string | null
 ) {
-  return subscriptionEntitlesPlan(subscription, (p) => p === 'pro', now, pastDueSinceOverride)
+  return subscriptionEntitlesPlan(
+    subscription,
+    (plan) => plan === 'pro' || isAnalyticsPlanId(plan),
+    now,
+    pastDueSinceOverride,
+  )
 }
 
 export function effectivePlanFromRows(
