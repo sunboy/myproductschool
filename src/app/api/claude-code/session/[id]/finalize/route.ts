@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
 import { recordSessionSpend } from '@/lib/sandbox/record-spend'
+import { blockSessionKey } from '@/lib/sandbox/llm-gateway'
 import { gradeAnalystSession } from '@/lib/coding-grading/analytics-grader'
 import { getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { analystDimensionsToStepResults } from '@/lib/coding-grading/analyst-competency-map'
@@ -203,6 +204,15 @@ export async function POST(
     await pauseForFinalization(admin, sessionId)
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 503 })
+  }
+
+  // Revoke the session credential before any slower teardown or grading work.
+  // Blocking retains the gateway record so spend reconciliation can still read
+  // the authoritative total. The reaper retries bounded failures.
+  const keyBlock = await blockSessionKey(sessionId, 4000)
+  if (keyBlock.status === 'failed' || keyBlock.status === 'not_found') {
+    const reason = keyBlock.status === 'failed' ? keyBlock.reason : keyBlock.status
+    console.error(`[cc/finalize] session key block failed (${reason})`)
   }
 
   // --- Best-effort sandbox teardown ---

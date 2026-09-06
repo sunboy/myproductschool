@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  blockOwnedFailedProvisioningKey,
   provisionSession,
   type ProvisionFailure,
   type ProvisionInput,
@@ -33,6 +34,7 @@ test('provisionSession fails closed without the gateway even if a shared provide
       markFailed: async (_admin, sessionId, failure) => {
         failedSessionId = sessionId
         recordedFailure = failure
+        return true
       },
     })
 
@@ -47,4 +49,14 @@ test('provisionSession fails closed without the gateway even if a shared provide
     if (previousProviderKey === undefined) delete process.env.ANTHROPIC_API_KEY
     else process.env.ANTHROPIC_API_KEY = previousProviderKey
   }
+})
+
+test('a provisioning loser cannot block the key owned by a racing active session', async () => {
+  let calls = 0
+  const result = await blockOwnedFailedProvisioningKey(false, 'session-race', async () => {
+    calls++
+    return { status: 'blocked', spentCents: 0 }
+  })
+  assert.equal(result, null)
+  assert.equal(calls, 0)
 })

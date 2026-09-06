@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
-const mocks = vi.hoisted(() => ({ createClient: vi.fn(), createAdminClient: vi.fn(), grade: vi.fn(), destroy: vi.fn(), pause: vi.fn(), persist: vi.fn(), after: vi.fn(), fresh: vi.fn(), freshUserState: vi.fn(), inspect: vi.fn(), listSkills: vi.fn() }))
+const mocks = vi.hoisted(() => ({ createClient: vi.fn(), createAdminClient: vi.fn(), grade: vi.fn(), destroy: vi.fn(), pause: vi.fn(), persist: vi.fn(), after: vi.fn(), fresh: vi.fn(), freshUserState: vi.fn(), inspect: vi.fn(), listSkills: vi.fn(), keyBlock: vi.fn() }))
 vi.mock('next/server', async original => ({ ...await original<typeof import('next/server')>(), after: mocks.after }))
 vi.mock('@/lib/supabase/server', () => ({ createClient: mocks.createClient }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: mocks.createAdminClient }))
 vi.mock('@/lib/sandbox', () => ({ getSandbox: () => ({ destroySession: mocks.destroy }) }))
 vi.mock('@/lib/sandbox/record-spend', () => ({ recordSessionSpend: vi.fn().mockResolvedValue({}) }))
+vi.mock('@/lib/sandbox/llm-gateway', () => ({ blockSessionKey: mocks.keyBlock }))
 vi.mock('@/lib/coding-grading/analytics-grader', () => ({ gradeAnalystSession: mocks.grade }))
 vi.mock('@/lib/coding-grading/workspace-inspector', () => ({ inspectWorkspace: mocks.inspect, listUserSkills: mocks.listSkills }))
 vi.mock('@/lib/usage/ai-budget', () => ({ getUserPlanForBudget: vi.fn().mockResolvedValue('free') }))
@@ -27,6 +28,7 @@ function setup(options: { status?: string; artifact?: unknown; attemptError?: bo
   mocks.freshUserState.mockResolvedValue({ uri: 'user-1/claude.tar.gz', updatedAt: '2026-09-06T07:30:01.000Z' })
   mocks.inspect.mockResolvedValue({ skills: [], artifacts: [{ filename: 'report.md', preview: 'Report' }], fileCount: 1, ok: true })
   mocks.listSkills.mockResolvedValue([])
+  mocks.keyBlock.mockResolvedValue({ status: 'blocked', spentCents: 7 })
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}')))
   return session
 }
@@ -43,6 +45,8 @@ describe('analytics submission orchestration', () => {
     expect(session.status).toBe('idle')
     expect(session.transcript_uri).toBe('saved.tar.gz')
     expect(mocks.destroy).toHaveBeenCalledWith('host-1')
+    expect(mocks.keyBlock).toHaveBeenCalledWith('session-1', 4000)
+    expect(mocks.keyBlock.mock.invocationCallOrder[0]).toBeLessThan(mocks.destroy.mock.invocationCallOrder[0])
     expect(mocks.after).toHaveBeenCalledOnce()
     expect(mocks.persist).not.toHaveBeenCalled()
   })
@@ -51,6 +55,7 @@ describe('analytics submission orchestration', () => {
     mocks.pause.mockRejectedValue(new Error('Pause failed'))
     expect((await submit()).status).toBe(503)
     expect(mocks.destroy).not.toHaveBeenCalled()
+    expect(mocks.keyBlock).not.toHaveBeenCalled()
     expect(mocks.grade).not.toHaveBeenCalled()
   })
   it('does not call the model again when retrying a cached result from this session', async () => {

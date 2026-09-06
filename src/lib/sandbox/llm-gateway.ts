@@ -266,22 +266,108 @@ export async function getAllSessionKeySpendCents(): Promise<Map<string, number> 
   }
 }
 
-/** Best-effort revoke when a session ends (the duration TTL also expires it). */
-export async function revokeSessionKey(virtualKey: string): Promise<void> {
-  if (!isGatewayConfigured()) return
+type GatewaySessionKey = {
+  key_alias?: unknown
+  token?: unknown
+  metadata?: unknown
+  spend?: unknown
+  blocked?: unknown
+}
+
+export type BlockSessionKeyResult =
+  | { status: 'blocked' | 'already_blocked'; spentCents: number | null }
+  | { status: 'not_found' | 'unconfigured' }
+  | {
+      status: 'failed'
+      reason:
+        | 'invalid_session_id'
+        | 'list_unavailable'
+        | 'metadata_mismatch'
+        | 'token_missing'
+        | 'block_unavailable'
+        | 'block_unverified'
+    }
+
+function sessionKeyMetadataMatches(key: GatewaySessionKey, sessionId: string): boolean {
+  if (!key.metadata || typeof key.metadata !== 'object' || Array.isArray(key.metadata)) return false
+  const metadata = key.metadata as Record<string, unknown>
+  return metadata.feature === 'claude_code_analytics' && metadata.session_id === sessionId
+}
+
+function sessionKeySpendCents(key: GatewaySessionKey): number | null {
+  return typeof key.spend === 'number' && Number.isFinite(key.spend) && key.spend >= 0
+    ? Math.round(key.spend * 100)
+    : null
+}
+
+function boundedSignal(deadline: number): AbortSignal {
+  return AbortSignal.timeout(Math.max(1, deadline - Date.now()))
+}
+
+/**
+ * Immediately revoke one ended session's credential without deleting its
+ * gateway record. LiteLLM's block endpoint accepts the hashed `token` returned
+ * by `/key/list`; retaining the row keeps authoritative spend available to the
+ * idempotent accounting backstop. The alias and mint metadata must both match
+ * before a token is sent to `/key/block`, so a substring list result can never
+ * affect a neighboring session.
+ *
+ * Failures are returned as allow-listed reasons. Callers can retry safely; a
+ * successful block is idempotent and the mint-time duration remains a fallback.
+ */
+export async function blockSessionKey(
+  sessionId: string,
+  timeoutMs = 8000,
+): Promise<BlockSessionKeyResult> {
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(sessionId)) {
+    return { status: 'failed', reason: 'invalid_session_id' }
+  }
+  if (!isGatewayConfigured()) return { status: 'unconfigured' }
+
   const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
+  const alias = `cc-${sessionId}`
+  const deadline = Date.now() + Math.max(1, timeoutMs)
+  const query = new URLSearchParams({ key_alias: alias, return_full_object: 'true', size: '100' })
+
+  let key: GatewaySessionKey | undefined
   try {
-    // Bounded for the same reason as /key/list: an idle-stopped gateway DB can
-    // make this hang. Best-effort — the key's duration TTL expires it regardless,
-    // so an abort is harmless.
-    await fetch(`${baseUrl}/key/delete`, {
+    const response = await fetch(`${baseUrl}/key/list?${query}`, {
+      headers: { Authorization: `Bearer ${master}` },
+      signal: boundedSignal(deadline),
+      cache: 'no-store',
+    })
+    if (!response.ok) return { status: 'failed', reason: 'list_unavailable' }
+    const body = (await response.json()) as { keys?: GatewaySessionKey[] }
+    key = body.keys?.find((candidate) => candidate.key_alias === alias)
+  } catch {
+    return { status: 'failed', reason: 'list_unavailable' }
+  }
+
+  if (!key) return { status: 'not_found' }
+  if (!sessionKeyMetadataMatches(key, sessionId)) {
+    return { status: 'failed', reason: 'metadata_mismatch' }
+  }
+  const spentCents = sessionKeySpendCents(key)
+  if (key.blocked === true) return { status: 'already_blocked', spentCents }
+  if (typeof key.token !== 'string' || key.token.length === 0) {
+    return { status: 'failed', reason: 'token_missing' }
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/key/block`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ keys: [virtualKey] }),
-      signal: AbortSignal.timeout(8000),
+      body: JSON.stringify({ key: key.token }),
+      signal: boundedSignal(deadline),
     })
+    if (!response.ok) return { status: 'failed', reason: 'block_unavailable' }
+    const blocked = (await response.json()) as GatewaySessionKey | null
+    if (!blocked || blocked.blocked !== true) {
+      return { status: 'failed', reason: 'block_unverified' }
+    }
+    return { status: 'blocked', spentCents: sessionKeySpendCents(blocked) ?? spentCents }
   } catch {
-    // TTL will expire it regardless.
+    return { status: 'failed', reason: 'block_unavailable' }
   }
 }

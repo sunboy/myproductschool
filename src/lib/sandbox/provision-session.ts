@@ -19,7 +19,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
 import type { SessionEnv } from '@/lib/sandbox/types'
 import { mintSnapshotToken } from '@/lib/sandbox/snapshot-token'
-import { mintSessionVirtualKey, isGatewayConfigured, warmGateway } from '@/lib/sandbox/llm-gateway'
+import {
+  blockSessionKey,
+  mintSessionVirtualKey,
+  isGatewayConfigured,
+  warmGateway,
+} from '@/lib/sandbox/llm-gateway'
 import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 import { recordUsageEvent } from '@/lib/usage/check-limit'
 import { captureServerImmediate } from '@/lib/posthog/server'
@@ -144,7 +149,22 @@ export interface ProvisionSessionDependencies {
     admin: ReturnType<typeof createAdminClient>,
     sessionId: string,
     failure?: ProvisionFailure,
-  ) => Promise<void>
+  ) => Promise<boolean>
+}
+
+/** Only the request that won provisioning→failed may revoke the shared alias. */
+export async function blockOwnedFailedProvisioningKey(
+  failureOwned: boolean,
+  sessionId: string,
+  block: typeof blockSessionKey = blockSessionKey,
+) {
+  if (!failureOwned) return null
+  const result = await block(sessionId, 4000)
+  if (result.status === 'failed' || result.status === 'not_found') {
+    const reason = result.status === 'failed' ? result.reason : result.status
+    console.error(`[cc/provision] session key block failed (${reason})`)
+  }
+  return result
 }
 
 /**
@@ -247,13 +267,17 @@ export async function provisionSession(
       const gatewayStatus = Number(
         msg.match(/\((\d{3})\)/)?.[1] ?? msg.match(/key\/generate (\d{3})[: ]/)?.[1],
       ) || undefined
-      await fail(admin, sessionId, {
+      const failureOwned = await fail(admin, sessionId, {
         code: 'gateway_key_mint',
         userId: input.userId,
         challengeId: input.challengeId,
         gatewayStatus,
         error: err,
       })
+      // The gateway may have persisted the key before a response was lost or
+      // malformed. Only the request that won the provisioning→failed CAS may
+      // block it; a racing request may already have activated the same key.
+      await blockOwnedFailedProvisioningKey(failureOwned, sessionId)
       return {
         ok: false,
         status: 503,
@@ -315,18 +339,24 @@ export async function provisionSession(
   } catch (err) {
     console.error('[cc/provision] createSession failed:', err)
     // A partially-created revision still pins an instance — tear it down.
-    const partialHostId = sandbox.deriveHostInstanceId?.(sessionId)
-    if (partialHostId) {
-      await sandbox
-        .destroySession(partialHostId)
-        .catch((e) => console.error('[cc/provision] partial teardown failed:', e))
-    }
-    await fail(admin, sessionId, {
+    const failureOwned = await fail(admin, sessionId, {
       code: 'create_session',
       userId: input.userId,
       challengeId: input.challengeId,
       error: err,
     })
+    await blockOwnedFailedProvisioningKey(failureOwned, sessionId)
+    if (failureOwned) {
+      // A partially-created revision can still pin an instance. The request
+      // that won the failure CAS owns teardown; a racing winner may be live on
+      // the same deterministic host id.
+      const partialHostId = sandbox.deriveHostInstanceId?.(sessionId)
+      if (partialHostId) {
+        await sandbox
+          .destroySession(partialHostId)
+          .catch((e) => console.error('[cc/provision] partial teardown failed:', e))
+      }
+    }
     return { ok: false, status: 503, error: 'Sandbox provisioning failed. Please try again.' }
   }
 
@@ -403,7 +433,7 @@ async function markFailed(
   admin: ReturnType<typeof createAdminClient>,
   sessionId: string,
   failure?: ProvisionFailure,
-): Promise<void> {
+): Promise<boolean> {
   // CAS guard: only fail a row that is still `provisioning`. If a concurrent
   // provision attempt for the same session already flipped it to `active`, this
   // update matches nothing and we must NOT clobber the live session or emit a
@@ -421,7 +451,7 @@ async function markFailed(
     .eq('status', 'provisioning')
     .select('id')
 
-  if (!failure || !flipped || flipped.length === 0) return
+  if (!failure || !flipped || flipped.length === 0) return false
 
   // Surface the failure to both observability planes. Before this, the start/
   // provision path captured NOTHING — the user saw a friendly string and the real
@@ -454,4 +484,5 @@ async function markFailed(
       ...(failure.userId ? {} : { $process_person_profile: false }),
     },
   }).catch(() => {})
+  return true
 }

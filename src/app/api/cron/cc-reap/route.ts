@@ -23,6 +23,7 @@ import { getSandbox } from '@/lib/sandbox'
 import { reaperRemainingMs } from '@/lib/sandbox/reaper-budget'
 import { canStopGatewaySql, claimExpiredProvisioning, provisioningLeaseCutoff } from '@/lib/sandbox/provisioning-lease'
 import { recordSessionSpend } from '@/lib/sandbox/record-spend'
+import { blockSessionKey } from '@/lib/sandbox/llm-gateway'
 import { runSpendSnapshot } from '@/lib/sandbox/spend-snapshot'
 import { stopSqlInstance, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 
@@ -33,6 +34,36 @@ export const maxDuration = 60
 // who steps away briefly keeps their warm instance (instant reconnect); past it
 // the instance is freed and the user resumes from autosave. Override via env.
 const IDLE_REAP_SECONDS = parseInt(process.env.CC_IDLE_REAP_SECONDS ?? '900', 10) // 15 min
+const KEY_BLOCK_BATCH_LIMIT = 12
+
+type KeyBlockSummary = {
+  attempted: number
+  blocked: number
+  alreadyBlocked: number
+  notFound: number
+  failed: number
+  deferred: number
+}
+
+async function blockEndedSessionKeys(sessionIds: string[], timeoutMs: number): Promise<KeyBlockSummary> {
+  const unique = [...new Set(sessionIds)].slice(0, KEY_BLOCK_BATCH_LIMIT)
+  const results = await Promise.all(unique.map((sessionId) => blockSessionKey(sessionId, timeoutMs)))
+  const summary: KeyBlockSummary = {
+    attempted: unique.length,
+    blocked: 0,
+    alreadyBlocked: 0,
+    notFound: 0,
+    failed: 0,
+    deferred: Math.max(0, new Set(sessionIds).size - unique.length),
+  }
+  for (const result of results) {
+    if (result.status === 'blocked') summary.blocked++
+    else if (result.status === 'already_blocked') summary.alreadyBlocked++
+    else if (result.status === 'not_found') summary.notFound++
+    else if (result.status === 'failed') summary.failed++
+  }
+  return summary
+}
 
 function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
@@ -78,6 +109,31 @@ export async function GET(request: NextRequest) {
   let reaped = 0
   let sessionsDeferred = 0
   const failures: string[] = []
+  let keyBlocks: KeyBlockSummary = {
+    attempted: 0,
+    blocked: 0,
+    alreadyBlocked: 0,
+    notFound: 0,
+    failed: 0,
+    deferred: sessions.length,
+  }
+
+  // Block credentials first, while the gateway is already expected to be
+  // awake for these ending sessions. The batch and wall clock are bounded so
+  // teardown still has most of the sessions phase budget.
+  const keyBlockBudget = Math.min(3000, reaperRemainingMs(startedAt, 'sessions'))
+  if (sessions.length > 0 && keyBlockBudget >= 500) {
+    keyBlocks = await blockEndedSessionKeys(
+      sessions.map((session) => session.id as string),
+      keyBlockBudget,
+    )
+    if (keyBlocks.failed > 0 || keyBlocks.notFound > 0) {
+      console.error('[cc-reap] session key block incomplete', {
+        failed: keyBlocks.failed,
+        not_found: keyBlocks.notFound,
+      })
+    }
+  }
 
   for (const s of sessions) {
     if (reaperRemainingMs(startedAt, 'sessions') < 1_000) {
@@ -236,6 +292,41 @@ export async function GET(request: NextRequest) {
   const fullyIdle =
     sessions.length === 0 && activeCount === 0 && freshProvisioning === 0
 
+  // Retry recently ended rows only while another session proves the gateway is
+  // already in use. This catches a prior bounded block failure without waking
+  // the scale-to-zero gateway/Cloud SQL during an otherwise idle cron run.
+  let endedKeyBlockRetries: KeyBlockSummary | { skipped: 'idle' | 'time_budget' | 'query_failed' }
+  const gatewayExpectedAwake = (activeCount ?? 0) > 0 || (freshProvisioning ?? 0) > 0
+  if (!gatewayExpectedAwake) {
+    endedKeyBlockRetries = { skipped: 'idle' }
+  } else if (reaperRemainingMs(startedAt, 'response') < 5000) {
+    endedKeyBlockRetries = { skipped: 'time_budget' }
+  } else {
+    const retryCutoff = new Date(now.getTime() - 60 * 60 * 1000).toISOString()
+    const { data: recentlyEnded, error: endedError } = await admin
+      .from('claude_code_sessions')
+      .select('id')
+      .in('status', ['idle', 'terminated', 'failed'])
+      .gte('ended_at', retryCutoff)
+      .order('ended_at', { ascending: false })
+      .limit(KEY_BLOCK_BATCH_LIMIT)
+    if (endedError) {
+      console.error('[cc-reap] ended session key retry query failed')
+      endedKeyBlockRetries = { skipped: 'query_failed' }
+    } else {
+      endedKeyBlockRetries = await blockEndedSessionKeys(
+        (recentlyEnded ?? []).map((session) => session.id as string),
+        Math.min(2500, reaperRemainingMs(startedAt, 'response')),
+      )
+      if (endedKeyBlockRetries.failed > 0 || endedKeyBlockRetries.notFound > 0) {
+        console.error('[cc-reap] ended session key retry incomplete', {
+          failed: endedKeyBlockRetries.failed,
+          not_found: endedKeyBlockRetries.notFound,
+        })
+      }
+    }
+  }
+
   // --- Stop the gateway's Cloud SQL when idle ---
   // cc-llm-db is started on demand at session-start (cloud-sql-admin) and has no
   // native scale-to-zero, so it would bill 24/7 if left running. If NO session is
@@ -284,6 +375,8 @@ export async function GET(request: NextRequest) {
     sessions_deferred: sessionsDeferred,
     cleanup_budget_exhausted: reaperRemainingMs(startedAt, 'orphans') === 0,
     failures: failures.length,
+    key_blocks: keyBlocks,
+    ended_key_block_retries: endedKeyBlockRetries,
     idle_cutoff_seconds: IDLE_REAP_SECONDS,
     orphans_scanned: orphansScanned,
     orphans_reaped: orphansReaped,

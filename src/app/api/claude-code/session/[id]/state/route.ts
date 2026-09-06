@@ -1,4 +1,4 @@
-import { getSessionKeySpend } from '@/lib/sandbox/llm-gateway'
+import { blockSessionKey, getSessionKeySpend } from '@/lib/sandbox/llm-gateway'
 import { resolveSessionBudgetUsd } from '@/lib/sandbox/cost-policy'
 import { readAnalyticsProgress } from '@/lib/sandbox/analytics-progress'
 // GET /api/claude-code/session/[id]/state
@@ -86,6 +86,11 @@ export async function GET(
   // --- Lazy expiry flip: active → terminated ---
   if (status === 'active' && expiresAt && new Date(expiresAt) <= new Date()) {
     status = 'terminated'
+    const keyBlock = await blockSessionKey(sessionId, 3000)
+    if (keyBlock.status === 'failed' || keyBlock.status === 'not_found') {
+      const reason = keyBlock.status === 'failed' ? keyBlock.reason : keyBlock.status
+      console.error(`[cc/state] session key block failed (${reason})`)
+    }
     // Tear the sandbox down BEFORE flipping the row out of `active`. The reaper
     // only sweeps `active` sessions, so once this row is `terminated` nothing
     // else will free its Cloud Run instance — skipping destroySession here

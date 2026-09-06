@@ -73,6 +73,7 @@ ROLLBACK;
         encoding: 'utf8',
         input: sql,
         env: {
+          NODE_ENV: 'test',
           PATH: process.env.PATH ?? '/opt/homebrew/bin:/usr/bin:/bin',
           PGCONNECT_TIMEOUT: '10',
           PGDATABASE: decodeURIComponent(connection.pathname.slice(1)),
