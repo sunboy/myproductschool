@@ -37,6 +37,15 @@ function isTestSecretKey(value: string | null): boolean {
   return value?.startsWith('sk_test_') === true || value?.startsWith('rk_test_') === true
 }
 
+/** Test tooling must validate the value, even in an explicitly named test variable. */
+export function getStripeTestSecretKey(env: StripeEnv = process.env): string {
+  const key = trimEnv(env.STRIPE_TEST_SECRET_KEY ?? env.STRIPE_SECRET_KEY)
+  if (!key || !isTestSecretKey(key)) {
+    throw new Error('Stripe test setup requires an sk_test_ or rk_test_ key. Live and invalid keys are refused.')
+  }
+  return key
+}
+
 function isLivePublishableKey(value: string | null): boolean {
   return value?.startsWith('pk_live_') === true
 }

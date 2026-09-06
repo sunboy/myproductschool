@@ -197,6 +197,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  // A valid signature alone does not establish the endpoint's operating mode.
+  // Reject a misrouted test/live event before recording it or changing access.
+  if (event.livemode !== (stripeRuntime.mode === 'live')) {
+    return NextResponse.json({ error: 'Stripe event mode mismatch' }, { status: 400 })
+  }
+
   const supabase = createAdminClient()
 
   // Idempotency: insert event.id immediately. Unique violation = duplicate

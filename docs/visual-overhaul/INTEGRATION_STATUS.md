@@ -64,3 +64,11 @@ Test-owned examples used existing authorized browser authentication. Earlier use
 - The browser API still offers no viewport resizing. Phone/tablet checks remain open; desktop evidence must not be relabeled as device coverage.
 - No callable GCP administration tool or installed `gcloud` was available in the continuation runtime. Gateway repair/live analytics canary remains blocked on provider access. The prior `stripe_not_configured` finding remains an unresolved billing gate, not a newly repeated test result.
 - No application code, production deployment, cloud configuration, schema, billing settings, or existing answers were changed in this continuation pass.
+
+## Billing verification follow-up — September 6, 2026
+
+- Audited the connected HackProduct Stripe test account: all four US recurring prices match the current application plan amounts; the default test portal is active; no test webhook endpoints are registered. Exact identifiers and configuration requirements are in [BILLING_PREVIEW_GATE.md](./BILLING_PREVIEW_GATE.md).
+- Fixed the test-setup script accepting a live key placed in `STRIPE_TEST_SECRET_KEY`. The script now rejects live/invalid values before Stripe client creation.
+- Added signed webhook mode validation before database access, rejecting test events on live runtimes and live events on test runtimes. This does not replace isolated staging data.
+- Verification: 180 Vitest tests passed across 21 files, including 13 config tests and 5 locally signed webhook mode/signature tests. TypeScript and focused ESLint passed. No external test payment or entitlement mutation was performed.
+- Live gates remain open: preview environment writes and staging isolation, a registered test webhook with matching preview secret, GCP administration for gateway recovery, actual phone/tablet checks, and the complete live analytics/voice journeys. Plugin discovery found no relevant GCP administration integration in this session. No infrastructure or production settings were changed.
