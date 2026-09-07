@@ -177,3 +177,35 @@ crossed by `$0.0024`, this run by `$0.0556`), and the overage scales with the fi
 cost. **Recommended fix (not implemented):** mint keys with `max_budget = ceiling − worst-case
 single-turn cost`, and/or add an app-side pre-flight budget check before dispatching a turn.
 This directly informs the freemium pricing decision: the per-session cap must actually hold.
+
+## 2026-09-07 remaining-gate closure notes
+
+**Spend cap — CLOSED in code (commit 024ea4a2).** Keys now minted at ceiling minus
+`CC_WORST_CASE_TURN_USD` headroom; user-facing ceiling unchanged; session-recovery ownership
+fixed; reaper/spend-verify unaffected; 25/25 sandbox tests + tsc + eslint clean; new tests
+wired into CI. Live-at-reap confirmation is the only residual and rides the finalize canary
+below.
+
+**Analytics finalize + grade — OPEN, host-bound, not an app defect.** The one paid run
+(80f6d31c) reached 6/8 checkpoints then the OS OOM-killed Node. Confirmed cause: this host is
+8 GB total and was simultaneously running two Next dev servers + Playwright + Chrome + several
+Claude processes during the run. To close: run one fresh canary on a host with real memory
+headroom (or with nothing else running — the two idle dev servers were reclaimed this session),
+same harness (SHA in the run notes above), same $0.49 cap. Success = report + reusable skill at
+/home/analyst/.claude/skills/funnel-analyst/SKILL.md (verified via /api/claude-code/skills) +
+all 8 checkpoint assessments + persisted grade + cumulative key spend <= ceiling at reap (also
+closes the spend-cap live check). The WSS connect-retry already landed and worked on its single
+exercised attempt.
+
+**Spoken voice — ACCEPTED by the user for this release; live mic test deferred.** Not a
+release blocker. Route and steps remain in HANDOFF §3. No code work outstanding.
+
+**Reduced motion — code CLOSED, runtime screenshots deferred.** Fix verified by tsc+eslint;
+re-run e2e/reduced-motion.spec.ts against a warm, idle server for the before/after grid when
+convenient. Not a blocker.
+
+### Net release posture
+PR #20 stays draft. The only true code-open item is the finalize+grade live proof, which is
+gated on host memory, not on the codebase. Everything else is either closed or an accepted
+deferral. A merge-with-Analytics-gated-off is viable now if desired; a full merge should wait
+for one clean finalize canary on an adequate host.
