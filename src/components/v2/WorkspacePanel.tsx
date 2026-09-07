@@ -29,6 +29,12 @@ interface WorkspacePanelProps {
   style?: CSSProperties
   /** Applied to the body wrapper (defaults to flex-1 min-h-0 overflow-hidden). */
   bodyClassName?: string
+  /**
+   * Flush variant: no outer border or radius. Use when the panel is a region
+   * of a larger unified surface (e.g. the coding editor stacked above the
+   * console) rather than a card floating on the canvas.
+   */
+  flush?: boolean
   children: ReactNode
 }
 
@@ -40,12 +46,14 @@ export function WorkspacePanel({
   className = '',
   style,
   bodyClassName = '',
+  flush = false,
   children,
 }: WorkspacePanelProps) {
   const hasHeader = Boolean(icon || title || actions || headerExtra)
+  const frame = flush ? '' : 'rounded-xl border border-hairline'
   return (
     <div
-      className={`rounded-xl border border-hairline bg-card-bright overflow-hidden flex flex-col min-h-0 ${className}`}
+      className={`${frame} bg-card-bright overflow-hidden flex flex-col min-h-0 ${className}`}
       style={style}
     >
       {hasHeader && (

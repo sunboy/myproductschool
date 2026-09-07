@@ -5086,16 +5086,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       </div>
     </section>
   ) : (
-    // ── Full panel ──
+    // ── Full panel ── reference pane: one tonal step below the work surface,
+    // separated from it by a single hairline seam (no card frame).
     <section
-      className="rounded-xl border border-hairline"
       style={{
         width: `${leftWidth}%`,
         minWidth: leftPaneMinWidth,
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        background: 'var(--color-card-bright)',
+        background: 'var(--color-surface-container-low)',
+        borderRight: '1px solid var(--color-hairline)',
         overflow: 'hidden',
         minHeight: 0,
       }}>
@@ -5359,9 +5360,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const dragHandle = (leftCollapsed || isMobile) ? null : (
     <div
       onMouseDown={handleSeparatorMouseDown}
-      style={{ width: 6, cursor: 'col-resize', background: 'transparent', flexShrink: 0, position: 'relative' }}
+      style={{ width: 8, margin: '0 -4px', cursor: 'col-resize', background: 'transparent', flexShrink: 0, position: 'relative', zIndex: 5 }}
     >
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 2, height: 32, background: 'var(--color-outline-variant)', borderRadius: 999 }} />
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 3, height: 28, background: 'var(--color-outline-variant)', borderRadius: 999 }} />
     </div>
   )
 
@@ -5756,7 +5757,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         <>
           {<header className="workspace-focus-header">
             <button type="button" onClick={props.onExit ?? (() => window.history.back())} aria-label="Back to practice">← <span>Practice</span></button>
-            <h1>{challengeTitle}</h1>
+            <h1 title={challengeTitle ?? undefined}>{challengeTitle}</h1>
+            {/* Coding: the advisory stepper and Run/Submit live in the title row so
+                the work pane starts at the editor (one 48px command row, not a
+                title band plus a toolbar band). Canvas keeps its in-pane toolbar. */}
+            {isCodingChallenge && !codingMaximised && (
+              <div className="workspace-specialist-actions" data-testid="workspace-command-row">
+                <CodingStepper compact activeStep={codingStep} className="mr-2" onSelectStep={id => {
+                  setCodingStep(id)
+                  if (id === 'understand' || id === 'plan') {
+                    setLeftTab(id === 'plan' ? 'Notes' : 'Description')
+                    setMobileDescOpen(true)
+                  } else if (id === 'test') setConsoleCollapsed(false)
+                }} />
+                {codingActions}
+                <button type="button" onClick={() => setCodingMaximised(v => !v)} aria-label="Full screen workspace" title="Full screen">⛶</button>
+              </div>
+            )}
             {!isInterviewChallenge && <button type="button" aria-pressed={hintOpen} onClick={() => setHintOpen(v => !v)}>Need a hint?</button>}
           </header>}
         </>
@@ -5769,14 +5786,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
         {/* Right pane: scrollable workspace content only */}
         <section
-          className={!isCanvasChallenge && !isCodingChallenge ? 'rounded-xl border border-hairline' : undefined}
           style={{
             flex: 1, display: 'flex', flexDirection: 'column',
-            background: !isCanvasChallenge && !isCodingChallenge ? 'var(--color-card-bright)' : 'transparent',
+            background: isCanvasChallenge ? 'transparent' : 'var(--color-card-bright)',
             overflow: 'hidden', minHeight: 0,
           }}>
           {!mobileStacked && !isInterviewChallenge && <div className="workspace-work-header"><h2>Your work</h2>{flowStepperStrip}</div>}
-          {isInterviewChallenge && !codingMaximised && <div className="workspace-specialist-toolbar">
+          {isInterviewChallenge && !codingMaximised && (mobileStacked || !isCodingChallenge) && <div className="workspace-specialist-toolbar">
             {isCodingChallenge ? <>
               <CodingStepper compact activeStep={codingStep} onSelectStep={id => {
                 setCodingStep(id)
@@ -6101,16 +6117,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   })}
                 </div>
               )}
-              {/* Editor column: framed panels — editor card + grip gutter + console card
-                  floating on the workspace canvas (visual-clarity inc. 4) */}
+              {/* Editor column: editor region stacked over the console region on one
+                  continuous surface; a hairline + grip is the only divider. */}
               <div
                 ref={codingPaneRef}
                 style={{
                   flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0,
-                  gap: 8, paddingLeft: 8,
                 }}
               >
                 <WorkspacePanel
+                  flush
                   icon="code"
                   title="Editor"
                   headerExtra={codingParts.length > 0 && activePartId ? (
@@ -6164,16 +6180,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     aria-orientation="horizontal"
                     aria-label="Resize editor and console"
                     style={{
-                      height: 8, margin: '-8px 0', cursor: 'ns-resize', flexShrink: 0, zIndex: 5,
+                      height: 10, margin: '-5px 0', cursor: 'ns-resize', flexShrink: 0, zIndex: 5,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                   >
-                    <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--color-hairline)', transition: 'background 120ms' }} />
+                    <div style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--color-outline-variant)', transition: 'background 120ms' }} />
                   </div>
                 )}
-                {/* Console card — Test Cases / Run Results tabbed panel */}
+                {/* Console region — Test Cases / Run Results tabbed panel */}
                 <div
-                  className="rounded-xl border border-hairline overflow-hidden flex flex-col"
+                  className="border-t border-hairline overflow-hidden flex flex-col"
                   style={consoleCollapsed ? { flex: '0 0 auto' } : { flex: `${100 - editorHeightPct} 1 0`, minHeight: 0 }}
                 >
                   <TestCasePanel
