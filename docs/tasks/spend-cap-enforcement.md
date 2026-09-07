@@ -1,8 +1,14 @@
 # Task: enforce the per-session Analytics spend cap
 
-**Status:** specced, not implemented. Filed 2026-09-07 from the platform-rebuild session.
-**Priority:** do before any Analytics launch or freemium rollout. The invisible per-session
-cap has to actually hold, and today it does not.
+**Status (updated 2026-09-07):** headroom backstop IMPLEMENTED and merged to the branch
+(commit 024ea4a2) — keys minted at ceiling minus `CC_WORST_CASE_TURN_USD` (default $0.10),
+user-facing ceiling unchanged, session-recovery ownership fixed, 25/25 sandbox tests pass.
+Verified by unit tests + code review; NOT yet confirmed by a live staging canary (needs a
+paid run on a host with more memory — the last run OOM-died before finalize). The graceful
+80% wrap-up UX (Hatch prompts the user to finalize) is the remaining, front-end piece and
+is still deferred — tracked with the freemium work.
+
+---
 
 ## Problem
 
