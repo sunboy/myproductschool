@@ -110,8 +110,10 @@ export function OnboardingModal() {
     }
     if (path === 'plan' && slug) {
       router.push(`/explore/plans/${slug}`)
-    } else {
+    } else if (path === 'challenge') {
       router.push('/challenges')
+    } else {
+      router.push('/dashboard')
     }
   }
 

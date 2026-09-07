@@ -1305,22 +1305,29 @@
   transition: transform .18s ease-out;
 }
 
-/* Hatch peeks up from behind the feedback card: the asset is a pre-cropped,
-   transparent cutout, so the container must not clip it. Width drives the size;
-   height follows the asset's aspect ratio (840x522). */.v5 .hero-reference-hatch {
+/* Hatch peeks up from behind the feedback card: the source asset (585x751)
+   is a full-body character, so the container crops a window over just the
+   head/cap/waving-arm portion (top ~67% of the asset) and clips the rest,
+   matching the reference composition where only Hatch's upper body shows
+   above the card. Width drives the scale; the img is sized to the asset's
+   natural aspect ratio and nudged up so the head+cap sit in the visible
+   window. */.v5 .hero-reference-hatch {
   position: absolute;
   z-index: 4;
-  top: 88px;
-  left: 280px;
-  width: 280px;
-  height: auto;
+  top: 40px;
+  left: 300px;
+  width: 300px;
+  height: 340px;
+  overflow: hidden;
   pointer-events: none;
   transform: translate(calc(var(--mx) * 5px), calc(var(--my) * 4px));
   transition: transform .2s ease-out;
 }.v5 .hero-reference-hatch img {
-  position: static;
+  position: absolute;
+  top: 0;
+  left: 0;
   display: block;
-  width: 100% !important;
+  width: 340px !important;
   height: auto !important;
   max-width: none !important;
 }

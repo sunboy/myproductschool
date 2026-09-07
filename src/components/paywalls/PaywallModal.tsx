@@ -295,7 +295,13 @@ export function PaywallModal({
       />
 
       {/* Modal panel */}
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-hairline bg-card-bright shadow-[0_32px_80px_rgba(5,35,22,0.35)] animate-step-enter">
+      <div
+        className={[
+          'relative w-full rounded-2xl border border-hairline bg-card-bright shadow-[0_32px_80px_rgba(5,35,22,0.35)] animate-step-enter',
+          checkoutOpen ? 'max-w-lg overflow-visible' : 'max-w-md overflow-hidden',
+        ].join(' ')}
+      >
+
         {/* Header — deep-forest pricing band (ref 10) */}
         <div
           className="px-5 pt-4 pb-4"
@@ -351,7 +357,7 @@ export function PaywallModal({
 
         {checkoutOpen ? (
           /* ── Embedded Stripe Checkout ── */
-          <div className="p-1">
+          <div className="max-h-[80dvh] overflow-y-auto p-1">
             <EmbeddedCheckoutProvider stripe={stripePromise} options={{ fetchClientSecret }}>
               <EmbeddedCheckout />
             </EmbeddedCheckoutProvider>
