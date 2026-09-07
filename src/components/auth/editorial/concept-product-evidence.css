@@ -19,36 +19,40 @@
   --hp-shadow-sm: 0 10px 28px rgba(33, 48, 40, .08);
   --hp-shadow-md: 0 20px 48px rgba(33, 48, 40, .12);
 
-  min-height: 100vh;
-  padding: 38px 48px 28px;
+  height: 100vh;
+  height: 100dvh;
+  padding: clamp(16px, 2.4vh, 34px) 48px clamp(14px, 2vh, 24px);
   overflow: hidden;
   position: relative;
+  display: flex;
+  flex-direction: column;
   background: var(--hp-cream);
   color: var(--hp-ink);
   font-family: var(--hp-sans);
   -webkit-font-smoothing: antialiased;
 }
-.concept-one > header { position: relative; z-index: 20; }
+.concept-one > header { position: relative; z-index: 20; flex: 0 0 auto; }
 
 .concept-one .concept-one-grid {
-  min-height: 690px;
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
-  grid-template-columns: minmax(360px, .82fr) minmax(430px, 1.08fr) minmax(420px, .95fr);
+  grid-template-columns: minmax(340px, .82fr) minmax(400px, 1.08fr) minmax(400px, .95fr);
   grid-template-areas: "story evidence form";
   gap: 28px;
   align-items: center;
 }
-.concept-one .story { padding: 50px 0 50px 15px; align-self: center; }
+.concept-one .story { padding: 0 0 0 15px; align-self: center; }
 .concept-one .story-kicker { width: max-content; padding: 8px 14px; border: 1px solid var(--hp-line); border-radius: 999px; color: var(--hp-forest-ink); background: var(--hp-cream-2); font-size: 10px; font-weight: 850; letter-spacing: .08em; }
-.concept-one .story h2 { margin: 28px 0 0; font-family: var(--hp-serif); font-size: clamp(43px, 4.1vw, 61px); line-height: 1.02; letter-spacing: -.045em; color: var(--hp-forest-ink); font-weight: 500; }
+.concept-one .story h2 { margin: clamp(14px, 2.4vh, 28px) 0 0; font-family: var(--hp-serif); font-size: clamp(38px, min(4.1vw, 6.2vh), 58px); line-height: 1.02; letter-spacing: -.045em; color: var(--hp-forest-ink); font-weight: 500; }
 .concept-one .story h2 em { color: var(--hp-amber); font-weight: 400; }
-.concept-one .story > p { max-width: 390px; margin: 22px 0 0; color: var(--hp-muted); font-size: 15px; line-height: 1.75; }
-.concept-one .area-icons { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 17px; }
-.concept-one .area-icons > div { width: 62px; text-align: center; }
+.concept-one .story > p { max-width: 390px; margin: clamp(12px, 2vh, 22px) 0 0; color: var(--hp-muted); font-size: 15px; line-height: 1.75; }
+.concept-one .area-icons { margin-top: clamp(14px, 2.4vh, 28px); display: flex; flex-wrap: nowrap; gap: clamp(8px, 1vw, 17px); }
+.concept-one .area-icons > div { width: 58px; flex: 0 0 auto; text-align: center; }
 .concept-one .area-icons span { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; margin: auto; background: var(--hp-cream-2); color: var(--hp-forest); font-size: 20px; }
 .concept-one .area-icons b { display: block; margin-top: 6px; font-size: 8.5px; line-height: 1.2; }
 
-.concept-one .evidence-zone { min-height: 590px; position: relative; align-self: end; }
+.concept-one .evidence-zone { height: 100%; min-height: 0; position: relative; align-self: stretch; }
 .concept-one .shape { position: absolute; pointer-events: none; }
 .concept-one .shape.taupe { width: 270px; height: 430px; background: #eee9e2; right: 5%; top: 15px; transform: rotate(-16deg); border-radius: 8px; }
 .concept-one .shape.green { width: 390px; height: 390px; background: var(--hp-forest-deep); right: -46%; bottom: -55px; transform: rotate(45deg); }
@@ -84,7 +88,7 @@
 .concept-one .form-zone { grid-area: form; display: flex; justify-content: flex-end; position: relative; z-index: 20; }
 .concept-one .form-zone .auth-card { width: min(100%, 530px); }
 
-.concept-one .benefit-strip { min-height: 112px; margin-top: 2px; padding: 25px 38px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--hp-line); border-radius: 17px; background: rgba(255, 255, 255, .7); box-shadow: var(--hp-shadow-sm); }
+.concept-one .benefit-strip { flex: 0 0 auto; min-height: 0; margin-top: clamp(8px, 1.6vh, 18px); padding: clamp(12px, 1.8vh, 22px) 38px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--hp-line); border-radius: 17px; background: rgba(255, 255, 255, .7); box-shadow: var(--hp-shadow-sm); }
 .concept-one .benefit { display: grid; grid-template-columns: 46px 1fr; gap: 15px; padding: 0 25px; border-right: 1px solid #ebe6df; }
 .concept-one .benefit:first-child { padding-left: 0; }
 .concept-one .benefit:last-child { border-right: 0; padding-right: 0; }

@@ -21,13 +21,6 @@ const AREA_ICONS = [
   ['✣', 'AI Analytics'],
 ] as const
 
-const BENEFITS = [
-  ['5', 'Practice across 5 areas', 'Coding, SQL, System Design, Product Judgment & AI Analytics'],
-  ['◎', 'AI feedback that helps', 'Detailed, fair and actionable feedback on every attempt'],
-  ['▥', 'Track & improve', 'See your progress and build consistency over time'],
-  ['◌', 'Built for engineers', 'Interview prep that reflects real engineering work'],
-] as const
-
 interface ConceptProductEvidenceProps {
   mode: 'login' | 'signup'
   redirectTo?: string
@@ -48,11 +41,8 @@ export function ConceptProductEvidence({ mode, redirectTo, archetype }: ConceptP
         </Link>
       </header>
       <section className="concept-one-grid">
-        <div className="form-zone">
-          <AuthCard mode={mode} redirectTo={redirectTo} archetype={archetype} turnstileTheme="light" />
-        </div>
         <div className="story">
-          <div className="story-kicker">BUILD SKILL. BUILD WHAT&apos;S NEXT.</div>
+          <div className="story-kicker">ACE INTERVIEWS. BUILD WHAT&apos;S NEXT.</div>
           <h2>
             Great engineers
             <br />
@@ -60,7 +50,7 @@ export function ConceptProductEvidence({ mode, redirectTo, archetype }: ConceptP
             <br />
             We help you <em>prove it.</em>
           </h2>
-          <p>Real technical challenges. AI feedback that&apos;s detailed, fair and actionable. Build practical skill and get interview ready.</p>
+          <p>Real interview problems. AI feedback that&apos;s detailed, fair and actionable. Practice across 5 areas. Get interview ready.</p>
           <div className="area-icons">
             {AREA_ICONS.map(([icon, label]) => (
               <div key={label}>
@@ -119,18 +109,14 @@ export function ConceptProductEvidence({ mode, redirectTo, archetype }: ConceptP
             <Link href="/pricing">View full feedback →</Link>
           </aside>
         </div>
+        <div className="form-zone">
+          <AuthCard mode={mode} redirectTo={redirectTo} archetype={archetype} turnstileTheme="light" />
+        </div>
       </section>
-      <footer className="benefit-strip">
-        {BENEFITS.map(([icon, title, desc]) => (
-          <div className="benefit" key={title}>
-            <span>{icon}</span>
-            <div>
-              <b>{title}</b>
-              <p>{desc}</p>
-            </div>
-          </div>
-        ))}
-      </footer>
+      {/* Benefit strip omitted on the auth surface: the login card + evidence
+          composition is the mockup's core, and keeping the strip forces the
+          page past one viewport (or clips under the cookie bar). The strip
+          lives on the marketing landing page instead. */}
     </main>
   )
 }
