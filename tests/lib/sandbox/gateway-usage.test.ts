@@ -2,12 +2,14 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { blockSessionKey, getSessionKeySpend } from '../../../src/lib/sandbox/llm-gateway'
 
-test('gateway usage selects the exact alias, preserves real spend and rejects unavailable data', async () => {
+test('gateway usage selects the exact alias, preserves real spend, and always displays the configured ceiling (never the gateway\'s reduced max_budget)', async () => {
   const previousFetch = globalThis.fetch
   const previousUrl = process.env.LLM_GATEWAY_URL
   const previousKey = process.env.LLM_GATEWAY_MASTER_KEY
+  const previousSessionBudget = process.env.CC_SESSION_BUDGET_USD
   process.env.LLM_GATEWAY_URL = 'https://gateway.example.test'
   process.env.LLM_GATEWAY_MASTER_KEY = 'test-only'
+  process.env.CC_SESSION_BUDGET_USD = '0.5'
   try {
     globalThis.fetch = async (input, init) => {
       const url = new URL(String(input))
@@ -15,7 +17,10 @@ test('gateway usage selects the exact alias, preserves real spend and rejects un
       assert.equal(init?.cache, 'no-store')
       return Response.json({ keys: [
         { key_alias: 'cc-test-session-other', spend: 9, max_budget: 10 },
-        { key_alias: 'cc-test-session', spend: 0.073, max_budget: 0.5 },
+        // The gateway's own max_budget (0.4) is the reduced mint value, not
+        // the 0.5 ceiling — getSessionKeySpend must ignore it and display
+        // the configured ceiling instead.
+        { key_alias: 'cc-test-session', spend: 0.073, max_budget: 0.4 },
       ] })
     }
     assert.deepEqual(await getSessionKeySpend('test-session'), { spentUsd: 0.073, budgetUsd: 0.5 })
@@ -28,8 +33,10 @@ test('gateway usage selects the exact alias, preserves real spend and rejects un
     globalThis.fetch = async () => { throw new Error('timeout') }
     assert.equal(await getSessionKeySpend('test-session'), null)
     globalThis.fetch = async () => Response.json({ keys: [{ key_alias: 'cc-test-session', spend: 0, max_budget: null }] })
-    assert.deepEqual(await getSessionKeySpend('test-session'), { spentUsd: 0, budgetUsd: null })
+    assert.deepEqual(await getSessionKeySpend('test-session'), { spentUsd: 0, budgetUsd: 0.5 })
   } finally {
+    if (previousSessionBudget === undefined) delete process.env.CC_SESSION_BUDGET_USD
+    else process.env.CC_SESSION_BUDGET_USD = previousSessionBudget
     globalThis.fetch = previousFetch
     if (previousUrl === undefined) delete process.env.LLM_GATEWAY_URL
     else process.env.LLM_GATEWAY_URL = previousUrl

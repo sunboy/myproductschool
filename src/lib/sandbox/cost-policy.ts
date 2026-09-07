@@ -9,6 +9,19 @@ const MIN_TTL_SECONDS = 60
 const DEFAULT_SESSION_BUDGET_USD = 0.5
 const MIN_SESSION_BUDGET_USD = 0.01
 
+// LiteLLM enforces spend caps per-request: it blocks a request from *starting*
+// once cumulative spend is at/over budget, but lets a request that started
+// under budget run to completion at whatever it costs. So a key minted with
+// max_budget = the raw ceiling is always overshot by up to one turn's cost —
+// observed on staging: +$0.0024 and +$0.0556 over a $0.49 cap. The largest
+// observed single Sonnet 4.6 turn on staging was ~$0.059; 0.10 is ~1.7x that,
+// so it is the default headroom reserved off the top of every minted key.
+// Raising the session ceiling below roughly 2x this default makes the key
+// nearly unusable (most/all of the budget would be reserved headroom) — pick
+// a higher ceiling or lower CC_WORST_CASE_TURN_USD deliberately, not by
+// accident.
+const DEFAULT_WORST_CASE_TURN_USD = 0.1
+
 function positiveNumber(value: string | number | undefined, fallback: number): number {
   const parsed = typeof value === 'number' ? value : Number(value)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
@@ -46,6 +59,42 @@ export function resolveSessionBudgetUsd(
   )
   const wanted = positiveNumber(requested, DEFAULT_SESSION_BUDGET_USD)
   return Math.round(Math.min(Math.max(wanted, MIN_SESSION_BUDGET_USD), max) * 100) / 100
+}
+
+/**
+ * Resolve the value to pass as LiteLLM's `max_budget` when minting a session
+ * key: the user-facing ceiling minus a worst-case-single-turn headroom, so a
+ * turn that starts under budget cannot finish over the intended cap. Floored
+ * at MIN_SESSION_BUDGET_USD (never zero/negative — an unusable key is worse
+ * than a slightly-too-generous one) and never above the ceiling itself.
+ *
+ * This is an internal safety buffer, not a user-facing number — see
+ * `resolveDisplayCeilingUsd` for what pricing copy and the usage meter should
+ * show instead.
+ */
+export function resolveKeyMaxBudgetUsd(
+  ceilingUsd: number,
+  options?: { worstCaseTurnUsd?: string | number | undefined },
+): number {
+  const worstCaseTurnUsd = positiveNumber(
+    options ? options.worstCaseTurnUsd : process.env.CC_WORST_CASE_TURN_USD,
+    DEFAULT_WORST_CASE_TURN_USD,
+  )
+  const reduced = ceilingUsd - worstCaseTurnUsd
+  const bounded = Math.min(Math.max(reduced, MIN_SESSION_BUDGET_USD), ceilingUsd)
+  return Math.round(bounded * 100) / 100
+}
+
+/**
+ * The ceiling is the number the user agreed to / sees — pricing copy, the
+ * live usage meter, session recovery's stored value. The headroom subtracted
+ * by `resolveKeyMaxBudgetUsd` is purely an internal enforcement detail; it
+ * must never leak into user-facing copy. This helper exists so every display
+ * surface can name its intent explicitly instead of reaching for the raw
+ * ceiling value directly.
+ */
+export function resolveDisplayCeilingUsd(ceilingUsd: number): number {
+  return ceilingUsd
 }
 
 /**

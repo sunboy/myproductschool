@@ -30,6 +30,12 @@ function tokenHash(rawKey: string): string {
   return createHash('sha256').update(rawKey).digest('hex')
 }
 
+// The gateway key is minted with headroom reserved off the ceiling (see
+// cost-policy.ts resolveKeyMaxBudgetUsd). With the default 0.10 headroom and
+// the 0.50 CC_SESSION_BUDGET_USD used throughout this file, the persisted
+// gateway max_budget is 0.40 — never the raw 0.50 ceiling.
+const EXPECTED_KEY_MAX_BUDGET = 0.4
+
 function persistedKey(
   sessionId: string,
   expiresAt: string,
@@ -46,7 +52,7 @@ function persistedKey(
       ttl_seconds: 900,
       expires_at: expiresAt,
     },
-    max_budget: 0.5,
+    max_budget: EXPECTED_KEY_MAX_BUDGET,
     models: ['claude-sonnet', 'claude-haiku'],
     blocked: false,
     expires: expiresAt,
@@ -104,7 +110,7 @@ test('recovers a lost successful generate response using the supplied determinis
         generateBody = JSON.parse(String(init?.body)) as GenerateBody
         assert.equal(generateBody.key, expectedKey)
         assert.equal(generateBody.key_alias, `cc-${sessionId}`)
-        assert.equal(generateBody.max_budget, 0.5)
+        assert.equal(generateBody.max_budget, EXPECTED_KEY_MAX_BUDGET)
         assert.deepEqual(generateBody.models, ['claude-sonnet', 'claude-haiku'])
         assert.deepEqual(
           {
@@ -131,6 +137,8 @@ test('recovers a lost successful generate response using the supplied determinis
       ['claude-sonnet', 'claude-haiku'],
     )
     assert.equal(result?.key, expectedKey)
+    // budgetUsd returned to callers stays the user-facing ceiling, not the
+    // reduced value minted on the gateway.
     assert.equal(result?.budgetUsd, 0.5)
     assert.equal(calls.filter((url) => url.endsWith('/key/generate')).length, 1)
     assert.equal(calls.some((url) => url.includes('/key/delete')), false)

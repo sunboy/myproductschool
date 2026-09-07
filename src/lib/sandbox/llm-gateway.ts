@@ -15,7 +15,12 @@
 //   CC_SESSION_BUDGET_USD  hard cap per session (default 0.50)
 
 import { createHash, createHmac } from 'node:crypto'
-import { resolveSessionBudgetUsd, resolveSessionTtlSeconds } from './cost-policy'
+import {
+  resolveDisplayCeilingUsd,
+  resolveKeyMaxBudgetUsd,
+  resolveSessionBudgetUsd,
+  resolveSessionTtlSeconds,
+} from './cost-policy'
 
 export interface VirtualKey {
   /** The virtual key the container uses as its Anthropic API key. */
@@ -73,7 +78,9 @@ async function recoverOwnedSessionKey(input: {
   alias: string
   sessionId: string
   expectedTokenHash: string
-  budgetUsd: number
+  /** The value actually persisted as the gateway key's `max_budget` — the
+   *  ceiling minus worst-case-turn headroom, NOT the user-facing ceiling. */
+  keyMaxBudgetUsd: number
   models: string[]
   ttlSeconds: number
   invocationExpiryUpperMs: number
@@ -130,7 +137,7 @@ async function recoverOwnedSessionKey(input: {
   const providerExpiryMs = typeof key.expires === 'string' ? Date.parse(key.expires) : Number.NaN
   if (
     key.token !== input.expectedTokenHash
-    || key.max_budget !== input.budgetUsd
+    || key.max_budget !== input.keyMaxBudgetUsd
     || key.blocked !== false
     || !sameModelSet(key.models, input.models)
     || !Number.isFinite(storedExpiryMs)
@@ -165,6 +172,12 @@ export async function mintSessionVirtualKey(
   const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
   const budgetUsd = resolveSessionBudgetUsd(process.env.CC_SESSION_BUDGET_USD)
+  // The gateway key is minted with headroom reserved off the ceiling so a
+  // turn that starts under budget cannot finish over it (see cost-policy.ts).
+  // `budgetUsd` (the ceiling) is what callers get back and what gets stored/
+  // displayed; `keyMaxBudgetUsd` (reduced) is what LiteLLM actually enforces
+  // and the only value ownership-recovery may compare against.
+  const keyMaxBudgetUsd = resolveKeyMaxBudgetUsd(budgetUsd)
   const boundedTtlSeconds = resolveSessionTtlSeconds(ttlSeconds)
   const perAttemptTimeoutMs = Math.min(
     15_000,
@@ -200,7 +213,7 @@ export async function mintSessionVirtualKey(
     alias,
     sessionId,
     expectedTokenHash,
-    budgetUsd,
+    keyMaxBudgetUsd,
     models,
     ttlSeconds: boundedTtlSeconds,
     invocationExpiryUpperMs,
@@ -236,7 +249,7 @@ export async function mintSessionVirtualKey(
         body: JSON.stringify({
           key,
           key_alias: alias,
-          max_budget: budgetUsd,
+          max_budget: keyMaxBudgetUsd,
           duration: `${durationSeconds}s`,
           models,
           blocked: false,
@@ -327,10 +340,13 @@ export async function getSessionKeySpend(sessionId: string): Promise<KeySpend | 
     // Gateway filtering is a substring match. Require the exact alias before using spend.
     const key = data.keys?.find(candidate => candidate.key_alias === alias)
     if (!key || typeof key.spend !== 'number' || !Number.isFinite(key.spend) || key.spend < 0) return null
+    // The gateway's own `max_budget` is now the reduced mint value (ceiling
+    // minus worst-case-turn headroom, see cost-policy.ts), not the
+    // user-facing ceiling — never surface it directly. The usage meter and
+    // any other display path must show the configured ceiling instead.
     return {
       spentUsd: key.spend,
-      budgetUsd: typeof key.max_budget === 'number' && Number.isFinite(key.max_budget) && key.max_budget > 0
-        ? key.max_budget : null,
+      budgetUsd: resolveDisplayCeilingUsd(resolveSessionBudgetUsd(process.env.CC_SESSION_BUDGET_USD)),
     }
   } catch {
     return null
@@ -352,9 +368,11 @@ export async function getKeySpend(virtualKey: string): Promise<KeySpend | null> 
     })
     if (!res.ok) return null
     const data = (await res.json()) as { info?: { spend?: number; max_budget?: number | null } }
+    // Same rationale as getSessionKeySpend: the gateway's stored max_budget
+    // is the reduced mint value, never the user-facing ceiling.
     return {
       spentUsd: data.info?.spend ?? 0,
-      budgetUsd: data.info?.max_budget ?? null,
+      budgetUsd: resolveDisplayCeilingUsd(resolveSessionBudgetUsd(process.env.CC_SESSION_BUDGET_USD)),
     }
   } catch {
     return null
