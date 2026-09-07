@@ -145,3 +145,35 @@ No dropped columns, no `NOT NULL` added without default on populated tables, no 
 | Migration compatibility | Proven | Table above — all 5 migrations additive/narrowing only, 0 non-additive changes | none — closed, but still requires the staged webhook-pause release order in `platform-rebuild-release.md` |
 | Rollback path | Documented, unexecuted | `platform-rebuild-release.md` §Rollback compatibility — per-subsystem plan exists | Dry-run/rehearse before production promotion |
 | Prod env parity | Not verified this session | HANDOFF §Vercel: "31 exact branch-specific Preview env bindings unchanged" — preview only, not prod | Recheck prod aliases/env immediately before any release per runbook step 1 |
+
+## 2026-09-07 fresh canary run (80f6d31c) + spend-cap finding
+
+**Run 80f6d31c (fresh, non-resume, one authorized paid run):** preflight green against
+READY deployment `dpl_BNzMXwLKLfzN4Ys63UP3JERSZAm4`. Reached 6 of 8 checkpoints, all
+verdict pass (mcp_setup, explore_schema, data_layout, analyze, segment, answer). The WSS
+connect retry worked on a single attempt, no 404. The OS then killed the Node process for
+low memory during checkpoint 7 (report), before report, skill, finalize, or grade ran.
+This is an out-of-memory kill on the host, not an app defect, so it neither validates nor
+invalidates the finalize+grade path. **That gate remains open.** Retry requires a host with
+more memory headroom (or the staging preview driving it), not another attempt on this box.
+
+Because the kill was external, the harness cleanup did not auto-fire. Cleanup was run
+explicitly via the harness's own `cleanupOwnedSessionFailure` (import guard added to the
+untracked harness; no logic change) and completed 6/6: session reaped via the real
+`/api/cron/cc-reap`, revision absent, gateway key blocked and retained, Stripe TEST
+subscription canceled with its deletion event processed once, Free baseline restored, prod
+`cc-llm-db` never touched (`sql_stopped: false`). State file SHA-256
+`6d82bfbe…38c8dee`.
+
+**Spend-cap gap (systemic, needs a fix before launch):** the session key spent
+`$0.5455824` against a `$0.49` cap, an overage of `$0.0556`. Root cause: `src/lib/sandbox/
+llm-gateway.ts` mints the LiteLLM key with `max_budget` set to the raw intended ceiling,
+no headroom. LiteLLM enforces per-request: it blocks a request from *starting* once
+cumulative spend is at or over budget, but lets an in-flight request that started under
+budget run to completion. The crossing request here started at `$0.4868` cumulative and
+finished at `$0.5456`. `src/lib/sandbox/spend-alerts.ts` is observability-only (its
+`SESSION_RUNAWAY_CENTS = 80` alert fired), not enforcement. Observed twice now (88f1e579
+crossed by `$0.0024`, this run by `$0.0556`), and the overage scales with the final turn's
+cost. **Recommended fix (not implemented):** mint keys with `max_budget = ceiling − worst-case
+single-turn cost`, and/or add an app-side pre-flight budget check before dispatching a turn.
+This directly informs the freemium pricing decision: the per-session cap must actually hold.
