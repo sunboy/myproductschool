@@ -17,9 +17,26 @@ The Stripe-hosted Checkout page accepted a standard TEST Visa ending in `4242`, 
 
 Signed `checkout.session.completed` event `evt_1UCmgZEGJUB78L7nfW7G8iOx` was processed once in staging with `attempt_count=1`, a non-null `processed_at`, a cleared processing lease, and no error. The authenticated `/api/profile` response reported Pro access.
 
-## Optional 3DS challenge — untested
+## Optional 3DS challenge — pass
 
-The verified Checkout Session used the standard TEST Visa ending in `4242`; it completed with `payment_status=paid` and returned to the application. No 3DS challenge-card journey was performed, so optional 3DS remains untested.
+Follow-up canary (September 6-7, 2026) ran the real Stripe test-mode 3DS
+challenge (the "3D Secure 2 Test Page" ACS iframe) end to end, both authenticate
+paths:
+
+- **Authenticate and succeed** (`4000 0025 0000 3155`): Checkout Session
+  `cs_test_b1nbsYyxTa2bLp7aOK8Pa1z6MvaTgdB1JGDj2Oi4BbKSRDLgzKiB6gJQqq` completed,
+  subscription `sub_1UCsSDEGJUB78L7nIbf0ajTE` created `trialing`. Signed events
+  `checkout.session.completed` (`evt_1UCsSEEGJUB78L7nWedogdvG`), `invoice.paid`
+  (`evt_1UCsSFEGJUB78L7n7aNfe6W9`), and `customer.subscription.created`
+  (`evt_1UCsSGEGJUB78L7nG8oXHWSR`) each processed exactly once. Profile reached
+  `pro_access=true`. Cleaned up via cancellation event `evt_1UCsTFEGJUB78L7nPqg7PMK6`.
+- **Authenticate and fail** (`4000 0000 0000 3220`): Checkout Session
+  `cs_test_b10LZeCNE40QfBb3kLAg9VKexLamU6mLYXEIzaUlzOKWZGmx6O0Yj8JoBX` never
+  completed (no subscription, no new webhook events); profile and subscription
+  state were unchanged from Free. The dangling open session was expired.
+
+Full evidence, screenshots, and event IDs are in
+[the 3DS evidence folder](../visual-overhaul/evidence/staging-20260906/stripe-3ds/README.md).
 
 ## Customer portal cancellation — pass
 

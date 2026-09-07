@@ -46,6 +46,10 @@ The real interview room `36f5455a-1905-4e87-a54e-402aaceeb955` reaches the expli
 
 On `b01d6585`, Keep Pro succeeded and the signed webhook cleared cancellation fields. The immediate Settings view stayed stale; reloading showed **NEXT BILLING** and **Cancel at renewal**. [Reconciled Settings](./settings-reactivation-confirmed-b01d6585.png). A follow-up fix addresses that immediate refresh race. Exact fixture cleanup restored Free and zero nonterminal subscriptions; see the billing runbook.
 
+## Stripe 3D Secure (3DS) challenge — September 6-7, 2026
+
+Both the authenticate-and-succeed (`4000002500003155`) and authenticate-and-fail (`4000000000003220`) 3DS journeys were run against the real Stripe test-mode ACS challenge page. Pass: subscription created, webhooks processed once, `pro_access=true`, then cleaned up. Decline: no subscription created, no new webhook events, profile stayed Free. Full evidence and event IDs: [stripe-3ds/README.md](./stripe-3ds/README.md).
+
 ## Immediate Settings reconciliation — 7e3c4d28
 
 READY deployment `dpl_4gzMyq6K7V9xeAxaS5C8qHfJECpS` serves `7e3c4d2822abee64560fc9db3d12734729618457`, with all 31 branch-only preview bindings unchanged. A fresh exact Stripe TEST fixture displayed **ACCESS ENDS** and **Keep Pro**. After Keep Pro and password confirmation, the first post-action browser read displayed **NEXT BILLING** and **Cancel at renewal** without reload. [Immediate success screenshot](./settings-immediate-reactivation-7e3c4d28.png).

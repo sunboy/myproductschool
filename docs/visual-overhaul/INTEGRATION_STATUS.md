@@ -97,3 +97,51 @@ PR #20 remains draft and unmerged. Production promotion is not authorized by sta
 On READY runtime candidate `7e3c4d28`, the bounded Analytics recovery restored the prior workspace and six assessed checkpoints, then the Claude skill command exited 1. No new assessment or final grade was produced. Session `7ef76e1f-6de6-4f97-8638-3c34126b6b9a` ended with `failed_cleanup_complete`: its revision is absent, key blocked and retained, and exact subscription cleanup restored Free with zero blocking subscriptions. The preserved final state records gateway spend `$0.1754103` for this new session; the prior session remains separately recorded. The command failure has no deeper captured cause. Further retries are stopped.
 
 The implementation and deployed Settings/coding regressions are verified; Analytics completion, user-participated spoken voice, and reduced-motion coverage remain unresolved. PR #20 remains draft, with no production promotion or merge.
+
+## 2026-09-07 release-gate reconciliation (HEAD bd5b998c)
+
+Independent reviewer pass on branch `feat/platform-rebuild-20260905`. No commits, no builds, no paid canary, no Stripe/Supabase/GCP mutation performed for this review.
+
+### Test and typecheck results
+
+- Sandbox + billing suites: **81/81 passed, 0 failed** across both runners in use (`node --import tsx --test` for the node:test/TAP files — `provisioning-lease`, `cost-policy`, `cloud-run-provider`, `provision-session`, `reaper-budget`, `gateway-usage`, `billing/entitlements` — 34+12 passed; `npx vitest run` for the vitest-suite files — `finalize-grade`, `finalize-route`, `analytics-progress`, `snapshot-provenance`, `snapshot-routes` — 35 passed). Vitest reports false "no test suite found" on the node:test files if run directly against them; use the runner each file is actually wired into.
+- `npx tsc --noEmit`: **0 errors**, including 0 under `supabase/functions/`.
+- Two test files exist but are **not wired into any `package.json` script**: `tests/lib/sandbox/gateway-mint.test.ts`, `tests/lib/billing/subscription-cancellation.test.ts`. Pre-existing gap, unrelated to this branch's changes.
+
+### Commit 67dde19d (`freshProvisioningState` spend reset) — verified correct
+
+`src/lib/sandbox/provisioning-lease.ts:18-19` zeroes `observed_spend_cents`/`recorded_spend_cents` only on the path where `session/start` (`src/app/api/claude-code/session/start/route.ts:310`) replaces a session row with a brand-new `sessionId = randomUUID()`. The gateway key alias is `` `cc-${sessionId}` `` (`src/lib/sandbox/llm-gateway.ts:187`), so a new session id always mints a fresh, zero-spend gateway key — no double-count risk, since this path never fires for a same-key re-provision (that returns early at route.ts:264 with the existing row untouched). `usage_events` are never touched by this change. One minor, non-blocking gap: `host_app` on `claude_code_sessions` is not reset by `freshProvisioningState` and not set anywhere in the `session/start` upsert, so it survives stale from the replaced row — low severity, diagnostic-only field, not spend/security-relevant.
+
+### Migration compatibility — `git diff main...HEAD --stat -- supabase/migrations` (5 files, all additive/narrowing)
+
+| File | Change type | Compatibility |
+|---|---|---|
+| `20260906120000_stripe_event_processing_state.sql` | New columns `status/processing_started_at/processing_token/processed_at/attempt_count/last_error/effects`, all `NOT NULL DEFAULT ...` or nullable; backfills `processed_at`; CHECK constraint compatible with default; 4 new `SECURITY DEFINER` RPCs | Additive. Safe. |
+| `20260906130000_restrict_stripe_event_processing_rpc_access.sql` | `REVOKE`/`GRANT` hardening only, idempotent | Pure ACL tightening. Safe. |
+| `20260906140000_profiles_subscription_status.sql` | New nullable column `subscription_status TEXT`, no default needed | Additive. Safe. |
+| `20260906150000_create_private_cc_snapshot_buckets.sql` | `ON CONFLICT DO UPDATE` upsert forcing `public=false` on 2 named buckets; new `RESTRICTIVE` policy narrowing client access to those 2 buckets | Narrowing only, no widening, other buckets untouched. Safe. |
+| `20260906160000_scope_catalog_admin_policies.sql` | `ALTER POLICY ... TO authenticated` on 2 existing admin policies (`challenges_admin`, `Admins can manage domains`), removing `anon` | Narrows anon access; separate public-read policies for challenges/domains confirmed untouched. Safe. |
+
+No dropped columns, no `NOT NULL` added without default on populated tables, no renamed/altered signatures of pre-existing RPCs — 0 non-additive changes found.
+
+`MIGRATIONS_FAILED` branch-lifecycle label root cause: the staging branch's *initial legacy replay* stopped at migration `002` during branch creation, unrelated to this branch's 5 new migrations; schema was subsequently repaired via direct connection and reverified (181 migrations present through `20260906160000`). The label is stale, not evidence of a current schema problem (`docs/runbooks/staging-setup-evidence.md:13`).
+
+### Release-gate table
+
+| Gate | Status | Evidence pointer | What would close it |
+|---|---|---|---|
+| Stripe lifecycle (checkout/cancel/reactivate/portal) | Proven (TEST mode) | `HANDOFF-2026-09-06.md` §`b01d6585`,`7e3c4d28`; real TEST fixtures + signed webhooks, cleanup verified | Live-mode rehearsal per this runbook's Release order step 3 |
+| 3DS | Open | HANDOFF: "3DS was not tested" | Run a 3DS-required TEST card through checkout |
+| Coding/SQL journeys | Proven | HANDOFF `b01d6585`: 5/5+7/7 tests, 7.4/10 feedback, reload persistence | none — closed |
+| Canvas journey | Proven | This file, line 90: 390/768/1440 viewport checks pass | none — closed |
+| Library journey | Proven | This file, line 90: search/bookmarks/reading-position pass | none — closed |
+| Progress journey | Proven | This file, line 90: "Progress counts real completed work" | none — closed |
+| Text interview | Proven | HANDOFF: "Text interview conversation and saved debrief pass" | none — closed |
+| Spoken voice | Open (blocked on user) | HANDOFF §3 / this file line 91: reached mic preflight only, no participation | Real mic session with user: speech, transcription, audio reply, persisted debrief, teardown |
+| Analytics finalize + grade | Open | This file line 88 / HANDOFF §1: report generated but no skill file / no final grade in 2 of 2 real runs; spend crossed cap by $0.0024 with no rejection captured | Diagnose captured Claude CLI exit-1 error before another paid canary; re-run to get skill+grade+in-cap spend |
+| Spend-cap compliance | Partial | Same run: $0.4924 vs $0.49 cap, last request crossed by $0.0024, no budget rejection observed | Investigate why the cap didn't reject; needs a clean in-cap or a proven-rejected run |
+| Restarted-session accounting | Proven (locally) | This review above: commit 67dde19d correct, full sandbox suite 81/81 pass, tsc clean | No production build or live/paid canary run yet (explicitly deferred per handoff) — not a correctness blocker, but not deploy-validated |
+| Reduced motion | Open | HANDOFF §4 / this file line 91: automation did not expose reduced-motion emulation; no OS preference changed this session | Test in an environment with OS-level reduced-motion toggle available; capture actual Playwright evidence |
+| Migration compatibility | Proven | Table above — all 5 migrations additive/narrowing only, 0 non-additive changes | none — closed, but still requires the staged webhook-pause release order in `platform-rebuild-release.md` |
+| Rollback path | Documented, unexecuted | `platform-rebuild-release.md` §Rollback compatibility — per-subsystem plan exists | Dry-run/rehearse before production promotion |
+| Prod env parity | Not verified this session | HANDOFF §Vercel: "31 exact branch-specific Preview env bindings unchanged" — preview only, not prod | Recheck prod aliases/env immediately before any release per runbook step 1 |
