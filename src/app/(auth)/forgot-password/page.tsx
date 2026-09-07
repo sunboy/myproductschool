@@ -45,6 +45,7 @@ export default function ForgotPasswordPage() {
       return
     }
 
+    try {
     const response = await fetch('/api/auth/password-reset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -69,7 +70,13 @@ export default function ForgotPasswordPage() {
       setTurnstileToken('')
       setTurnstileResetSignal(value => value + 1)
     }
-    setLoading(false)
+    } catch {
+      setError('Could not connect. Please try again.')
+      setTurnstileToken('')
+      setTurnstileResetSignal(value => value + 1)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const submitDisabled = loading || cooldown > 0
@@ -82,7 +89,7 @@ export default function ForgotPasswordPage() {
         : 'Send reset link'
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="learning-auth-utility flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <h1 className="font-headline text-2xl font-bold text-on-surface">Reset password</h1>

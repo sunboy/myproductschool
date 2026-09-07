@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { analyticsProgressSchema } from '@/lib/sandbox/analytics-progress'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +28,7 @@ const StepSchema = z.object({
 })
 
 const BodySchema = z.object({
+  progress: analyticsProgressSchema.optional(),
   guidance: z.enum(['scaffolded', 'guided', 'open']),
   arc: z.array(StepSchema).min(1).max(20),
   injected: z
@@ -82,13 +84,13 @@ export async function PATCH(
     return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   }
   // A terminated session's artifact is the grade — never mutate it afterward.
-  if (session.status === 'terminated') {
+  if (session.status !== 'active' && session.status !== 'provisioning') {
     return NextResponse.json({ error: 'Session already finalized' }, { status: 409 })
   }
 
   const prior = (session.final_artifact as Record<string, unknown> | null) ?? {}
   const priorAdaptive = (prior.adaptive as Record<string, unknown> | undefined) ?? {}
-  const { error } = await admin
+  let update = admin
     .from('claude_code_sessions')
     .update({
       final_artifact: {
@@ -99,15 +101,24 @@ export async function PATCH(
           arc: body.arc,
           injected: body.injected,
           adjustments: body.adjustments,
+          ...(body.progress ? { progress: body.progress } : {}),
           updated_at: new Date().toISOString(),
         },
       },
     })
     .eq('id', sessionId)
+    .eq('user_id', user.id)
+    .eq('status', session.status)
+  // Do not overwrite concurrent progress or a finalization artifact.
+  update = session.final_artifact == null
+    ? update.is('final_artifact', null)
+    : update.eq('final_artifact', JSON.stringify(session.final_artifact))
+  const { data: saved, error } = await update.select('id').maybeSingle()
 
   if (error) {
     console.error('[cc/session/adaptive] persist failed:', error)
     return NextResponse.json({ error: 'Persist failed' }, { status: 500 })
   }
+  if (!saved) return NextResponse.json({ error: 'Session changed. Reload before saving more work.' }, { status: 409 })
   return NextResponse.json({ ok: true })
 }

@@ -76,9 +76,9 @@ export default function ResetPasswordPage() {
 
   return (
     <div
-      className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden"
+      className="learning-auth-reset relative min-h-[100dvh] flex items-center justify-center overflow-hidden"
       style={{
-        background: 'linear-gradient(118deg, #07100c 0%, #0c1610 25%, #163324 48%, #1e4a31 60%, #29623f 70%, #3d7a52 80%, #5a9468 90%, #7ab088 100%)',
+        background: '#f8f5ef',
       }}
     >
       <div
@@ -105,7 +105,7 @@ export default function ResetPasswordPage() {
         <div
           className="w-full rounded-2xl p-8 space-y-5"
           style={{
-            background: 'rgba(8,18,12,0.72)',
+            background: '#103e30',
             backdropFilter: 'blur(28px)',
             WebkitBackdropFilter: 'blur(28px)',
             border: '1px solid rgba(255,255,255,0.10)',

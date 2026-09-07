@@ -1,5 +1,7 @@
 'use client'
 
+import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
+
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -21,16 +23,16 @@ import { ReauthModal } from '@/components/auth/ReauthModal'
 import { newPasswordSchema, zodFieldErrors } from '@/lib/auth/validation'
 import { clearOnboardingState } from '@/lib/onboarding/state-client'
 import { useOnboardingModal } from '@/context/OnboardingModalContext'
+import {
+  mergeStripeSubscriptionSnapshot,
+  scheduledCancellationState,
+  subscriptionReflectsBillingAction,
+  type BillingSubscriptionAction,
+  type BillingSubscriptionState,
+  type StripeSubscriptionSnapshot,
+} from '@/lib/billing/subscription-cancellation'
 
-type SubscriptionInfo = {
-  plan?: string | null
-  status?: string | null
-  current_period_end?: string | null
-  billing_interval?: 'month' | 'year' | null
-  cancel_at_period_end?: boolean | null
-  cancel_at?: string | null
-  canceled_at?: string | null
-}
+type SubscriptionInfo = BillingSubscriptionState
 
 type ProfileResponse = {
   display_name?: string
@@ -71,6 +73,9 @@ type ReauthRequest = {
   confirmLabel?: string
   onVerified: (password: string) => Promise<void>
 }
+
+const BILLING_RECONCILIATION_WINDOW_MS = 10_000
+const BILLING_RECONCILIATION_DELAYS_MS = [250, 500, 1_000, 2_000, 4_000]
 
 function formatBillingDate(value?: string | null) {
   if (!value) return 'Not available'
@@ -120,6 +125,7 @@ export default function SettingsPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deleteSaving, setDeleteSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const billingReconciliationId = useRef(0)
 
   async function handleRedoCalibration() {
     setRedoingCalibration(true)
@@ -131,10 +137,12 @@ export default function SettingsPage() {
     }
   }
 
-  async function refreshProfile() {
-    const data: ProfileResponse | null = await fetch('/api/profile')
-      .then(r => r.ok ? r.json() : null)
-    if (!data) return
+  async function fetchProfile(signal?: AbortSignal): Promise<ProfileResponse | null> {
+    const response = await fetch('/api/profile', { cache: 'no-store', signal })
+    return response.ok ? response.json() : null
+  }
+
+  function applyProfile(data: ProfileResponse) {
     if (data.display_name) {
       setDisplayName(data.display_name)
       setProfileInitial(data.display_name[0]?.toUpperCase() ?? '?')
@@ -143,6 +151,39 @@ export default function SettingsPage() {
     if (data.avatar_url) setAvatarUrl(data.avatar_url)
     if (data.plan) setPlan(data.plan)
     setSubscription(data.subscription ?? null)
+  }
+
+  async function refreshProfile() {
+    const data = await fetchProfile()
+    if (!data) return
+    applyProfile(data)
+  }
+
+  async function reconcileBillingAction(
+    reconciliationId: number,
+    action: BillingSubscriptionAction,
+    requestedPlan: unknown,
+  ) {
+    const deadline = Date.now() + BILLING_RECONCILIATION_WINDOW_MS
+
+    for (const delayMs of BILLING_RECONCILIATION_DELAYS_MS) {
+      const remainingBeforeDelay = deadline - Date.now()
+      if (remainingBeforeDelay <= 0) return
+
+      await new Promise(resolve => setTimeout(resolve, Math.min(delayMs, remainingBeforeDelay)))
+      const remainingBeforeFetch = deadline - Date.now()
+      if (billingReconciliationId.current !== reconciliationId || remainingBeforeFetch <= 0) return
+
+      const data = await fetchProfile(AbortSignal.timeout(remainingBeforeFetch)).catch(() => null)
+      if (!data?.subscription || !subscriptionReflectsBillingAction(data.subscription, action, requestedPlan)) {
+        continue
+      }
+
+      if (billingReconciliationId.current !== reconciliationId) return
+      applyProfile(data)
+      window.dispatchEvent(new CustomEvent('profile-stats-updated'))
+      return
+    }
   }
 
   async function refreshIdentities() {
@@ -167,6 +208,10 @@ export default function SettingsPage() {
       .then(r => r.ok ? r.json() : null)
       .then((data: BillingPrices | null) => setPrices(data))
       .catch(() => {})
+  }, [])
+
+  useEffect(() => () => {
+    billingReconciliationId.current += 1
   }, [])
 
   const saveDisplayName = async () => {
@@ -316,7 +361,7 @@ export default function SettingsPage() {
     })
   }
 
-  async function runBillingAction(action: string, body: Record<string, unknown> = {}) {
+  async function runBillingAction(action: BillingSubscriptionAction, body: Record<string, unknown> = {}) {
     const title = action === 'cancel' ? 'Confirm cancellation' : 'Confirm billing change'
     const description = action === 'cancel'
       ? 'Enter your current password before scheduling Pro cancellation.'
@@ -331,7 +376,9 @@ export default function SettingsPage() {
     })
   }
 
-  async function performBillingAction(action: string, body: Record<string, unknown> = {}) {
+  async function performBillingAction(action: BillingSubscriptionAction, body: Record<string, unknown> = {}) {
+    const reconciliationId = billingReconciliationId.current + 1
+    billingReconciliationId.current = reconciliationId
     setBillingAction(action)
     setBillingError(null)
     try {
@@ -340,10 +387,14 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, ...body }),
       })
-      const data = await res.json().catch(() => ({}))
+      const data: { error?: string; subscription?: StripeSubscriptionSnapshot } = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error ?? 'Billing update failed')
-      await refreshProfile()
-      window.dispatchEvent(new CustomEvent('profile-stats-updated'))
+
+      if (data.subscription) {
+        setSubscription(current => mergeStripeSubscriptionSnapshot(current, data.subscription))
+      }
+
+      void reconcileBillingAction(reconciliationId, action, body.plan)
     } catch (error) {
       setBillingError(error instanceof Error ? error.message : 'Billing update failed')
     } finally {
@@ -359,6 +410,7 @@ export default function SettingsPage() {
     setBillingError(null)
     try {
       const res = await fetch('/api/stripe/portal', { method: 'POST' })
+      if (res.status >= 500) throw new Error('Billing is temporarily unavailable. Please try again shortly. Your membership has not changed.')
       const data = await res.json().catch(() => ({}))
       if (!res.ok || !data.url) {
         throw new Error(data.error ?? 'Could not open billing portal')
@@ -433,7 +485,9 @@ export default function SettingsPage() {
     ? subscription.status.replaceAll('_', ' ')
     : isPro ? 'active' : 'free'
   const periodEndLabel = formatBillingDate(subscription?.current_period_end)
-  const cancelScheduled = !!subscription?.cancel_at_period_end
+  const cancellation = scheduledCancellationState(subscription)
+  const cancelScheduled = cancellation.scheduled
+  const accessEndLabel = formatBillingDate(cancellation.endsAt)
   const currentPrice = subscription?.billing_interval === 'year'
     ? prices?.annual?.formatted
     : prices?.monthly?.formatted
@@ -446,9 +500,9 @@ export default function SettingsPage() {
     ? googleIdentity.identity_data.email
     : null
   const canUnlinkGoogle = !!googleIdentity && linkedIdentities.length > 1
-  const inputClass = 'w-full rounded-[8px] border border-hairline bg-card-bright px-3 py-2 font-body text-sm text-ink-strong placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-forest-600/25 focus:border-forest-600/50'
-  const quietButtonClass = 'inline-flex items-center gap-1.5 rounded-[10px] border border-hairline bg-card-bright px-3.5 py-2 font-label text-xs font-bold text-ink-secondary transition-colors hover:border-forest-600/40 hover:text-ink-strong disabled:cursor-not-allowed disabled:opacity-50'
-  const primaryButtonClass = 'inline-flex items-center justify-center gap-2 rounded-[10px] bg-forest-950 px-4 py-2.5 font-label text-sm font-bold text-white transition-colors hover:bg-forest-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60'
+  const inputClass = 'w-full min-h-11 rounded-[8px] border border-hairline bg-card-bright px-3 py-2 font-body text-base text-ink-strong placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-forest-600/25 focus:border-forest-600/50'
+  const quietButtonClass = 'inline-flex min-h-11 items-center gap-1.5 rounded-[10px] border border-hairline bg-card-bright px-3.5 py-2 font-label text-sm font-bold text-ink-secondary transition-colors hover:border-forest-600/40 hover:text-ink-strong disabled:cursor-not-allowed disabled:opacity-50'
+  const primaryButtonClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] bg-forest-950 px-4 py-2.5 font-label text-sm font-bold text-white transition-colors hover:bg-forest-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60'
   const passwordFields: Array<{
     field: PasswordField
     label: string
@@ -470,26 +524,8 @@ export default function SettingsPage() {
   ]
 
   return (
-    <main className="mx-auto max-w-[1060px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-      {/* ── Light page header (spec §1: not a hub, no dark hero) ─────────── */}
-      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="font-label text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
-            Account
-          </p>
-          <h1 className="mt-1 font-headline text-[28px] font-semibold leading-[1.2] tracking-[-0.02em] text-ink-strong">
-            Settings
-          </h1>
-          <p className="mt-1 font-body text-[13.5px] text-ink-secondary">
-            Profile, sign-in, plan, and billing.
-          </p>
-        </div>
-        {isPro && (
-          <span className="inline-flex w-fit items-center rounded-full border-[1.5px] border-gold bg-note-amber px-3 py-1 font-label text-xs font-bold text-forest-800">
-            Pro
-          </span>
-        )}
-      </div>
+    <main className="learning-account mx-auto max-w-[1060px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+      <LearningPageHeading eyebrow="Your account" title="Make it yours." action={isPro ? <span className="rounded-full bg-note-amber px-4 py-2 text-sm font-semibold text-forest-950">Pro member</span> : undefined}>Manage your profile, sign-in preferences, and membership.</LearningPageHeading>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[360px_1fr]">
         {/* ── Profile & security card ─────────────────────────────────────── */}
@@ -519,7 +555,8 @@ export default function SettingsPage() {
               {editingName ? (
                 <div className="flex items-center gap-2">
                   <input
-                    autoFocus
+                    aria-label="Display name"
+                    autoComplete="nickname"
                     value={displayName}
                     onChange={e => setDisplayName(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingName(false) }}
@@ -528,14 +565,14 @@ export default function SettingsPage() {
                   <button
                     onClick={saveDisplayName}
                     disabled={profileSaving}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-forest-950 text-white transition-opacity disabled:opacity-50"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-[8px] bg-forest-950 text-white transition-opacity disabled:opacity-50"
                     aria-label="Save display name"
                   >
                     <Check className="h-4 w-4" strokeWidth={2} />
                   </button>
                   <button
                     onClick={() => setEditingName(false)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] text-ink-secondary transition-colors hover:bg-page-field"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-[8px] text-ink-secondary transition-colors hover:bg-page-field"
                     aria-label="Cancel display name edit"
                   >
                     <X className="h-4 w-4" strokeWidth={2} />
@@ -553,7 +590,7 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => setEditingName(true)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-ink-secondary transition-colors hover:bg-page-field hover:text-ink-strong"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-[8px] text-ink-secondary transition-colors hover:bg-page-field hover:text-ink-strong"
                     aria-label="Edit display name"
                   >
                     <Pencil className="h-3.5 w-3.5" strokeWidth={1.8} />
@@ -669,7 +706,7 @@ export default function SettingsPage() {
                       <button
                         type="button"
                         onClick={() => togglePasswordVisibility(field)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted transition-colors hover:text-ink-strong"
+                        className="absolute right-2 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center text-ink-muted transition-colors hover:text-ink-strong"
                         aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
                       >
                         {visible
@@ -766,8 +803,12 @@ export default function SettingsPage() {
                 </p>
               </div>
               <div className="px-4 py-3">
-                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">Next billing</p>
-                <p className="mt-1.5 font-body text-sm font-bold tabular-nums text-ink-strong">{isPro ? periodEndLabel : 'None'}</p>
+                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">
+                  {cancelScheduled ? 'Access ends' : 'Next billing'}
+                </p>
+                <p className="mt-1.5 font-body text-sm font-bold tabular-nums text-ink-strong">
+                  {isPro ? cancelScheduled ? accessEndLabel : periodEndLabel : 'None'}
+                </p>
               </div>
               <div className="px-4 py-3">
                 <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink-secondary">Switch price</p>
@@ -783,7 +824,7 @@ export default function SettingsPage() {
 
             {cancelScheduled && (
               <div className="note-amber mt-4 px-4 py-3 font-body text-sm text-ink-strong">
-                Pro remains active until {periodEndLabel}, then your account moves to Free.
+                Pro remains active until {accessEndLabel}, then your account moves to Free.
               </div>
             )}
 
@@ -929,7 +970,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={deleteSaving}
-                className="rounded-[10px] bg-error px-4 py-2.5 font-label text-sm font-bold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-11 rounded-[10px] bg-error px-4 py-2.5 font-label text-sm font-bold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {deleteSaving ? 'Deleting' : 'Continue'}
               </button>

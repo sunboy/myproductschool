@@ -23,6 +23,51 @@ export interface PagePrompt {
   cta?: PagePromptCta
 }
 
+export interface HatchPickResponse {
+  weakestMove?: string
+  planSlug?: string | null
+}
+
+const SAFE_PLAN_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+/**
+ * Keep personalized Hatch navigation inside the two app surfaces page prompts
+ * are allowed to open. The API returns data, not a trusted redirect target, so
+ * callers must run every derived href through this allowlist before router.push.
+ */
+export function isAllowedPagePromptHref(href: string): boolean {
+  if (href === '/challenges') return true
+  return /^\/explore\/plans\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(href)
+}
+
+export function pagePromptDestination(
+  action: PagePromptAction,
+  pick?: HatchPickResponse | null,
+): string | null {
+  if (action === 'filter-practice') {
+    return '/challenges'
+  }
+
+  if (action !== 'show-plan' || !pick?.planSlug || !SAFE_PLAN_SLUG.test(pick.planSlug)) {
+    return null
+  }
+
+  const href = `/explore/plans/${pick.planSlug}`
+  return isAllowedPagePromptHref(href) ? href : null
+}
+
+/** Return a safe prompt only when opening it cannot replace user work. */
+export function promptForFreshConversation(
+  candidate: unknown,
+  hasMessages: boolean,
+  currentInput: string,
+): string | null {
+  if (typeof candidate !== 'string' || hasMessages || currentInput.trim().length > 0) return null
+  const prompt = candidate.trim()
+  if (!prompt || candidate.length > 20_000) return null
+  return prompt
+}
+
 export const PAGE_PROMPTS: PagePrompt[] = [
   {
     pattern: /^\/workspace\/challenges\//,
@@ -32,7 +77,7 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   {
     pattern: /^\/challenges\/[^/]+\/feedback/,
     message: 'Want to dig into your feedback?',
-    cta: { label: 'Unpack my feedback', action: 'open-chat', prompt: 'Walk me through the biggest miss in my feedback and how to fix it next rep.' },
+    cta: { label: 'Unpack my feedback', action: 'open-chat', prompt: 'Walk me through the biggest miss in my feedback and how to fix it next time.' },
   },
   {
     pattern: /^\/explore\/modules\//,
@@ -51,8 +96,8 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   },
   {
     pattern: /^\/explore\/plans\/?$/,
-    message: 'One of these plans matches your weakest FLOW move.',
-    cta: { label: 'Show my plan', action: 'show-plan' },
+    message: 'Find a study plan that fits your role and learning goal.',
+    cta: { label: 'Help me choose', action: 'open-chat', prompt: 'Help me choose a study plan for my role and learning goal.' },
   },
   {
     pattern: /^\/explore\/domains\//,
@@ -66,8 +111,8 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   },
   {
     pattern: /^\/challenges/,
-    message: 'I can filter these to the FLOW move you need most.',
-    cta: { label: 'Filter to my gap', action: 'filter-practice' },
+    message: 'What would you like to get better at?',
+    cta: { label: 'Help me choose', action: 'open-chat', prompt: 'Help me choose a challenge that fits my current discipline and learning goal.' },
   },
   {
     pattern: /^\/live-interviews/,
@@ -82,7 +127,7 @@ export const PAGE_PROMPTS: PagePrompt[] = [
   {
     pattern: /^\/dashboard/,
     message: 'Ready to pick your first challenge today?',
-    cta: { label: 'Pick my rep', action: 'open-chat', prompt: 'Pick my next challenge and tell me why that one.' },
+    cta: { label: 'Pick my challenge', action: 'open-chat', prompt: 'Pick my next challenge and tell me why that one.' },
   },
   {
     pattern: /^\/cohort/,
@@ -108,7 +153,7 @@ export const PAGE_PROMPTS: PagePrompt[] = [
 
 const DEFAULT_PROMPT: PagePrompt = {
   pattern: /.*/,
-  message: 'Ask me anything about FLOW or product thinking.',
+  message: 'Ask about your challenge, reading, feedback, or next step.',
   cta: { label: 'Ask Hatch', action: 'open-chat' },
 }
 

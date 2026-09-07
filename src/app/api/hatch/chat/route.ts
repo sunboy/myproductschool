@@ -231,8 +231,8 @@ async function buildPageContextBlock(pageContext: PageContext): Promise<string> 
 
   const pageLabels: Record<string, string> = {
     dashboard: 'User is on the Dashboard - their home screen with streak, XP, quick take, and next challenge.',
-    explore: 'User is on the Explore hub - browsing challenges, study plans, modules, and domains.',
-    practice: 'User is on the Practice hub - browsing FLOW challenges to attempt.',
+    explore: 'User is in the Library, browsing reading material and study plans.',
+    practice: 'User is on Practice, browsing coding, SQL, system design, data modeling, analytics, and product challenges.',
     progress: 'User is on the Progress & Analytics page - reviewing their FLOW skill levels, archetype, and certification progress.',
     live_interviews: 'User is on Live Interviews - preparing for or reviewing interview practice sessions.',
     learning_module: 'User is reading a learning module.',

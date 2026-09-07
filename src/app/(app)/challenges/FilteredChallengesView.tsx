@@ -471,7 +471,7 @@ function AllPracticeView({
     return (
       <EmptyState
         title="No challenges match those filters"
-        hint="Loosen a filter or two and more reps will show up."
+        hint="Loosen a filter or two to see more challenges."
       />
     )
   }
@@ -767,7 +767,7 @@ function FlatDisciplineList({
     return (
       <EmptyState
         title="No challenges match those filters"
-        hint="Loosen a filter or two and more reps will show up."
+        hint="Loosen a filter or two to see more challenges."
       />
     )
   }

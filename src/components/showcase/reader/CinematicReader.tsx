@@ -1,17 +1,16 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, Check, ChevronRight, Sparkles } from 'lucide-react';
 import { trackEvent } from '@/lib/posthog/client';
-import {
-  EVENT_AUTOPSY_OPENED,
-  EVENT_AUTOPSY_SECTION_VIEWED,
-  EVENT_AUTOPSY_FINISHED,
-} from '@/lib/posthog/events';
+import { EVENT_AUTOPSY_OPENED, EVENT_AUTOPSY_SECTION_VIEWED, EVENT_AUTOPSY_FINISHED } from '@/lib/posthog/events';
 import { useReaderScroll } from '@/hooks/useReaderScroll';
 import { useReaderResume } from '@/hooks/useReaderResume';
-import { ParallaxHero } from './ParallaxHero';
 import { ReaderDock } from './ReaderDock';
-import { ReaderRail } from './ReaderRail';
+import { LearningArtwork } from '@/components/redesign/LearningGeometry';
+import { readerTopicTags } from '@/lib/autopsies/display-tags';
 import { ResumeBanner } from './ResumeBanner';
 import { BookmarkToggle } from './BookmarkToggle';
 import { PrevNextChips } from './PrevNextChips';
@@ -22,7 +21,6 @@ import { QuoteDark } from './sections/QuoteDark';
 import { PrincipleDark } from './sections/PrincipleDark';
 import { SourcePackDark } from './sections/SourcePackDark';
 import { FlowSectionDark } from './sections/FlowSectionDark';
-import { BackCrumb } from '@/components/navigation/BackButton';
 import type { AutopsyImageRole, FeatureAutopsy } from '@/lib/autopsies/types';
 import type { PrevNextResult } from '@/lib/showcase/prev-next';
 
@@ -34,249 +32,143 @@ interface CinematicReaderProps {
   prevNext: PrevNextResult;
 }
 
-const INLINE_IMAGE_ROLES: AutopsyImageRole[] = [
-  'hatch-narrator',
-  'failure-mechanism',
-  'evidence-card',
-  'lesson-frame',
-];
+const INLINE_IMAGE_ROLES: AutopsyImageRole[] = ['hatch-narrator', 'failure-mechanism', 'evidence-card', 'lesson-frame'];
 
-export function CinematicReader({
-  story,
-  companyName,
-  companyAccent,
-  initialBookmarked,
-  prevNext,
-}: CinematicReaderProps) {
+export function CinematicReader({ story, companyName, companyAccent, initialBookmarked, prevNext }: CinematicReaderProps) {
   const contentRef = useRef<HTMLElement>(null);
   const lede = story.flow[0];
-  const bodySections = story.flow.slice(1);
-
+  const bodySections = useMemo(() => story.flow.slice(1), [story.flow]);
   const sectionIds = useMemo(() => [
     lede ? 'lede' : null,
-    story.quickRead.length > 0 ? 'quick-read' : null,
+    story.quickRead.length ? 'quick-read' : null,
     ...bodySections.map((_, i) => `flow-${i + 1}`),
-    story.metrics.length > 0 ? 'evidence' : null,
+    story.metrics.length ? 'evidence' : null,
     story.timeline?.length ? 'timeline' : null,
     story.quote ? 'quote' : null,
     story.principle ? 'principle' : null,
-    story.sources.length > 0 ? 'sources' : null,
+    story.sources.length ? 'sources' : null,
   ].filter(Boolean) as string[], [bodySections, lede, story]);
-
-  const tocItems = [
+  const tocItems = useMemo(() => [
     ...(lede ? [{ id: 'lede', label: lede.title }] : []),
-    ...(story.quickRead.length > 0 ? [{ id: 'quick-read', label: 'At a glance' }] : []),
+    ...(story.quickRead.length ? [{ id: 'quick-read', label: 'At a glance' }] : []),
     ...bodySections.map((section, i) => ({ id: `flow-${i + 1}`, label: section.title })),
-    ...(story.metrics.length > 0 ? [{ id: 'evidence', label: 'Evidence' }] : []),
+    ...(story.metrics.length ? [{ id: 'evidence', label: 'Evidence' }] : []),
     ...(story.timeline?.length ? [{ id: 'timeline', label: 'Timeline' }] : []),
     ...(story.quote ? [{ id: 'quote', label: 'The quote' }] : []),
     ...(story.principle ? [{ id: 'principle', label: 'The principle' }] : []),
-    ...(story.sources.length > 0 ? [{ id: 'sources', label: 'Sources' }] : []),
-  ];
+    ...(story.sources.length ? [{ id: 'sources', label: 'Sources' }] : []),
+  ], [bodySections, lede, story]);
 
   const { scrollPct, activeSection, visitedSections } = useReaderScroll(sectionIds, contentRef);
   const backHref = `/explore/autopsies/${story.companySlug}`;
+  const [persistReady, setPersistReady] = useState(false);
+  const { resumeSection, resumeScrollPct, showResumeBanner, dismissBanner, clearResume, restored } = useReaderResume({
+    storyKey: `${story.companySlug}/${story.slug}`,
+    sectionIds,
+    activeId: activeSection,
+    scrollPct,
+    canPersist: persistReady,
+  });
 
-  // ── Analytics: autopsy_opened ─────────────────────────────────────────────
-  useEffect(() => {
-    trackEvent(EVENT_AUTOPSY_OPENED, { slug: story.companySlug });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ── Analytics: autopsy_section_viewed / autopsy_finished ─────────────────
-  // Same payload shape as the legacy AutopsyReaderClient — the article-resume
-  // cron reads slug + section_index + pct off these events.
+  useEffect(() => { trackEvent(EVENT_AUTOPSY_OPENED, { slug: story.companySlug }); }, [story.companySlug]);
   const scrollPctRef = useRef(scrollPct);
-  scrollPctRef.current = scrollPct;
+  useEffect(() => { scrollPctRef.current = scrollPct; }, [scrollPct]);
   const trackedSectionsRef = useRef<Set<string>>(new Set());
   const finishedTrackedRef = useRef(false);
   useEffect(() => {
     if (!activeSection) return;
-    const slug = story.companySlug;
-    const idx = sectionIds.indexOf(activeSection);
-    if (idx === -1) return;
+    const index = sectionIds.indexOf(activeSection);
+    if (index < 0) return;
     if (!trackedSectionsRef.current.has(activeSection)) {
       trackedSectionsRef.current.add(activeSection);
-      trackEvent(EVENT_AUTOPSY_SECTION_VIEWED, {
-        slug,
-        section_index: idx,
-        pct: Math.round(scrollPctRef.current),
-      });
+      trackEvent(EVENT_AUTOPSY_SECTION_VIEWED, { slug: story.companySlug, section_index: index, pct: Math.round(scrollPctRef.current) });
     }
-    if (idx === sectionIds.length - 1 && !finishedTrackedRef.current) {
+    if (index === sectionIds.length - 1 && !finishedTrackedRef.current) {
       finishedTrackedRef.current = true;
-      trackEvent(EVENT_AUTOPSY_FINISHED, { slug });
+      trackEvent(EVENT_AUTOPSY_FINISHED, { slug: story.companySlug });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSection, sectionIds]);
+  }, [activeSection, sectionIds, story.companySlug]);
 
-  const activeLabel = tocItems.find(t => t.id === activeSection)?.label ?? null;
-
-  // Hold off persisting until any resume restore has settled (see effect below),
-  // so the restore scroll can't overwrite the saved position with the top section.
-  const [persistReady, setPersistReady] = useState(false);
-
-  const { resumeSection, resumeScrollPct, showResumeBanner, dismissBanner, clearResume, restored } =
-    useReaderResume({
-      storyKey: `${story.companySlug}/${story.slug}`,
-      sectionIds,
-      activeId: activeSection,
-      scrollPct,
-      canPersist: persistReady,
-    });
-
-  const scrollToSection = (id: string) => {
-    const el = document.querySelector(`[data-section-id="${id}"]`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  // On return, restore the saved scroll position once. We restore by scroll
-  // PERCENTAGE (monotonic, reliable) rather than by sectionId, which an
-  // IntersectionObserver can mis-report on tall sections. After the restore
-  // settles (or if there's nothing to restore), allow persistence. The banner's
-  // visibility is owned by the hook (showResumeBanner).
+  const scrollToSection = (id: string) => document.querySelector(`[data-section-id="${id}"]`)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
   const didRestoreRef = useRef(false);
   useEffect(() => {
-    if (didRestoreRef.current) return;
-    // Wait for the hook's mount-read to finish before deciding.
-    if (!restored) return;
+    if (didRestoreRef.current || !restored) return;
     if (resumeScrollPct == null) {
-      // Read finished, nothing to restore — start persisting on the next tick.
-      const t = setTimeout(() => setPersistReady(true), 0);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => setPersistReady(true), 0);
+      return () => clearTimeout(timer);
     }
     didRestoreRef.current = true;
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    if (maxScroll > 0) {
-      window.scrollTo({ top: Math.round((resumeScrollPct / 100) * maxScroll), behavior: 'auto' });
-    }
-    // Let the programmatic scroll + IntersectionObserver settle before writing.
-    const t = setTimeout(() => setPersistReady(true), 600);
-    return () => clearTimeout(t);
+    const article = contentRef.current;
+    const articleTop = article ? window.scrollY + article.getBoundingClientRect().top : 0;
+    const maxScroll = Math.max(0, (article?.scrollHeight ?? document.documentElement.scrollHeight) - window.innerHeight);
+    window.scrollTo({ top: Math.round(articleTop + (resumeScrollPct / 100) * maxScroll), behavior: 'auto' });
+    const timer = setTimeout(() => setPersistReady(true), 600);
+    return () => clearTimeout(timer);
   }, [resumeScrollPct, restored]);
 
-  const resumeLabel =
-    tocItems.find(t => t.id === resumeSection)?.label ?? 'where you left off';
+  const activeLabel = tocItems.find(item => item.id === activeSection)?.label;
+  const resumeLabel = tocItems.find(item => item.id === resumeSection)?.label ?? 'where you left off';
+  const accent = companyAccent ?? '#2f6b4f';
 
   return (
-    <div className="relative min-h-screen pb-32 lg:flex lg:items-start">
-      {/* Below lg the rail is hidden, so give small screens an in-flow back
-          link above the hero. Desktop back lives in the rail and dock; no
-          fixed bar — the old fixed top-[52px] band sat under the ~67px TopNav
-          and cropped the top of the rail and the article. */}
-      <div className="flex items-center px-4 py-2 bg-surface-container-low border-b border-outline-variant/40 lg:hidden">
-        <BackCrumb href={backHref} label={companyName} />
-      </div>
-      <ReaderRail
-        variant="cinematic"
-        items={tocItems}
-        activeId={activeSection}
-        visitedIds={visitedSections}
-        scrollPct={scrollPct}
-        title={companyName}
-        kicker="Product Autopsy"
-        accent={companyAccent ?? '#4a7c59'}
-        backHref={backHref}
-        backLabel={companyName}
-        onNavigate={scrollToSection}
-      />
-
-      <div className="relative min-w-0 flex-1">
-      <div className="fixed right-4 top-4 z-30">
-        <BookmarkToggle
-          companySlug={story.companySlug}
-          storySlug={story.slug}
-          initialBookmarked={initialBookmarked}
-        />
-      </div>
-
-      <article
-        ref={contentRef}
-        data-hatch-context-root
-        data-hatch-context={activeLabel ? `Reading "${story.title}" — section: ${activeLabel}` : `Reading "${story.title}"`}
-      >
-        <ParallaxHero story={story} companyName={companyName} companyAccent={companyAccent} />
-
-        <div className="sc-page-narrow sc-reader-body">
-          {showResumeBanner && resumeLabel && (
-            <ResumeBanner
-              variant="cinematic"
-              label={resumeLabel}
-              onBackToTop={() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                clearResume();
-              }}
-              onDismiss={dismissBanner}
-            />
-          )}
-          {lede && (
-            <FlowSectionDark
-              section={lede}
-              sectionId="lede"
-              index={0}
-              variant="prose"
-              story={story}
-              imageRole={INLINE_IMAGE_ROLES[0]}
-              imageSide="right"
-            />
-          )}
-
-          {story.quickRead.length > 0 && (
-            <QuickReadDark cards={story.quickRead} sectionId="quick-read" />
-          )}
-
-          {bodySections.map((section, i) => (
-            <FlowSectionDark
-              key={`${section.title}-${i}`}
-              section={section}
-              sectionId={`flow-${i + 1}`}
-              index={i + 1}
-              variant="prose"
-              story={story}
-              imageRole={INLINE_IMAGE_ROLES[i + 1]}
-              imageSide={(i + 1) % 2 === 0 ? 'right' : 'left'}
-            />
-          ))}
-
-          {story.metrics.length > 0 && (
-            <EvidenceLedgerDark metrics={story.metrics} sectionId="evidence" />
-          )}
-
-          {story.timeline && story.timeline.length > 0 && (
-            <TimelineDark events={story.timeline} sectionId="timeline" />
-          )}
-
-          {story.quote && (
-            <QuoteDark quote={story.quote} sectionId="quote" />
-          )}
-
-          {story.principle && (
-            <PrincipleDark principle={story.principle} sectionId="principle" />
-          )}
-
-          {story.sources.length > 0 && (
-            <SourcePackDark
-              sources={story.sources}
-              summary={story.sourcePackSummary}
-              sectionId="sources"
-            />
-          )}
-
-          <div className="px-0 pb-8">
-            <PrevNextChips prevNext={prevNext} />
-          </div>
+    <article
+      ref={contentRef}
+      className="reader-article learning-reader"
+      style={{ '--reader-accent': accent } as CSSProperties}
+      data-hatch-context-root
+      data-hatch-context={activeLabel ? `Reading "${story.title}" — section: ${activeLabel}` : `Reading "${story.title}"`}
+    >
+      <div className="reader-top-progress" aria-hidden><span style={{ width: `${scrollPct}%` }} /></div>
+      <header className="reader-article-header">
+        <div className="reader-header-actions">
+          <Link href={backHref} className="reader-back"><ArrowLeft aria-hidden size={17} /> {companyName}</Link>
+          <BookmarkToggle companySlug={story.companySlug} storySlug={story.slug} initialBookmarked={initialBookmarked} />
         </div>
-      </article>
+        <div className="learning-reader-hero">
+          <div>
+            <div className="reader-kicker">Product autopsy · {story.estimatedReadTime}</div>
+            <h1>{story.title}</h1>
+            <p className="reader-dek">{story.dek}</p>
+            <div className="reader-tags">{readerTopicTags(story.tags).slice(0, 4).map(tag => <span key={tag}>{tag}</span>)}</div>
+          </div>
+          <div className="learning-reader-cover"><LearningArtwork /></div>
+        </div>
+      </header>
 
-      <ReaderDock
-        scrollPct={scrollPct}
-        activeSection={activeSection}
-        tocItems={tocItems}
-        backHref={backHref}
-        companyName={companyName}
-        storyTitle={story.title}
-      />
+      <details className="learning-reader-mobile-contents">
+        <summary>In this autopsy</summary>
+        <nav aria-label="Article contents">{tocItems.map(item => <button key={item.id} onClick={() => scrollToSection(item.id)}>{item.label}</button>)}</nav>
+      </details>
+
+      <div className="reader-layout">
+        <aside className="reader-outline" aria-label="Article outline">
+          <div className="reader-outline-progress"><span>{Math.round(scrollPct)}%</span><div><i style={{ width: `${scrollPct}%` }} /></div></div>
+          <p>In this autopsy</p>
+          <nav>{tocItems.map((item, index) => {
+            const active = item.id === activeSection;
+            const visited = visitedSections.has(item.id);
+            return <button key={item.id} type="button" onClick={() => scrollToSection(item.id)} aria-current={active ? 'location' : undefined} className={active ? 'is-active' : ''}>
+              <span>{visited ? <Check aria-hidden size={13} /> : String(index + 1).padStart(2, '0')}</span>{item.label}<ChevronRight aria-hidden size={14} />
+            </button>;
+          })}</nav>
+          <button type="button" className="reader-hatch-note" onClick={() => window.dispatchEvent(new CustomEvent('open-ask-hatch', { detail: { prompt: `Help me understand ${activeLabel ?? 'the main decision'} in ${story.title}.` } }))}><Sparkles aria-hidden size={17} /><span>Ask Hatch about this section</span></button>
+        </aside>
+
+        <div className="reader-content">
+          {showResumeBanner && <ResumeBanner variant="aarrr" label={resumeLabel} onBackToTop={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); clearResume(); }} onDismiss={dismissBanner} />}
+          {lede && <FlowSectionDark section={lede} sectionId="lede" index={0} variant="prose" story={story} imageRole={INLINE_IMAGE_ROLES[0]} imageSide="right" />}
+          {story.quickRead.length > 0 && <QuickReadDark cards={story.quickRead} sectionId="quick-read" />}
+          {bodySections.map((section, i) => <FlowSectionDark key={`${section.title}-${i}`} section={section} sectionId={`flow-${i + 1}`} index={i + 1} variant="prose" story={story} imageRole={INLINE_IMAGE_ROLES[i + 1]} imageSide={(i + 1) % 2 ? 'left' : 'right'} />)}
+          {story.metrics.length > 0 && <EvidenceLedgerDark metrics={story.metrics} sectionId="evidence" />}
+          {story.timeline?.length ? <TimelineDark events={story.timeline} sectionId="timeline" /> : null}
+          {story.quote && <QuoteDark quote={story.quote} sectionId="quote" />}
+          {story.principle && <PrincipleDark principle={story.principle} sectionId="principle" />}
+          {story.sources.length > 0 && <SourcePackDark sources={story.sources} summary={story.sourcePackSummary} sectionId="sources" />}
+          <div className="reader-next"><PrevNextChips prevNext={prevNext} /></div>
+        </div>
       </div>
-    </div>
+
+      <ReaderDock scrollPct={scrollPct} activeSection={activeSection} tocItems={tocItems} backHref={backHref} companyName={companyName} storyTitle={story.title} />
+    </article>
   );
 }

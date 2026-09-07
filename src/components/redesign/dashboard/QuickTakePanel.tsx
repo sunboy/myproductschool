@@ -43,7 +43,7 @@ function gradeBand(score: number): { label: string; fg: string; bg: string } {
 }
 
 /**
- * Dashboard Quick Take: the 90-second warm-up rep, inline. Amber sticky-note
+ * Dashboard Quick Take: a short warm-up, inline. Amber sticky-note
  * surface per spec §7 (a prompt is tip-class content), rounded-rectangle
  * buttons per spec (no pills), Lucide inline icons only. The Today's path
  * "Quick Take" row links to #quick-take; on that hash change this panel
@@ -92,8 +92,8 @@ export function QuickTakePanel({ prompt: initialPrompt, challengeId: initialChal
         if (data.code === 'limit_reached') {
           throw new Error(
             typeof data.used === 'number' && typeof data.limit === 'number'
-              ? `You have used ${data.used} of ${data.limit} gradings this month. Pro removes the cap.`
-              : 'You have hit this month’s grading cap. Pro removes it.'
+              ? `You have used ${data.used} of ${data.limit} feedback reviews this month. Pro removes the cap.`
+              : 'You have hit this month’s feedback limit. Pro removes it.'
           )
         }
         if (data.code === 'rate_limited') {
@@ -142,8 +142,8 @@ export function QuickTakePanel({ prompt: initialPrompt, challengeId: initialChal
       <div className="mb-2.5 flex items-center gap-2.5">
         <HatchImage size={26} state="avatar" />
         <div className="min-w-0 flex-1">
-          <div className="font-body text-[15.5px] font-bold text-ink-strong">Quick Take</div>
-          <div className="text-[11.5px] font-semibold text-ink-muted">One prompt, graded in seconds</div>
+          <div className="font-body text-base font-bold text-ink-strong">Quick Take</div>
+          <div className="text-xs font-semibold text-ink-muted">One prompt, feedback in seconds</div>
         </div>
         {result && band && (
           <span
@@ -155,18 +155,18 @@ export function QuickTakePanel({ prompt: initialPrompt, challengeId: initialChal
         )}
       </div>
 
-      <p className="text-[13.5px] leading-[1.5] text-ink-strong">&ldquo;{prompt}&rdquo;</p>
+      <p className="text-base leading-[1.5] text-ink-strong">&ldquo;{prompt}&rdquo;</p>
       </div>
 
       <div className="min-w-0 lg:pt-1">
       {result ? (
         <div className="flex flex-col gap-2.5">
-          <div className="flex items-center gap-2 text-[12px] font-semibold text-ink-secondary tabular-nums">
+          <div className="flex items-center gap-2 text-sm font-semibold text-ink-secondary tabular-nums">
             <span>{Math.round(result.score * 100)}%</span>
             <span aria-hidden>&middot;</span>
             <span className="inline-flex items-center gap-1">
               <Zap size={14} strokeWidth={1.8} className="text-gold" />
-              {result.xp_earned} XP{result.alreadyCompleted ? ' (already graded)' : ' earned'}
+              {result.xp_earned} XP{result.alreadyCompleted ? ' (already reviewed)' : ' earned'}
             </span>
           </div>
 
@@ -175,32 +175,32 @@ export function QuickTakePanel({ prompt: initialPrompt, challengeId: initialChal
               {result.structured.what_worked && (
                 <div className="flex items-start gap-2">
                   <CircleCheck size={16} strokeWidth={1.8} className="mt-0.5 shrink-0 text-forest-600" />
-                  <FeedbackText className="text-[12.5px] leading-relaxed text-ink-strong">{result.structured.what_worked}</FeedbackText>
+                  <FeedbackText className="text-sm leading-relaxed text-ink-strong">{result.structured.what_worked}</FeedbackText>
                 </div>
               )}
               {result.structured.what_to_improve && (
                 <div className="flex items-start gap-2">
                   <ArrowRight size={16} strokeWidth={1.8} className="mt-0.5 shrink-0 text-ink-secondary" />
-                  <FeedbackText className="text-[12.5px] leading-relaxed text-ink-strong">{result.structured.what_to_improve}</FeedbackText>
+                  <FeedbackText className="text-sm leading-relaxed text-ink-strong">{result.structured.what_to_improve}</FeedbackText>
                 </div>
               )}
               {result.structured.example_move && (
                 <div className="flex items-start gap-2 rounded-lg border border-hairline bg-white/60 px-2.5 py-2">
                   <Zap size={16} strokeWidth={1.8} className="mt-0.5 shrink-0 text-forest-800" />
-                  <FeedbackText className="text-[12.5px] font-semibold leading-relaxed text-ink-strong">{result.structured.example_move}</FeedbackText>
+                  <FeedbackText className="text-sm font-semibold leading-relaxed text-ink-strong">{result.structured.example_move}</FeedbackText>
                 </div>
               )}
             </div>
           ) : (
-            <FeedbackText className="text-[12.5px] leading-relaxed text-ink-strong">{result.feedback_summary}</FeedbackText>
+            <FeedbackText className="text-sm leading-relaxed text-ink-strong">{result.feedback_summary}</FeedbackText>
           )}
 
-          {error && <p className="text-[12px] font-semibold text-error">{error}</p>}
+          {error && <p className="text-sm font-semibold text-error">{error}</p>}
 
           <button
             onClick={handleTryAnother}
             disabled={loadingNext}
-            className="self-start rounded-lg border border-hairline bg-white px-3.5 py-[7px] text-[12px] font-bold text-ink-strong transition-colors hover:bg-surface-container-low disabled:opacity-50"
+            className="self-start rounded-lg border border-hairline bg-white px-3.5 py-2 text-sm font-bold text-ink-strong transition-colors hover:bg-surface-container-low disabled:opacity-50"
           >
             {loadingNext ? 'Loading next prompt' : 'Try another'}
           </button>
@@ -215,15 +215,15 @@ export function QuickTakePanel({ prompt: initialPrompt, challengeId: initialChal
             disabled={submitting}
             rows={3}
             maxLength={6000}
-            className="w-full resize-none rounded-lg border border-hairline bg-white/70 px-3 py-2 text-[13px] leading-relaxed text-ink-strong outline-none placeholder:text-ink-muted focus:border-forest-600 disabled:opacity-60"
+            className="w-full resize-none rounded-lg border border-hairline bg-white/70 px-3 py-2 text-sm leading-relaxed text-ink-strong outline-none placeholder:text-ink-muted focus:border-forest-600 disabled:opacity-60"
           />
-          {error && <p className="text-[12px] font-semibold text-error">{error}</p>}
+          {error && <p className="text-sm font-semibold text-error">{error}</p>}
           <button
             onClick={handleSubmit}
             disabled={!take.trim() || submitting}
-            className="self-start rounded-lg bg-forest-800 px-3.5 py-[7px] text-[12px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="self-start rounded-lg bg-forest-800 px-3.5 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
           >
-            {submitting ? 'Grading' : 'Submit take'}
+            {submitting ? 'Reviewing' : 'Submit take'}
           </button>
         </div>
       )}

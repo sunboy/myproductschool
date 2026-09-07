@@ -14,6 +14,14 @@
 //   LLM_GATEWAY_MASTER_KEY admin key authorizing /key/generate
 //   CC_SESSION_BUDGET_USD  hard cap per session (default 0.50)
 
+import { createHash, createHmac } from 'node:crypto'
+import {
+  resolveDisplayCeilingUsd,
+  resolveKeyMaxBudgetUsd,
+  resolveSessionBudgetUsd,
+  resolveSessionTtlSeconds,
+} from './cost-policy'
+
 export interface VirtualKey {
   /** The virtual key the container uses as its Anthropic API key. */
   key: string
@@ -26,112 +34,264 @@ export function isGatewayConfigured(): boolean {
   return Boolean(process.env.LLM_GATEWAY_URL && process.env.LLM_GATEWAY_MASTER_KEY)
 }
 
+const SESSION_KEY_DERIVATION = 'hmac-sha256-v1'
+const SESSION_KEY_DOMAIN = 'myproductschool:cc-session-key:v1\0'
+const EXPIRY_PRECISION_MS = 1000
+const KEY_LOOKUP_TIMEOUT_MS = 4000
+
+type GatewayMintKey = {
+  key_alias?: unknown
+  token?: unknown
+  metadata?: unknown
+  max_budget?: unknown
+  models?: unknown
+  blocked?: unknown
+  expires?: unknown
+}
+
+type MintRecovery = 'owned' | 'absent' | 'unavailable' | 'mismatch'
+
+class TerminalKeyError extends Error {}
+
+function deriveSessionKey(master: string, sessionId: string): string {
+  return `sk-${createHmac('sha256', master)
+    .update(SESSION_KEY_DOMAIN)
+    .update(sessionId)
+    .digest('base64url')}`
+}
+
+function sessionKeyHash(key: string): string {
+  return createHash('sha256').update(key).digest('hex')
+}
+
+function sameModelSet(actual: unknown, expected: string[]): boolean {
+  if (!Array.isArray(actual) || actual.some((model) => typeof model !== 'string')) return false
+  const actualSet = new Set(actual as string[])
+  const expectedSet = new Set(expected)
+  return actualSet.size === expectedSet.size
+    && [...expectedSet].every((model) => actualSet.has(model))
+}
+
+async function recoverOwnedSessionKey(input: {
+  baseUrl: string
+  master: string
+  alias: string
+  sessionId: string
+  expectedTokenHash: string
+  /** The value actually persisted as the gateway key's `max_budget` — the
+   *  ceiling minus worst-case-turn headroom, NOT the user-facing ceiling. */
+  keyMaxBudgetUsd: number
+  models: string[]
+  ttlSeconds: number
+  invocationExpiryUpperMs: number
+  deadline: number
+}): Promise<MintRecovery> {
+  const remainingMs = input.deadline - Date.now()
+  if (remainingMs <= 0) return 'unavailable'
+  const query = new URLSearchParams({
+    key_alias: input.alias,
+    return_full_object: 'true',
+    size: '100',
+  })
+  let key: GatewayMintKey | undefined
+  try {
+    const response = await fetch(`${input.baseUrl}/key/list?${query}`, {
+      headers: { Authorization: `Bearer ${input.master}` },
+      signal: AbortSignal.timeout(Math.min(KEY_LOOKUP_TIMEOUT_MS, remainingMs)),
+      cache: 'no-store',
+    })
+    if (!response.ok) return 'unavailable'
+    const body = (await response.json()) as { keys?: GatewayMintKey[] }
+    key = body.keys?.find((candidate) => candidate.key_alias === input.alias)
+  } catch {
+    return 'unavailable'
+  }
+  if (!key) return 'absent'
+
+  if (!key.metadata || typeof key.metadata !== 'object' || Array.isArray(key.metadata)) {
+    return 'mismatch'
+  }
+  const metadata = key.metadata as Record<string, unknown>
+  const metadataKeys = Object.keys(metadata).sort()
+  const expectedMetadataKeys = [
+    'expires_at',
+    'feature',
+    'key_derivation',
+    'session_id',
+    'ttl_seconds',
+  ]
+  if (
+    metadataKeys.length !== expectedMetadataKeys.length
+    || metadataKeys.some((name, index) => name !== expectedMetadataKeys[index])
+    || metadata.feature !== 'claude_code_analytics'
+    || metadata.session_id !== input.sessionId
+    || metadata.key_derivation !== SESSION_KEY_DERIVATION
+    || metadata.ttl_seconds !== input.ttlSeconds
+    || typeof metadata.expires_at !== 'string'
+  ) {
+    return 'mismatch'
+  }
+
+  const now = Date.now()
+  const storedExpiryMs = Date.parse(metadata.expires_at)
+  const providerExpiryMs = typeof key.expires === 'string' ? Date.parse(key.expires) : Number.NaN
+  if (
+    key.token !== input.expectedTokenHash
+    || key.max_budget !== input.keyMaxBudgetUsd
+    || key.blocked !== false
+    || !sameModelSet(key.models, input.models)
+    || !Number.isFinite(storedExpiryMs)
+    || storedExpiryMs <= now
+    || storedExpiryMs > input.invocationExpiryUpperMs + EXPIRY_PRECISION_MS
+    || !Number.isFinite(providerExpiryMs)
+    || providerExpiryMs <= now
+    || providerExpiryMs > storedExpiryMs + EXPIRY_PRECISION_MS
+  ) {
+    return 'mismatch'
+  }
+  return 'owned'
+}
+
 /**
- * Mint a virtual key scoped to one session with a hard budget. Returns null if
- * the gateway is not configured (caller falls back to the shared key) — so the
- * gateway can be adopted without breaking environments that haven't deployed it.
+ * Mint a virtual key scoped to one session with a hard budget. The raw key is
+ * deterministically derived for this session, so a successful gateway insert
+ * whose response is lost can be recovered without deleting or replacing an
+ * alias. Recovery always proves ownership and the original cap/expiry first.
  */
 export async function mintSessionVirtualKey(
   sessionId: string,
   ttlSeconds: number,
-  /**
-   * Models this key may access. Default `['all-proxy-models']` = whatever the
-   * gateway currently serves — so the key never 403s when the CLI requests a
-   * model name (e.g. claude-opus-4-7) that the gateway remaps. Pass a narrowed
-   * list (e.g. ['claude-haiku-4-5']) to force a degraded tier for the future
-   * monthly-cap downgrade. (project_cc_gateway_model_mismatch: a stale per-key
-   * allowlist re-introduced the 403 even after the gateway model_list was fixed.)
-   */
+  /** Models this key may access. Keep narrowed lists stable across retries. */
   models: string[] = ['all-proxy-models'],
 ): Promise<VirtualKey | null> {
   if (!isGatewayConfigured()) return null
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(sessionId)) {
+    throw new TerminalKeyError('Invalid analytics session id')
+  }
 
   const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
-  const budgetUsd = parseFloat(process.env.CC_SESSION_BUDGET_USD ?? '0.50')
+  const budgetUsd = resolveSessionBudgetUsd(process.env.CC_SESSION_BUDGET_USD)
+  // The gateway key is minted with headroom reserved off the ceiling so a
+  // turn that starts under budget cannot finish over it (see cost-policy.ts).
+  // `budgetUsd` (the ceiling) is what callers get back and what gets stored/
+  // displayed; `keyMaxBudgetUsd` (reduced) is what LiteLLM actually enforces
+  // and the only value ownership-recovery may compare against.
+  const keyMaxBudgetUsd = resolveKeyMaxBudgetUsd(budgetUsd)
+  const boundedTtlSeconds = resolveSessionTtlSeconds(ttlSeconds)
+  const perAttemptTimeoutMs = Math.min(
+    15_000,
+    Math.max(1000, Number.parseInt(process.env.CC_MINT_ATTEMPT_TIMEOUT_MS ?? '9000', 10) || 9000),
+  )
+  // Leave well over half of the provision route's 180-second budget for Cloud
+  // Run revision creation and readiness after key minting finishes.
+  const totalTimeoutMs = Math.min(
+    90_000,
+    Math.max(10_000, Number.parseInt(process.env.CC_MINT_TOTAL_TIMEOUT_MS ?? '65000', 10) || 65_000),
+  )
+  const startedAt = Date.now()
+  const deadline = startedAt + totalTimeoutMs
+  const invocationExpiryUpperMs = startedAt + boundedTtlSeconds * 1000
+  const declaredExpiry = new Date(invocationExpiryUpperMs).toISOString()
+  const expiryGuardSeconds = Math.min(
+    Math.ceil(totalTimeoutMs / 1000) + 2,
+    Math.max(2, Math.floor(boundedTtlSeconds / 10)),
+  )
+  const alias = `cc-${sessionId}`
+  const key = deriveSessionKey(master, sessionId)
+  const expectedTokenHash = sessionKeyHash(key)
+  const metadata = {
+    feature: 'claude_code_analytics',
+    session_id: sessionId,
+    key_derivation: SESSION_KEY_DERIVATION,
+    ttl_seconds: boundedTtlSeconds,
+    expires_at: declaredExpiry,
+  }
+  const recoveryInput = {
+    baseUrl,
+    master,
+    alias,
+    sessionId,
+    expectedTokenHash,
+    keyMaxBudgetUsd,
+    models,
+    ttlSeconds: boundedTtlSeconds,
+    invocationExpiryUpperMs,
+    deadline,
+  }
 
-  // Retry with backoff: the gateway is minScale=0 and its Cloud SQL may have just
-  // been woken on demand (see cloud-sql-admin), so the FIRST key/generate can hit
-  // a cold gateway whose Prisma connection to the fresh DB isn't ready yet (500 /
-  // connection error). A couple of retries absorb that without failing the session.
-  // A terminal error (4xx client error) is thrown directly and NOT retried; only
-  // transient failures (5xx, network) fall through to the retry loop. (A plain
-  // `throw` inside the try would be swallowed by the catch and retried 4×.)
-  class TerminalKeyError extends Error {}
+  // A later provision invocation for the same session should recover the first
+  // invocation's still-valid key without sending another generate request.
+  const existing = await recoverOwnedSessionKey(recoveryInput)
+  if (existing === 'owned') return { key, baseUrl, budgetUsd }
+  if (existing === 'mismatch') {
+    throw new TerminalKeyError('Existing analytics session key failed ownership verification')
+  }
 
-  let lastErr: unknown
-  // Each attempt has its OWN timeout: a cold gateway accepts the TCP connection
-  // but never responds while LiteLLM boots, so a fetch with no timeout HANGS for
-  // the full ~40s cold-boot and eats the route's 60s budget. A 9s per-attempt
-  // timeout + retries means we re-probe a booting gateway every ~9s and connect
-  // the moment it's up, instead of one long hang. 5 attempts × (9s + backoff)
-  // covers a ~40-50s cold boot.
-  const ATTEMPT_TIMEOUT_MS = parseInt(process.env.CC_MINT_ATTEMPT_TIMEOUT_MS ?? '9000', 10)
-  const keyAlias = `cc-${sessionId}`
-  // One-shot guard so a duplicate-alias recovery can't loop: provisionSession can
-  // run more than once per sessionId (the provision route is killed at Vercel's 60s
-  // ceiling AFTER /key/generate persisted the key in LiteLLM but BEFORE the host is
-  // saved, then the client retries). The retry re-mints the SAME alias, which newer
-  // LiteLLM rejects with 400 from _enforce_unique_key_alias. We delete the orphaned
-  // alias once and regenerate — the stale key has ~$0 spend (it was never handed to
-  // a live container), and the alias MUST stay `cc-<sessionId>` because spend
-  // tracking parses it via alias.slice(3). (Without this, the 400 was fatal and the
-  // session stuck in `provisioning` → "Sandbox took too long".)
-  let recoveredDup = false
-  for (let attempt = 0; attempt < 5; attempt++) {
-    if (attempt > 0) await new Promise((r) => setTimeout(r, 1500 * attempt))
+  let lastError = new Error('LiteLLM key generation unavailable')
+  for (let attempt = 0; attempt < 5 && Date.now() < deadline; attempt++) {
+    if (attempt > 0) {
+      const backoffMs = Math.min(1500 * attempt, Math.max(0, deadline - Date.now()))
+      if (backoffMs > 0) await new Promise((resolve) => setTimeout(resolve, backoffMs))
+    }
+    const remainingMs = deadline - Date.now()
+    const remainingLifetimeSeconds = Math.floor(
+      (invocationExpiryUpperMs - Date.now()) / 1000,
+    )
+    const durationSeconds = remainingLifetimeSeconds - expiryGuardSeconds
+    if (remainingMs <= 0 || durationSeconds < 1) break
+
+    let responseStatus: number | null = null
     try {
-      const res = await fetch(`${baseUrl}/key/generate`, {
+      const response = await fetch(`${baseUrl}/key/generate`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          key_alias: keyAlias,
-          max_budget: budgetUsd,
-          // Hard duration so a key can't be reused indefinitely; matches session TTL.
-          duration: `${Math.max(60, ttlSeconds)}s`,
+          key,
+          key_alias: alias,
+          max_budget: keyMaxBudgetUsd,
+          duration: `${durationSeconds}s`,
           models,
-          metadata: { feature: 'claude_code_analytics', session_id: sessionId },
+          blocked: false,
+          metadata,
         }),
-        signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
+        signal: AbortSignal.timeout(Math.min(perAttemptTimeoutMs, remainingMs)),
       })
-      if (!res.ok) {
-        const detail = await res.text().catch(() => '')
-        // 5xx / connection issues are transient (cold gateway/DB) → retry. 4xx is
-        // a real client error (bad master key, bad model) → fail fast.
-        if (res.status >= 500) {
-          lastErr = new Error(`LiteLLM key/generate ${res.status}: ${detail.slice(0, 200)}`)
-          continue
+      responseStatus = response.status
+      if (response.ok) {
+        const body = (await response.json()) as { key?: unknown }
+        if (body.key !== key) {
+          throw new TerminalKeyError('LiteLLM returned an unexpected analytics session key')
         }
-        // Duplicate-alias 400: a prior (killed) provision already created this
-        // session's key. Delete it ONCE, then regenerate against the freed alias.
-        if (
-          res.status === 400 &&
-          !recoveredDup &&
-          /alias/i.test(detail) &&
-          /(exist|already|unique)/i.test(detail)
-        ) {
-          recoveredDup = true
-          await fetch(`${baseUrl}/key/delete`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key_aliases: [keyAlias] }),
-            signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
-          }).catch(() => {}) // best-effort; the regenerate is the source of truth
-          continue
-        }
-        throw new TerminalKeyError(`LiteLLM key/generate failed (${res.status}): ${detail.slice(0, 300)}`)
       }
-      const data = (await res.json()) as { key?: string }
-      if (!data.key) throw new TerminalKeyError('LiteLLM key/generate returned no key')
-      return { key: data.key, baseUrl, budgetUsd }
-    } catch (err) {
-      // Don't retry a client-side / contract error — surface it immediately.
-      if (err instanceof TerminalKeyError) throw err
-      lastErr = err
-      // Network-level throw (gateway still cold) — retry unless it's the last try.
+    } catch (error) {
+      if (error instanceof TerminalKeyError) throw error
+      // A timeout/network error is ambiguous: the insert may have committed.
+      lastError = new Error('LiteLLM key generation request was ambiguous')
+    }
+
+    const recovered = await recoverOwnedSessionKey(recoveryInput)
+    if (recovered === 'owned') return { key, baseUrl, budgetUsd }
+    if (recovered === 'mismatch') {
+      throw new TerminalKeyError('Existing analytics session key failed ownership verification')
+    }
+
+    if (responseStatus !== null) {
+      lastError = new Error(`LiteLLM key/generate ${responseStatus}`)
+      // 400/409 may be the unique-alias response after a lost success. Its
+      // exact lookup can be briefly unavailable, so retry lookup/generate under
+      // the same total deadline. Other client errors are deterministic.
+      if (
+        responseStatus >= 400
+        && responseStatus < 500
+        && responseStatus !== 400
+        && responseStatus !== 409
+      ) {
+        throw new TerminalKeyError(`LiteLLM key/generate failed (${responseStatus})`)
+      }
     }
   }
-  throw lastErr ?? new Error('LiteLLM key/generate failed after retries')
+  throw lastError
 }
 
 /**
@@ -164,6 +324,35 @@ export interface KeySpend {
   budgetUsd: number | null
 }
 
+/** Query only this session's alias; never expose gateway credentials to the client. */
+export async function getSessionKeySpend(sessionId: string): Promise<KeySpend | null> {
+  if (!isGatewayConfigured()) return null
+  const alias = `cc-${sessionId}`
+  const query = new URLSearchParams({ key_alias: alias, return_full_object: 'true', size: '100' })
+  try {
+    const res = await fetch(`${process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')}/key/list?${query}`, {
+      headers: { Authorization: `Bearer ${process.env.LLM_GATEWAY_MASTER_KEY!}` },
+      signal: AbortSignal.timeout(2500),
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    const data = await res.json() as { keys?: Array<{ key_alias?: string; spend?: number; max_budget?: number | null }> }
+    // Gateway filtering is a substring match. Require the exact alias before using spend.
+    const key = data.keys?.find(candidate => candidate.key_alias === alias)
+    if (!key || typeof key.spend !== 'number' || !Number.isFinite(key.spend) || key.spend < 0) return null
+    // The gateway's own `max_budget` is now the reduced mint value (ceiling
+    // minus worst-case-turn headroom, see cost-policy.ts), not the
+    // user-facing ceiling — never surface it directly. The usage meter and
+    // any other display path must show the configured ceiling instead.
+    return {
+      spentUsd: key.spend,
+      budgetUsd: resolveDisplayCeilingUsd(resolveSessionBudgetUsd(process.env.CC_SESSION_BUDGET_USD)),
+    }
+  } catch {
+    return null
+  }
+}
+
 /**
  * Read current spend + budget for a session's virtual key. Powers the live usage
  * meter. Returns null if the gateway is unconfigured or the lookup fails (the UI
@@ -179,9 +368,11 @@ export async function getKeySpend(virtualKey: string): Promise<KeySpend | null> 
     })
     if (!res.ok) return null
     const data = (await res.json()) as { info?: { spend?: number; max_budget?: number | null } }
+    // Same rationale as getSessionKeySpend: the gateway's stored max_budget
+    // is the reduced mint value, never the user-facing ceiling.
     return {
       spentUsd: data.info?.spend ?? 0,
-      budgetUsd: data.info?.max_budget ?? null,
+      budgetUsd: resolveDisplayCeilingUsd(resolveSessionBudgetUsd(process.env.CC_SESSION_BUDGET_USD)),
     }
   } catch {
     return null
@@ -237,22 +428,108 @@ export async function getAllSessionKeySpendCents(): Promise<Map<string, number> 
   }
 }
 
-/** Best-effort revoke when a session ends (the duration TTL also expires it). */
-export async function revokeSessionKey(virtualKey: string): Promise<void> {
-  if (!isGatewayConfigured()) return
+type GatewaySessionKey = {
+  key_alias?: unknown
+  token?: unknown
+  metadata?: unknown
+  spend?: unknown
+  blocked?: unknown
+}
+
+export type BlockSessionKeyResult =
+  | { status: 'blocked' | 'already_blocked'; spentCents: number | null }
+  | { status: 'not_found' | 'unconfigured' }
+  | {
+      status: 'failed'
+      reason:
+        | 'invalid_session_id'
+        | 'list_unavailable'
+        | 'metadata_mismatch'
+        | 'token_missing'
+        | 'block_unavailable'
+        | 'block_unverified'
+    }
+
+function sessionKeyMetadataMatches(key: GatewaySessionKey, sessionId: string): boolean {
+  if (!key.metadata || typeof key.metadata !== 'object' || Array.isArray(key.metadata)) return false
+  const metadata = key.metadata as Record<string, unknown>
+  return metadata.feature === 'claude_code_analytics' && metadata.session_id === sessionId
+}
+
+function sessionKeySpendCents(key: GatewaySessionKey): number | null {
+  return typeof key.spend === 'number' && Number.isFinite(key.spend) && key.spend >= 0
+    ? Math.round(key.spend * 100)
+    : null
+}
+
+function boundedSignal(deadline: number): AbortSignal {
+  return AbortSignal.timeout(Math.max(1, deadline - Date.now()))
+}
+
+/**
+ * Immediately revoke one ended session's credential without deleting its
+ * gateway record. LiteLLM's block endpoint accepts the hashed `token` returned
+ * by `/key/list`; retaining the row keeps authoritative spend available to the
+ * idempotent accounting backstop. The alias and mint metadata must both match
+ * before a token is sent to `/key/block`, so a substring list result can never
+ * affect a neighboring session.
+ *
+ * Failures are returned as allow-listed reasons. Callers can retry safely; a
+ * successful block is idempotent and the mint-time duration remains a fallback.
+ */
+export async function blockSessionKey(
+  sessionId: string,
+  timeoutMs = 8000,
+): Promise<BlockSessionKeyResult> {
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(sessionId)) {
+    return { status: 'failed', reason: 'invalid_session_id' }
+  }
+  if (!isGatewayConfigured()) return { status: 'unconfigured' }
+
   const baseUrl = process.env.LLM_GATEWAY_URL!.replace(/\/$/, '')
   const master = process.env.LLM_GATEWAY_MASTER_KEY!
+  const alias = `cc-${sessionId}`
+  const deadline = Date.now() + Math.max(1, timeoutMs)
+  const query = new URLSearchParams({ key_alias: alias, return_full_object: 'true', size: '100' })
+
+  let key: GatewaySessionKey | undefined
   try {
-    // Bounded for the same reason as /key/list: an idle-stopped gateway DB can
-    // make this hang. Best-effort — the key's duration TTL expires it regardless,
-    // so an abort is harmless.
-    await fetch(`${baseUrl}/key/delete`, {
+    const response = await fetch(`${baseUrl}/key/list?${query}`, {
+      headers: { Authorization: `Bearer ${master}` },
+      signal: boundedSignal(deadline),
+      cache: 'no-store',
+    })
+    if (!response.ok) return { status: 'failed', reason: 'list_unavailable' }
+    const body = (await response.json()) as { keys?: GatewaySessionKey[] }
+    key = body.keys?.find((candidate) => candidate.key_alias === alias)
+  } catch {
+    return { status: 'failed', reason: 'list_unavailable' }
+  }
+
+  if (!key) return { status: 'not_found' }
+  if (!sessionKeyMetadataMatches(key, sessionId)) {
+    return { status: 'failed', reason: 'metadata_mismatch' }
+  }
+  const spentCents = sessionKeySpendCents(key)
+  if (key.blocked === true) return { status: 'already_blocked', spentCents }
+  if (typeof key.token !== 'string' || key.token.length === 0) {
+    return { status: 'failed', reason: 'token_missing' }
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/key/block`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${master}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ keys: [virtualKey] }),
-      signal: AbortSignal.timeout(8000),
+      body: JSON.stringify({ key: key.token }),
+      signal: boundedSignal(deadline),
     })
+    if (!response.ok) return { status: 'failed', reason: 'block_unavailable' }
+    const blocked = (await response.json()) as GatewaySessionKey | null
+    if (!blocked || blocked.blocked !== true) {
+      return { status: 'failed', reason: 'block_unverified' }
+    }
+    return { status: 'blocked', spentCents: sessionKeySpendCents(blocked) ?? spentCents }
   } catch {
-    // TTL will expire it regardless.
+    return { status: 'failed', reason: 'block_unavailable' }
   }
 }

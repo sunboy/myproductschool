@@ -71,7 +71,7 @@ const cards = [
     title: 'Honest feedback',
     body: 'Hatch reads your answer and shows you the exact gap to close.',
     image: '/landing-v3/section-2/calibrated-feedback.png',
-    alt: 'Abstract organized feedback loop with rubric signals.',
+    alt: 'An illustrated view of personalized learning feedback.',
     width: 1536,
     height: 1024,
     hasHatch: true,
@@ -82,11 +82,11 @@ export function V3ContextSection() {
   return (
     <section className="context-section" aria-labelledby="context-heading">
       <div className="shell">
-        <div className="context-logo-row" aria-label="Practice for interview loops at">
-          <div className="context-logo-label">Practice for interview loops at</div>
+        <div className="context-logo-row" aria-label="Practice for interviews at">
+          <div className="context-logo-label">Practice for interviews at</div>
           <div className="context-logo-marquee" tabIndex={0}>
             <div className="context-logo-track">
-              {tickerLoops.map((companies, loopIndex) => (
+              {tickerLoops.slice(0, 1).map((companies, loopIndex) => (
                 <div className="context-logo-group" aria-hidden={loopIndex > 0} key={loopIndex}>
                   {companies.map((company) => (
                     <div className="context-logo" key={`${loopIndex}-${company.name}`}>
@@ -106,9 +106,9 @@ export function V3ContextSection() {
 
         <div className="context-copy">
           <h2 id="context-heading">
-            Your interview anxiety isn&rsquo;t a flaw to fix. It&rsquo;s untrained reps.
+            Interview confidence is a skill you can build.
           </h2>
-          <p>Practice under pressure, with a coach that tells you the truth.</p>
+          <p>Practice under pressure with a coach that gives you clear feedback.</p>
         </div>
 
         <div className="context-map">

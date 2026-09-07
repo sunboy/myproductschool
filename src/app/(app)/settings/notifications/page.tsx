@@ -178,11 +178,13 @@ export default function NotificationSettingsPage() {
                     aria-checked={checked}
                     disabled={loading || savingKey !== null}
                     onClick={() => updatePreference(item.key, !checked)}
-                    className={`relative h-6 w-11 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${checked ? 'bg-forest-800' : 'bg-hairline'}`}
+                    className="relative flex h-11 w-14 items-center justify-center rounded-full bg-transparent transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label={`${checked ? 'Disable' : 'Enable'} ${item.label}`}
                   >
+                    <span className={`absolute inset-x-1.5 top-1/2 h-6 -translate-y-1/2 rounded-full transition-colors ${checked ? 'bg-forest-800' : 'bg-hairline'}`} aria-hidden="true" />
                     <span
-                      className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`}
+                      className={`absolute left-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`}
+                      aria-hidden="true"
                     />
                   </button>
                 </div>

@@ -113,7 +113,7 @@ export interface HostProvider {
    */
   awaitReady(hostInstanceId: string, deadlineMs: number): Promise<boolean>
   /** Tear a session sandbox down. Best-effort; must not throw on already-gone. */
-  destroySession(hostInstanceId: string): Promise<void>
+  destroySession(hostInstanceId: string, options?: { signal?: AbortSignal }): Promise<void>
   /**
    * Derive the hostInstanceId a session WOULD get, without provisioning. Lets the
    * orchestrator tear down a partially-created sandbox in createSession's error
@@ -131,5 +131,5 @@ export interface HostProvider {
    * that can't enumerate live sessions may omit it (the reaper then skips the
    * orphan sweep). Returns [] on error, never throws.
    */
-  listSessionHostIds?(): Promise<string[]>
+  listSessionHostIds?(options?: { signal?: AbortSignal }): Promise<string[]>
 }

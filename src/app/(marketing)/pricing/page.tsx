@@ -5,9 +5,9 @@ import { getPublicPlanLimits } from '@/lib/usage/public-limits'
 import { PricingClient } from './PricingClient'
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Pricing | HackProduct AI-Native Practice System',
+  title: 'Pricing | HackProduct',
   description:
-    'Choose monthly or annual access to HackProduct Pro. Train with live interviews, Hatch AI coaching, scoring, study plans, autopsies, code, and canvas practice.',
+    'Choose monthly or annual access to HackProduct Pro. Learn with live interviews, Hatch AI coaching, scoring, study plans, autopsies, code, and canvas practice.',
   path: '/pricing',
   keywords: [
     'HackProduct pricing',

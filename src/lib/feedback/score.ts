@@ -1,5 +1,5 @@
 // The canonical score language for every feedback surface. Stored scales stay
-// per-medium (/5 canvas+coding, /100 debrief+CC, 0-1 quick-take, /10 FLOW);
+// per-medium (/5 canvas+coding+live interview, /100 CC, 0-1 quick-take, /10 FLOW);
 // display normalizes to /10 with one grade lexicon, so a learner moving
 // between mediums reads one coherent coach.
 
@@ -35,7 +35,7 @@ export const GRADE_DESCRIPTORS: Record<GradeBand, string> = {
   sharp: 'This is the level that carries a real interview.',
   solid: 'The core moves are there. Sharpen the specifics.',
   surface: 'Right direction, but the reasoning stays on the surface.',
-  needs_work: 'The foundations need reps. That is what practice is for.',
+  needs_work: 'Focus your next challenge on the foundations.',
 }
 
 /** Terra token classes per band (ring stroke, badge chip, text). */

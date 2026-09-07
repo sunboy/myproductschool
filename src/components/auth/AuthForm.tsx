@@ -1,13 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { LearningGeometry } from '@/components/redesign/LearningGeometry'
 import { HackProductWordmark } from '@/components/brand/HackProductBrand'
-import { TurnstileWidget, isTurnstileClientEnabled } from '@/components/auth/TurnstileWidget'
-import { useHatchSonics } from '@/hooks/useHatchSonics'
-import { loginSchema, passwordResetRequestSchema, signupSchema, zodFieldErrors } from '@/lib/auth/validation'
-import { consumeMagnetSource } from '@/lib/lead-magnets/utm'
+import { TurnstileWidget } from '@/components/auth/TurnstileWidget'
+import { useAuthForm } from '@/hooks/useAuthForm'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
@@ -16,358 +12,31 @@ interface AuthFormProps {
   archetype?: string
 }
 
-type AuthMode = 'login' | 'signup' | 'forgot' | 'magic'
-
-const AUTH_DISCIPLINES = [
-  { label: 'Coding', icon: 'data_object', color: '#7aa7ff', copy: 'DSA with live execution' },
-  { label: 'SQL', icon: 'database', color: '#c89df5', copy: 'Queries against real datasets' },
-  { label: 'Product sense', icon: 'psychology', color: '#8ecf9e', copy: 'Decision reps with Hatch' },
-  { label: 'Data modeling', icon: 'account_tree', color: '#f0c36a', copy: 'Schemas, grain, contracts' },
-  { label: 'System design', icon: 'hub', color: '#f5a76c', copy: 'Scale and tradeoffs' },
-] as const
-
-// Hatch mascot as giant outline-only line art - no fills, strokes only
-function HatchLineArt() {
-  // viewBox="0 0 64 72", scaled ~10.5x, centered in left half
-  const s = 10.5
-  const ox = 82
-  const oy = 58
-  const sp = (x: number, y: number) => ({ x: x * s + ox, y: y * s + oy })
-  const sc = (x: number, y: number) => `${x * s + ox},${y * s + oy}`
-
-  const headTL = sp(14, 22)
-  const earL = sp(8, 32), earR = sp(50, 32)
-  const capRect = sp(22, 10)
-  const eyeL = sp(25, 36), eyeR = sp(39, 36)
-  const mouthL = sp(27, 44), mouthR = sp(37, 44)
-  const arrL1 = sp(48, 18), arrL2 = sp(54, 10)
-  const capPoly = [sc(18, 22), sc(46, 22), sc(50, 16), sc(14, 16)].join(' ')
-  const arrPoly = [sc(50, 10), sc(54, 10), sc(54, 14)].join(' ')
-
-  return (
-    <svg
-      className="absolute inset-0 w-full h-full pointer-events-none select-none"
-      viewBox="0 0 800 900"
-      preserveAspectRatio="xMidYMid meet"
-      aria-hidden
-    >
-      {/* Ear nubs */}
-      <rect x={earL.x} y={earL.y} width={6 * s} height={10 * s} rx={3 * s} fill="none" stroke="rgba(142,207,158,0.09)" strokeWidth="2.5" />
-      <rect x={earR.x} y={earR.y} width={6 * s} height={10 * s} rx={3 * s} fill="none" stroke="rgba(142,207,158,0.09)" strokeWidth="2.5" />
-      {/* Head */}
-      <rect x={headTL.x} y={headTL.y} width={36 * s} height={30 * s} rx={8 * s} fill="none" stroke="rgba(142,207,158,0.13)" strokeWidth="3" />
-      {/* Eyes */}
-      <circle cx={eyeL.x} cy={eyeL.y} r={3 * s} fill="none" stroke="rgba(142,207,158,0.08)" strokeWidth="2.5" />
-      <circle cx={eyeR.x} cy={eyeR.y} r={3 * s} fill="none" stroke="rgba(142,207,158,0.08)" strokeWidth="2.5" />
-      {/* Mouth */}
-      <line x1={mouthL.x} y1={mouthL.y} x2={mouthR.x} y2={mouthR.y} stroke="rgba(142,207,158,0.07)" strokeWidth="2.5" strokeLinecap="round" />
-      {/* Cap brim */}
-      <polygon points={capPoly} fill="none" stroke="rgba(142,207,158,0.11)" strokeWidth="2.5" strokeLinejoin="round" />
-      {/* Cap top */}
-      <rect x={capRect.x} y={capRect.y} width={20 * s} height={12 * s} rx={s} fill="none" stroke="rgba(142,207,158,0.11)" strokeWidth="2.5" />
-      {/* Growth arrow */}
-      <line x1={arrL1.x} y1={arrL1.y} x2={arrL2.x} y2={arrL2.y} stroke="rgba(142,207,158,0.14)" strokeWidth="3" strokeLinecap="round" />
-      <polyline points={arrPoly} fill="none" stroke="rgba(142,207,158,0.14)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-
-      {/* Ambient wobbly lines */}
-      <path d="M -40 80 C 120 60, 200 200, 300 260 C 420 330, 340 480, 460 560 C 580 640, 720 620, 840 700"
-        stroke="rgba(142,207,158,0.06)" strokeWidth="1.5" fill="none" strokeLinecap="round"
-        style={{ strokeDasharray: 1800, strokeDashoffset: 1800, animationName: 'hatchDrawA', animationDuration: '70s', animationTimingFunction: 'linear', animationIterationCount: 'infinite' }} />
-      <path d="M -60 600 C 80 570, 160 630, 260 600 C 360 570, 400 640, 500 610 C 600 580, 680 630, 760 605"
-        stroke="rgba(142,207,158,0.05)" strokeWidth="1" fill="none" strokeLinecap="round"
-        style={{ strokeDasharray: 1200, strokeDashoffset: 1200, animationName: 'hatchDrawB', animationDuration: '90s', animationTimingFunction: 'linear', animationIterationCount: 'infinite', animationDelay: '-20s' }} />
-
-      <style>{`
-        @keyframes hatchDrawA {
-          0%   { stroke-dashoffset: 1800; opacity: 0; }
-          5%   { opacity: 1; }
-          90%  { opacity: 1; }
-          100% { stroke-dashoffset: 0; opacity: 0; }
-        }
-        @keyframes hatchDrawB {
-          0%   { stroke-dashoffset: 1200; opacity: 0; }
-          5%   { opacity: 1; }
-          90%  { opacity: 1; }
-          100% { stroke-dashoffset: 0; opacity: 0; }
-        }
-      `}</style>
-    </svg>
-  )
-}
-
-function DisciplineSignalBoard() {
-  return (
-    <div className="hidden min-[1200px]:grid max-w-[520px] grid-cols-5 gap-2 pt-7">
-      {AUTH_DISCIPLINES.map((discipline) => (
-        <div
-          key={discipline.label}
-          className="relative min-h-[96px] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.075] p-3"
-        >
-          <div
-            aria-hidden
-            className="absolute -right-4 -top-5 h-14 w-14 rounded-full"
-            style={{ background: discipline.color, opacity: 0.13 }}
-          />
-          <span
-            className="material-symbols-outlined relative text-[20px]"
-            style={{ color: discipline.color, fontVariationSettings: "'FILL' 1" }}
-          >
-            {discipline.icon}
-          </span>
-          <div className="relative mt-3 font-label text-[11px] font-black leading-tight text-white">
-            {discipline.label}
-          </div>
-          <div className="relative mt-1 text-[9.5px] font-semibold leading-tight text-white/45">
-            {discipline.copy}
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormProps) {
-  const [activeMode, setActiveMode] = useState<AuthMode>(initialMode)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [turnstileToken, setTurnstileToken] = useState('')
-  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0)
-  const [website, setWebsite] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<'name' | 'email' | 'password', string>>>({})
-  const router = useRouter()
-  const supabase = createClient()
-  const { play } = useHatchSonics()
-
-  function siteOrigin() {
-    return process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
-  }
-
-  // For OAuth / magic-link round-trips, prefer the actual host the user is on.
-  // Baking NEXT_PUBLIC_APP_URL (apex) causes an apex→www 307 mid-flow that drops
-  // the PKCE code-verifier cookie, breaking exchangeCodeForSession. Using the live
-  // origin also makes local dev (localhost:3000) work.
-  function oauthOrigin() {
-    if (typeof window !== 'undefined') return window.location.origin
-    return process.env.NEXT_PUBLIC_APP_URL ?? ''
-  }
-
-  function resolvedRedirectTo(fallback: string) {
-    if (!redirectTo) return fallback
-    if (redirectTo.startsWith('/') && !redirectTo.startsWith('//')) return redirectTo
-    return fallback
-  }
-
-  async function postAuthAction<T>(path: string, payload: Record<string, unknown>): Promise<T> {
-    const response = await fetch(path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-    const data = await response.json().catch(() => ({})) as { error?: string; retryAfter?: number }
-
-    if (!response.ok) {
-      if (data.error === 'rate_limited') {
-        throw new Error('Too many attempts. Try again in a minute.')
-      }
-      throw new Error(data.error ?? 'Something went wrong. Try again.')
-    }
-
-    return data as T
-  }
-
-  function switchMode(mode: AuthMode) {
-    if (mode !== activeMode) play('nudge')
-    setActiveMode(mode)
-    setError(null)
-    setSuccess(null)
-    setFieldErrors({})
-    resetTurnstile()
-  }
-
-  function resetTurnstile() {
-    setTurnstileToken('')
-    setTurnstileResetSignal(value => value + 1)
-  }
-
-  function requireTurnstileToken() {
-    if (!isTurnstileClientEnabled() || turnstileToken) return true
-    setError('Complete the security check.')
-    play('error')
-    setLoading(false)
-    return false
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    play('submit')
-    setLoading(true)
-    setError(null)
-    setSuccess(null)
-    setFieldErrors({})
-
-    if (activeMode === 'forgot') {
-      const validation = passwordResetRequestSchema.safeParse({ email })
-      if (!validation.success) {
-        setFieldErrors(zodFieldErrors<'email'>(validation.error))
-        play('error')
-        setLoading(false)
-        return
-      }
-      if (!requireTurnstileToken()) return
-
-      try {
-        await postAuthAction('/api/auth/password-reset', {
-          email: validation.data.email,
-          turnstileToken,
-          redirectTo: `${siteOrigin()}/reset-password`,
-        })
-        // Always show success after the server accepts the request.
-        setSuccess('Check your email. We sent a password reset link.')
-        play('success')
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
-        resetTurnstile()
-        play('error')
-      } finally {
-        setLoading(false)
-      }
-      return
-    }
-
-    if (activeMode === 'magic') {
-      const validation = passwordResetRequestSchema.safeParse({ email })
-      if (!validation.success) {
-        setFieldErrors(zodFieldErrors<'email'>(validation.error))
-        play('error')
-        setLoading(false)
-        return
-      }
-      if (!requireTurnstileToken()) return
-
-      try {
-        await postAuthAction('/api/auth/magic-link', {
-          email: validation.data.email,
-          turnstileToken,
-          redirectTo: `${oauthOrigin()}/auth/callback`,
-        })
-        play('success')
-        router.push(`/magic-link-sent?email=${encodeURIComponent(validation.data.email)}`)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
-        resetTurnstile()
-        play('error')
-      } finally {
-        setLoading(false)
-      }
-      return
-    }
-
-    if (activeMode === 'login') {
-      const validation = loginSchema.safeParse({ email, password })
-      if (!validation.success) {
-        setFieldErrors(zodFieldErrors<'email' | 'password'>(validation.error))
-        play('error')
-        setLoading(false)
-        return
-      }
-
-      try {
-        const data = await postAuthAction<{ onboardingCompleted: boolean }>('/api/auth/login', validation.data)
-        // The server route validated credentials + rate-limits + returned onboardingCompleted.
-        // Now sign in with the BROWSER client so the chunked sb-*-auth-token cookies are
-        // written locally and onAuthStateChange fires (V3AuthGate updates) — this guarantees
-        // a committed session before the hard navigation so the proxy never bounces to /login.
-        const { error: clientError } = await supabase.auth.signInWithPassword({
-          email: validation.data.email,
-          password: validation.data.password,
-        })
-        if (clientError) {
-          setError('Something went wrong. Try again.')
-          play('error')
-          setLoading(false)
-          return
-        }
-        play('success')
-        const dest = resolvedRedirectTo('/dashboard')
-        window.location.href = dest
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
-        play('error')
-      }
-    } else {
-      const validation = signupSchema.safeParse({ name, email, password })
-      if (!validation.success) {
-        setFieldErrors(zodFieldErrors<'name' | 'email' | 'password'>(validation.error))
-        play('error')
-        setLoading(false)
-        return
-      }
-      if (!requireTurnstileToken()) return
-
-      try {
-        const magnetSource = consumeMagnetSource()
-        // Fresh signups with no explicit redirect go to /first-run (one role tap into
-        // a pre-warmed interview) instead of the dashboard. An explicit redirectTo — a
-        // pricing/checkout deep-link, or a /go/* magnet's post-signup CTA — still wins,
-        // so intent-to-pay and magnet-attributed users aren't diverted.
-        const dest = resolvedRedirectTo('/first-run')
-        const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
-          ...validation.data,
-          turnstileToken,
-          website,
-          // Route the email-confirmation link through /auth/callback so it commits
-          // the session AND forwards the user to their post-signup destination
-          // (e.g. a /pricing plan deep-link that resumes checkout), not just /dashboard.
-          redirectTo: `${siteOrigin()}/auth/callback?next=${encodeURIComponent(dest)}`,
-          // Best-effort claim of a /quiz/archetype result onto the new profile.
-          ...(archetype ? { archetype } : {}),
-          // Attribute the signup to the /go/* lead magnet that earned it, if any.
-          ...(magnetSource ? { magnetSource } : {}),
-        })
-        if (data.hasSession) {
-          play('success')
-          // Hard nav (like login) so the session cookie is committed before the proxy
-          // evaluates the destination, and so a plan deep-link resumes checkout.
-          window.location.href = dest
-        } else {
-          resetTurnstile()
-          play('success')
-          router.push(`/verify-email?email=${encodeURIComponent(validation.data.email)}`)
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
-        resetTurnstile()
-        play('error')
-      }
-    }
-    setLoading(false)
-  }
-
-  async function handleGoogleSignIn() {
-    play('open')
-    // Send Google back through /auth/callback (which runs exchangeCodeForSession)
-    // and carry the post-login destination as ?next=, which the callback's safeNextPath
-    // reads it. Redirecting straight to /dashboard skips the code exchange, so no
-    // session is set and the proxy bounces the user to /login.
-    const next = resolvedRedirectTo('/dashboard')
-    const callback = `${oauthOrigin()}/auth/callback?next=${encodeURIComponent(next)}`
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: callback },
-    })
-    if (error) {
-      setError('Could not start Google sign-in. Please try again.')
-      play('error')
-    }
-  }
-
+  const {
+    activeMode,
+    switchMode,
+    name,
+    setName,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    showPassword,
+    setShowPassword,
+    honeypotProps,
+    setTurnstileToken,
+    turnstileResetSignal,
+    loading,
+    error,
+    success,
+    fieldErrors,
+    setFieldErrors,
+    handleSubmit,
+    handleGoogleSignIn,
+  } = useAuthForm({ mode: initialMode, redirectTo, archetype })
   const inputClass = [
-    'w-full px-4 py-2.5 text-sm rounded-xl transition-all duration-200',
+    'w-full min-h-11 px-4 py-2.5 text-base rounded-xl transition-all duration-200',
     'bg-white/[0.08] border border-white/20 text-white',
     'placeholder:text-white/40',
     'focus:outline-none focus:border-white/50 focus:bg-white/[0.12]',
@@ -380,45 +49,17 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
      * Mobile: stacks vertically with the same gradient top to bottom.
      */
     <div
-      className="relative min-h-[100svh] overflow-x-hidden"
+      className="learning-auth relative min-h-[100svh] overflow-x-hidden"
       style={{
-        background: 'linear-gradient(118deg, #07100c 0%, #0c1610 25%, #163324 48%, #1e4a31 60%, #29623f 70%, #3d7a52 80%, #5a9468 90%, #7ab088 100%)',
+        background: '#f8f5ef',
       }}
     >
-      {/* Grain overlay - fixed so it doesn't repaint on scroll */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '128px 128px',
-          mixBlendMode: 'overlay',
-          zIndex: 0,
-        }}
-        aria-hidden
-      />
-
-      {/* Hatch line art — left half only */}
-      <div className="absolute inset-0 hidden pointer-events-none sm:block" style={{ zIndex: 1 }}>
-        <HatchLineArt />
-      </div>
-
-      {/* Radial glow - top left */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: '-5%', left: '-5%', width: '55%', height: '65%',
-          background: 'radial-gradient(ellipse, rgba(74,124,89,0.18) 0%, transparent 65%)',
-          zIndex: 1,
-        }}
-        aria-hidden
-      />
-
       {/* Content: left brand/headline + right form card — on desktop side by side */}
       <div className="relative flex min-h-[100svh] flex-col md:min-h-[100dvh] md:flex-row md:items-center" style={{ zIndex: 2 }}>
 
         {/* ── Left: brand + headline ───────────────────── */}
-        <div className="flex flex-col justify-center px-5 pb-5 pt-6 sm:px-8 sm:pt-8 md:flex-1 md:px-12 md:py-0 lg:px-16">
+        <div className="learning-auth-story relative isolate flex flex-col justify-center px-5 pb-5 pt-6 sm:px-8 sm:pt-8 md:flex-1 md:px-12 md:py-0 lg:px-16">
+          <LearningGeometry />
           {/* Brand mark */}
           <div className="mb-6 flex items-center md:mb-10 lg:mb-12">
             <HackProductWordmark
@@ -429,24 +70,24 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
 
           {/* Headline */}
           <h1
-            className="font-headline text-[34px] font-extrabold leading-[1.06] text-white sm:text-[44px] lg:text-[64px]"
+            className="relative font-headline text-[34px] font-medium leading-[1.2] text-forest-950 sm:text-[44px] lg:text-[56px]"
             style={{
               letterSpacing: 0,
               maxWidth: '11ch',
             } as React.CSSProperties}
           >
-            Build with judgment.
+            Keep growing. Build with confidence.
           </h1>
           <p
-            className="font-body mt-3 max-w-[38ch] text-sm leading-relaxed text-white/55 sm:mt-4 sm:text-base md:text-white/45"
+            className="relative font-body mt-4 max-w-[38ch] text-base leading-relaxed text-ink-secondary"
           >
-            Open a personalized daily brief for product sense, system design, SQL, coding, and the Analytics Lab.
+            Learn through real challenges, thoughtful reading, and feedback that helps you take the next step.
           </p>
 
           {/* Feature bullets — desktop only */}
-          <ul className="mt-10 hidden flex-col gap-3 min-[1200px]:flex">
+          <ul className="mt-8 hidden flex-col gap-3 min-[1200px]:flex">
             {[
-              'Start with the rep Hatch thinks matters today',
+              'Start with the practice Hatch thinks matters today',
               'Move from autopsy reading to hands-on practice',
               'Drive a live AI analyst on real data when you are ready',
             ].map(item => (
@@ -457,24 +98,23 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
                 >
                   check_circle
                 </span>
-                <span className="font-body text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>{item}</span>
+                <span className="relative font-body text-base text-ink-secondary">{item}</span>
               </li>
             ))}
           </ul>
 
-          <DisciplineSignalBoard />
         </div>
 
         {/* ── Right: form card — glass on the gradient ─── */}
         <div className="flex items-start justify-center px-4 pb-6 pt-2 sm:px-6 sm:pb-10 md:w-[460px] md:shrink-0 md:items-center md:px-10 md:py-8 lg:px-12">
           <div
-            className="w-full max-w-sm space-y-4 rounded-2xl p-5 sm:space-y-5 sm:p-7 md:p-8"
+            className="w-full max-w-sm space-y-4 rounded-2xl p-5 shadow-2xl sm:space-y-5 sm:p-7 md:p-8"
             style={{
-              background: 'rgba(8,18,12,0.72)',
+              background: '#103e30',
               backdropFilter: 'blur(28px)',
               WebkitBackdropFilter: 'blur(28px)',
               border: '1px solid rgba(255,255,255,0.10)',
-              boxShadow: '0 16px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
+              boxShadow: '0 20px 60px -32px rgba(16,62,48,0.35)',
             }}
           >
             {/* Tab switcher - hidden in single-email modes */}
@@ -485,7 +125,7 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
                     key={m}
                     type="button"
                     onClick={() => switchMode(m)}
-                    className="px-5 py-1.5 rounded-full text-sm font-semibold font-label transition-all duration-200"
+                    className="min-h-11 px-5 py-1.5 rounded-full text-sm font-semibold font-label transition-all duration-200"
                     style={activeMode === m
                       ? { background: 'rgba(255,255,255,0.92)', color: '#0f1a14' }
                       : { color: 'rgba(255,255,255,0.65)' }
@@ -552,7 +192,7 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full rounded-full py-2.5 font-semibold font-label text-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+                      className="w-full min-h-11 rounded-full py-2.5 font-semibold font-label text-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
                       style={{ background: '#4a7c59', color: '#ffffff' }}
                     >
                       {loading ? 'Sending...' : activeMode === 'forgot' ? 'Send reset link' : 'Send magic link'}
@@ -566,7 +206,7 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
-                  className="w-full flex items-center justify-center gap-2.5 rounded-full py-2.5 text-sm font-medium font-label transition-all duration-200 active:scale-[0.98]"
+                  className="w-full min-h-11 flex items-center justify-center gap-2.5 rounded-full py-2.5 text-sm font-medium font-label transition-all duration-200 active:scale-[0.98]"
                   style={{
                     background: 'rgba(255,255,255,0.10)',
                     border: '1px solid rgba(255,255,255,0.15)',
@@ -607,14 +247,7 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
                         placeholder="Your name"
                       />
                       {fieldErrors.name && <p className="text-xs text-error">{fieldErrors.name}</p>}
-                      <input
-                        name="website"
-                        hidden
-                        tabIndex={-1}
-                        autoComplete="off"
-                        value={website}
-                        onChange={e => setWebsite(e.target.value)}
-                      />
+                      <input {...honeypotProps} />
                     </div>
                   )}
 
@@ -654,7 +287,7 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
                       <button
                         type="button"
                         onClick={() => setShowPassword(value => !value)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 transition-colors hover:text-white/80"
+                        className="absolute right-2 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center text-white/50 transition-colors hover:text-white/80"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
                         <span className="material-symbols-outlined text-[18px]">
@@ -700,7 +333,7 @@ export function AuthForm({ mode: initialMode, redirectTo, archetype }: AuthFormP
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full rounded-full py-2.5 font-semibold font-label text-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+                    className="w-full min-h-11 rounded-full py-2.5 font-semibold font-label text-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
                     style={{ background: '#4a7c59', color: '#ffffff' }}
                   >
                     {loading ? 'Just a moment...' : activeMode === 'login' ? 'Log In' : 'Create Account'}

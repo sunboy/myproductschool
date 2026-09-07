@@ -1,5 +1,7 @@
 # Redesign rollback runbook
 
+Historical July release only. For the September rebuild, use [platform-rebuild-release.md](platform-rebuild-release.md); its billing and analytics compatibility constraints differ.
+
 The Stage B redesign (`feature/redesign-options`: app shell, dashboard, practice page,
 coding + canvas workspace consolidation, canvas autosave hardening) merged into `main`
 on 2026-07-17 as a single `--no-ff` merge commit. This runbook is the fallback path if

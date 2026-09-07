@@ -1,528 +1,69 @@
 'use client'
 
-import React from 'react'
 import Link from 'next/link'
+import { ArrowUpRight, MessageSquare, Layers3, Code2, Database, Lightbulb, ChartColumn, Check } from 'lucide-react'
 import { motion, motionTokens } from '@/components/motion'
 import { appendReturnTo } from '@/lib/navigation/return-to'
 import { cleanDisplayCopy } from '@/lib/copy/display'
 import { challengeTaskSummary } from '@/lib/challenges/presentation'
 import { challengePath, formatChallengeNumber } from '@/lib/challenges/challengeNumber'
-import type { ChallengeWithDomain } from '@/lib/types'
 import { deriveChallengeStatus } from '@/lib/challenges/status'
+import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
-import { coerceDifficulty, DIFFICULTY_LABELS, type PracticeDifficulty } from '@/lib/practice/difficulty'
 import { askedAtLabel } from '@/lib/format/company'
+import type { ChallengeWithDomain } from '@/lib/types'
 
-// Single forest-green accent family — differentiated by tint/saturation, not hue.
-// Traditional: mid-tint (neutral green)
-// AI-Assisted: slightly warmer, lighter green
-// Agentic: deeper, richer green
-// AI-Native: lightest, most airy tint
-const PARADIGM_STYLE: Record<string, {
-  bg: string
-  fg: string
-  accent: string
-}> = {
-  Traditional: {
-    bg: '#dfe7e1',
-    fg: '#2d4a3b',
-    accent: '#4a7c59',
-  },
-  'AI-Assisted': {
-    bg: '#cfe3d3',
-    fg: '#1e4030',
-    accent: '#3a6e4a',
-  },
-  Agentic: {
-    bg: '#b8d4bf',
-    fg: '#18382a',
-    accent: '#2e5e40',
-  },
-  'AI-Native': {
-    bg: '#e8f2eb',
-    fg: '#345240',
-    accent: '#5d9070',
-  },
+const disciplines: Record<string, { label: string; icon: typeof Layers3; tone: string }> = {
+  system_design: { label: 'System design', icon: Layers3, tone: 'sage' },
+  data_modeling: { label: 'Data modeling', icon: Database, tone: 'sage' },
+  algorithm: { label: 'Coding', icon: Code2, tone: 'cream' },
+  claude_code_debugging: { label: 'Coding', icon: Code2, tone: 'cream' },
+  sql: { label: 'SQL', icon: Database, tone: 'amber' },
+  claude_code_analytics: { label: 'AI analytics', icon: ChartColumn, tone: 'forest' },
+  flow: { label: 'Product sense', icon: Lightbulb, tone: 'amber' },
+  freeform: { label: 'Product sense', icon: Lightbulb, tone: 'amber' },
+  quick_take: { label: 'Quick question', icon: Lightbulb, tone: 'amber' },
 }
 
-// ── SVG art backgrounds per paradigm ─────────────────────────────────────────
-
-function TraditionalArt({ color }: { color: string }) {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Concentric compass arcs - foundation / craft */}
-      <g opacity="0.18" stroke={color} fill="none" strokeWidth="1.2">
-        <circle cx="240" cy="20" r="40" />
-        <circle cx="240" cy="20" r="65" />
-        <circle cx="240" cy="20" r="90" />
-        <circle cx="240" cy="20" r="115" />
-        <circle cx="240" cy="20" r="140" />
-      </g>
-      {/* Cross-hair lines */}
-      <g opacity="0.10" stroke={color} strokeWidth="0.8">
-        <line x1="200" y1="0" x2="280" y2="0" />
-        <line x1="240" y1="-20" x2="240" y2="60" />
-        <line x1="210" y1="10" x2="270" y2="30" />
-        <line x1="210" y1="30" x2="270" y2="10" />
-      </g>
-      {/* Tick marks around outermost arc */}
-      {Array.from({ length: 12 }, (_, i) => {
-        const angle = (i * 30 * Math.PI) / 180
-        const r1 = 138, r2 = 144
-        const cx = 240, cy = 20
-        return (
-          <line
-            key={i}
-            x1={cx + r1 * Math.cos(angle)}
-            y1={cy + r1 * Math.sin(angle)}
-            x2={cx + r2 * Math.cos(angle)}
-            y2={cy + r2 * Math.sin(angle)}
-            stroke={color} strokeWidth="1" opacity="0.15"
-          />
-        )
-      })}
-    </svg>
-  )
-}
-
-function AIAssistedArt({ color }: { color: string }) {
-  const nodes = [
-    { x: 220, y: 30 }, { x: 260, y: 80 }, { x: 200, y: 110 },
-    { x: 250, y: 140 }, { x: 180, y: 60 }, { x: 270, y: 40 },
-  ]
-  const edges = [[0,1],[0,4],[0,5],[1,2],[1,3],[1,5],[2,3],[4,5]]
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Node graph - human+model collaboration */}
-      <g opacity="0.15" stroke={color} strokeWidth="1">
-        {edges.map(([a, b], i) => (
-          <line key={i} x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y} />
-        ))}
-      </g>
-      <g opacity="0.22" fill={color}>
-        {nodes.map((n, i) => (
-          <circle key={i} cx={n.x} cy={n.y} r={i === 0 ? 5 : 3} />
-        ))}
-      </g>
-      {/* Flowing wave beneath */}
-      <g opacity="0.08" stroke={color} fill="none" strokeWidth="1.2">
-        <path d="M 160 160 Q 190 140 220 155 Q 250 170 280 150" />
-        <path d="M 160 170 Q 195 152 225 165 Q 255 178 280 162" />
-      </g>
-    </svg>
-  )
-}
-
-function AgenticArt({ color }: { color: string }) {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Recursive spiral - autonomous loops */}
-      <g opacity="0.16" stroke={color} fill="none" strokeWidth="1.2">
-        <path d="M 250 50 C 280 50 280 90 250 90 C 220 90 200 70 210 50 C 220 30 260 20 270 40 C 280 60 265 95 240 100 C 210 105 190 80 198 55 C 206 30 240 10 258 28" />
-      </g>
-      {/* Arrow-heads suggesting direction */}
-      <g opacity="0.18" fill={color}>
-        <polygon points="258,18 262,30 252,26" />
-      </g>
-      {/* Concentric dashed loops */}
-      {[55, 75, 95].map((r, i) => (
-        <circle key={i} cx="245" cy="70" r={r} stroke={color} strokeWidth="0.8" fill="none"
-          strokeDasharray="4 6" opacity="0.10" />
-      ))}
-    </svg>
-  )
-}
-
-function AINativeArt({ color }: { color: string }) {
-  const sparks = Array.from({ length: 18 }, (_, i) => {
-    const angle = (i * 20 * Math.PI) / 180
-    const r = 30 + (i % 3) * 20
-    return {
-      x1: 250 + 8 * Math.cos(angle),
-      y1: 60 + 8 * Math.sin(angle),
-      x2: 250 + r * Math.cos(angle),
-      y2: 60 + r * Math.sin(angle),
-      len: r,
-    }
-  })
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Radial burst - emergence / generative */}
-      <g stroke={color} fill="none">
-        {sparks.map((s, i) => (
-          <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
-            strokeWidth={s.len > 45 ? 0.8 : 1.2}
-            opacity={s.len > 45 ? 0.10 : 0.18}
-          />
-        ))}
-      </g>
-      {/* Center dot */}
-      <circle cx="250" cy="60" r="4" fill={color} opacity="0.22" />
-      {/* Scattered small rects */}
-      {[[180, 130], [200, 150], [215, 125], [195, 110], [175, 145]].map(([x, y], i) => (
-        <rect key={i} x={x} y={y} width="4" height="4" rx="1"
-          fill={color} opacity="0.12" transform={`rotate(${i * 17} ${x} ${y})`} />
-      ))}
-    </svg>
-  )
-}
-
-const PARADIGM_ART: Record<string, React.FC<{ color: string }>> = {
-  Traditional: TraditionalArt,
-  'AI-Assisted': AIAssistedArt,
-  Agentic: AgenticArt,
-  'AI-Native': AINativeArt,
-}
-
-// Canonical labels + dot colors per PracticeDifficulty bucket. Legacy values
-// arriving from a bookmarked URL or pre-R2 cache go through coerceDifficulty.
-const DIFFICULTY_DOT: Record<PracticeDifficulty, string> = {
-  easy:   '#10b981', // green
-  medium: '#f59e0b', // amber
-  hard:   '#ef4444', // red
-}
-
-export function ChallengeCard({
-  challenge,
-  paradigm,
-  listView = false,
-  locked = false,
-  returnHref,
-  layoutId,
-  summary,
-}: {
+export function ChallengeCard({ challenge, paradigm, listView = false, locked = false, returnHref, layoutId, summary }: {
   challenge: ChallengeWithDomain
   paradigm: string
   listView?: boolean
   locked?: boolean
   returnHref?: string
   layoutId?: string
-  /**
-   * Precomputed 2-line blurb. The Practice list query omits the heavy
-   * scenario and prompt_text columns, so the server passes the summary in for
-   * preview/grid cards. When absent, fall back to deriving it from whatever
-   * description fields the challenge object happens to carry (e.g. detail pages).
-   */
   summary?: string
 }) {
-  const style = PARADIGM_STYLE[paradigm] ?? PARADIGM_STYLE.Traditional
+  const discipline = disciplines[challenge.challenge_type ?? ''] ?? { label: 'Challenge', icon: Layers3, tone: 'sage' }
+  const Icon = discipline.icon
   const bucket = coerceDifficulty(challenge.difficulty)
-  const diff = bucket
-    ? { label: DIFFICULTY_LABELS[bucket], dot: DIFFICULTY_DOT[bucket] }
-    : { label: challenge.difficulty, dot: '#74796e' }
-  const attempts = challenge.attempt_count ?? 0
+  const difficulty = bucket ? DIFFICULTY_LABELS[bucket] : challenge.difficulty
   const title = cleanDisplayCopy(challenge.title) || challenge.title
-  const promptText = summary ?? challengeTaskSummary(challenge as ChallengeWithDomain & {
-    scenario_context?: string | null
-    scenario_trigger?: string | null
-    scenario_question?: string | null
-    metadata?: Record<string, unknown> | null
-  })
-  const challengeHref = appendReturnTo(challengePath(challenge), returnHref)
-  const discussionHref = appendReturnTo(`/challenges/${challenge.slug ?? challenge.id}/discussion`, returnHref)
-  const numberLabel = formatChallengeNumber(challenge.challenge_type, challenge.display_number)
-  // Three-way status (not_started / attempted / completed) derived in one place
-  // so every card reads the same accurate state across the app.
+  const description = summary ?? challengeTaskSummary(challenge)
+  const destination = challengePath(challenge)
+  const href = appendReturnTo(challenge.is_in_progress ? `${destination}${destination.includes('?') ? '&' : '?'}resume=1` : destination, returnHref)
+  const discussion = appendReturnTo(`/challenges/${challenge.slug ?? challenge.id}/discussion`, returnHref)
   const status = deriveChallengeStatus(challenge)
-  const statusIcon =
-    status === 'completed'
-      ? { icon: 'check_circle', fill: 1, color: 'var(--color-primary)' }
-      : status === 'attempted'
-        ? { icon: 'incomplete_circle', fill: 0, color: 'var(--color-tertiary)' }
-        : null
-
-  if (listView) {
-    return (
-      <motion.div
-        layout
-        layoutId={layoutId}
-        layoutDependency={listView}
-        initial={false}
-        transition={motionTokens.spring.layout}
-        className="group flex items-center gap-4 overflow-hidden border border-transparent px-4 py-3 transition-colors duration-150 hover:bg-surface-container/50"
-        style={{
-          backgroundColor: '#f5f1ea',
-          borderRadius: 14,
-          transformOrigin: 'center left',
-        }}
-      >
-        {/* Difficulty dot */}
-        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: diff.dot }} />
-
-        {/* Title + description */}
-        <div className="flex-1 min-w-0">
-          <Link href={challengeHref} data-hatch-sound="open" className="block">
-            <p className="font-headline font-bold text-[14px] text-on-surface leading-snug truncate group-hover:text-primary transition-colors">
-              {title}
-            </p>
-          </Link>
-        </div>
-
-        {/* Catalog number */}
-        {numberLabel && (
-          <span className="hidden sm:inline font-mono text-[10px] px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant shrink-0">
-            {numberLabel}
-          </span>
-        )}
-
-        {/* Paradigm badge — suppress the default "Traditional" tag; it carries no signal */}
-        {paradigm.toLowerCase() !== 'traditional' && (
-          <span
-            className="hidden sm:inline text-[11px] font-bold px-2 py-0.5 rounded-full font-label shrink-0"
-            style={{ backgroundColor: style.bg, color: style.fg }}
-          >
-            {paradigm}
-          </span>
-        )}
-
-        {/* Interview type badge */}
-        {(challenge.challenge_type === 'system_design' || challenge.challenge_type === 'data_modeling') && (
-          <span className="hidden sm:inline bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label shrink-0">
-            {challenge.challenge_type === 'system_design' ? 'System Design' : 'Data Modeling'}
-          </span>
-        )}
-
-        {/* Topic + technique chips */}
-        {(() => {
-          const topicSlug = challenge.topic_tags?.[0]
-          const techSlug  = challenge.technique_tags?.[0]
-          const topicLabel = topicSlug ? getTopicLabelAny(topicSlug) : undefined
-          const techLabel  = techSlug  ? getTechniqueLabelAny(techSlug) : undefined
-          if (!topicLabel && !techLabel) return null
-          return (
-            <div className="hidden lg:flex items-center gap-1 shrink-0">
-              {topicLabel && (
-                <span className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-primary-fixed text-primary">
-                  {topicLabel}
-                </span>
-              )}
-              {techLabel && (
-                <span className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant">
-                  {techLabel}
-                </span>
-              )}
-            </div>
-          )
-        })()}
-
-        {/* Real interview badge */}
-        {challenge.is_real_interview && (challenge.company_tags ?? []).length > 0 && (
-          <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-label font-bold px-2 py-0.5 rounded-full bg-tertiary-container text-on-secondary-container shrink-0">
-            <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-            {askedAtLabel(challenge.company_tags![0])}
-          </span>
-        )}
-
-        {/* Difficulty label */}
-        <span className="hidden md:inline text-[11px] text-on-surface-variant font-label shrink-0 w-16 text-right">
-          {diff.label}
-        </span>
-
-        {/* Status + attempts */}
-        <span className="hidden sm:flex items-center gap-1 shrink-0 w-16 justify-end">
-          <span
-            className="material-symbols-outlined text-[13px]"
-            style={{
-              fontVariationSettings: `'FILL' ${status === 'completed' ? 1 : 0}`,
-              color: status === 'completed'
-                ? 'var(--color-primary)'
-                : status === 'attempted'
-                  ? 'var(--color-tertiary)'
-                  : 'color-mix(in srgb, var(--color-on-surface) 40%, transparent)',
-            }}
-          >
-            {status === 'completed'
-              ? 'check_circle'
-              : status === 'attempted'
-                ? 'incomplete_circle'
-                : 'circle'}
-          </span>
-          <span className="text-[11px] text-on-surface-variant font-label">
-            {attempts > 0 ? attempts : '-'}
-          </span>
-        </span>
-
-        {/* CTA */}
-        {locked ? (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-label font-semibold bg-surface-container-high text-on-surface-variant cursor-not-allowed select-none shrink-0">
-            <span className="material-symbols-outlined text-[14px]">lock</span>
-            Upgrade
-          </span>
-        ) : (
-          <Link
-            href={challengeHref}
-            data-hatch-sound="open"
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-full font-label transition-all duration-[120ms] active:scale-95 shrink-0 hover:-translate-y-px"
-            style={{ backgroundColor: style.accent, color: '#fff' }}
-          >
-            Start
-            <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-          </Link>
-        )}
-      </motion.div>
-    )
-  }
-
-  const Art = PARADIGM_ART[paradigm] ?? PARADIGM_ART.Traditional
-
-  return (
-    <motion.div
-      layout
-      layoutId={layoutId}
-      layoutDependency={listView}
-      initial={false}
-      transition={motionTokens.spring.layout}
-      whileHover={{ y: -3 }}
-      className="group relative flex flex-col gap-2 overflow-hidden p-4 transition-shadow duration-200 hover:shadow-[0_6px_20px_-8px_rgba(30,27,20,0.22)]"
-      style={{
-        backgroundColor: style.bg,
-        border: '1px solid rgba(0,0,0,0.04)',
-        borderRadius: 16,
-        minHeight: 140,
-        transformOrigin: 'center',
-      }}
-    >
-      {/* SVG art background */}
-      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-        <Art color={style.accent} />
+  const number = formatChallengeNumber(challenge.challenge_type, challenge.display_number)
+  const topic = challenge.topic_tags?.[0] ? getTopicLabelAny(challenge.topic_tags[0]) : null
+  const technique = challenge.technique_tags?.[0] ? getTechniqueLabelAny(challenge.technique_tags[0]) : null
+  const company = challenge.is_real_interview && challenge.company_tags?.[0] ? askedAtLabel(challenge.company_tags[0]) : null
+  return <motion.article layout layoutId={layoutId} layoutDependency={listView} initial={false}
+    transition={motionTokens.spring.layout} className={`learning-challenge-card${listView ? ' is-list' : ''}`}>
+    {!listView && <div className={`learning-challenge-art tone-${discipline.tone}`} aria-hidden="true"><Icon size={29}/><i/><span>{number}</span></div>}
+    <div className="learning-challenge-copy">
+      <div className="learning-challenge-meta"><span>{discipline.label}</span><span>{difficulty}</span></div>
+      <h3><Link href={href} data-hatch-sound="open">{title}</Link></h3>
+      {description && <p className="learning-challenge-description">{description}</p>}
+      <div className="learning-challenge-tags">{[topic, technique, company, paradigm.toLowerCase() !== 'traditional' ? paradigm : null].filter(Boolean).map((tag,i) => <span key={`${tag}-${i}`}>{tag}</span>)}</div>
+      <div className="learning-challenge-footer">
+        <span>{status === 'completed' ? <><Check size={14}/>Completed</> : challenge.is_in_progress ? 'In progress' : challenge.attempt_count ? `${challenge.attempt_count} attempts` : 'Not started'}</span>
+        <Link href={discussion} aria-label={`Discuss ${title}`}><MessageSquare size={17}/></Link>
       </div>
-
-      {/* Top row: paradigm badge + difficulty */}
-      <div className="flex items-center justify-between gap-1.5">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {numberLabel && (
-            <span
-              className="font-mono text-[10px] px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: 'rgba(255,255,255,0.5)', color: style.fg }}
-            >
-              {numberLabel}
-            </span>
-          )}
-          {paradigm.toLowerCase() !== 'traditional' && (
-            <span
-              className="text-[11px] font-bold px-2.5 py-0.5 rounded-full font-label"
-              style={{ backgroundColor: 'rgba(255,255,255,0.7)', color: style.fg }}
-            >
-              {paradigm}
-            </span>
-          )}
-          {(challenge.challenge_type === 'system_design' || challenge.challenge_type === 'data_modeling') && (
-            <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label">
-              {challenge.challenge_type === 'system_design' ? 'System Design' : 'Data Modeling'}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {statusIcon && (
-            <span
-              className="material-symbols-outlined text-[16px]"
-              style={{
-                fontVariationSettings: `'FILL' ${statusIcon.fill}`,
-                color: statusIcon.color,
-              }}
-            >
-              {statusIcon.icon}
-            </span>
-          )}
-          <span className="flex items-center gap-1.5 text-[11px] font-medium font-label" style={{ color: `${style.fg}bb` }}>
-            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: diff.dot }} />
-            {diff.label}
-          </span>
-        </div>
-      </div>
-
-      {/* Title */}
-      <Link href={challengeHref} data-hatch-sound="open" className="block">
-        <h3
-          className="font-headline font-[600] text-[16px] tracking-[-0.01em] leading-snug transition-colors"
-          style={{ color: style.fg, textWrap: 'balance' } as React.CSSProperties}
-        >
-          {title}
-        </h3>
+      <Link href={href} className="learning-challenge-open" data-hatch-sound="open">
+        {locked ? 'View challenge' : challenge.is_in_progress ? 'Continue working' : 'Explore challenge'}<ArrowUpRight size={18}/>
       </Link>
-
-      {promptText && (
-        <p
-          className="font-body text-[12px] leading-snug font-semibold"
-          style={{
-            color: `${style.fg}d0`,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {promptText}
-        </p>
-      )}
-
-      {/* Tag chips + real interview badge */}
-      {(() => {
-        const topicSlug  = challenge.topic_tags?.[0]
-        const techSlug   = challenge.technique_tags?.[0]
-        const topicLabel = topicSlug ? getTopicLabelAny(topicSlug) : undefined
-        const techLabel  = techSlug  ? getTechniqueLabelAny(techSlug) : undefined
-        const isReal     = challenge.is_real_interview && (challenge.company_tags ?? []).length > 0
-        if (!topicLabel && !techLabel && !isReal) return null
-        return (
-          <div className="flex items-center gap-1 flex-wrap">
-            {topicLabel && (
-              <span className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-white/60 backdrop-blur-sm" style={{ color: style.fg }}>
-                {topicLabel}
-              </span>
-            )}
-            {techLabel && (
-              <span className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-white/40 backdrop-blur-sm" style={{ color: `${style.fg}cc` }}>
-                {techLabel}
-              </span>
-            )}
-            {isReal && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-label font-bold px-2 py-0.5 rounded-full bg-tertiary-container text-on-secondary-container">
-                <span className="material-symbols-outlined text-[11px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                {askedAtLabel(challenge.company_tags![0])}
-              </span>
-            )}
-          </div>
-        )
-      })()}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between mt-auto">
-        <span className="text-[11px] font-label flex items-center gap-2" style={{ color: `${style.fg}a0` }}>
-          <span className="inline-flex items-center gap-1">
-            <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 0" }}>group</span>
-            {attempts > 0 ? attempts : '-'}
-          </span>
-        </span>
-
-        <div className="flex items-center gap-1.5">
-          <Link
-            href={discussionHref}
-            data-hatch-sound="nudge"
-            className="p-1.5 rounded-lg transition-colors"
-            style={{ color: `${style.fg}80` }}
-            title="Discussion"
-          >
-            <span className="material-symbols-outlined text-[15px]">forum</span>
-          </Link>
-          {locked ? (
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-label font-semibold bg-surface-container-high text-on-surface-variant cursor-not-allowed select-none">
-              <span className="material-symbols-outlined text-[14px]">lock</span>
-              Upgrade
-            </span>
-          ) : (
-            <Link
-              href={challengeHref}
-              data-hatch-sound="open"
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-full font-label transition-all duration-[120ms] active:scale-95 hover:-translate-y-px"
-              style={{ backgroundColor: style.accent, color: '#fff' }}
-            >
-              Start
-              <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-            </Link>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  )
+      {locked && <small>Session limit reached. You can still read the brief.</small>}
+    </div>
+  </motion.article>
 }

@@ -56,6 +56,7 @@ export default async function StoryPage({ params }: Props) {
 
     return (
       <CinematicReader
+        key={`${slug}/${storySlug}`}
         story={result.story}
         companyName={result.company.name}
         companyAccent={result.company.accent}

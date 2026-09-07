@@ -1,36 +1,30 @@
 'use client'
 
+import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { ArrowRight, Check, ChevronRight, Minus, Share2, TrendingDown, TrendingUp } from 'lucide-react'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { NoteCard } from '@/components/redesign/NoteCard'
-import { ProgressRing } from '@/components/redesign/ProgressRing'
 import { StatStrip } from '@/components/redesign/StatStrip'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { Md } from '@/components/ui/Md'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { formatChallengeNumber } from '@/lib/challenges/challengeNumber'
-import { levelFromXp, XP_PER_USER_LEVEL } from '@/lib/utils'
+import { levelFromXp } from '@/lib/utils'
+import { normalizeToTen } from '@/lib/feedback/score'
 import { useLearnerDNAData } from './LearnerDNASection'
 
 /* ── Humanize snake_case archetype labels ─────────────────────────── */
 
-function humanizeArchetype(value: string | null | undefined): string {
-  if (!value) return 'Not set'
-  return value
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
 
-/** Display an interview score on the canonical /100 scale. */
+/** Interview history returns the stored /5 score; match the debrief's /10 display. */
 function formatInterviewScore(score: number | null | undefined): string | null {
-  if (score == null) return null
-  // overallScore from the API is on a 0–100 scale; show it as "82/100"
-  return `${Math.round(score)}/100`
+  if (score == null || !Number.isFinite(score)) return null
+  return `${normalizeToTen(score, 5).toFixed(1)}/10`
 }
 
 /* ── Event label map for activity feed ────────────────────────────── */
@@ -130,10 +124,6 @@ interface ReasoningTrajectory {
     totalSignals: number
   }
 }
-
-const READINESS_CHALLENGE_QUOTA = 10
-const READINESS_MOVE_LEVEL = 3
-const READINESS_MOVES: string[] = ['frame', 'list', 'optimize', 'win']
 
 const TRAJECTORY_MOVE_LABELS: Record<TrajectoryMove, string> = {
   frame: 'Frame',
@@ -346,7 +336,7 @@ function TrajectoryCellCard({
         </div>
         <MiniSparkline values={cell.history} color={color} />
         <div className="mt-1 flex items-center justify-between gap-2 text-[10px] font-semibold tabular-nums text-ink-secondary">
-          <span>{cell.sampleSize} reps</span>
+          <span>{cell.sampleSize} challenges</span>
           <span>{cell.confidence}% conf</span>
         </div>
       </div>
@@ -418,7 +408,7 @@ function ReasoningTrajectorySection({
           href={trajectory.nextFocus.href}
           className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-forest-700 no-underline"
         >
-          Next best rep
+          Next challenge
           <ChevronRight size={13} strokeWidth={2.2} />
         </Link>
       </div>
@@ -431,7 +421,7 @@ function ReasoningTrajectorySection({
             </p>
             <div className="grid grid-cols-3 gap-1.5">
               <TrajectoryStat label="Signals" value={String(totalSignals)} />
-              <TrajectoryStat label="Practice" value={String(trajectory.summary.challengeReps)} />
+              <TrajectoryStat label="Challenges" value={String(trajectory.summary.challengeReps)} />
               <TrajectoryStat label="Gaps" value={String(lowSignal)} />
             </div>
           </div>
@@ -439,7 +429,7 @@ function ReasoningTrajectorySection({
           <div className="overflow-x-auto">
             <div className="min-w-[780px]">
               <p className="mb-2 px-1 text-xs font-semibold text-ink-secondary">
-                Score · Δ vs last week · reps · confidence
+                Score · Δ vs last week · challenges · confidence
               </p>
               <div
                 className="mb-1 grid items-center gap-1.5 px-1 text-[10px] font-black uppercase tracking-[0.10em] text-ink-muted"
@@ -489,7 +479,7 @@ function ReasoningTrajectorySection({
         </>
       ) : (
         <p className="m-0 mb-3 text-[12.5px] font-semibold text-ink-secondary">
-          This fills in as you complete reps across disciplines.
+          This fills in as you complete challenges across disciplines.
         </p>
       )}
 
@@ -511,7 +501,7 @@ function ReasoningTrajectorySection({
             href={trajectory.nextFocus.href}
             className="mt-3 inline-flex items-center gap-1.5 rounded-[10px] bg-forest-800 px-3 py-1.5 text-[11.5px] font-extrabold text-white no-underline"
           >
-            Start focused rep
+            Start focused challenge
             <ArrowRight size={12} strokeWidth={2.2} />
           </Link>
         </NoteCard>
@@ -544,7 +534,7 @@ function ReasoningTrajectorySection({
             </div>
           ) : (
             <p className="m-0 text-[12px] font-semibold text-ink-secondary">
-              No evidence yet. Hatch will fill this after your first completed rep.
+              No evidence yet. Hatch will fill this after your first completed challenge.
             </p>
           )}
         </div>
@@ -600,11 +590,27 @@ export default function ProgressPage() {
   const { data: dna } = useLearnerDNAData()
   const [recentAttempts, setRecentAttempts] = useState<RecentAttempt[]>([])
   const [recentInterviews, setRecentInterviews] = useState<RecentInterview[]>([])
-  const [masteryEntries, setMasteryEntries] = useState<Array<{ challenge_id: string; score: number | null; is_completed: boolean }>>([])
+  const [masteryEntries, setMasteryEntries] = useState<Array<{ challenge_id: string; score: number | null; is_completed: boolean; is_catalogued?: boolean }>>([])
+  const [masteryStatus, setMasteryStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const loadMastery = useCallback(async () => {
+    setMasteryStatus('loading')
+    try {
+      const response = await fetch('/api/challenges/mastery')
+      if (!response.ok) throw new Error('Mastery unavailable')
+      const data = await response.json()
+      if (!Array.isArray(data)) throw new Error('Invalid mastery response')
+      setMasteryEntries(data)
+      setMasteryStatus('ready')
+    } catch {
+      setMasteryStatus('error')
+    }
+  }, [])
+  useEffect(() => { void loadMastery() }, [loadMastery])
   const [reflection, setReflection] = useState<string | null>(null)
   const [reflectionLoading, setReflectionLoading] = useState(true)
   const [trajectory, setTrajectory] = useState<ReasoningTrajectory | null>(null)
   const [trajectoryLoading, setTrajectoryLoading] = useState(true)
+  const [learnUnavailable, setLearnUnavailable] = useState(false)
   const [learnModules, setLearnModules] = useState<Array<{
     module_id: string; module_title: string; module_slug: string;
     total_chapters: number; completed_chapters: number;
@@ -623,10 +629,6 @@ export default function ProgressPage() {
       .then(data => { if (Array.isArray(data)) setRecentAttempts(data) })
       .catch(() => {})
       .finally(() => setAttemptsLoaded(true))
-    fetch('/api/challenges/mastery')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (Array.isArray(data)) setMasteryEntries(data) })
-      .catch(() => {})
     fetch('/api/live-interview/history?limit=3')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.sessions) setRecentInterviews(data.sessions) })
@@ -642,12 +644,13 @@ export default function ProgressPage() {
       .catch(() => {})
       .finally(() => setTrajectoryLoading(false))
     Promise.all([
-      fetch('/api/progress/learn-progress').then(r => r.ok ? r.json() : { modules: [] }),
+      fetch('/api/progress/learn-progress').then(r => r.ok ? r.json() : { modules: [], unavailable: true }).catch(() => ({ modules: [], unavailable: true })),
       fetch('/api/progress/streak-history').then(r => r.ok ? r.json() : { dates: [] }),
       fetch('/api/progress/activity-feed').then(r => r.ok ? r.json() : { events: [] }),
       fetch('/api/profile').then(r => r.ok ? r.json() : null),
     ]).then(([learnData, streakData, feedData, profileData]) => {
       setLearnModules(learnData.modules ?? [])
+      setLearnUnavailable(Boolean(learnData.unavailable))
       setStreakDates(streakData.dates ?? [])
       setActivityEvents((feedData.events ?? []).map((ev: { id: string; event_type: string; payload: unknown; created_at: string }) => ({
         ...ev,
@@ -668,33 +671,26 @@ export default function ProgressPage() {
   })
 
   // Mastery stats
-  const total = masteryEntries.length
+  const catalogEntries = masteryEntries.filter(e => e.is_catalogued !== false)
+  const total = catalogEntries.length
   const attempted = masteryEntries.filter(e => e.is_completed).length
   const mastered = masteryEntries.filter(e => e.is_completed && e.score !== null && (e.score as number) >= 80).length
-  const attemptedPct = total > 0 ? Math.round((attempted / total) * 100) : 0
-
-  // Readiness score
-  const qualifiedChallenges = masteryEntries.filter(e => e.is_completed && e.score !== null && (e.score as number) >= 60).length
-  const challengePct = Math.min(100, Math.round((qualifiedChallenges / READINESS_CHALLENGE_QUOTA) * 100))
-  const moveLevelMap = new Map<string, number>(moves.map(m => [m.move as string, m.level]))
-  const movesAtLevel = READINESS_MOVES.filter(m => (moveLevelMap.get(m) ?? 0) >= READINESS_MOVE_LEVEL).length
-  const movePct = Math.round((movesAtLevel / READINESS_MOVES.length) * 100)
-  const overallPct = Math.round((challengePct + movePct) / 2)
+  const catalogCompleted = catalogEntries.filter(e => e.is_completed).length
+  const attemptedPct = total > 0 ? Math.round((catalogCompleted / total) * 100) : 0
 
   const streakDays = profile?.streak_days ?? 0
   const xpTotal = profile?.xp_total ?? 0
   const level = levelFromXp(xpTotal)
-  const xpToNext = level * XP_PER_USER_LEVEL - xpTotal
   const hasActivity = recentAttempts.length > 0 || recentInterviews.length > 0
 
   const coreLoaded = attemptsLoaded && feedLoaded && !profileLoading
   const isDayZero =
     coreLoaded && !hasActivity && activityEvents.length === 0 && attempted === 0 && streakDays === 0 && xpTotal === 0
 
-  // Hero headline from real state: slowest FLOW move among moves with reps.
-  const movesWithReps = flowMoves.filter(m => m.hasReps)
-  const weakest = movesWithReps.length > 0
-    ? movesWithReps.reduce((min, m) => (m.pct < min.pct ? m : min), movesWithReps[0])
+  // Hero headline from real state: slowest FLOW move among moves with evidence.
+  const movesWithEvidence = flowMoves.filter(m => m.hasReps)
+  const weakest = movesWithEvidence.length > 0
+    ? movesWithEvidence.reduce((min, m) => (m.pct < min.pct ? m : min), movesWithEvidence[0])
     : null
 
   // Merged activity timeline: attempts + interviews + feed events, newest first.
@@ -784,7 +780,7 @@ export default function ProgressPage() {
         <section className={`${CARD_CLASS} flex flex-col items-center p-8 text-center`}>
           <HatchImage state="wave" size={120} priority />
           <h1 className="mb-2 mt-4 font-headline text-[28px] font-semibold leading-[1.2] text-ink-strong">
-            One <span className="hl-word">rep</span> starts the map.
+            One <span className="hl-word">challenge</span> starts the map.
           </h1>
           <p className="mb-5 max-w-[44ch] text-[13.5px] leading-[1.55] text-ink-secondary">
             This page fills in after your first completed challenge. About 5 minutes, no setup.
@@ -793,7 +789,7 @@ export default function ProgressPage() {
             href="/challenges"
             className="inline-flex items-center gap-2 rounded-[10px] bg-forest-950 px-[18px] py-[11px] text-[13.5px] font-extrabold text-white no-underline shadow-[inset_0_1px_0_rgba(255,255,255,.12)]"
           >
-            Start your first rep
+            Start your first challenge
             <ArrowRight size={14} strokeWidth={2.2} />
           </Link>
         </section>
@@ -816,79 +812,16 @@ export default function ProgressPage() {
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 py-5 pb-12">
-      {/* ── Dark hero: headline + readiness ring + streak + XP ─────── */}
-      <section
-        className="relative mb-4 grid grid-cols-1 items-center gap-5 overflow-hidden rounded-2xl px-6 py-5 lg:grid-cols-[1.3fr_auto_auto_auto_auto]"
-        style={{
-          background:
-            'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-850) 55%, var(--color-forest-700) 130%)',
-        }}
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{ background: 'radial-gradient(600px 300px at 85% -10%, rgba(163,235,177,.16), transparent 60%)' }}
-        />
-        <div className="relative min-w-0">
-          <div className="mb-1 text-[13px] font-bold text-on-hero-soft">Your progress</div>
-          <h1 className="m-0 mb-1.5 font-headline text-[25px] font-semibold leading-[1.15] text-white">
-            {weakest ? (
-              <><span className="hl-word">{weakest.k}</span> is your slowest move.</>
-            ) : (
-              <>Every completed <span className="hl-word">rep</span> lands here.</>
-            )}
-          </h1>
-          <p className="m-0 max-w-[42ch] text-[13px] leading-[1.4] text-on-hero-muted">
-            {attempted > 0
-              ? `${attempted} completed rep${attempted === 1 ? '' : 's'}. ${mastered} scored 80 or higher.`
-              : 'Complete a challenge to put numbers on this page.'}
-          </p>
-          {profile?.archetype && (
-            <div className="mt-2.5 inline-flex rounded-full border border-white/15 bg-white/8 px-2.5 py-1 text-[10.5px] font-bold text-white/80">
-              Archetype: {humanizeArchetype(profile.archetype)}
-            </div>
-          )}
-        </div>
-
-        <div className="relative flex flex-col items-center gap-1.5">
-          <ProgressRing percent={overallPct} size={64} strokeWidth={9} color={['#fdb41f', '#a3ebb1']}>
-            <span className="font-body text-[16px] font-extrabold tabular-nums text-white">{overallPct}%</span>
-          </ProgressRing>
-          <span className="text-center text-[9px] font-bold uppercase tracking-[0.05em] text-on-hero-muted">Readiness</span>
-        </div>
-
-        <div aria-hidden className="relative hidden w-px self-stretch bg-white/15 lg:block" />
-
-        {streakDays > 0 && (
-          <div className="relative min-w-[126px]">
-            <div className="text-[16px] font-extrabold tabular-nums leading-[1.2] text-white">{streakDays}-day streak</div>
-            {shieldCount > 0 && (
-              <div className="mt-px text-[10.5px] tabular-nums text-on-hero-faint">
-                {shieldCount} shield{shieldCount === 1 ? '' : 's'} banked
-              </div>
-            )}
-          </div>
-        )}
-
-        {xpTotal > 0 && (
-          <div className="relative min-w-[126px]">
-            <div className="text-[16px] font-extrabold tabular-nums leading-[1.2] text-white">{xpTotal.toLocaleString()} XP</div>
-            <div className="text-[11px] text-on-hero-muted">Level {level}</div>
-            <div className="mt-px text-[10.5px] tabular-nums text-on-hero-faint">
-              {xpToNext.toLocaleString()} XP to Level {level + 1}
-            </div>
-          </div>
-        )}
-      </section>
+      <LearningPageHeading eyebrow="Your progress" title="See how far you’ve come.">Your completed work, feedback, and learning history in one place.</LearningPageHeading>
+      {weakest && <section className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-hairline bg-card-bright p-6"><div><p className="text-xs uppercase tracking-wide text-ink-secondary">Your next focus</p><h2 className="mt-2 font-headline text-2xl font-medium text-forest-950">Build confidence in {weakest.k.toLowerCase()}.</h2></div><Link href="/challenges" className="inline-flex min-h-11 items-center rounded-xl bg-forest-950 px-5 text-sm font-semibold text-white">Find a challenge →</Link></section>}
 
       {/* ── Stat strip (all values real; no invented deltas) ────────── */}
       <StatStrip
         className="mb-4"
         cells={[
-          { key: 'readiness', label: 'Readiness', value: `${overallPct}%` },
-          { key: 'completed', label: 'Reps completed', value: String(attempted) },
-          { key: 'mastered', label: 'Scored 80+', value: String(mastered) },
-          { key: 'coverage', label: 'Library coverage', value: `${attemptedPct}%` },
+          { key: 'completed', label: 'Challenges completed', value: masteryStatus === 'ready' ? String(attempted) : '—' },
+          { key: 'mastered', label: 'Scored 80+', value: masteryStatus === 'ready' ? String(mastered) : '—' },
+          { key: 'coverage', label: 'Practice coverage', value: masteryStatus === 'ready' ? `${attemptedPct}%` : '—' },
           {
             key: 'xp',
             label: 'Total XP',
@@ -898,7 +831,14 @@ export default function ProgressPage() {
         ]}
       />
 
-      {/* ── Row 1: FLOW moves / readiness radar / four-week heatmap ── */}
+      {masteryStatus === 'error' && (
+        <p role="status" className="mb-4 text-sm text-ink-secondary">
+          Your challenge totals could not be loaded.{' '}
+          <button type="button" onClick={() => void loadMastery()} className="min-h-11 font-semibold text-forest-950 underline">Try again</button>
+        </p>
+      )}
+
+      {/* ── Row 1: FLOW moves / skill profile / four-week activity ── */}
       <div className="mb-4 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1.05fr_1.05fr_1fr]">
         <section className={CARD_CLASS}>
           <CardTitle>FLOW moves</CardTitle>
@@ -919,7 +859,7 @@ export default function ProgressPage() {
                 </div>
               ) : (
                 <div className="mt-1.5 inline-flex rounded-full border border-hairline px-2 py-0.5 text-[10px] font-bold text-ink-muted">
-                  Building reps
+                  Building evidence
                 </div>
               )}
             </div>
@@ -928,7 +868,7 @@ export default function ProgressPage() {
         </section>
 
         <section className={`${CARD_CLASS} flex flex-col`}>
-          <CardTitle>Readiness radar</CardTitle>
+          <CardTitle>Skill profile</CardTitle>
           {dna ? (
             <>
               <div className="flex flex-1 items-center justify-center">
@@ -949,7 +889,7 @@ export default function ProgressPage() {
             </>
           ) : (
             <p className="m-0 flex flex-1 items-center justify-center text-center text-[12.5px] font-semibold text-ink-secondary">
-              Your competency radar appears after Hatch grades a few reps.
+              Your skill profile appears after Hatch grades a few challenges.
             </p>
           )}
         </section>
@@ -987,7 +927,7 @@ export default function ProgressPage() {
               {timeline.map((item, i) => (
                 <TimelineRow key={item.key} item={item} isLast={i === timeline.length - 1} />
               ))}
-              <ViewLink href="/challenges">View all</ViewLink>
+              <ViewLink href="/history">View full history</ViewLink>
             </>
           ) : (
             <div className="flex items-center gap-3 py-2">
@@ -1008,7 +948,7 @@ export default function ProgressPage() {
             learnModules.map((mod, i) => (
               <div key={mod.module_id} className={`py-2.5 ${i < learnModules.length - 1 ? 'border-b border-hairline' : ''}`}>
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="truncate text-[13px] font-bold text-ink-strong">{mod.module_title}</span>
+                  <span className="truncate text-[13px] font-bold text-ink-strong"><Link href={`/explore/modules/${mod.module_slug}`}>{mod.module_title}</Link></span>
                   <span className="shrink-0 text-[11.5px] font-semibold tabular-nums text-ink-secondary">
                     {mod.completed_chapters}/{mod.total_chapters} chapters
                   </span>
@@ -1022,7 +962,7 @@ export default function ProgressPage() {
               </div>
             ))
           ) : (
-            <p className="m-0 text-[12.5px] font-semibold text-ink-secondary">No modules started yet.</p>
+            <p className="m-0 text-[12.5px] font-semibold text-ink-secondary">{learnUnavailable ? 'Learning progress is temporarily unavailable.' : 'No chapters completed yet.'}</p>
           )}
         </section>
       </div>

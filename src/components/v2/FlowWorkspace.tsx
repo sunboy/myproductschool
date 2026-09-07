@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import { canStartWorkspaceAttempt, loadWorkspaceHistory } from '@/lib/workspace/submission-history'
+import { workspaceAttemptUrl } from '@/lib/workspace/attempt-url'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/posthog/client'
@@ -22,7 +24,6 @@ import { PostSessionMirror, type StepResult as MirrorStepResult, type Competency
 import type { StepCalibration } from './CalibrationPreview'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
-import { ProgressRing } from '@/components/redesign/ProgressRing'
 import { useHatchContext } from '@/context/HatchContext'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { CanvasEmptyState } from '@/components/challenge/CanvasEmptyState'
@@ -56,7 +57,6 @@ import { splitProblemSections } from '@/components/challenge/coding/descriptionT
 import { TestCasePanel } from '@/components/challenge/coding/TestCasePanel'
 import { GuidanceTab, type CodingRailSelfCheck } from '@/components/challenge/coding/GuidanceTab'
 import { HintsTab } from '@/components/challenge/coding/HintsTab'
-import { AdaptiveTabStrip } from '@/components/challenge/coding/AdaptiveTabStrip'
 import { SchemaDiagram } from '@/components/challenge/SchemaDiagram'
 import { SampleDataPreview } from '@/components/challenge/SampleDataPreview'
 import { ExpectedOutput, type ExpectedOutputTestCase } from '@/components/challenge/ExpectedOutput'
@@ -74,6 +74,7 @@ import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import type { ChallengeDiscussion } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import { buildChallengeBrief, type ChallengeBriefSection } from '@/lib/challenges/presentation'
+import { mdRemarkPlugins, mdRehypePlugins, safeMarkdownUrl } from '@/components/ui/md-shared'
 import { codingMarkdownComponents } from '@/components/challenge/markdownComponents'
 import { SolutionsPane } from '@/components/solutions/SolutionsPane'
 import type { SolutionTabResponse } from '@/lib/solutions/schema'
@@ -336,7 +337,7 @@ function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
       {/* The body as one continuous document; headings come from the content */}
       {contextSections.map((section) => (
         <div key={section.id} style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
-          <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
         </div>
       ))}
 
@@ -353,7 +354,7 @@ function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
           fontWeight: 600,
           color: 'var(--color-on-surface)',
         }}>
-          <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
         </div>
       ))}
 
@@ -378,7 +379,7 @@ function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
             {section.title}
           </div>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.68, fontWeight: 650, color: 'var(--color-on-surface)' }}>
-            <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
           </div>
         </section>
       ))}
@@ -392,7 +393,7 @@ function ProblemDocument({ sections }: { sections: ChallengeBriefSection[] }) {
           lineHeight: 1.6,
           color: 'var(--color-on-surface-variant)',
         }}>
-          <ReactMarkdown components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{section.body}</ReactMarkdown>
         </div>
       ))}
     </div>
@@ -447,7 +448,7 @@ function BriefSectionCard({ section }: { section: ChallengeBriefSection }) {
           fontWeight: bodyWeight,
         }}
       >
-        <ReactMarkdown components={briefMarkdownComponents}>
+        <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={briefMarkdownComponents}>
           {section.body}
         </ReactMarkdown>
       </div>
@@ -510,8 +511,13 @@ function scoreToGradeLabel(score: number): string {
   return 'surface'
 }
 
+function replaceWorkspaceAttemptUrl(attemptId: string | null) {
+  if (typeof window === 'undefined') return
+  window.history.replaceState(null, '', workspaceAttemptUrl(window.location.href, attemptId))
+}
+
 type FlowWorkspaceProps =
-  | { mode: 'api'; challengeId: string; challengeSlug?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; fromDomain?: string; nextChallengeSlug?: string; returnTo?: string }
+  | { mode: 'api'; challengeId: string; challengeSlug?: string; initialAttemptId?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; fromDomain?: string; nextChallengeSlug?: string; returnTo?: string }
   | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void; fromPlan?: string; fromDomain?: string; nextChallengeSlug?: string; returnTo?: string }
 
 // First-entry tour for the canvas workspace. Auto-fires once when a canvas
@@ -584,6 +590,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const { stepData, loading: stepLoading, submitting, error: stepError, clearStepData, loadStep, submitStep, fetchCoaching } = useFlowStep(challengeId, currentStep)
 
   const [attemptId, setAttemptId] = useState<string | null>(null)
+  const attemptStartPending = useRef(false)
   const [completedSteps, setCompletedSteps] = useState<FlowStep[]>([])
   const [phase, setPhase] = useState<'loading' | 'question' | 'reveal' | 'complete'>('loading')
 
@@ -673,9 +680,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     correctness?: RunResult | null
   }>>(new Map())
   const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
+  const [submittedCanvasScene, setSubmittedCanvasScene] = useState<{ attemptId: string; elements: unknown[] } | null>(null)
   const [contextPackOpen, setContextPackOpen] = useState(true)
   const [contextPack, setContextPack] = useState<ContextPackState>(EMPTY_CONTEXT_PACK_FIELDS)
   const [isSubmittingInterview, setIsSubmittingInterview] = useState(false)
+  const [interviewSubmitError, setInterviewSubmitError] = useState<string | null>(null)
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const contextPackRef = useRef<HTMLDivElement>(null)
 
@@ -738,7 +747,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // answer panel + centered FLOW stepper + the Description/Discussions/Submissions
   // tab row) needs ≥1024px; at 768px it collided ("Frame" sitting on the tab row).
   const isMobile = useIsMobile('(max-width: 1023px)')
-  const [mobileDescOpen, setMobileDescOpen] = useState(false)
+  const [mobileDescOpen, setMobileDescOpen] = useState(true)
 
   // Derived: dock fade-out fires when answer has been submitted (phase leaves 'question')
   const dockSubmitted = phase === 'reveal' || phase === 'complete'
@@ -785,7 +794,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const reasoningCardRef = useRef<HTMLTextAreaElement>(null)
 
   // Resizable panel state - left panel width as percentage of container
-  const [leftWidth, setLeftWidth] = useState(30)
+  const [leftWidth, setLeftWidth] = useState(40)
   const containerRef = useRef<HTMLDivElement>(null)
   const dragCleanupRef = useRef<(() => void) | null>(null)
 
@@ -815,7 +824,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Notes; Solutions/Discussions/Submissions move behind a trailing More menu.
   const [leftTab, setLeftTab] = useState<
     'Description' | 'Examples' | 'Constraints' | 'Notes' | 'Discussions' | 'Submissions' | 'Solutions'
-  >('Description')
+  >(props.mode === 'api' && props.initialAttemptId ? 'Submissions' : 'Description')
 
   // ── Coding workspace state (round-4 rebuild) ─────────────────────────────
   // Advisory solving path (Understand → Plan → Code → Test → Optimize).
@@ -851,8 +860,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isFlowChallenge = isApiMode && !isInterviewChallenge
 
   // On a phone, FLOW/MCQ challenges stack vertically. Canvas/coding challenges
-  // are gated to a "best on desktop" notice instead (see Fork C below).
-  const mobileStacked = isMobile && !isInterviewChallenge
+  // share the same brief/work switch and preserve their saved state.
+  const mobileStacked = isMobile
 
   // Coding left pane: floor the width so all four content tabs (Description /
   // Examples / Constraints / Notes) stay inline at >=1280 instead of clipping
@@ -950,6 +959,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([])
   const [selectedHistoryIdx, setSelectedHistoryIdx] = useState<number | null>(null)
   const [submissionsLoaded, setSubmissionsLoaded] = useState(false)
+  const [submissionsError, setSubmissionsError] = useState<string | null>(null)
+  const [historyPracticeRequested, setHistoryPracticeRequested] = useState(false)
   const [submissionsLoading, setSubmissionsLoading] = useState(false)
   const [submissionsCount, setSubmissionsCount] = useState(0)
 
@@ -1052,9 +1063,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // the existing sessionHistory untouched — never wipe it to [] — so a transient
   // /api/attempts error right after a submit can't erase the record the user
   // just made.
+  const initialAttemptId = props.mode === 'api' ? props.initialAttemptId : undefined
+  const historyDeepLinkApplied = useRef<string | null>(null)
   const loadSubmissionHistory = useCallback(async () => {
     if (!isApiMode || !challengeId) return
     setSubmissionsLoading(true)
+    setSubmissionsError(null)
     let rows: Array<{
       id: string
       challenge_id: string
@@ -1074,10 +1088,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       } | null
     }>
     try {
-      const res = await fetch(`/api/attempts?limit=20&summary=1&challenge_id=${encodeURIComponent(challengeId)}`)
-      if (!res.ok) { setSubmissionsLoading(false); return } // preserve existing history on 401/5xx
-      rows = await res.json()
+      const loaded = await loadWorkspaceHistory<(typeof rows)[number]>(challengeId, initialAttemptId)
+      if (!loaded) {
+        setSubmissionsError('Submission history could not be loaded. Please try again.')
+        setSubmissionsLoading(false)
+        return
+      }
+      rows = loaded
     } catch {
+      setSubmissionsError('Submission history could not be loaded. Please try again.')
       setSubmissionsLoading(false)
       return // preserve existing history on network failure
     }
@@ -1121,19 +1140,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         }
       })
     setSessionHistory(past)
+    if (initialAttemptId && historyDeepLinkApplied.current !== initialAttemptId) {
+      const index = past.findIndex(record => record.attemptId === initialAttemptId)
+      if (index !== -1) {
+        setSelectedHistoryIdx(index)
+        setPhase('question')
+        historyDeepLinkApplied.current = initialAttemptId
+      } else {
+        setSubmissionsError('The linked submission could not be opened. Try again or choose another submission below.')
+      }
+    }
     setSubmissionsLoaded(true)
     setSubmissionsLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isApiMode, challengeId, challengeSlug])
+  }, [isApiMode, challengeId, challengeSlug, initialAttemptId])
 
   // Lazy-load submission history on first Submissions-tab open, so it stays off
   // the workspace mount critical path (mirrors Discussions/Solutions). Post-submit
   // reconciliation still calls loadSubmissionHistory directly.
   useEffect(() => {
-    if (leftTab === 'Submissions' && !submissionsLoaded && !submissionsLoading) {
+    if (leftTab === 'Submissions' && !submissionsLoaded && !submissionsLoading && !submissionsError) {
       void loadSubmissionHistory()
     }
-  }, [leftTab, submissionsLoaded, submissionsLoading, loadSubmissionHistory])
+  }, [leftTab, submissionsLoaded, submissionsLoading, submissionsError, loadSubmissionHistory])
 
   // Cheap count for the Submissions tab pill — a head-only count query, no
   // feedback_json payload — so the pill can show the prior-attempt count on
@@ -1178,6 +1207,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       return [record, ...withoutDupe]
     })
     setSelectedHistoryIdx(0)
+    if (record.attemptId && (record.challengeType === 'algorithm' || record.challengeType === 'sql')) {
+      replaceWorkspaceAttemptUrl(record.attemptId)
+    }
     // A successful submit (coding / canvas / interview) consumes a rep. Refresh
     // every usage surface: profile-stats-updated re-pulls SessionContext (which
     // backs useUsage / the at-limit checks) and the usage pill; usageEventBus is
@@ -1406,7 +1438,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const canvasExportRef = useRef<(() => Promise<Blob | null>) | null>(null)
   const libraryItemsRef = useRef<Array<{ id: string; name?: string; elements: unknown[] }>>([])
 
-  const handleCanvasActions = useCallback(async (response: { message: string; actions: unknown[] }) => {
+  const handleCanvasActions = useCallback(async (
+    response: { message: string; actions: unknown[] },
+    options?: { fitViewport?: boolean }
+  ) => {
     if (!excalidrawApiRef.current) return
     const actions = Array.isArray(response.actions) ? response.actions : []
     if (actions.length === 0) return
@@ -1440,6 +1475,26 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         appState: excalidrawApiRef.current.getAppState() as unknown,
       })
     } catch { /* non-fatal - the debounced snapshot will catch up */ }
+
+    // Template scenes are laid out in scene coordinates, which can leave part
+    // of a horizontal diagram outside a phone viewport. Fit only after an
+    // explicit template action so normal drawing and Hatch edits keep the
+    // user's current pan/zoom. This changes viewport state only; scene elements
+    // and Excalidraw's undo history are untouched.
+    if (options?.fitViewport) {
+      window.requestAnimationFrame(() => {
+        const api = excalidrawApiRef.current
+        if (!api) return
+        const elements = api.getSceneElements() as unknown[]
+        if (elements.length === 0) return
+        api.scrollToContent(elements, {
+          fitToContent: true,
+          viewportZoomFactor: 0.82,
+          maxZoom: 1,
+          animate: false,
+        })
+      })
+    }
   }, [apiChallengeType])
 
   const queueHatchPrompt = useCallback((text: string, autoSend = true) => {
@@ -1462,10 +1517,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const handleUseTemplate = useCallback(() => {
     if (apiChallengeType !== 'system_design' && apiChallengeType !== 'data_modeling') return
     setEmptyStateDismissed(true)
-    handleCanvasActions({
+    void handleCanvasActions({
       message: 'starter template',
       actions: canvasStarterTemplate(apiChallengeType),
-    })
+    }, { fitViewport: true })
   }, [apiChallengeType, handleCanvasActions])
 
   // Overlay template chips — same executeActions path as Hatch and the
@@ -1474,7 +1529,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     (template: CanvasTemplate) => {
       if (template.actions.length === 0) return
       setEmptyStateDismissed(true)
-      void handleCanvasActions({ message: template.label, actions: template.actions })
+      void handleCanvasActions(
+        { message: template.label, actions: template.actions },
+        { fitViewport: true }
+      )
     },
     [handleCanvasActions]
   )
@@ -2205,6 +2263,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Excalidraw's initialData restore. Falls back to the last SUBMITTED scene
   // when there is no in-progress draft (re-entry after submit).
   const canvasInitialData = useMemo(() => {
+    // The just-submitted scene is newer than the server detail fetched on mount.
+    // Preserve it even when intentionally empty, and only for its own attempt.
+    if (submittedCanvasScene?.attemptId === attemptId) {
+      return { elements: submittedCanvasScene.elements }
+    }
     const snap = detail?.current_attempt?.draft_snapshot as
       | { type?: string; elements?: unknown[] }
       | undefined
@@ -2219,7 +2282,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
     return undefined
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detail?.current_attempt?.id, detail?.latest_completed_attempt?.id])
+  }, [detail?.current_attempt?.id, detail?.latest_completed_attempt?.id, submittedCanvasScene, attemptId])
 
   // useCodeRunner hook - always called (React rules of hooks); only active for coding challenges
   const codeChallenge = (isCodingChallenge && detail?.challenge)
@@ -2262,10 +2325,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // API mode: start attempt once detail loads
+  // Viewing existing feedback must not create a new attempt or consume a quota.
+  // A missing record or closing feedback is not consent to start practice.
   useEffect(() => {
     if (!isApiMode) return
-    if (detail && !attemptId) {
+    if (!canStartWorkspaceAttempt(initialAttemptId, historyPracticeRequested)) {
+      if (detail) setPhase('question')
+      return
+    }
+    if (detail && !challengeLoading && !attemptId && !attemptStartPending.current) {
       if (detail.current_attempt?.status === 'in_progress') {
         setAttemptId(detail.current_attempt.id)
         const resumeStep = detail.current_attempt.current_step === 'done' ? 'frame' : detail.current_attempt.current_step as FlowStep
@@ -2275,6 +2343,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         if (resumeIdx > 0) setCompletedSteps(FLOW_STEPS.slice(0, resumeIdx))
         setPhase('question')
       } else {
+        attemptStartPending.current = true
         startAttempt(initialRoleId).then((attempt) => {
           if (attempt) {
             setAttemptId(attempt.id)
@@ -2282,10 +2351,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             setPhase('question')
             trackEvent(EVENT_CHALLENGE_STARTED, { challenge_id: challengeId, attempt_id: attempt.id })
           }
-        })
+        }).finally(() => { attemptStartPending.current = false })
       }
     }
-  }, [detail, attemptId, isApiMode, initialRoleId, startAttempt])
+  }, [detail, challengeLoading, attemptId, isApiMode, initialRoleId, startAttempt, initialAttemptId, historyPracticeRequested, challengeId])
 
   // Load step data when step changes - clear stale data immediately so no
   // previous step's questions flash while the new step loads
@@ -2751,6 +2820,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const handleInterviewSubmit = useCallback(async () => {
     const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
     if (!challengeId || !attemptId || isSubmittingInterview) return
+    setInterviewSubmitError(null)
     playHatchSound('submit')
     setIsSubmittingInterview(true)
     try {
@@ -2773,10 +2843,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           stepAnswers,
         }),
       })
-      if (!res.ok) throw new Error('Submit failed')
+      if (!res.ok) {
+        const failure = await res.json().catch(() => ({}))
+        throw new Error(typeof failure.error === 'string' ? failure.error : 'We could not finish the review. Please retry.')
+      }
       const data = await res.json()
       playHatchSound('success')
       setInterviewGrade(data.grade)
+      setSubmittedCanvasScene({ attemptId, elements: canvasScene?.elements ?? [] })
       setPhase('complete')
       // Surface this submission in the history tab immediately (canvas types:
       // system_design / data_modeling). Optimistic; the refetch reconciles the
@@ -2800,6 +2874,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } catch (err) {
       playHatchSound('error')
       console.error('Interview submit error:', err)
+      setInterviewSubmitError(err instanceof Error ? err.message : 'We could not finish the review. Please retry.')
     } finally {
       setIsSubmittingInterview(false)
     }
@@ -3771,7 +3846,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     metadata: (challenge as { metadata?: Record<string, unknown> | null } | null | undefined)?.metadata,
   })
 
+  const problemStatementForHatch = challengeBriefSections.map(section => `${section.title}: ${section.body}`).join('\n\n')
+  const sqlSchema = currentLanguage === 'sql'
+    ? (detail?.challenge.metadata?.sql_schema as { schema_diagram?: unknown; sample_data_preview?: unknown; setup_script?: string } | undefined)
+    : undefined
+  const sqlSchemaSummary = sqlSchema ? JSON.stringify({
+    schema: sqlSchema.schema_diagram ?? sqlSchema.setup_script,
+    sample_data: sqlSchema.sample_data_preview,
+  }).slice(0, 20000) : undefined
+
   const handleRunAnother = () => {
+    if (isCodingChallenge) replaceWorkspaceAttemptUrl(null)
+    setHistoryPracticeRequested(true)
+    setLeftTab('Description')
     setMirrorStepResults([])
     setSelectedHistoryIdx(null)
     setAttemptId(null)
@@ -3863,7 +3950,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Left pane description content
   const descriptionPane = (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
+    <div className="learning-workspace-brief" style={{ flex: 1, overflowY: 'auto', padding: '24px 24px' }}>
       {!isInterviewChallenge && (
         <div className="font-label" style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-ink-strong)', marginBottom: 12 }}>
           Problem Brief
@@ -3955,7 +4042,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
       {/* Title */}
       {challengeTitle && (
-        <h2 style={{ fontFamily: 'var(--font-headline)', fontSize: 23, fontWeight: 700, lineHeight: 1.22, letterSpacing: '-0.01em', color: 'var(--color-on-surface)', marginBottom: 10 }}>
+        <h2 style={{ fontFamily: 'var(--font-headline)', fontSize: 30, fontWeight: 500, lineHeight: 1.22, letterSpacing: '-0.025em', color: 'var(--color-on-surface)', marginBottom: 18 }}>
           {challengeTitle}
         </h2>
       )}
@@ -4033,7 +4120,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 </span>
               </div>
               <p style={{ margin: '2px 0 0', fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
-                Assumptions and tradeoffs Hatch should grade with your diagram.
+                Assumptions and tradeoffs Hatch should consider with your diagram.
               </p>
             </div>
             <span
@@ -4538,7 +4625,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     <div style={{ padding: '0 12px 4px', borderTop: '1px solid var(--color-outline-variant)' }}>
                       {part.coding_subtask_prompt && (
                         <div style={{ padding: '10px 0 6px' }}>
-                          <ReactMarkdown components={codingMarkdownComponents}>
+                          <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={codingMarkdownComponents}>
                             {part.coding_subtask_prompt}
                           </ReactMarkdown>
                         </div>
@@ -4602,7 +4689,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, color: 'var(--color-on-surface)' }}>
                       <span style={{ fontWeight: 700 }}>Process</span>
-                      <span>{finalizeResult.score_breakdown.process.score.toFixed(1)} / 5</span>
+                      <span>{finalizeResult.score_breakdown.process.score == null ? 'Not assessed' : `${finalizeResult.score_breakdown.process.score.toFixed(1)} / 5`}</span>
                     </div>
                     <div style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
                       {finalizeResult.score_breakdown.process.summary}
@@ -4628,6 +4715,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       const data = await res.json().catch(() => null)
                       if (res.ok) {
                         setFinalizeResult(data)
+                        replaceWorkspaceAttemptUrl(attemptId)
                         setPhase('complete')
                       } else if (data?.status === 'not_ready') {
                         const nextAction = Array.isArray(data.next_actions) ? data.next_actions[0] : undefined
@@ -4680,7 +4768,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const examplesPane = problemSections?.examples ? (
     <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
       <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
-        <ReactMarkdown components={documentMarkdownComponents}>{problemSections.examples}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{problemSections.examples}</ReactMarkdown>
       </div>
     </div>
   ) : null
@@ -4688,7 +4776,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const constraintsPane = problemSections?.constraints ? (
     <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
       <div style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, lineHeight: 1.72, color: 'var(--color-on-surface)' }}>
-        <ReactMarkdown components={documentMarkdownComponents}>{problemSections.constraints}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={mdRemarkPlugins} rehypePlugins={mdRehypePlugins} skipHtml urlTransform={safeMarkdownUrl} components={documentMarkdownComponents}>{problemSections.constraints}</ReactMarkdown>
       </div>
     </div>
   ) : null
@@ -4867,8 +4955,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
       <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>history</span>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
-        No submissions yet.
+        {submissionsError ?? 'No submissions yet.'}
       </p>
+      {submissionsError && <button type="button" onClick={() => void loadSubmissionHistory()} className="min-h-11 rounded-lg border border-hairline px-4 text-sm font-bold">Try again</button>}
     </div>
   ) : (
     <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -5010,6 +5099,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         overflow: 'hidden',
         minHeight: 0,
       }}>
+      {<nav className="workspace-reference-nav" aria-label="Challenge reference">{(isCodingChallenge ? [...codingPrimaryTabs, ...codingMoreTabs] : tabs).map(tab => <button key={tab} type="button" aria-pressed={leftTab === tab} onClick={() => setLeftTab(tab)}>{tab === 'Description' ? 'The brief' : tab}{tab === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, leftTab === tab)}{tab === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, leftTab === tab)}</button>)}</nav>}
       {leftTab === 'Description' && descriptionPane}
       {leftTab === 'Examples' && examplesPane}
       {leftTab === 'Constraints' && constraintsPane}
@@ -5136,259 +5226,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   ) : null
 
-  // Shared top chrome - spans full width so the borderBottom is continuous
-  const topChrome = (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      borderBottom: '1px solid var(--color-hairline)',
-      background: 'var(--color-card-bright)',
-      flexShrink: 0,
-    }}>
-      {/* Left side: back + tabs - constrained to leftWidth (or 32px rail when collapsed) */}
-      <div style={{
-        width: leftCollapsed ? 32 : `${leftWidth}%`,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: leftCollapsed ? '6px 4px' : '6px 8px',
-        flexShrink: 0,
-        minWidth: leftPaneMinWidth ?? 0,
-        overflow: 'hidden',
-      }}>
-        <button
-          onClick={props.onExit ?? (() => window.history.back())}
-          className="btn btn--ghost"
-          aria-label="Back"
-          style={{ padding: '6px 8px', fontSize: 12, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
-        </button>
-        {leftCollapsed && challengeTitle && (
-          <span
-            className="font-headline"
-            style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}
-            title={challengeTitle}
-          >
-            {challengeTitle}
-          </span>
-        )}
-        {/* Coding: one adaptive strip over ALL seven doc tabs — as many render
-            inline as the panel width allows, the rest fold behind a three-dots
-            menu that only appears when something is actually hidden. The menu
-            is fixed-positioned so this bar's overflow:hidden can't clip it. */}
-        {!leftCollapsed && isCodingChallenge && (
-          <AdaptiveTabStrip
-            tabs={[...codingPrimaryTabs, ...codingMoreTabs]}
-            active={leftTab}
-            onSelect={(t) => setLeftTab(t as typeof leftTab)}
-            badges={{
-              Discussions: discussionsLoaded ? workspaceTabBadge(discussions.length, leftTab === 'Discussions') : undefined,
-              Submissions: submissionBadgeCount > 0 ? workspaceTabBadge(submissionBadgeCount, leftTab === 'Submissions') : undefined,
-            }}
-          />
-        )}
-        {!leftCollapsed && !isCodingChallenge && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            minWidth: 0,
-            flex: 1,
-            overflowX: 'auto',
-            overflowY: 'hidden',
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'none',
-          }}>
-            {tabs.map(t => {
-              const active = leftTab === t
-              return (
-                <button
-                  key={t}
-                  onClick={() => setLeftTab(t)}
-                  style={{
-                    flexShrink: 0,
-                    whiteSpace: 'nowrap',
-                    padding: '8px 10px',
-                    fontSize: 12.5,
-                    fontWeight: active ? 800 : 650,
-                    color: active ? 'var(--color-forest-800)' : 'var(--color-ink-secondary)',
-                    background: 'transparent',
-                    border: 'none',
-                    /* Round-4 underline tabs (spec §"Signature components" 7):
-                       active = forest underline + semibold, no pill fill. */
-                    boxShadow: active ? 'inset 0 -2px 0 var(--color-forest-600)' : 'none',
-                    borderRadius: 0,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    transition: 'box-shadow 140ms ease, color 140ms ease',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    minHeight: 36,
-                  }}
-                >
-                  <span>{t}</span>
-                  {t === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, active)}
-                  {t === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, active)}
-                </button>
-              )
-            })}
-          </div>
-        )}
-        {/* Collapse button - only shown when expanded and on coding challenges */}
-        {!leftCollapsed && isCodingChallenge && (
-          <button
-            data-testid="collapse-toggle-button"
-            onClick={() => setLeftCollapsed(true)}
-            title="Collapse panel"
-            style={{
-              marginLeft: 2,
-              padding: '4px 6px',
-              borderRadius: 6,
-              border: '1px solid var(--color-hairline)',
-              background: 'transparent',
-              color: 'var(--color-ink-secondary)',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              fontSize: 11,
-              gap: 2,
-              fontFamily: 'inherit',
-              flexShrink: 0,
-            }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>chevron_left</span>
-          </button>
-        )}
-      </div>
-      {/* Drag handle spacer - only when expanded */}
-      <div style={{ width: leftCollapsed ? 0 : 6, flexShrink: 0 }} />
-      {/* Right side: workspace controls only. Challenge type lives in the description tags. */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', gap: 16 }}>
-        {isCanvasChallenge ? (
-          <>
-            {/* Round-4 structured workspace chrome: title + discipline chip on
-                the left, the FLOW steps inlined as compact pips (the standalone
-                "FLOW Method" band was consolidated into this bar). */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
-              {challengeTitle && (
-                <span
-                  className="font-headline"
-                  style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--color-ink-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}
-                  title={challengeTitle}
-                >
-                  {challengeTitle}
-                </span>
-              )}
-              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-secondary-container px-2.5 py-1 font-label text-xs font-bold text-on-secondary-container">
-                {apiChallengeType === 'data_modeling' ? 'Data modeling' : 'System design'}
-              </span>
-            </div>
-            <div style={{ flexShrink: 0, overflow: 'hidden' }} className="hidden min-[1100px]:flex items-center">
-              <CompactStepPips
-                steps={designSteps.map(s => ({ id: s.id, label: s.label }))}
-                activeId={activeDesignStep}
-                doneIds={completedDesignSteps}
-                onSelect={(id) => { if (isDesignStepId(id)) selectDesignStep(id) }}
-                ariaLabel="FLOW method steps"
-              />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <button
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  openCanvasOverlay({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
-                }}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card-bright px-2.5 py-1.5 font-label text-xs font-bold text-ink-secondary hover:text-ink-strong transition-colors"
-                title="Open the canvas"
-                aria-label="Open the canvas"
-              >
-                <span className="material-symbols-outlined text-[16px]">fullscreen</span>
-                Open canvas
-              </button>
-            </div>
-          </>
-        ) : isCodingChallenge ? (
-          <>
-            {/* Advisory solving path, inlined since the standalone "Solving
-                path" band was consolidated into this bar. Hidden on narrow
-                desktops; Run/Submit (flexShrink 0) always wins the space. */}
-            <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }} className="hidden min-[1100px]:flex items-center justify-center">
-              {phase === 'question' && (
-                <CodingStepper
-                  compact
-                  activeStep={codingStep}
-                  onSelectStep={(id) => {
-                    setCodingStep(id)
-                    if (id === 'understand') setLeftTab('Description')
-                    else if (id === 'plan') setLeftTab('Notes')
-                    else if (id === 'test') setConsoleCollapsed(false)
-                  }}
-                />
-              )}
-            </div>
-            <div className="flex-1 min-[1100px]:hidden" />
-            {codingActions}
-            <button
-              onClick={() => setCodingMaximised((v) => !v)}
-              className="inline-flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
-              title={codingMaximised ? 'Exit full screen' : 'Full screen workspace'}
-              aria-label={codingMaximised ? 'Exit full screen' : 'Full screen workspace'}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {codingMaximised ? 'fullscreen_exit' : 'fullscreen'}
-              </span>
-            </button>
-          </>
-        ) : (
-          <>
-            {/* Round-4 chrome: challenge title + difficulty chip live in the top
-                bar; the stepper moved to its own full-width card below. */}
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-              {challengeTitle && (
-                <span
-                  className="font-headline"
-                  style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--color-ink-strong)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}
-                  title={challengeTitle}
-                >
-                  {challengeTitle}
-                </span>
-              )}
-              {(() => {
-                const diff = (isApiMode ? detail?.challenge : adapterChallenge)?.difficulty
-                const canonical = diff ? coerceDifficulty(diff) : null
-                const label = canonical ? DIFFICULTY_LABEL[canonical] : diff
-                return label ? (
-                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-soft px-2.5 py-1 font-label text-xs font-bold" style={{ color: '#a16207' }}>
-                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#eab308' }} />
-                    {label}
-                  </span>
-                ) : null
-              })()}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <button
-                className="btn btn--ghost"
-                style={{
-                  padding: '6px 10px', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4,
-                  background: hintOpen ? 'var(--color-amber-soft)' : undefined,
-                  color: hintOpen ? '#5c3a00' : undefined,
-                  borderRadius: 8,
-                }}
-                onClick={() => setHintOpen(v => !v)}
-              >
-                <span
-                  className="material-symbols-outlined msi-sm"
-                  style={{ fontVariationSettings: hintOpen ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
-                >lightbulb</span> Hint
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  )
+  // Read-only results/history keep navigation without controls for an absent editor.
+  const topChrome = <header className="workspace-focus-header"><button type="button" onClick={props.onExit ?? (() => window.history.back())} aria-label="Back to practice">← Practice</button><h1>{challengeTitle}</h1></header>
 
   // Round-4 FLOW method strip: full-width card under the top bar holding the
   // Frame / List / Optimize / Win stepper (previews/round4/flow-workspace.html
@@ -5412,83 +5251,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   ) : null
 
-  // Round-4 Hatch rail (FLOW MCQ question phase, wide desktop only): coach
-  // header with the listening pose, a mint "Hatch's read" note fed by the real
-  // proactive nudge (falling back to the current move's tagline), and the
-  // session progress ring. Pure chrome: it only displays state that already
-  // exists (proactiveNudge, completedSteps, questionIdx).
-  const flowRightRail = (
-    <aside
-      className="hidden min-[1280px]:flex"
-      style={{ width: 288, flexShrink: 0, flexDirection: 'column', gap: 10, marginLeft: 8, minHeight: 0, overflowY: 'auto' }}
-    >
-      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: 14, display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-        <HatchImage state="listening" size={46} className="rounded-lg" />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="font-label" style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-ink-strong)' }}>Hatch</div>
-          <div className="font-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-ink-muted)' }}>AI Coach</div>
-        </div>
-      </div>
-
-      <div className="note-mint" style={{ borderRadius: 16, padding: 14, flexShrink: 0 }}>
-        <div className="font-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 13, fontWeight: 800, color: 'var(--color-ink-strong)', marginBottom: 6 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 7, height: 7, borderRadius: 999, background: 'var(--color-forest-600)' }} />
-            {/* Only brand the note as live Hatch output when a real nudge is
-                showing; the static fallback is a method reminder, not a read. */}
-            {proactiveNudge ? <>Hatch&apos;s read</> : <>The move</>}
-          </span>
-          {proactiveNudge && (
-            <button
-              onClick={() => setProactiveNudge(null)}
-              aria-label="Dismiss nudge"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-ink-secondary)', padding: 0, display: 'inline-flex' }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 15 }}>close</span>
-            </button>
-          )}
-        </div>
-        <p className="font-body" style={{ fontSize: 12.8, lineHeight: 1.55, color: 'var(--color-ink-secondary)', margin: 0 }}>
-          {proactiveNudge?.text ?? `${STEP_LABEL[currentStep]} is the move here. ${FLOW_MOVES[currentStep].tagline}.`}
-        </p>
-      </div>
-
-      <div style={{ background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, padding: 14, flexShrink: 0 }}>
-        <div className="font-label" style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-ink-strong)' }}>Session progress</div>
-        <p className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)', margin: '2px 0 12px' }}>
-          {completedSteps.length === 0
-            ? 'No steps graded yet.'
-            : `${completedSteps.length} of ${FLOW_STEPS.length} steps graded.`}
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <ProgressRing
-            percent={Math.round((completedSteps.length / FLOW_STEPS.length) * 100)}
-            size={76}
-            strokeWidth={7}
-            trackColor="#eee9df"
-            color="var(--color-forest-600)"
-          >
-            <span className="font-label" style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-ink-strong)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-              {completedSteps.length}/{FLOW_STEPS.length}
-            </span>
-            <span className="font-label" style={{ fontSize: 8.5, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-ink-muted)', marginTop: 2 }}>Steps</span>
-          </ProgressRing>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>Current step</span>
-              <span className="font-label" style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink-strong)' }}>{STEP_LABEL[currentStep]}</span>
-            </div>
-            {stepQuestions.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span className="font-label" style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>Question</span>
-                <span className="font-label" style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink-strong)', fontVariantNumeric: 'tabular-nums' }}>{Math.min(questionIdx + 1, stepQuestions.length)} of {stepQuestions.length}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </aside>
-  )
+  // The main answer area stays focused; Hatch remains available through the
+  // floating coach and the contextual nudge below the answer.
 
   // Shared bottom footer - spans full width so the borderTop is continuous
   const bottomFooter = currentQuestion ? (
@@ -5516,26 +5280,32 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             <div style={{ display: 'flex', gap: 14 }}>
               <button
                 className="btn btn--ghost"
+                aria-label={liked ? 'Remove like' : 'Like challenge'}
+                title={liked ? 'Remove like' : 'Like challenge'}
                 style={{ padding: '4px 10px', fontSize: 12, gap: 4, color: liked ? 'var(--color-primary)' : undefined }}
                 onClick={() => setLiked(v => !v)}
               >
                 <span
                   className="material-symbols-outlined msi-sm"
                   style={{ fontVariationSettings: liked ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
-                >thumb_up</span> {liked ? '1.1K+' : '1.1K'}
+                >thumb_up</span>
               </button>
               <button
                 className="btn btn--ghost"
+                aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark challenge'}
+                title={bookmarked ? 'Remove bookmark' : 'Bookmark challenge'}
                 style={{ padding: '4px 10px', fontSize: 12, gap: 4, color: bookmarked ? 'var(--color-primary)' : undefined }}
                 onClick={() => setBookmarked(v => !v)}
               >
                 <span
                   className="material-symbols-outlined msi-sm"
                   style={{ fontVariationSettings: bookmarked ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
-                >{bookmarked ? 'bookmark' : 'bookmark_border'}</span> {bookmarked ? '343' : '342'}
+                >{bookmarked ? 'bookmark' : 'bookmark_border'}</span>
               </button>
               <button
                 className="btn btn--ghost"
+                aria-label="Share challenge"
+                title="Share challenge"
                 style={{ padding: '4px 10px', fontSize: 12, gap: 4 }}
                 onClick={() => {
                   const url = window.location.href
@@ -5603,19 +5373,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     workspaceTabBadge(count, active)
   )
 
+  const compactWorkspaceHeader = <header className="workspace-focus-header"><button type="button" onClick={props.onExit ?? (() => window.history.back())} aria-label="Back to practice">← Practice</button><h1>{challengeTitle}</h1></header>
+
   // Top bar: back button + horizontally scrollable tabs (no clipping).
   const mobileChrome = isMobile ? (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--color-hairline)', background: 'var(--color-card-bright)', flexShrink: 0, padding: '6px 8px' }}>
       <button
         onClick={props.onExit ?? (() => window.history.back())}
         className="btn btn--ghost"
+        title="Back to practice"
         style={{ padding: '6px 8px', display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}
-        aria-label="Back"
+        aria-label="Back to practice"
       >
         <span className="material-symbols-outlined" style={{ fontSize: 20 }}>arrow_back</span>
+        <span className="hidden min-[640px]:inline font-label" style={{ fontSize: 11, fontWeight: 800, whiteSpace: 'nowrap' }}>Back to Practice</span>
       </button>
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', overflowY: 'hidden', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', flex: 1, scrollbarWidth: 'none' }}>
-        {tabs.map(t => {
+        {(isCodingChallenge ? [...codingPrimaryTabs, ...codingMoreTabs] : tabs).map(t => {
           const active = leftTab === t
           return (
             <button
@@ -5630,7 +5404,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 boxShadow: active ? 'inset 0 -2px 0 var(--color-forest-600)' : 'none',
                 borderRadius: 0, cursor: 'pointer', fontFamily: 'inherit',
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                minHeight: 32,
+                minHeight: 44,
               }}
             >
               <span>{t}</span>
@@ -5643,34 +5417,26 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   ) : null
 
-  // Collapsible description drawer (collapsed by default so the question shows first).
+  // On phones the brief is a full-height reading surface, not a drawer above
+  // the answer. The answer remains mounted below (hidden while reading).
   const mobileDrawer = isMobile ? (
-    <div style={{ flexShrink: 0, borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)' }}>
-      <button
-        onClick={() => setMobileDescOpen(v => !v)}
-        aria-expanded={mobileDescOpen}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-      >
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 18, color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>description</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-on-surface)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {mobileDescOpen
-              ? `Hide ${leftTab.toLowerCase()}`
-              : (leftTab === 'Description' ? (challengeTitle ?? 'Show brief') : `Show ${leftTab.toLowerCase()}`)}
-          </span>
-        </span>
-        <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
-          {mobileDescOpen ? 'expand_less' : 'expand_more'}
-        </span>
-      </button>
+    <>
+      <div className="learning-workspace-mobile-tabs" role="group" aria-label="Workspace view">
+        <button type="button" aria-pressed={mobileDescOpen && leftTab === 'Description'} onClick={() => { setLeftTab('Description'); setMobileDescOpen(true) }}>The brief</button>
+        <button type="button" aria-pressed={!mobileDescOpen} onClick={() => setMobileDescOpen(false)}>Your work</button>
+      </div>
       {mobileDescOpen && (
-        <div style={{ maxHeight: '55vh', overflowY: 'auto', borderTop: '1px solid var(--color-outline-faint)' }}>
+        <div className="flex-1 min-h-0 overflow-y-auto" aria-label={leftTab === 'Description' ? 'The brief' : leftTab}>
           {leftTab === 'Description' && descriptionPane}
+          {leftTab === 'Solutions' && solutionsPane}
+          {leftTab === 'Notes' && notesPane}
+          {leftTab === 'Examples' && examplesPane}
+          {leftTab === 'Constraints' && constraintsPane}
           {leftTab === 'Discussions' && discussionsPane}
           {leftTab === 'Submissions' && submissionsPane}
         </div>
       )}
-    </div>
+    </>
   ) : null
 
   // FLOW step bar in a horizontally scrollable wrapper.
@@ -5712,45 +5478,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   ) : null
 
-  // Canvas / coding challenges are gated to this notice on phones — the Excalidraw
-  // canvas and Monaco editor need a larger screen. The full brief still renders so
-  // the user knows what the challenge is.
-  // Canvas (system design) / coding challenges on a phone: the editor can't run
-  // here, so the answer surface is replaced by a "best on desktop" notice. The
-  // rest of the workspace stays - scrollable tabs (Description / Discussions /
-  // Submissions) and the full brief, which scrolls because each pane is a
-  // flex:1 / overflowY:auto child of a bounded flex-column section (the same
-  // pattern the desktop left panel uses). Bottom padding reserves space for the
-  // fixed mobile BottomTabs nav so nothing is occluded.
-  const mobileInterviewNotice = (
-    <div className="flex flex-col items-center text-center gap-3 px-6 pt-8 pb-6 max-w-md mx-auto" style={{ flexShrink: 0 }}>
-      <HatchImage size={56} state="idle" />
-      <h2 className="font-headline text-xl text-on-surface">Best experienced on desktop</h2>
-      <p className="font-body text-sm text-on-surface-variant">
-        {isCodingChallenge
-          ? 'This coding challenge uses a full code editor that needs a larger screen. Open it on a desktop to work through it. You can still read the brief below.'
-          : `This ${apiChallengeType === 'data_modeling' ? 'data modeling' : 'system design'} challenge uses a drawing canvas that needs a larger screen. Open it on a desktop to work through it. You can still read the brief below.`}
-      </p>
-      <a
-        href="/challenges"
-        className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-primary text-on-primary font-label font-semibold text-sm px-5 py-2.5"
-      >
-        <span className="material-symbols-outlined text-[18px]">grid_view</span> Back to Practice
-      </a>
-    </div>
-  )
-
-  const mobileInterviewView = (
-    <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0" style={{ background: 'var(--color-background)' }}>
-      {mobileChrome}
-      <section style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0, background: 'var(--color-surface)' }}>
-        {leftTab === 'Description' && mobileInterviewNotice}
-        {leftTab === 'Description' && descriptionPane}
-        {leftTab === 'Discussions' && discussionsPane}
-        {leftTab === 'Submissions' && submissionsPane}
-      </section>
-    </div>
-  )
+  // A historical deep link is a read-only visit, including failed/missing rows.
+  // Do not mount coding/analytics practice surfaces until the user asks to start.
+  if (!canStartWorkspaceAttempt(initialAttemptId, historyPracticeRequested) && selectedHistoryIdx === null) {
+    return (
+      <div className="flex h-full min-h-0 flex-col overflow-hidden pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
+        {isMobile ? compactWorkspaceHeader : topChrome}
+        <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col p-4 sm:p-6">
+          <h1 className="font-headline text-2xl font-semibold text-ink-strong">Your submissions</h1>
+          <p className="mt-2 text-base text-ink-secondary">Review your previous work or start a new attempt when you are ready.</p>
+          {submissionsError && <p role="alert" className="mt-4 text-sm text-error">{submissionsError}</p>}
+          <div className="my-4 flex flex-wrap gap-3">
+            <button type="button" disabled={submissionsLoading} onClick={() => void loadSubmissionHistory()} className="min-h-11 rounded-lg border border-hairline px-4 text-sm font-bold disabled:opacity-50">{submissionsLoading ? 'Loading…' : 'Refresh submissions'}</button>
+            <button type="button" onClick={handleRunAnother} className="min-h-11 rounded-lg bg-forest-950 px-4 text-sm font-bold text-white">{detail?.current_attempt?.status === 'in_progress' ? 'Continue your attempt' : 'Start a new attempt'}</button>
+          </div>
+          {submissionsPane}
+        </div>
+      </div>
+    )
+  }
 
   if (phase === 'reveal' || phase === 'complete' || selectedHistoryIdx !== null) {
     const historyRecord = selectedHistoryIdx !== null ? sessionHistory[selectedHistoryIdx] : null
@@ -5769,7 +5515,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
         {/* Same full-width top chrome as question phase (desktop only - on mobile
             the feedback fills the width and carries its own navigation). */}
-        {!isMobile && topChrome}
+        {isMobile ? compactWorkspaceHeader : topChrome}
         {!isMobile && flowStepperStrip}
 
         {/* Middle: resizable two-pane content on desktop, single column on mobile */}
@@ -5810,7 +5556,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   grade={interviewGrade}
                   challengeType={apiChallengeType ?? 'system_design'}
                   canvasPngUrl={submittedCanvasPngUrl}
-                  canvasElements={canvasScene?.elements ?? null}
+                  canvasElements={submittedCanvasScene?.attemptId === attemptId ? submittedCanvasScene.elements : canvasScene?.elements ?? null}
                   nextChallengeHref={nextChallengeHref}
                   backToListHref={workspaceExitHref({ fromPlan, fromDomain }, props.returnTo)}
                   onRetry={() => window.location.reload()}
@@ -5884,6 +5630,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       setOutputPanelError(undefined)
                       const nextAttempt = await startAttempt(initialRoleId)
                       if (nextAttempt) {
+                        replaceWorkspaceAttemptUrl(null)
                         setAttemptId(nextAttempt.id)
                         setPhase('question')
                       }
@@ -5918,7 +5665,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       currentLanguage={currentLanguage}
                       lastRunResult={lastRunResult}
                       challengeTitle={challengeTitle ?? undefined}
-                      problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
+                      problemStatement={problemStatementForHatch}
+                      sqlSchemaSummary={sqlSchemaSummary}
                       activePartId={activePart?.id}
                       activePartSequence={activePart?.sequence}
                       activePartTitle={activePart?.title}
@@ -5992,30 +5740,30 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   }
 
   // phase === 'question'
-  // Canvas (system design) / coding challenges can't render their editor on a
-  // phone - gate them to a "best on desktop" notice instead of a broken canvas.
-  if (isMobile && isInterviewChallenge) {
-    return mobileInterviewView
-  }
+  // All challenge types use the same brief/work switching on compact screens.
+
   return (
-    <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
+    <div className="flex flex-col overflow-hidden h-full pb-[calc(56px+env(safe-area-inset-bottom))] lg:pb-0">
       {/* Desktop: full-width chrome (tabs + stepper). Mobile: stacked chrome -
           scrollable tabs, collapsible description drawer, scrollable step bar. */}
       {mobileStacked ? (
         <>
           {mobileChrome}
           {mobileDrawer}
-          {mobileStepperBar}
+          {!mobileDescOpen && !isInterviewChallenge && mobileStepperBar}
         </>
       ) : (
         <>
-          {topChrome}
-          {flowStepperStrip}
+          {<header className="workspace-focus-header">
+            <button type="button" onClick={props.onExit ?? (() => window.history.back())} aria-label="Back to practice">← <span>Practice</span></button>
+            <h1>{challengeTitle}</h1>
+            {!isInterviewChallenge && <button type="button" aria-pressed={hintOpen} onClick={() => setHintOpen(v => !v)}>Need a hint?</button>}
+          </header>}
         </>
       )}
 
       {/* Middle: resizable two-pane on desktop, single column on mobile */}
-      <div ref={containerRef} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'flex flex-1 min-h-0 overflow-hidden p-2 bg-page-field'}>
+      <div ref={containerRef} style={mobileStacked && mobileDescOpen ? { display: 'none' } : undefined} className={mobileStacked ? 'flex flex-col flex-1 min-h-0 overflow-hidden' : 'workspace-focus-columns flex flex-1 min-h-0 overflow-hidden bg-page-field'}>
         {!mobileStacked && leftDescriptionPanel}
         {!mobileStacked && dragHandle}
 
@@ -6027,6 +5775,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             background: !isCanvasChallenge && !isCodingChallenge ? 'var(--color-card-bright)' : 'transparent',
             overflow: 'hidden', minHeight: 0,
           }}>
+          {!mobileStacked && !isInterviewChallenge && <div className="workspace-work-header"><h2>Your work</h2>{flowStepperStrip}</div>}
+          {isInterviewChallenge && !codingMaximised && <div className="workspace-specialist-toolbar">
+            {isCodingChallenge ? <>
+              <CodingStepper compact activeStep={codingStep} onSelectStep={id => {
+                setCodingStep(id)
+                if (id === 'understand' || id === 'plan') {
+                  setLeftTab(id === 'plan' ? 'Notes' : 'Description')
+                  setMobileDescOpen(true)
+                } else if (id === 'test') setConsoleCollapsed(false)
+              }} />
+              <div className="workspace-specialist-actions">{codingActions}<button type="button" onClick={() => setCodingMaximised(v => !v)} aria-label="Full screen workspace">⛶</button></div>
+            </> : <>
+              <CompactStepPips steps={designSteps.map(step => ({ id: step.id, label: step.label }))} activeId={activeDesignStep} doneIds={completedDesignSteps} onSelect={id => { if (isDesignStepId(id)) selectDesignStep(id) }} ariaLabel="Design sections" />
+              <button type="button" onClick={() => openCanvasOverlay()}>Open canvas</button>
+            </>}
+          </div>}
+
           {/* Grading interstitial - fills the right panel while the model grades. */}
           {isCanvasChallenge && isSubmittingInterview && (
             <div className="flex-1 min-h-0 flex flex-col animate-step-enter">
@@ -6044,10 +5809,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               canvas lives in a full-screen overlay that stays MOUNTED when
               closed (display:none) so scene, undo history, and the chat thread
               survive every round trip between drawing and writing. */}
-          {isCanvasChallenge && !isSubmittingInterview && (
+          {isCanvasChallenge && (
             <div
               className={canvasMaximised ? 'canvas-overlay-scrim' : undefined}
-              style={canvasMaximised
+              style={isSubmittingInterview ? { display: 'none' } : canvasMaximised
               ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2vh 2vw', background: 'rgba(5, 35, 22, 0.35)' }
               : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
               }>
@@ -6059,9 +5824,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   (canvasOverlayOrigin); exit is instant, the snapshot settling
                   into the slot carries the return. */}
               <div
-                className={canvasMaximised ? 'canvas-overlay-panel' : undefined}
+                className={canvasMaximised ? 'canvas-overlay-panel workspace-canvas-overlay' : 'workspace-design-surface'}
                 style={canvasMaximised
-                ? { width: '100%', height: '100%', maxWidth: 1440, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, boxShadow: '0 32px 80px -24px rgba(5,35,22,0.45), 0 8px 24px -8px rgba(5,35,22,0.25)', overflow: 'hidden', transformOrigin: canvasOverlayOrigin }
+                ? { width: '100%', height: '100%', maxWidth: 1440, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--color-card-bright)', border: '1px solid var(--color-hairline)', borderRadius: 16, boxShadow: '0 32px 80px -24px rgba(5,35,22,0.45), 0 8px 24px -8px rgba(5,35,22,0.25)', overflow: 'clip', transformOrigin: canvasOverlayOrigin }
                 : { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }
                 }>
                 {canvasMaximised && (
@@ -6111,11 +5876,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 <div style={{ flex: 1, display: 'flex', minWidth: 0, minHeight: 0 }}>
                   {/* Write-up column (inline only, kept mounted so scroll and
                       focus state survive the overlay round trip) */}
-                  <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflowY: 'auto', display: canvasMaximised ? 'none' : 'flex', flexDirection: 'column', padding: '2px 8px 16px' }}>
+                  <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflowY: 'auto', scrollPaddingBottom: 96, display: canvasMaximised ? 'none' : 'flex', flexDirection: 'column', padding: '2px 8px 96px' }}>
                     {/* Full-width card: with the old 300px rail folded into the
                         Hatch dock this column owns the center, so the write-up
                         stretches instead of floating at 780px in empty space. */}
-                    <div className="rounded-2xl border border-hairline bg-card-bright" style={{ width: '100%', minHeight: 'calc(100% - 2px)', padding: '20px 28px' }}>
+                      <div className="workspace-design-writeup shrink-0 rounded-2xl border border-hairline bg-card-bright" style={{ width: '100%', minHeight: 'calc(100% - 2px)', padding: '20px 28px' }}>
                       {activeDesignStepDef && (
                         <DesignStepForm
                           step={activeDesignStepDef}
@@ -6136,7 +5901,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                         const prev = idx > 0 ? designSteps[idx - 1] : null
                         const next = idx >= 0 && idx < designSteps.length - 1 ? designSteps[idx + 1] : null
                         return (
-                          <div className="mt-5 flex items-center justify-between border-t border-hairline pt-4">
+                          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-hairline pt-4">
                             {prev ? (
                               <button
                                 type="button"
@@ -6146,7 +5911,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                                 <span className="material-symbols-outlined text-[15px]">arrow_back</span>
                                 {prev.label}
                               </button>
-                            ) : <span />}
+                            ) : null}
                             {next && (
                               <button
                                 type="button"
@@ -6196,7 +5961,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       {/* Template chips (approved overlay preview): one tap drops a
                           starting shape through the same executeActions path Hatch
                           uses. Blank templates are filtered — nothing to draw. */}
-                      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5">
+                      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5 max-[1023px]:bottom-[calc(76px+env(safe-area-inset-bottom))] max-[1023px]:left-3 max-[1023px]:right-3 max-[1023px]:overflow-x-auto max-[1023px]:pb-1">
                         {canvasTemplatesFor(canvasType)
                           .filter((t) => t.actions.length > 0)
                           .map((t) => (
@@ -6204,7 +5969,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                               key={t.id}
                               type="button"
                               onClick={() => applyCanvasTemplate(t)}
-                              className="rounded-full border border-hairline bg-card-bright px-3 py-1.5 font-label text-[11.5px] font-bold text-ink-secondary shadow-sm hover:text-ink-strong transition-colors"
+                              className="shrink-0 whitespace-nowrap rounded-full border border-hairline bg-card-bright px-3 py-1.5 font-label text-[11.5px] font-bold text-ink-secondary shadow-sm hover:text-ink-strong transition-colors"
                             >
                               {t.label}
                             </button>
@@ -6225,7 +5990,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     queuedPrompt={queuedHatchPrompt}
                     isOpen={chatPanelOpen}
                     onToggle={() => setChatPanelOpen((v) => !v)}
-                    autoOpenKey="canvas"
+                    autoOpenKey={undefined}
                     onCanvasActions={handleCanvasActions}
                     proactiveNudge={proactiveNudge}
                     guidanceLevel={coachRegister}
@@ -6292,6 +6057,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', background: 'var(--color-background)' }
               : { flex: '1 1 auto', display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 }
             }>
+            {codingMaximised && <div className="workspace-specialist-toolbar"><CodingStepper compact activeStep={codingStep} onSelectStep={id => { setCodingStep(id); if (id === 'understand' || id === 'plan') { setCodingMaximised(false); setLeftTab(id === 'plan' ? 'Notes' : 'Description'); setMobileDescOpen(true) } else if (id === 'test') setConsoleCollapsed(false) }} /><div className="workspace-specialist-actions">{codingActions}<button type="button" onClick={() => setCodingMaximised(false)}>Exit full screen</button></div></div>}
             <div style={{ flex: 1, display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }}>
               {/* Floating tab strip - visible only when panel is collapsed + multi-part */}
               {leftCollapsed && codingParts.length > 0 && (
@@ -6334,17 +6100,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     )
                   })}
                 </div>
-              )}
-              {codingMaximised && (
-                <button
-                  onClick={() => setCodingMaximised(false)}
-                  className="absolute top-3 right-3 z-30 inline-flex items-center gap-1 px-3 py-1.5 rounded-[10px] bg-card-bright border border-hairline text-ink-secondary hover:text-ink-strong hover:bg-page-field shadow-sm font-label text-xs font-bold transition-colors"
-                  title="Exit full screen"
-                  aria-label="Exit full screen"
-                >
-                  <span className="material-symbols-outlined text-[16px]">fullscreen_exit</span>
-                  Exit full screen
-                </button>
               )}
               {/* Editor column: framed panels — editor card + grip gutter + console card
                   floating on the workspace canvas (visual-clarity inc. 4) */}
@@ -6392,6 +6147,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   <div style={{ flex: 1, minHeight: 0 }} data-testid="monaco-editor-container">
                     <MonacoCodeEditor
                       value={currentCode}
+                      preferPlainEditor={isMobile}
                       onChange={handleEditorChange}
                       language={currentLanguage}
                       height="100%"
@@ -6447,7 +6203,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     queuedPrompt={queuedHatchPrompt}
                     isOpen={chatPanelOpen}
                     onToggle={() => setChatPanelOpen((v) => !v)}
-                    autoOpenKey="coding"
+                    autoOpenKey={undefined}
                     proactiveNudge={proactiveNudge}
                     guidanceLevel={coachRegister}
                     onDismissNudge={() => setProactiveNudge(null)}
@@ -6490,7 +6246,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     lastRunResult={lastRunResult}
                     codingStep={codingStep}
                     challengeTitle={challengeTitle ?? undefined}
-                    problemStatement={scenarioContext ?? challengeScenarioQ ?? undefined}
+                    problemStatement={problemStatementForHatch}
+                      sqlSchemaSummary={sqlSchemaSummary}
                     activePartId={activePart?.id}
                     activePartSequence={activePart?.sequence}
                     activePartTitle={activePart?.title}
@@ -6671,11 +6428,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </div>
         </section>
 
-        {!mobileStacked && !isInterviewChallenge && flowRightRail}
       </div>
 
       {/* Submit bar for canvas interview challenge types */}
-      {isCanvasChallenge && (
+      {isCanvasChallenge && (!mobileStacked || !mobileDescOpen) && (
         <div data-tour-target="canvas-submit" style={{
           display: 'flex',
           alignItems: 'center',
@@ -6688,23 +6444,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         }}>
           {/* Readiness folded into the DesignRail's progress ring; the footer
               keeps a one-line summary so submit intent stays informed. */}
-          <span className="font-label text-xs font-semibold text-ink-secondary">
-            {designSectionTotals.done} of {designSectionTotals.total} sections have enough substance to grade
-            {guidance.phase === 'ready' ? ' · reads ready to submit' : ''}
-          </span>
+          <div>
+            <span className="font-label text-xs font-semibold text-ink-secondary">
+              {designSectionTotals.done} of {designSectionTotals.total} sections ready for feedback
+            </span>
+            {interviewSubmitError && <p role="alert" className="mt-1 font-body text-sm text-error">{interviewSubmitError}</p>}
+          </div>
           <button
             onClick={handleInterviewSubmit}
             disabled={isSubmittingInterview}
             className="rounded-full bg-primary text-on-primary font-label font-semibold px-6 py-2 disabled:opacity-60 hover:opacity-90 transition-opacity shrink-0"
           >
-            {isSubmittingInterview ? 'Submitting…' : 'Submit'}
+            {isSubmittingInterview ? 'Submitting…' : interviewSubmitError ? 'Retry submission' : 'Submit'}
           </button>
         </div>
       )}
 
       {/* Full-width bottom footer: left actions + submit - only for MCQ FLOW challenges.
           Mobile uses a compact full-width footer (no left stats column). */}
-      {!isInterviewChallenge && (mobileStacked ? mobileFooter : bottomFooter)}
+      {!isInterviewChallenge && (!mobileStacked || !mobileDescOpen) && (mobileStacked ? mobileFooter : bottomFooter)}
     </div>
   )
 }

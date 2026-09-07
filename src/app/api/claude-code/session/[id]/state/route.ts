@@ -1,3 +1,6 @@
+import { blockSessionKey, getSessionKeySpend } from '@/lib/sandbox/llm-gateway'
+import { resolveSessionBudgetUsd } from '@/lib/sandbox/cost-policy'
+import { readAnalyticsProgress } from '@/lib/sandbox/analytics-progress'
 // GET /api/claude-code/session/[id]/state
 //
 // Returns live session state for the analytics medium's reconnect flow and
@@ -83,6 +86,11 @@ export async function GET(
   // --- Lazy expiry flip: active → terminated ---
   if (status === 'active' && expiresAt && new Date(expiresAt) <= new Date()) {
     status = 'terminated'
+    const keyBlock = await blockSessionKey(sessionId, 3000)
+    if (keyBlock.status === 'failed' || keyBlock.status === 'not_found') {
+      const reason = keyBlock.status === 'failed' ? keyBlock.reason : keyBlock.status
+      console.error(`[cc/state] session key block failed (${reason})`)
+    }
     // Tear the sandbox down BEFORE flipping the row out of `active`. The reaper
     // only sweeps `active` sessions, so once this row is `terminated` nothing
     // else will free its Cloud Run instance — skipping destroySession here
@@ -130,15 +138,10 @@ export async function GET(
     }
   }
 
-  // --- Usage meter: estimated spend vs the per-session budget cap ---
-  // The hard cap lives on the gateway's virtual key; here we surface an estimate
-  // from the token counters the snapshot loop writes, so the meter updates live
-  // without exposing the virtual key. Opus pricing is the conservative ceiling
-  // ($15/Mtok in, $75/Mtok out) so the meter never under-reports.
-  const inTok = (session.total_input_tokens as number) ?? 0
-  const outTok = (session.total_output_tokens as number) ?? 0
-  const estSpentUsd = (inTok / 1_000_000) * 15 + (outTok / 1_000_000) * 75
-  const budgetUsd = parseFloat(process.env.CC_SESSION_BUDGET_USD ?? '0.50')
+  // The container does not emit token counters. Use the gateway's real spend,
+  // and report an unavailable meter honestly when the bounded lookup fails.
+  const gatewayUsage = status === 'active' ? await getSessionKeySpend(sessionId) : null
+  const budgetUsd = gatewayUsage?.budgetUsd ?? resolveSessionBudgetUsd(process.env.CC_SESSION_BUDGET_USD)
 
   return NextResponse.json({
     status,
@@ -152,13 +155,14 @@ export async function GET(
     prompt_count: session.prompt_count ?? 0,
     warehouse_query_count: session.warehouse_query_count ?? 0,
     usage: {
-      spent_usd: Math.round(estSpentUsd * 1000) / 1000,
+      spent_usd: gatewayUsage ? Math.round(gatewayUsage.spentUsd * 1000) / 1000 : null,
       budget_usd: budgetUsd,
-      input_tokens: inTok,
-      output_tokens: outTok,
+      input_tokens: session.total_input_tokens ?? null,
+      output_tokens: session.total_output_tokens ?? null,
     },
     sub_problems: subProblems,
     arc_complete: arcComplete,
     guidance: adaptive?.guidance ?? 'guided',
+    progress: readAnalyticsProgress(session.final_artifact),
   })
 }

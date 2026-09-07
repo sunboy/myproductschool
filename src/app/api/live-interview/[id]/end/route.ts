@@ -288,7 +288,7 @@ export async function POST(
     : debriefResult
 
   // Update session status
-  await adminClient
+  const { error: debriefPersistenceError } = await adminClient
     .from('live_interview_sessions')
     .update({
       status: 'completed',
@@ -297,6 +297,15 @@ export async function POST(
       debrief_json: debriefWithArtifact,
     })
     .eq('id', id)
+
+  if (debriefPersistenceError) {
+    console.error('[live-interview] failed to persist debrief:', debriefPersistenceError)
+    return apiError(
+      503,
+      'debrief_persistence_failed',
+      'Your debrief could not be saved. Please retry.'
+    )
+  }
 
   // Reward policy for completed interviews:
   // XP scales with debrief score and challenge difficulty (or default interview base),

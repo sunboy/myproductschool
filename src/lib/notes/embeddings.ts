@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function embedNote(content: string): Promise<number[]> {
   const res = await fetch('https://api.openai.com/v1/embeddings', {
@@ -23,6 +18,7 @@ export async function searchSimilarNotes(
   queryText: string,
   limit = 3
 ): Promise<{ id: string; content: string; similarity: number }[]> {
+  const supabaseAdmin = createAdminClient()
   const queryEmbedding = await embedNote(queryText)
 
   const { data, error } = await supabaseAdmin.rpc('match_user_notes', {
@@ -54,6 +50,7 @@ export async function embedAndStoreContext(
   sourceId: string = 'default',
   metadata: Record<string, unknown> = {}
 ): Promise<void> {
+  const supabaseAdmin = createAdminClient()
   // The live hatch_context table has no source_id/updated_at columns and no
   // unique constraint to upsert against (2026-07-04 vector audit: the old
   // upsert shape failed on EVERY call, silently no-oping calibration context).
@@ -88,6 +85,7 @@ export async function embedAndStoreContext(
  * or use getHatchContext from @/lib/hatch-context for rich user context.
  */
 async function getStructuredHatchContext(userId: string): Promise<string | null> {
+  const supabaseAdmin = createAdminClient()
   const { data, error } = await supabaseAdmin
     .from('hatch_context')
     .select('context_type, content, metadata')

@@ -17,6 +17,7 @@ import {
 } from '@/lib/billing/plans'
 import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 import { trackEvent } from '@/lib/posthog/client'
+import { embeddedCheckoutOutcome } from '@/lib/stripe/checkout-client'
 import { EVENT_CHECKOUT_STARTED, EVENT_PAYWALL_SHOWN, EVENT_PAYWALL_DISMISSED, EVENT_UPGRADE_CLICKED } from '@/lib/posthog/events'
 
 // ── The single paywall modal for the whole app ──────────────────────────────
@@ -239,11 +240,14 @@ export function PaywallModal({
         body: JSON.stringify({ plan: planId, embedded: true }),
       })
       const data = await res.json()
-      if (data.clientSecret) {
+      const outcome = embeddedCheckoutOutcome(data)
+      if (outcome.kind === 'checkout') {
         setCheckoutPlan(planId)
-        setCheckoutClientSecret(data.clientSecret)
+        setCheckoutClientSecret(outcome.clientSecret)
+      } else if (outcome.kind === 'redirect') {
+        window.location.assign(outcome.url)
       } else {
-        setError(data.error ?? 'Could not start checkout. Please try again.')
+        setError(outcome.message)
       }
     } catch {
       setError('Something went wrong. Please try again.')
@@ -261,7 +265,13 @@ export function PaywallModal({
       body: JSON.stringify({ plan: checkoutPlan ?? selectedPlan.id, embedded: true }),
     })
     const data = await res.json()
-    return data.clientSecret as string
+    const outcome = embeddedCheckoutOutcome(data)
+    if (outcome.kind === 'checkout') return outcome.clientSecret
+    if (outcome.kind === 'redirect') {
+      window.location.assign(outcome.url)
+      throw new Error('Redirecting to billing portal')
+    }
+    throw new Error(outcome.message)
   }, [checkoutClientSecret, checkoutPlan, selectedPlan.id])
 
   if (!open) return null
@@ -274,10 +284,14 @@ export function PaywallModal({
       aria-label={`Upgrade to ${isAnalytics ? 'Analytics' : 'Pro'}`}
     >
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-forest-950/60"
+      <button
+        type="button"
+        aria-label="Close upgrade dialog"
+        className="fixed inset-0 border-0 bg-forest-950/60 p-0"
         style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
         onClick={dismissible ? closeAll : undefined}
+        disabled={!dismissible}
+        tabIndex={dismissible ? 0 : -1}
       />
 
       {/* Modal panel */}

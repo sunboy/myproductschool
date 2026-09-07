@@ -1,0 +1,68 @@
+/* Login concept 02 — Dark Editorial. Scoped under .concept-two.
+   Shared card styling lives in editorial-auth-card.css (.hp-auth). */
+
+.concept-two {
+  --hp-forest: #4a7c59;
+  --hp-forest-deep: #173c2a;
+  --hp-forest-ink: #1d4637;
+  --hp-cream: #fdfaf7;
+  --hp-cream-2: #f8f4ed;
+  --hp-taupe: #8d806f;
+  --hp-taupe-soft: #ddd6cc;
+  --hp-amber: #d99a34;
+  --hp-ink: #18251f;
+  --hp-muted: #6b7378;
+  --hp-line: #e5dfd7;
+  --hp-surface: #fffefd;
+  --hp-sans: 'Nunito Sans', sans-serif;
+  --hp-serif: 'Literata', serif;
+  --hp-shadow-sm: 0 10px 28px rgba(33, 48, 40, .08);
+  --hp-shadow-md: 0 20px 48px rgba(33, 48, 40, .12);
+
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(430px, .95fr) minmax(480px, 1.05fr);
+  background: #fff;
+  color: var(--hp-ink);
+  font-family: var(--hp-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.concept-two .dark-story {
+  position: relative;
+  overflow: hidden;
+  padding: 46px 52px;
+  min-height: 100svh;
+  background: radial-gradient(circle at 82% 12%, #245743 0, transparent 32%), linear-gradient(155deg, #174333, #0f372a 70%);
+  color: white;
+}
+.concept-two .dark-story .brand { position: relative; z-index: 5; }
+.concept-two .dark-kicker { margin-top: 72px; width: max-content; padding: 7px 12px; border: 1px solid rgba(217, 154, 52, .7); border-radius: 999px; color: #f4c56e; font-size: 9px; font-weight: 850; letter-spacing: .08em; }
+.concept-two .dark-story h2 { position: relative; z-index: 5; margin: 27px 0 0; max-width: 520px; font-family: var(--hp-serif); font-size: clamp(48px, 5vw, 74px); line-height: 1.02; letter-spacing: -.05em; font-weight: 500; }
+.concept-two .dark-story h2 em { color: #f0ad3d; font-weight: 400; }
+.concept-two .dark-story ul { position: relative; z-index: 5; list-style: none; margin: 33px 0 0; padding: 0; display: grid; gap: 15px; font-size: 13px; }
+.concept-two .dark-story li { position: relative; padding-left: 28px; color: #f7f5ef; }
+.concept-two .dark-story li::before { content: '✓'; position: absolute; left: 0; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: rgba(217, 154, 52, .14); color: #f4c05e; font-size: 10px; }
+.concept-two .dark-line-art { position: absolute; width: 370px; height: 370px; right: -80px; bottom: 60px; border: 1px solid rgba(255, 255, 255, .08); border-radius: 48% 52% 58% 42%; transform: rotate(17deg); }
+.concept-two .dark-line-art::after { content: ''; position: absolute; inset: 45px; border: 1px solid rgba(255, 255, 255, .06); border-radius: 45% 55% 43% 57%; transform: rotate(-33deg); }
+.concept-two .dark-hatch { position: absolute; z-index: 3; width: 330px; height: 250px; left: 110px; bottom: -35px; overflow: hidden; }
+.concept-two .dark-hatch img { position: absolute; width: 430px; height: auto; left: 50%; top: -52px; transform: translateX(-50%); filter: saturate(.9) brightness(.96); }
+.concept-two .light-auth { min-height: 100svh; padding: 48px; display: grid; place-items: center; background: linear-gradient(180deg, #fff, #fcfaf6); }
+.concept-two .light-auth .auth-card { box-shadow: none; border-color: #e2ddd6; }
+
+@media (max-width: 900px) {
+  .concept-two { grid-template-columns: 1fr; }
+  .concept-two .dark-story { min-height: 620px; }
+  .concept-two .light-auth { min-height: auto; padding: 34px 18px 46px; }
+  .concept-two .dark-hatch { left: auto; right: 8%; }
+  .concept-two .dark-story h2 { font-size: 58px; }
+}
+@media (max-width: 560px) {
+  .concept-two .dark-story { min-height: 560px; padding: 28px 22px; }
+  .concept-two .dark-kicker { margin-top: 55px; font-size: 8px; }
+  .concept-two .dark-story h2 { font-size: 47px; }
+  .concept-two .dark-story ul { font-size: 12px; gap: 12px; }
+  .concept-two .dark-hatch { width: 250px; height: 190px; right: -8%; bottom: -24px; }
+  .concept-two .dark-hatch img { width: 340px; top: -48px; }
+  .concept-two .light-auth { padding-top: 24px; }
+}

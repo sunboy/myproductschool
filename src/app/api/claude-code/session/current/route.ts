@@ -1,3 +1,4 @@
+import { readAnalyticsProgress } from '@/lib/sandbox/analytics-progress'
 // GET /api/claude-code/session/current?challenge_id=...
 //
 // Read-only "is there a LIVE sandbox for this challenge right now?" probe, used by
@@ -162,5 +163,6 @@ export async function GET(req: NextRequest) {
     sub_problems: subProblems,
     arc_complete: arcComplete,
     guidance: adaptive?.guidance ?? 'guided',
+    progress: readAnalyticsProgress(session.final_artifact),
   })
 }

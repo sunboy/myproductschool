@@ -3,25 +3,27 @@
  *
  * Prerequisites:
  *   1. A real-mode dev server must be running:
- *      ANTHROPIC_API_KEY=<key> ADMIN_DEBUG_KEY=hackproduct-debug PORT=3003 npm run dev
+ *      ANTHROPIC_API_KEY=<key> ADMIN_DEBUG_KEY=<authorized-test-key> PORT=3003 npm run dev
  *      (do NOT set USE_MOCK_DATA=true)
  *   2. Test account must exist in Supabase:
- *      Email: test-e2e-1774745731@hackproduct.dev / Password: e2etest123!
+ *      Email: <authorized-test-credential> / Password: <authorized-test-credential>
  *
  * Run:
  *   npx playwright test e2e/live-interview-real.spec.ts --reporter=line --timeout=300000
  *
  * Env vars (optional overrides):
  *   REAL_BASE_URL  — defaults to http://localhost:3003
- *   ADMIN_DEBUG_KEY — defaults to hackproduct-debug
+ *   ADMIN_DEBUG_KEY — required from the environment for real-mode tests
  */
 
 import { test, expect } from '@playwright/test'
 
 const BASE_URL = process.env.REAL_BASE_URL ?? 'http://localhost:3003'
-const ADMIN_DEBUG_KEY = process.env.ADMIN_DEBUG_KEY ?? 'hackproduct-debug'
-const E2E_EMAIL = 'test-e2e-1774745731@hackproduct.dev'
-const E2E_PASSWORD = 'e2etest123!'
+const ADMIN_DEBUG_KEY = process.env.ADMIN_DEBUG_KEY || ''
+const E2E_EMAIL = process.env.E2E_EMAIL || ''
+const E2E_PASSWORD = process.env.E2E_PASSWORD || ''
+
+
 
 // 20-turn PM interview — driver earnings transparency problem
 const INTERVIEW_MESSAGES = [
@@ -97,6 +99,7 @@ async function loginViaBrowser(page: import('@playwright/test').Page): Promise<s
 // ── Main test ──────────────────────────────────────────────────────────────────────
 
 test.describe('Real-mode 20-turn Luma interview', () => {
+  test.skip(!E2E_EMAIL || !E2E_PASSWORD || !ADMIN_DEBUG_KEY, 'Requires explicit authorized E2E credentials and admin debug key.')
   test.setTimeout(300000) // 5 minutes — 20 Claude API calls
 
   test('20-turn conversation with personalization verification', async ({ page, request }) => {
@@ -108,7 +111,7 @@ test.describe('Real-mode 20-turn Luma interview', () => {
         '\n\n' +
         'SERVER NOT AVAILABLE AT ' + BASE_URL + '\n' +
         'This test requires a real-mode server. Start one with:\n' +
-        '  ANTHROPIC_API_KEY=<key> ADMIN_DEBUG_KEY=hackproduct-debug PORT=3003 npm run dev\n' +
+        '  ANTHROPIC_API_KEY=<key> ADMIN_DEBUG_KEY=<authorized-test-key> PORT=3003 npm run dev\n' +
         'Then run:\n' +
         '  REAL_BASE_URL=http://localhost:3003 npx playwright test e2e/live-interview-real.spec.ts --grep "20-turn"\n\n'
       )
@@ -121,7 +124,7 @@ test.describe('Real-mode 20-turn Luma interview', () => {
         '\n\n' +
         'SERVER IS RUNNING IN MOCK MODE at ' + BASE_URL + '\n' +
         'This test requires a real-mode server (no USE_MOCK_DATA). Start one with:\n' +
-        '  ANTHROPIC_API_KEY=<key> ADMIN_DEBUG_KEY=hackproduct-debug PORT=3003 npm run dev\n' +
+        '  ANTHROPIC_API_KEY=<key> ADMIN_DEBUG_KEY=<authorized-test-key> PORT=3003 npm run dev\n' +
         'Then run:\n' +
         '  REAL_BASE_URL=http://localhost:3003 npx playwright test e2e/live-interview-real.spec.ts --grep "20-turn"\n\n'
       )

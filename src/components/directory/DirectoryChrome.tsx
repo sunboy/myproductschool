@@ -199,10 +199,10 @@ export function BulletGrid({ items }: { items: string[] }) {
 }
 
 export function CtaBand({
-  title = 'Start training for your next career move.',
-  description = 'Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress.',
-  href = '/login',
-  label = 'Start a free rep',
+  title = 'Build skills for your next career move.',
+  description = 'Explore real challenges, get thoughtful feedback from Hatch, and keep track of your progress.',
+  href = '/login?returnTo=/challenges',
+  label = 'Explore challenges',
 }: {
   title?: string
   description?: string

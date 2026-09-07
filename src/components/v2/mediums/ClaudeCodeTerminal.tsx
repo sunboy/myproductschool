@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useImperativeHandle, forwardRef, useState } from 'react'
 import type { ClaudeCodeTerminalProps, ClaudeCodeTerminalHandle } from './types'
+import { findWrittenReportPath } from './terminalSignals'
 // xterm's required stylesheet. Without it the renderer can't size correctly and
 // the off-screen accessibility helper (the screen-reader probe text) renders
 // VISIBLY as rows of W/K/$ characters instead of being clipped. Import once.
@@ -23,7 +24,6 @@ function mcpConnectedRe(mcpName: string): RegExp {
     'i',
   )
 }
-const MCP_CONNECTED_RE = mcpConnectedRe('bigquery')
 // Detect that the `claude` REPL has launched. On start the CLI prints a version
 // banner ("Claude Code v2.1.x") and an `❯` input prompt with "accept edits on".
 // Matching the version banner is the most stable signal across CLI versions.
@@ -56,13 +56,6 @@ const CLAUDE_REPL_RE = /Claude\s+Code\s+v\d|accept edits on|❯\s/i
 // the segment after skills/.
 const SKILL_PATH_RE =
   /(?:wrote|created|updated|modified|written|Write\(|Update\(|tee|cat\s*>|>>?)(?:(?![.!?]\s)[^\n]){0,80}\.claude\/skills\/([A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*\.md)/gi
-// A report artifact landing in the workspace (e.g. "Wrote /workspace/report.md").
-const REPORT_WRITTEN_RE = /Wrote?\s+(\/workspace\/[^\s]*report[^\s]*\.md)/i
-function reportWrittenRe(pattern?: string): RegExp {
-  if (!pattern) return REPORT_WRITTEN_RE
-  try { return new RegExp(`Wrote?\\s+(${pattern})`, 'i') } catch { return REPORT_WRITTEN_RE }
-}
-
 const TAIL_MAX_BYTES = 4000
 
 // The container PTY bridge spawns the shell LAZILY on the first resize message
@@ -90,6 +83,10 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
     const containerRef = useRef<HTMLDivElement>(null)
     const termRef = useRef<import('xterm').Terminal | null>(null)
     const wsRef = useRef<WebSocket | null>(null)
+    // A prompt may be selected while the mobile terminal is hidden or connecting.
+    // Keep the most recent selection until the PTY has actually produced output.
+    const pendingInsertRef = useRef<string | null>(null)
+    const shellReadyRef = useRef(false)
     const tailRef = useRef<string>('')
     const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const mountedRef = useRef(true)
@@ -124,8 +121,10 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
     // Expose imperative handle to parent
     useImperativeHandle(ref, () => ({
       insertText(text: string) {
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
+        if (wsRef.current?.readyState === WebSocket.OPEN && shellReadyRef.current) {
           wsRef.current.send(text)
+        } else {
+          pendingInsertRef.current = text
         }
       },
       focus() {
@@ -367,6 +366,7 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
 
     function connectWS() {
       if (!mountedRef.current) return
+      shellReadyRef.current = false
       setWsError(null)
 
       try {
@@ -391,6 +391,13 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           if (!mountedRef.current) return
           const text = typeof event.data === 'string' ? event.data : ''
           if (!text) return
+
+          shellReadyRef.current = true
+          if (pendingInsertRef.current !== null && ws.readyState === WebSocket.OPEN) {
+            ws.send(pendingInsertRef.current)
+            pendingInsertRef.current = null
+            termRef.current?.focus()
+          }
 
           onActivity?.()
           // Route through the readiness gate: if xterm's renderer hasn't measured
@@ -441,10 +448,10 @@ export const ClaudeCodeTerminal = forwardRef<ClaudeCodeTerminalHandle, ClaudeCod
           // a one-shot latch) so the same path lingering in the tail doesn't re-fire
           // every frame, while a genuinely new report path later in the session
           // (e.g. the user re-runs the report step) still fires.
-          const reportMatch = reportWrittenRe(reportPathPattern).exec(scan)
-          if (reportMatch?.[1] && !seenReportsRef.current.has(reportMatch[1])) {
-            seenReportsRef.current.add(reportMatch[1])
-            onReportWritten?.(reportMatch[1])
+          const reportPath = findWrittenReportPath(scan, reportPathPattern)
+          if (reportPath && !seenReportsRef.current.has(reportPath)) {
+            seenReportsRef.current.add(reportPath)
+            onReportWritten?.(reportPath)
           }
         }
 

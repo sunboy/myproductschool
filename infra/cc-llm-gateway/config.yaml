@@ -71,3 +71,14 @@ general_settings:
   # keys. Virtual-key + budget state persists in Postgres (DATABASE_URL).
   master_key: os.environ/LITELLM_MASTER_KEY
   database_url: os.environ/DATABASE_URL
+  # The gateway currently scales to at most ten Cloud Run instances and the
+  # db-f1-micro database has roughly 25 connections. LiteLLM's default pool of
+  # ten is per worker, so leaving it implicit can exhaust the database long
+  # before the compute limit. Two connections per instance leaves headroom for
+  # administration and migrations while preserving the current scale ceiling.
+  database_connection_pool_limit: 2
+  database_connection_timeout: 10
+  database_socket_timeout: 30
+  # Provider failures are already captured in application/Cloud Run logs. Do not
+  # duplicate request error payloads into Postgres and grow storage while idle.
+  disable_error_logs: true

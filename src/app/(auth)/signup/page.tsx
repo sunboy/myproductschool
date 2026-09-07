@@ -1,12 +1,15 @@
-import { AuthForm } from '@/components/auth/AuthForm'
+import { authRedirectFromParams } from '@/lib/auth/redirect'
+import { ActiveLoginConcept } from '@/components/auth/editorial/ActiveLoginConcept'
 
 export const metadata = { title: 'Sign up | HackProduct' }
 
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirectTo?: string; archetype?: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
-  const { redirectTo, archetype } = await searchParams
-  return <AuthForm mode="signup" redirectTo={redirectTo} archetype={archetype} />
+  const params = await searchParams
+  const archetype = typeof params.archetype === 'string' ? params.archetype : undefined
+  const redirectTo = authRedirectFromParams(params)
+  return <ActiveLoginConcept mode="signup" redirectTo={redirectTo} archetype={archetype} />
 }

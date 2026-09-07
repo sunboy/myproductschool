@@ -8,6 +8,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { verifySnapshotToken } from '@/lib/sandbox/snapshot-token'
+import {
+  isDuplicateSnapshotUploadError,
+  readSnapshotCaptureHeaders,
+  snapshotStoragePath,
+} from '@/lib/sandbox/snapshot-provenance'
 
 export const dynamic = 'force-dynamic'
 // Streaming a gzip tarball can take a few seconds on slow uplinks.
@@ -41,7 +46,7 @@ export async function POST(
   // --- Verify session exists ---
   const { data: session } = await admin
     .from('claude_code_sessions')
-    .select('id, status')
+    .select('id, status, started_at')
     .eq('id', sessionId)
     .maybeSingle()
 
@@ -56,8 +61,25 @@ export async function POST(
   }
 
   // --- Stream body to Supabase Storage ---
-  const ts = Date.now()
-  const storagePath = `${sessionId}/workspace-${ts}.tar.gz`
+  const receivedAt = new Date()
+  const provenance = readSnapshotCaptureHeaders(req.headers, receivedAt.getTime())
+  if (provenance.status === 'invalid') {
+    return NextResponse.json({ error: 'Invalid snapshot capture provenance' }, { status: 400 })
+  }
+  const sessionStartedAtMs = Date.parse(session.started_at as string)
+  if (
+    provenance.status === 'proven'
+    && Number.isFinite(sessionStartedAtMs)
+    && provenance.captureStartedAtMs < sessionStartedAtMs - 5 * 60_000
+  ) {
+    return NextResponse.json({ error: 'Snapshot capture predates session' }, { status: 400 })
+  }
+
+  // Legacy images still autosave for resume, but their upload-time filenames
+  // deliberately do not count as proof that capture began after a checkpoint.
+  const storagePath = provenance.status === 'proven'
+    ? snapshotStoragePath(sessionId, 'workspace', provenance)
+    : `${sessionId}/workspace-${receivedAt.getTime()}.tar.gz`
 
   // Read body as ArrayBuffer (Next.js request body — not a raw Node stream in
   // the edge runtime, but arrayBuffer() works in the Node runtime too).
@@ -74,10 +96,11 @@ export async function POST(
     .from('cc-sessions')
     .upload(storagePath, bodyBuffer, {
       contentType: 'application/gzip',
-      upsert: true,
+      // V2 is create-only; a retry reuses this exact archive identity.
+      upsert: provenance.status === 'legacy',
     })
 
-  if (uploadErr) {
+  if (uploadErr && !(provenance.status === 'proven' && isDuplicateSnapshotUploadError(uploadErr))) {
     console.error('[cc/snapshot] Storage upload failed:', uploadErr.message)
     return NextResponse.json({ error: 'Storage upload failed' }, { status: 500 })
   }
@@ -95,8 +118,8 @@ export async function POST(
   // liveness signal, so refresh last_activity_at to keep the reaper from killing
   // an actively-working session.
   const updatePayload: Record<string, unknown> = {
-    last_snapshot_at: new Date().toISOString(),
-    last_activity_at: new Date().toISOString(),
+    last_snapshot_at: receivedAt.toISOString(),
+    last_activity_at: receivedAt.toISOString(),
     transcript_uri: storagePath,
   }
   if (promptCount !== undefined) updatePayload.prompt_count = promptCount
@@ -104,10 +127,17 @@ export async function POST(
   if (inputTokens !== undefined) updatePayload.total_input_tokens = inputTokens
   if (outputTokens !== undefined) updatePayload.total_output_tokens = outputTokens
 
-  await admin
+  const { error: updateError } = await admin
     .from('claude_code_sessions')
     .update(updatePayload)
     .eq('id', sessionId)
+
+  // A retry reuses the v2 object identity; duplicate upload then counts as
+  // success and this pointer write is attempted again.
+  if (updateError) {
+    console.error('[cc/snapshot] Session pointer update failed:', updateError.message)
+    return NextResponse.json({ error: 'Snapshot pointer update failed' }, { status: 500 })
+  }
 
   return new NextResponse(null, { status: 204 })
 }

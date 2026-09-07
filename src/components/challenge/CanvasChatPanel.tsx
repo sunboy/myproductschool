@@ -52,6 +52,7 @@ interface CanvasChatPanelProps {
   // Coding-mode context fields (only used when challengeType === 'coding')
   currentCode?: string
   currentLanguage?: string
+  sqlSchemaSummary?: string
   lastRunResult?: unknown
   timeElapsed?: number
   timeRemaining?: number
@@ -249,6 +250,7 @@ export function CanvasChatPanel({
   canvasDrawFailure = null,
   currentCode,
   currentLanguage,
+  sqlSchemaSummary,
   lastRunResult,
   timeElapsed,
   timeRemaining,
@@ -481,6 +483,7 @@ export function CanvasChatPanel({
         guidance_level: guidanceLevel,
         current_code: currentCode,
         current_language: currentLanguage,
+        sql_schema_summary: sqlSchemaSummary,
         last_run_result: lastRunResult,
         time_elapsed_seconds: timeElapsed,
         time_remaining_seconds: timeRemaining,
@@ -584,7 +587,7 @@ export function CanvasChatPanel({
       setIsLoading(false)
     }
   }, [isLoading, scene, contextPack, challengeId, challengeType, attemptId, messages, onCanvasActions,
-      currentCode, currentLanguage, lastRunResult, timeElapsed, timeRemaining,
+      currentCode, currentLanguage, sqlSchemaSummary, lastRunResult, timeElapsed, timeRemaining,
       challengeTitle, problemStatement, codingStep,
       activePartId, activePartSequence, activePartTitle, activePartPrompt,
       activePartResponseType, activePartWeightPct,
@@ -739,7 +742,7 @@ export function CanvasChatPanel({
     return (
       <>
         <div
-          data-testid="hatch-chat-panel"
+          data-testid="hatch-chat-panel" data-workspace-chat-panel
           data-hatch-target="workspace-hatch-chat"
           style={{ width: panelWidth, minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH }}
           className="relative ml-2 flex flex-col rounded-2xl border border-hairline bg-card-bright h-full overflow-hidden shrink-0"
@@ -921,7 +924,7 @@ export function CanvasChatPanel({
 
   return (
     <>
-    <div data-testid="hatch-chat-panel" data-hatch-target="workspace-hatch-chat" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-hairline rounded-2xl bg-card-bright shadow-[0_24px_56px_-16px_rgba(5,35,22,0.35)] overflow-hidden">
+    <div data-testid="hatch-chat-panel" data-workspace-chat-panel data-hatch-target="workspace-hatch-chat" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-hairline rounded-2xl bg-card-bright shadow-[0_24px_56px_-16px_rgba(5,35,22,0.35)] overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-hairline bg-card-bright">
         <div className="flex items-center gap-2">

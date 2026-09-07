@@ -70,3 +70,9 @@ test('removes leaked model, instruction, tool, and token details from simulated 
   assert.doesNotMatch(result.text, /claude|sonnet|anthropic|openai|gpt|system prompt|tool call|call my tool|thinking tokens/i)
   assert.ok(result.violations.some((violation) => violation.rule === 'identity_leak'))
 })
+
+// Claude Code is a visible analytics product, not Hatch's internal identity.
+test('preserves the learner-facing Claude Code analytics tool name', () => {
+  const result = sanitizeAiOutput({ ...meta, text: 'Ask Claude Code to inspect the dataset, then discuss the evidence with Hatch.' })
+  assert.equal(result.text, 'Ask Claude Code to inspect the dataset, then discuss the evidence with Hatch.')
+})

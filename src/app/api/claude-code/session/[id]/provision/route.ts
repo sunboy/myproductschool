@@ -1,9 +1,9 @@
 // POST /api/claude-code/session/[id]/provision
 //
 // Runs the heavy provisioning pipeline for a session row that `session/start`
-// created in `provisioning` status. Split out from `start` because Vercel Hobby
-// kills a function at 60s and a cold start (SQL wake + revision boot + readiness)
-// can exceed that. The client calls this after `start`, then polls
+// created in `provisioning` status. Split out from the fast `start` request
+// because SQL wake, revision boot and readiness can take several minutes.
+// The client calls this after `start`, then polls
 // `session/[id]/state` for status/wss_url to render progress.
 //
 // Idempotent-ish: if the row is already `active` it returns the live wss_url; if
@@ -15,9 +15,12 @@ import { getLabServer, labIdForChallengeType } from '@/lib/labs/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { provisionSession } from '@/lib/sandbox/provision-session'
+import { resolveSessionTtlSeconds } from '@/lib/sandbox/cost-policy'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+// Cold SQL and gateway startup can exceed 60s before a host is persisted.
+// Fluid Compute supports this bounded allowance; state polling remains authoritative.
+export const maxDuration = 180
 
 export async function POST(
   req: NextRequest,
@@ -97,7 +100,7 @@ export async function POST(
   const bqDataset = labEnv.BQ_DATASET ?? ''
   const bqBillingProject = labEnv.BQ_BILLING_PROJECT ?? 'hackproduct'
   const claudeMd = labEnv.CLAUDE_MD ?? ''
-  const ttlSeconds = parseInt(process.env.CC_SESSION_TTL_SECONDS ?? '1800', 10)
+  const ttlSeconds = resolveSessionTtlSeconds(process.env.CC_SESSION_TTL_SECONDS)
 
   // --- Presign prior ~/.claude state (MCP regs + skills) for one-time setup ---
   const { data: profile } = await admin

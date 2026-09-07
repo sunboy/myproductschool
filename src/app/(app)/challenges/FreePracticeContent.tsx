@@ -3,18 +3,17 @@ import {
   getChallengePreviews,
   getChallengeCounts,
   getChallengeDescriptions,
-  getInProgressPractice,
-  getPracticeCoverage,
   normalizeDisciplineParam,
   type ChallengeListFilters,
   type CountDiscipline,
 } from '@/lib/data/challenges'
+import Link from 'next/link'
 import { ChallengeSearch } from './ChallengeSearch'
 import { HatchPick } from './HatchPick'
 import { FilteredChallengesView } from './FilteredChallengesView'
-import { PracticeRightRail } from '@/components/redesign/practice/PracticeRightRail'
 import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
 import { challengeTaskSummary } from '@/lib/challenges/presentation'
+import { LearningGeometry } from '@/components/redesign/LearningGeometry'
 
 /** How many preview cards each discipline section shows in the "All practice" overview. */
 const PREVIEW_PER_DISCIPLINE = 6
@@ -54,16 +53,6 @@ function getParadigmLabel(paradigm?: string | null): string {
   return (paradigm && PARADIGM_DISPLAY[paradigm]) ?? 'Traditional'
 }
 
-const DISCIPLINE_RAIL_LABELS: Record<CountDiscipline, string> = {
-  all: 'All practice',
-  algorithm: 'Coding / DSA',
-  sql: 'SQL',
-  system_design: 'System design',
-  data_modeling: 'Data modeling',
-  product_sense: 'Product sense',
-  analytics: 'AI Analytics',
-}
-
 export async function FreePracticeContent({ searchParams }: FreePracticeContentProps) {
   const resolvedSearchParams = await searchParams
   const { q } = resolvedSearchParams
@@ -89,19 +78,18 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
     real_interview: resolvedSearchParams.real_interview === '1' || resolvedSearchParams.real_interview === 'true',
   }
 
-  // Discipline chip counts (cheap HEAD counts — no row payload) + the right-rail
-  // inputs. The initial challenge slice is bounded: the "All practice" overview
+  // Discipline chip counts (cheap HEAD counts — no row payload). The initial
+  // challenge slice is bounded: the "All practice" overview
   // needs a small preview PER discipline (fetched independently so every section
   // fills, not a global newest-N which skews to recently-authored types); a
   // single discipline fetches its first page. The client lazy-loads the rest.
   const isAll = discipline === 'all'
 
-  const [counts, initialChallenges, inProgress] = await Promise.all([
+  const [counts, initialChallenges] = await Promise.all([
     getChallengeCounts(filters),
     isAll
       ? getChallengePreviews(filters, PREVIEW_PER_DISCIPLINE)
       : getChallenges({ ...filters, type: discipline }, { limit: DISCIPLINE_PAGE_SIZE, offset: 0 }),
-    getInProgressPractice(3),
   ])
 
   const paradigmMap: Record<string, string> = {}
@@ -115,10 +103,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
   // receives a plain string map (no heavy text in props). Skill coverage rides
   // this second stage because it divides by the discipline counts fetched above.
   const previewIds = initialChallenges.map(c => c.id)
-  const [descriptions, coverage] = await Promise.all([
-    getChallengeDescriptions(previewIds),
-    getPracticeCoverage(discipline, counts),
-  ])
+  const descriptions = await getChallengeDescriptions(previewIds)
   const summaryMap: Record<string, string> = {}
   for (const [id, d] of Object.entries(descriptions)) {
     const summary = challengeTaskSummary(d)
@@ -126,10 +111,19 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-      {/* Results column */}
+    <div className="flex min-w-0 flex-col gap-5">
+      <header className="learning-page-heading flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <LearningGeometry quiet />
+        <div>
+          <span className="font-label text-xs font-bold uppercase tracking-[0.1em] text-forest-700">Practice</span>
+          <h1 className="mt-3">A good problem.<br /><em className="font-normal text-[#aa6d18]">A new perspective.</em></h1>
+          <p className="mt-1 max-w-[58ch] text-[16px] leading-[1.45] text-ink-secondary">Search the full catalog, filter by discipline, and open a guided workspace when you are ready.</p>
+        </div>
+        <Link href="/live-interviews" className="inline-flex shrink-0 items-center justify-center rounded-full border border-forest-800 px-4 py-2.5 text-sm font-bold text-forest-800 transition-colors hover:bg-forest-50">Practice interviews <span aria-hidden className="ml-1.5">→</span></Link>
+      </header>
+
       <div className="flex min-w-0 flex-col gap-4">
-        {/* Slim Hatch's Pick banner + search on one band. No page heading. */}
+        {/* One optional Hatch recommendation, followed immediately by results. */}
         <HatchPick className="w-full" />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <ChallengeSearch total={counts.all} className="w-full sm:flex-1" />
@@ -148,19 +142,6 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
           pageSize={DISCIPLINE_PAGE_SIZE}
         />
       </div>
-
-      {/* Insight rail — desktop only */}
-      <aside className="hidden lg:block">
-        <div className="sticky top-20">
-          <PracticeRightRail
-            inProgress={inProgress}
-            coverage={coverage}
-            disciplineLabel={DISCIPLINE_RAIL_LABELS[discipline]}
-          >
-            <BillingUsageFromProfile className="w-full" />
-          </PracticeRightRail>
-        </div>
-      </aside>
     </div>
   )
 }

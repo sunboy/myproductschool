@@ -1,7 +1,7 @@
 const TESTIMONIALS = [
   {
     quote:
-      'I went from PM interview anxiety to 3 offers in 6 weeks.',
+      'I built more confidence in PM interviews with focused practice.',
     name: 'Alex R.',
     role: 'SWE\u2192PM at Stripe',
   },
@@ -23,7 +23,7 @@ export function SocialProof() {
   return (
     <section className="py-20">
       <p className="font-headline text-2xl font-bold text-on-surface text-center mb-10">
-        500+ product thinkers sharpening their instincts
+        Product thinkers building stronger judgment through practice
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

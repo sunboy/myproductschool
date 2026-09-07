@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { workspaceLocation } from '@/lib/workspace/location'
 import { canAccessLab } from '@/lib/labs/server'
 import { labIdForChallengeType } from '@/lib/labs/types'
 import { isClaudeCodeLab } from '@/lib/labs/types'
@@ -122,14 +123,17 @@ async function getNextChallengeInCategory(
 
 export default async function ChallengeWorkspacePage({ params, searchParams }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ role?: string; from_plan?: string; from_domain?: string; returnTo?: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const { id } = await params
-  const { role, from_plan, from_domain, returnTo } = await searchParams
+  const query = await searchParams
+  const first = (key: string) => Array.isArray(query[key]) ? query[key][0] : query[key]
+  const role = first('role'), from_plan = first('from_plan'), from_domain = first('from_domain'), returnTo = first('returnTo')
+  const initialAttemptId = first('attempt')
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user && !IS_MOCK) redirect('/login')
+  if (!user && !IS_MOCK) redirect(`/login?returnTo=${encodeURIComponent(workspaceLocation(id, query))}`)
 
   // Resolve number-slug / slug / id → canonical id. The resolver accepts a number
   // slug (e.g. "sql-2001"), the text slug, or the raw id, and returns challenge_type.
@@ -146,13 +150,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
       // slug (e.g. a UUID or "sql-2001"), send them to the clean text-slug URL
       // so there is ONE canonical address per challenge. Preserve query params.
       if (identity.slug && id !== identity.slug) {
-        const qs = new URLSearchParams()
-        if (role) qs.set('role', role)
-        if (from_plan) qs.set('from_plan', from_plan)
-        if (from_domain) qs.set('from_domain', from_domain)
-        if (returnTo) qs.set('returnTo', returnTo)
-        const suffix = qs.toString() ? `?${qs.toString()}` : ''
-        redirect(`/workspace/challenges/${identity.slug}${suffix}`)
+        redirect(workspaceLocation(identity.slug, query))
       }
     }
     challengeType = identity?.challenge_type ?? undefined
@@ -235,6 +233,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
       challengeId={challengeId}
       challengeSlug={challengeSlug}
       initialRoleId={roleId}
+      initialAttemptId={initialAttemptId}
       fromPlan={from_plan}
       fromDomain={from_domain}
       nextChallengeSlug={nextChallengeSlug}

@@ -26,13 +26,12 @@ const modes = [
   { label: 'Canvas', icon: PenTool },
 ]
 
-const loopSteps = ['Company brief', 'Live round', 'Artifact work', 'Rubric score', 'Next loop']
+const loopSteps = ['Company brief', 'Live round', 'Artifact work', 'Personalized feedback', 'Next step']
 
 export function V3LiveInterviewSection() {
   const sectionRef = useRef<HTMLElement | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const isActiveRef = useRef(false)
-  const autoAttemptedRef = useRef(false)
   const [isActive, setIsActive] = useState(false)
   const [audioBlocked, setAudioBlocked] = useState(false)
   const [audioPlayed, setAudioPlayed] = useState(false)
@@ -75,11 +74,7 @@ export function V3LiveInterviewSection() {
     isActiveRef.current = true
     setIsActive(true)
 
-    if (!autoAttemptedRef.current) {
-      autoAttemptedRef.current = true
-      void playIntro()
-    }
-  }, [playIntro])
+  }, [])
 
   useEffect(() => {
     const audio = new Audio(INTRO_AUDIO_SRC)
@@ -114,9 +109,7 @@ export function V3LiveInterviewSection() {
         isActiveRef.current = nextActive
         setIsActive(nextActive)
 
-        if (nextActive) {
-          void playIntro()
-        }
+
       },
       { threshold: 0.22 },
     )
@@ -124,7 +117,7 @@ export function V3LiveInterviewSection() {
     observer.observe(section)
 
     return () => observer.disconnect()
-  }, [activateSection, playIntro])
+  }, [activateSection])
 
   useEffect(() => {
     let frame = 0
@@ -176,25 +169,6 @@ export function V3LiveInterviewSection() {
     }
   }, [activateSection])
 
-  useEffect(() => {
-    const retryAfterUserActivation = () => {
-      if (!isActiveRef.current) {
-        return
-      }
-
-      void playIntro()
-    }
-
-    window.addEventListener('pointerdown', retryAfterUserActivation, { passive: true })
-    window.addEventListener('keydown', retryAfterUserActivation)
-    window.addEventListener('touchstart', retryAfterUserActivation, { passive: true })
-
-    return () => {
-      window.removeEventListener('pointerdown', retryAfterUserActivation)
-      window.removeEventListener('keydown', retryAfterUserActivation)
-      window.removeEventListener('touchstart', retryAfterUserActivation)
-    }
-  }, [playIntro])
 
   return (
     <section className="live-interview-section" id="live" ref={sectionRef} aria-labelledby="live-interview-heading">
@@ -207,10 +181,10 @@ export function V3LiveInterviewSection() {
         >
           <h2 id="live-interview-heading">Live interviews with Hatch.</h2>
           <p>
-            Voice, chat, code, and a shared canvas in one session, scored as you go.
+            Voice, chat, code, and a shared canvas in one session, with feedback as you go.
           </p>
 
-          <div className="live-company-panel" aria-label="Company interview loops">
+          <div className="live-company-panel" aria-label="Company interview sessions">
             {companies.map((company, index) => (
               <div className={`live-company-chip${index === 2 ? ' is-active' : ''}`} key={company.name}>
                 <Image src={company.src} alt="" aria-hidden="true" width={26} height={26} />
@@ -232,7 +206,7 @@ export function V3LiveInterviewSection() {
           <div className="live-cockpit-topline">
             <div>
               <span>Round 2 of 5</span>
-              <strong>Stripe system design loop</strong>
+              <strong>Stripe system design interview</strong>
             </div>
             <div className="live-status-pill">
               <span aria-hidden="true" />
@@ -240,7 +214,7 @@ export function V3LiveInterviewSection() {
             </div>
           </div>
 
-          <div className="live-loop-rail" aria-label="Live interview loop progress">
+          <div className="live-loop-rail" aria-label="Live interview progress">
             {loopSteps.map((step, index) => (
               <div className={`live-loop-step${index <= 2 ? ' is-complete' : ''}`} key={step}>
                 <span>{index + 1}</span>
@@ -270,13 +244,11 @@ export function V3LiveInterviewSection() {
 
               <div className="live-audio-row">
                 <Sparkles aria-hidden="true" strokeWidth={2} />
-                <span>{audioPlayed ? 'Intro played' : 'Hatch voice ready'}</span>
-                {audioBlocked ? (
-                  <button type="button" onClick={() => void playIntro({ force: true })}>
+                <span>{audioBlocked ? 'Audio unavailable. Try again.' : audioPlayed ? 'Intro played' : 'Preview Hatch’s voice'}</span>
+                <button type="button" onClick={() => void playIntro({ force: true })}>
                     <Play aria-hidden="true" fill="currentColor" size={12} />
                     Play Hatch intro
                   </button>
-                ) : null}
               </div>
             </div>
 

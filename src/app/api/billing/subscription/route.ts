@@ -17,6 +17,19 @@ async function getUserSubscription(userId: string) {
   return data.stripe_subscription_id as string
 }
 
+function cancellationClearParams(subscription: {
+  cancel_at?: number | null
+  cancel_at_period_end?: boolean | null
+}) {
+  if (subscription.cancel_at_period_end) {
+    return { cancel_at_period_end: false }
+  }
+
+  return subscription.cancel_at != null
+    ? { cancel_at: null }
+    : { cancel_at_period_end: false }
+}
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -41,7 +54,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === 'reactivate') {
-    const subscription = await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: false })
+    const current = await stripe.subscriptions.retrieve(subscriptionId)
+    const subscription = await stripe.subscriptions.update(
+      subscriptionId,
+      cancellationClearParams(current),
+    )
     return NextResponse.json({ subscription })
   }
 
@@ -61,7 +78,7 @@ export async function POST(req: NextRequest) {
     if (!itemId) return NextResponse.json({ error: 'Subscription item not found' }, { status: 404 })
 
     const subscription = await stripe.subscriptions.update(subscriptionId, {
-      cancel_at_period_end: false,
+      ...cancellationClearParams(current),
       proration_behavior: 'create_prorations',
       items: [{ id: itemId, price: planConfig.priceId }],
     })

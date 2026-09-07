@@ -9,14 +9,18 @@ interface SuggestedPromptRailProps {
   /** True when these chips were generated from the live session (vs the step's
    *  static defaults) — surfaces a subtle label so the user knows they adapt. */
   contextual?: boolean
+  disabled?: boolean
+  onInsert?: () => void
 }
 
-export function SuggestedPromptRail({ prompts, terminalRef, contextual = false }: SuggestedPromptRailProps) {
+export function SuggestedPromptRail({ prompts, terminalRef, contextual = false, disabled = false, onInsert }: SuggestedPromptRailProps) {
   if (!prompts.length) return null
 
   function handleInsert(prompt: string) {
+    if (disabled || !terminalRef.current) return
+    onInsert?.()
     terminalRef.current?.insertText(prompt)
-    terminalRef.current?.focus()
+    requestAnimationFrame(() => terminalRef.current?.focus())
   }
 
   return (
@@ -37,21 +41,23 @@ export function SuggestedPromptRail({ prompts, terminalRef, contextual = false }
         {prompts.map((prompt, i) => (
           <button
             key={i}
+            type="button"
+            disabled={disabled}
             onClick={() => handleInsert(prompt)}
-            title="Inserts into the terminal. You edit and run it."
+            title={disabled ? 'Start your session to use this prompt.' : 'Inserts into Claude Code. You edit and run it.'}
             style={{
               padding: '5px 12px',
               borderRadius: 99,
               background: 'var(--color-secondary-container)',
               color: 'var(--color-on-secondary-container)',
-              border: 'none', cursor: 'pointer',
-              fontSize: 12, fontWeight: 600,
+              border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1,
+              fontSize: 14, fontWeight: 600,
               fontFamily: 'var(--font-label)',
               display: 'inline-flex', alignItems: 'center', gap: 5,
               transition: 'opacity 150ms',
-              maxWidth: 280,
+              maxWidth: '100%',
               textAlign: 'left',
-              whiteSpace: 'nowrap',
+              whiteSpace: 'normal',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             }}

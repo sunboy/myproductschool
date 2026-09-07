@@ -10,10 +10,14 @@ export async function GET() {
   const admin = createAdminClient()
 
   const [modulesResult, chaptersResult, progressResult] = await Promise.all([
-    admin.from('learn_modules').select('id, title, slug').eq('is_published', true).order('sort_order'),
+    admin.from('learn_modules').select('id, name, slug').order('sort_order'),
     admin.from('learn_chapters').select('id, module_id'),
     admin.from('user_learn_progress').select('chapter_id').eq('user_id', user.id),
   ])
+
+  if (modulesResult.error || chaptersResult.error || progressResult.error) {
+    return NextResponse.json({ error: 'Learning progress is temporarily unavailable.' }, { status: 503 })
+  }
 
   const completedSet = new Set((progressResult.data ?? []).map(r => r.chapter_id))
   const chapters = chaptersResult.data ?? []
@@ -23,12 +27,12 @@ export async function GET() {
     const completed = modChapters.filter(c => completedSet.has(c.id)).length
     return {
       module_id: mod.id,
-      module_title: mod.title,
+      module_title: mod.name,
       module_slug: mod.slug,
       total_chapters: modChapters.length,
       completed_chapters: completed,
     }
   })
 
-  return NextResponse.json({ modules: result })
+  return NextResponse.json({ modules: result.filter(module => module.completed_chapters > 0) })
 }

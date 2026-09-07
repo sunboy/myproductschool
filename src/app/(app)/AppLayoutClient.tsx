@@ -16,7 +16,7 @@ import { AppTopShell } from '@/components/redesign/AppTopShell'
 function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <OnboardingModalProvider>
-      <div className="min-h-screen min-w-0 bg-background">
+      <div className="hp-learning-shell min-h-screen min-w-0 bg-background">
         <div className="mx-auto flex min-h-screen w-full max-w-[1400px]">
           {/* Desktop (lg+) fixed left sidebar. Hidden below lg — BottomTabs takes over. */}
           <div className="sticky top-0 hidden h-screen shrink-0 overflow-y-auto lg:block">

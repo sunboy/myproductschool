@@ -1,3 +1,5 @@
+import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
+import { normalizeToTen } from '@/lib/feedback/score'
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import { IS_MOCK } from '@/lib/mock'
 import { UsageProvider } from '@/context/UsageContext'
@@ -7,7 +9,6 @@ import {
   DISCIPLINE_META,
   type LiveInterviewDiscipline,
 } from '@/lib/live-interview/disciplines'
-import { HatchImage } from '@/components/redesign/HatchImage'
 import { HatchSays } from '@/components/redesign/HatchSays'
 import { LiveInterviewsShellClient } from './LiveInterviewsShellClient'
 
@@ -162,59 +163,13 @@ export default async function LiveInterviewsPage() {
   ])
 
   const hatchMessage = lastSession
-    ? `Your last session scored ${lastSession.overallScore}${lastSession.disciplineLabel ? ` on ${lastSession.disciplineLabel}` : ''}. The debrief lists what to fix before the next round.`
-    : 'First session: pick a discipline below. Hatch grades it on the same four moves as your reps.'
+    ? `Your latest session scored ${normalizeToTen(lastSession.overallScore, 5).toFixed(1)}/10${lastSession.disciplineLabel ? ` in ${lastSession.disciplineLabel}` : ''}. Open the debrief when you want to review the details.`
+    : 'Choose a company and discipline below. You can answer by voice or chat.'
 
   return (
     <UsageProvider>
-      <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-8 sm:py-5">
-        {/* ── Compact dense dark hero (previews/round4/interviews-hub.html) ── */}
-        <section
-          data-tour-target="interviews-hero"
-          className="relative overflow-hidden rounded-2xl px-[26px] py-6 text-white"
-          style={{
-            background:
-              'radial-gradient(900px 400px at 88% -10%, rgba(30,71,45,.55), transparent 60%), linear-gradient(115deg, var(--color-forest-950) 0%, var(--color-forest-850) 55%, var(--color-forest-800) 100%)',
-          }}
-        >
-          <div className="relative z-10 grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
-            <div className="min-w-0 lg:pr-32">
-              <div className="mb-2 font-label text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-mint-glow">
-                Live interviews
-              </div>
-              <h1 className="mb-2 max-w-[34ch] font-headline text-[28px] sm:text-[30px] font-semibold leading-[1.2] text-on-hero-strong">
-                A 45-minute mock with follow-ups, graded on the same rubric as your <span className="whitespace-nowrap"><span className="hl-word">reps</span>.</span>
-              </h1>
-              <p className="max-w-[58ch] text-[13px] leading-[1.55] text-white/72">
-                Hatch probes, watches the canvas or editor, carries context across rounds, and writes the debrief.
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="text-[12.5px] leading-none">
-                  <span className="font-extrabold text-on-hero-strong">Voice or chat</span>{' '}
-                  <span className="text-white/60">mic optional</span>
-                </span>
-                <span className="text-[12px] text-white/30">·</span>
-                <span className="text-[12.5px] leading-none">
-                  <span className="font-extrabold text-on-hero-strong">Whiteboard and CoderPad</span>{' '}
-                  <span className="text-white/60">when the question needs one</span>
-                </span>
-              </div>
-            </div>
-
-            <div className="relative flex items-center lg:col-start-2">
-              <div className="pointer-events-none absolute -left-[150px] bottom-[-28px] z-[1] hidden w-[132px] lg:block">
-                <HatchImage state="thinking" size={132} priority className="drop-shadow-[0_10px_18px_rgba(0,0,0,.35)]" />
-              </div>
-              <HatchSays
-                className="relative z-10 w-full"
-                tint="mint"
-                message={hatchMessage}
-                ctaLabel={lastSession ? 'Start the next round' : 'Set up an interview'}
-                ctaHref="#interview-setup"
-              />
-            </div>
-          </div>
-        </section>
+      <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-8 sm:py-7">
+        <div data-tour-target="interviews-hero"><LearningPageHeading eyebrow="Interview preparation" title="Find your confidence in conversation." action={<HatchSays tint="mint" message={hatchMessage} ctaLabel="Set up an interview" ctaHref="#interview-setup" />}>Choose a role and company context, practice a realistic conversation, and leave with specific feedback.</LearningPageHeading></div>
 
         <div className="mt-4">
           <BillingUsageFromProfile />
