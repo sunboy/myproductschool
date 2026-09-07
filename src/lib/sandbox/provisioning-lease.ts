@@ -15,6 +15,8 @@ export function freshProvisioningState(sessionId: string, now = new Date()) {
     host_instance_id: null,
     wss_url: null,
     ended_at: null,
+    observed_spend_cents: 0,
+    recorded_spend_cents: 0,
   }
 }
 

@@ -73,6 +73,7 @@ test('retry replaces an expired lease and dead host while preserving the attempt
     attempt_id: 'same-attempt', host_instance_id: 'deleted-revision',
     wss_url: 'wss://deleted.example', ended_at: '2026-09-05T11:00:00Z',
     failure_code: 'gateway_key_mint', provision_phase: 'booting_gateway',
+    observed_spend_cents: 49, recorded_spend_cents: 49,
   }
   const retried = { ...previous, ...freshProvisioningState('new-session', now) }
   assert.equal(retried.attempt_id, previous.attempt_id)
@@ -81,6 +82,9 @@ test('retry replaces an expired lease and dead host while preserving the attempt
   assert.equal(retried.ended_at, null)
   assert.equal(retried.failure_code, null)
   assert.equal(retried.provision_phase, null)
+  assert.equal(retried.observed_spend_cents, 0)
+  assert.equal(retried.recorded_spend_cents, 0)
+  assert.equal(18 - retried.recorded_spend_cents, 18)
   assert.deepEqual(await claimExpiredProvisioning(fakeAdmin([retried]), now), [])
   assert.equal(await activateProvisioning(fakeAdmin([retried]), 'new-session'), true)
 })
