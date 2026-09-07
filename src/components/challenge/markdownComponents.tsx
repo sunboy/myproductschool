@@ -29,7 +29,7 @@ export function CopyablePre({ children, ...props }: React.HTMLAttributes<HTMLPre
   }
   return (
     <div style={{ position: 'relative', margin: '0 0 14px' }}>
-      <pre {...props} className={`md-code-block ${props.className ?? ''}`} tabIndex={0} aria-label="Code block" style={{
+      <pre {...props} className={`md-code-block ${props.className ?? ''}`} aria-label="Code block" style={{
         fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
         fontSize: 12.5,
         lineHeight: 1.55,

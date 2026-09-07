@@ -48,10 +48,17 @@ export function resolveSessionBudgetUsd(
   return Math.round(Math.min(Math.max(wanted, MIN_SESSION_BUDGET_USD), max) * 100) / 100
 }
 
-/** An uncapped provider key is permitted only for an explicit local/dev setup. */
-export function allowsDirectProviderKey(
-  nodeEnv: string | undefined = process.env.NODE_ENV,
-  explicitFlag: string | undefined = process.env.CC_ALLOW_UNCAPPED_LOCAL,
-): boolean {
+/**
+ * An uncapped provider key is permitted only for an explicit local/dev setup.
+ * Reads process.env only when the caller omits the whole options object, so an
+ * explicit `{ nodeEnv: undefined }` (e.g. from a test) is never silently
+ * replaced by the live environment.
+ */
+export function allowsDirectProviderKey(options?: {
+  nodeEnv?: string | undefined
+  explicitFlag?: string | undefined
+}): boolean {
+  const nodeEnv = options ? options.nodeEnv : process.env.NODE_ENV
+  const explicitFlag = options ? options.explicitFlag : process.env.CC_ALLOW_UNCAPPED_LOCAL
   return (nodeEnv === 'development' || nodeEnv === 'test') && explicitFlag === 'true'
 }

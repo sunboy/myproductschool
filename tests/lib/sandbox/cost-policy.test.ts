@@ -28,10 +28,10 @@ test('session budget needs an explicit ceiling increase', () => {
 })
 
 test('direct provider keys are explicit and never allowed in production', () => {
-  assert.equal(allowsDirectProviderKey('development', undefined), false)
-  assert.equal(allowsDirectProviderKey('development', 'true'), true)
-  assert.equal(allowsDirectProviderKey(undefined, 'true'), false)
-  assert.equal(allowsDirectProviderKey('production', 'true'), false)
+  assert.equal(allowsDirectProviderKey({ nodeEnv: 'development', explicitFlag: undefined }), false)
+  assert.equal(allowsDirectProviderKey({ nodeEnv: 'development', explicitFlag: 'true' }), true)
+  assert.equal(allowsDirectProviderKey({ nodeEnv: undefined, explicitFlag: 'true' }), false)
+  assert.equal(allowsDirectProviderKey({ nodeEnv: 'production', explicitFlag: 'true' }), false)
 })
 
 test('adding a session preserves other tagged revisions and replaces the same tag', () => {
