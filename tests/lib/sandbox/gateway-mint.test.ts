@@ -33,8 +33,8 @@ function tokenHash(rawKey: string): string {
 // The gateway key is minted with headroom reserved off the ceiling (see
 // cost-policy.ts resolveKeyMaxBudgetUsd). With the default 0.10 headroom and
 // the 0.50 CC_SESSION_BUDGET_USD used throughout this file, the persisted
-// gateway max_budget is 0.40 — never the raw 0.50 ceiling.
-const EXPECTED_KEY_MAX_BUDGET = 0.4
+// gateway max_budget is 0.35 (0.50 ceiling minus 0.15 headroom) — never the raw 0.50 ceiling.
+const EXPECTED_KEY_MAX_BUDGET = 0.35
 
 function persistedKey(
   sessionId: string,

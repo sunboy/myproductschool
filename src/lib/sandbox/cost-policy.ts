@@ -20,7 +20,15 @@ const MIN_SESSION_BUDGET_USD = 0.01
 // nearly unusable (most/all of the budget would be reserved headroom) — pick
 // a higher ceiling or lower CC_WORST_CASE_TURN_USD deliberately, not by
 // accident.
-const DEFAULT_WORST_CASE_TURN_USD = 0.1
+// Live evidence 2026-09-07: a BigQuery-analysis session minted at ceiling-$0.10
+// still overshot its $0.39 mint to $0.4510 before the gateway 429'd it — a
+// $0.061 overshoot, i.e. tool-call turns in the analytics flow are pricier than
+// a plain chat turn. Raised the default headroom to $0.15 to cover the largest
+// observed single-turn cost with margin. This is a floor, not a proof: LiteLLM
+// still lets one in-flight turn finish, so a genuinely huge single turn could
+// exceed even this. If overshoot recurs above $0.15, raise CC_WORST_CASE_TURN_USD
+// (or teach the flow to cap per-turn max_tokens) rather than assume it holds.
+const DEFAULT_WORST_CASE_TURN_USD = 0.15
 
 function positiveNumber(value: string | number | undefined, fallback: number): number {
   const parsed = typeof value === 'number' ? value : Number(value)

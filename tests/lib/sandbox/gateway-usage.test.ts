@@ -20,7 +20,7 @@ test('gateway usage selects the exact alias, preserves real spend, and always di
         // The gateway's own max_budget (0.4) is the reduced mint value, not
         // the 0.5 ceiling — getSessionKeySpend must ignore it and display
         // the configured ceiling instead.
-        { key_alias: 'cc-test-session', spend: 0.073, max_budget: 0.4 },
+        { key_alias: 'cc-test-session', spend: 0.073, max_budget: 0.35 },
       ] })
     }
     assert.deepEqual(await getSessionKeySpend('test-session'), { spentUsd: 0.073, budgetUsd: 0.5 })

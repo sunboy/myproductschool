@@ -209,3 +209,35 @@ PR #20 stays draft. The only true code-open item is the finalize+grade live proo
 gated on host memory, not on the codebase. Everything else is either closed or an accepted
 deferral. A merge-with-Analytics-gated-off is viable now if desired; a full merge should wait
 for one clean finalize canary on an adequate host.
+
+## 2026-09-07 4th canary (GCP VM) — spend-cap fix proven INCOMPLETE, then re-tuned
+
+Ran the finalize canary from a fresh GCP VM (cloud-platform.read-only scope, hardened
+harness SHA 421f2ad4) against HEAD 0932f717. Memory, gcloud-path, and OAuth-scope blockers
+were all resolved this time — it reached real BigQuery analysis, then the Claude session hit
+a hard gateway 429 mid-analysis:
+
+    API Error: Request rejected (429) · Budget has been exceeded!
+    Current cost: 0.45104175, Max budget: 0.39
+
+**This is a LIVE reproduction of the overage the 024ea4a2 headroom fix was meant to prevent,
+and it shows $0.10 headroom was too small.** The key minted correctly at $0.39 (ceiling $0.49
+minus $0.10), but actual spend reached $0.4510 before the 429 — a $0.061 overshoot past the
+mint, burning >half the headroom. Root cause: BigQuery tool-call turns in the analytics flow
+cost more than a plain chat turn, so the $0.10 worst-case assumption was under-sized.
+
+**Action taken (committed):** raised `DEFAULT_WORST_CASE_TURN_USD` from $0.10 to $0.15 in
+`src/lib/sandbox/cost-policy.ts` (covers the observed $0.061 overshoot with margin), with an
+inline evidence note. Tests updated (0.49 ceiling now mints at $0.34), 16/16 headroom+mint+
+usage tests pass, tsc clean. This is a floor, not a proof — LiteLLM still lets one in-flight
+turn finish, so a genuinely large single turn could exceed even $0.15. If overshoot recurs
+above $0.15, raise `CC_WORST_CASE_TURN_USD` or cap per-turn max_tokens in the analytics flow.
+
+**Gate status:** finalize + grade STILL not reached (the 429 killed the session before report/
+skill/finalize/grade). But the run was not wasted: it turned the spend-cap fix from
+"unit-tested" to "live-tested and corrected." Note the 429 firing at all confirms the gateway
+budget enforcement works end-to-end; the only issue was the headroom size, now larger.
+
+Cleanup 6/6 (Free baseline, key blocked+retained at $0.4510, sub canceled, revision deleted,
+prod cc-llm-db STOPPED/NEVER). VM deleted, 404-confirmed. Spend $0.4510, under the $0.49
+ceiling. State file SHA-256 53cf245635989f388e50f85c79d32b5c8efb44c22e67b803c9e61264403cb5d4.
