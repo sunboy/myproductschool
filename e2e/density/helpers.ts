@@ -1,5 +1,11 @@
 import { expect, type Page } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
+import { config as loadDotenv } from 'dotenv'
+
+// Playwright does not auto-load .env.local (that's a Next.js convention). The
+// admin helpers below need NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY,
+// so load it explicitly; a no-op if the vars are already in the environment.
+loadDotenv({ path: '.env.local' })
 
 export const VIEWPORTS = { desktop: { width: 1440, height: 900 }, laptop: { width: 1280, height: 720 }, mobile: { width: 375, height: 812 } } as const
 export type ViewportName = keyof typeof VIEWPORTS
