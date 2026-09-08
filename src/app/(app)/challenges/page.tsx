@@ -29,7 +29,7 @@ export default async function ChallengesPage({
   const density = await getAppFlag('ui_density_v1', false)
   return (
     <UsageProvider>
-      <main data-tour-target="practice-hero" className={`mx-auto max-w-[1440px] px-4 sm:px-6 ${density ? 'py-3' : 'py-7'}`}>
+      <main data-tour-target="practice-hero" className={`mx-auto max-w-[1440px] px-4 sm:px-6 ${density ? 'py-2' : 'py-7'}`}>
         <Suspense fallback={<div className="animate-pulse h-64 bg-surface-container rounded-xl" />}>
           <FreePracticeContent searchParams={searchParams} />
         </Suspense>
