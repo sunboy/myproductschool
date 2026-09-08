@@ -18,7 +18,6 @@ async function pickCompanyRole(): Promise<{ companyId: string; roleId: string; d
 
 test.describe('interviews density', () => {
   test.beforeAll(async () => { await setDensityFlag(true) })
-  test.afterAll(async () => { await setDensityFlag(false) })
 
   test('setup band, panel, and recent sessions column render', async ({ page }) => {
     await loginViaApi(page)
