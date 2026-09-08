@@ -25,6 +25,7 @@ export interface SessionProfile {
   onboarding_completed_at: string | null
   has_seen_hatch_intro: boolean
   daily_attempts_today?: number
+  ui_prefs?: { nav_collapsed?: boolean; practice_view?: 'list' | 'cards' } | null
   subscription?: {
     status?: string | null
     current_period_end?: string | null
@@ -124,6 +125,7 @@ export function SessionProvider({
             daily_attempts_today: data.daily_attempts_today ?? 0,
             subscription: data.subscription ?? null,
             dunning: data.dunning ?? null,
+            ui_prefs: data.ui_prefs ?? null,
           }))
           if (data.usage) {
             setUsage({
