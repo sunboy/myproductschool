@@ -13,6 +13,12 @@ export interface NextChallengeData {
 
 let cached: Promise<NextChallengeData | null> | null = null
 
+if (typeof window !== 'undefined') {
+  window.addEventListener('challenge-completed', () => {
+    cached = null
+  })
+}
+
 /**
  * Module-cached fetch of the Hatch recommendation, so HatchPick and the right
  * rail (Next best rep fallback, Focus queue) share one request per page load.
@@ -38,7 +44,19 @@ export function useNextChallenge(): { data: NextChallengeData | null; loading: b
       setData(d)
       setLoading(false)
     })
-    return () => { cancelled = true }
+    const onCompleted = () => {
+      setLoading(true)
+      fetchNextChallenge().then(d => {
+        if (cancelled) return
+        setData(d)
+        setLoading(false)
+      })
+    }
+    window.addEventListener('challenge-completed', onCompleted)
+    return () => {
+      cancelled = true
+      window.removeEventListener('challenge-completed', onCompleted)
+    }
   }, [])
 
   return { data, loading }
