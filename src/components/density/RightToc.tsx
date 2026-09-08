@@ -17,7 +17,11 @@ export function RightToc({ groups, activeId, progressPct, onSelect, testId = 'ri
             const cls = `block truncate border-l-2 pl-2.5 ${isActive ? 'border-primary font-bold text-forest-800' : 'border-transparent hover:text-ink-secondary'} ${it.done ? 'text-ink-muted' : ''}`
             return it.href
               ? <a key={it.id} href={it.href} className={cls} aria-current={isActive ? 'true' : undefined}>{it.done ? '✓ ' : ''}{it.label}</a>
-              : <button key={it.id} type="button" onClick={() => { onSelect?.(it.id); document.getElementById(it.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }} className={`w-full text-left ${cls}`} aria-current={isActive ? 'true' : undefined}>{it.done ? '✓ ' : ''}{it.label}</button>
+              : <button key={it.id} type="button" onClick={() => {
+                  onSelect?.(it.id)
+                  const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                  document.getElementById(it.id)?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+                }} className={`w-full text-left ${cls}`} aria-current={isActive ? 'true' : undefined}>{it.done ? '✓ ' : ''}{it.label}</button>
           })}
         </div>
       ))}

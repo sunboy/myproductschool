@@ -2,6 +2,10 @@ import { test, expect } from '@playwright/test'
 import { VIEWPORTS, loginViaApi, gotoReady, topOf, expectNoConsoleErrors } from './helpers'
 
 test.describe('readers', () => {
+  // Avoid depending on smooth-scroll animation timing; RightToc uses instant
+  // scroll when this is set, so the scrollY assertion isn't racing a CSS animation.
+  test.use({ reducedMotion: 'reduce' })
+
   test.beforeEach(async ({ page }) => { await loginViaApi(page); await page.setViewportSize(VIEWPORTS.desktop) })
 
   test('module reader', async ({ page }) => {
@@ -15,8 +19,8 @@ test.describe('readers', () => {
     const headingBtns = toc.locator('button'); const btnCount = await headingBtns.count()
     if (btnCount > 1) {
       const before = await page.evaluate(() => window.scrollY)
-      await headingBtns.last().click(); await page.waitForTimeout(600)
-      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(before)
+      await headingBtns.last().click()
+      await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 }).toBeGreaterThan(before)
     }
     await page.mouse.wheel(0, 1500); await page.waitForTimeout(2000)
     const rows = await page.request.get('/api/reading-progress?limit=5').then(r => r.json()); expect(rows.rows.some((r: any) => r.content_type === 'module_chapter' && r.parent_id === 'context-engineering')).toBe(true)
@@ -30,7 +34,8 @@ test.describe('readers', () => {
     await expect(page.getByTestId('reader-back')).toHaveAttribute('href', '/explore/autopsies/buffer')
     expect(await topOf(page, 'article h1')).toBeLessThanOrEqual(130)
     await expect(page.getByTestId('right-toc')).toBeVisible()
-    const save = page.getByRole('button', { name: /save|saved/i }).first()
+    const save = page.locator('[data-testid=shell-topbar] button', { hasText: /save/i }).first()
+    await expect(save).toBeVisible({ timeout: 30_000 })
     const before = await save.textContent()
     await save.click()
     await expect(save).not.toHaveText(before ?? '', { timeout: 10_000 })
