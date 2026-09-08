@@ -14,6 +14,8 @@ import { readerTopicTags } from '@/lib/autopsies/display-tags';
 import { ResumeBanner } from './ResumeBanner';
 import { BookmarkToggle } from './BookmarkToggle';
 import { PrevNextChips } from './PrevNextChips';
+import { useUiShell } from '@/components/shell-v2/UiShellContext';
+import { AutopsyReaderV2 } from '@/components/density/reader/AutopsyReaderV2';
 import { QuickReadDark } from './sections/QuickReadDark';
 import { EvidenceLedgerDark } from './sections/EvidenceLedgerDark';
 import { TimelineDark } from './sections/TimelineDark';
@@ -109,6 +111,37 @@ export function CinematicReader({ story, companyName, companyAccent, initialBook
   const activeLabel = tocItems.find(item => item.id === activeSection)?.label;
   const resumeLabel = tocItems.find(item => item.id === resumeSection)?.label ?? 'where you left off';
   const accent = companyAccent ?? '#2f6b4f';
+  const { density } = useUiShell();
+
+  const sectionChildren = (
+    <>
+      {showResumeBanner && <ResumeBanner variant="aarrr" label={resumeLabel} onBackToTop={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); clearResume(); }} onDismiss={dismissBanner} />}
+      {lede && <FlowSectionDark section={lede} sectionId="lede" index={0} variant="prose" story={story} imageRole={INLINE_IMAGE_ROLES[0]} imageSide="right" />}
+      {story.quickRead.length > 0 && <QuickReadDark cards={story.quickRead} sectionId="quick-read" />}
+      {bodySections.map((section, i) => <FlowSectionDark key={`${section.title}-${i}`} section={section} sectionId={`flow-${i + 1}`} index={i + 1} variant="prose" story={story} imageRole={INLINE_IMAGE_ROLES[i + 1]} imageSide={(i + 1) % 2 ? 'left' : 'right'} />)}
+      {story.metrics.length > 0 && <EvidenceLedgerDark metrics={story.metrics} sectionId="evidence" />}
+      {story.timeline?.length ? <TimelineDark events={story.timeline} sectionId="timeline" /> : null}
+      {story.quote && <QuoteDark quote={story.quote} sectionId="quote" />}
+      {story.principle && <PrincipleDark principle={story.principle} sectionId="principle" />}
+      {story.sources.length > 0 && <SourcePackDark sources={story.sources} summary={story.sourcePackSummary} sectionId="sources" />}
+      <div className="reader-next"><PrevNextChips prevNext={prevNext} /></div>
+    </>
+  );
+
+  if (density) {
+    return (
+      <AutopsyReaderV2
+        story={story}
+        companyName={companyName}
+        initialBookmarked={initialBookmarked}
+        sectionIds={sectionIds}
+        tocItems={tocItems}
+        coverUrl={story.images?.find(i => i.role === 'social-cover')?.publicUrl ?? null}
+      >
+        {sectionChildren}
+      </AutopsyReaderV2>
+    );
+  }
 
   return (
     <article
@@ -155,16 +188,7 @@ export function CinematicReader({ story, companyName, companyAccent, initialBook
         </aside>
 
         <div className="reader-content">
-          {showResumeBanner && <ResumeBanner variant="aarrr" label={resumeLabel} onBackToTop={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); clearResume(); }} onDismiss={dismissBanner} />}
-          {lede && <FlowSectionDark section={lede} sectionId="lede" index={0} variant="prose" story={story} imageRole={INLINE_IMAGE_ROLES[0]} imageSide="right" />}
-          {story.quickRead.length > 0 && <QuickReadDark cards={story.quickRead} sectionId="quick-read" />}
-          {bodySections.map((section, i) => <FlowSectionDark key={`${section.title}-${i}`} section={section} sectionId={`flow-${i + 1}`} index={i + 1} variant="prose" story={story} imageRole={INLINE_IMAGE_ROLES[i + 1]} imageSide={(i + 1) % 2 ? 'left' : 'right'} />)}
-          {story.metrics.length > 0 && <EvidenceLedgerDark metrics={story.metrics} sectionId="evidence" />}
-          {story.timeline?.length ? <TimelineDark events={story.timeline} sectionId="timeline" /> : null}
-          {story.quote && <QuoteDark quote={story.quote} sectionId="quote" />}
-          {story.principle && <PrincipleDark principle={story.principle} sectionId="principle" />}
-          {story.sources.length > 0 && <SourcePackDark sources={story.sources} summary={story.sourcePackSummary} sectionId="sources" />}
-          <div className="reader-next"><PrevNextChips prevNext={prevNext} /></div>
+          {sectionChildren}
         </div>
       </div>
 
