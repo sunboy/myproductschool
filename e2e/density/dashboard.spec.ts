@@ -41,6 +41,10 @@ test.describe('dashboard v4', () => {
     // for `[data-shell="v2"]`, which never attaches there and times out).
     await page.goto('/welcome', { waitUntil: 'domcontentloaded' })
     await expect(page.getByTestId('welcome')).toBeVisible()
+    // The cookie is set client-side in a useEffect after hydration; wait for
+    // it explicitly so the following /dashboard nav doesn't race React mount
+    // and bounce back to /welcome again.
+    await page.waitForFunction(() => document.cookie.includes('hp-welcome-seen'))
     await gotoReady(page, '/dashboard')
     await expect(page.getByTestId('calibration-card')).toBeVisible()
     await expect(page.getByTestId('calibration-start')).toHaveAttribute('href', '/welcome')
