@@ -70,27 +70,27 @@ const ROLES = [
   { id: 'data_scientist', label: 'Data Scientist',      icon: 'query_stats' },
 ]
 
-const CONTEXT_OPTIONS: { id: RoleContext; label: string }[] = [
+export const CONTEXT_OPTIONS: { id: RoleContext; label: string }[] = [
   { id: 'engineer_pm_interview', label: 'Prepping for PM-style interviews' },
   { id: 'engineer_on_job',       label: 'Sharpening product thinking on the job' },
   { id: 'both',                  label: 'Both, honestly' },
 ]
 
-const GOAL_OPTIONS: { id: PrimaryGoal; label: string }[] = [
+export const GOAL_OPTIONS: { id: PrimaryGoal; label: string }[] = [
   { id: 'land_pm_adjacent', label: 'Land a PM or PM-adjacent role' },
   { id: 'level_up_current', label: 'Get promoted in my current eng role' },
   { id: 'ship_better',      label: 'Make sharper product calls at work' },
   { id: 'explore',          label: 'Just exploring product thinking' },
 ]
 
-const TIMELINE_OPTIONS: { id: PrepTimeline; label: string; revealCompany: boolean }[] = [
+export const TIMELINE_OPTIONS: { id: PrepTimeline; label: string; revealCompany: boolean }[] = [
   { id: 'lt_1mo',       label: 'Within a month',       revealCompany: true },
   { id: '1_3mo',        label: 'One to three months',  revealCompany: true },
   { id: 'gt_3mo',       label: 'Longer than that',     revealCompany: false },
   { id: 'no_timeline',  label: 'No fixed timeline',    revealCompany: false },
 ]
 
-const FLOW_MOVES = [
+export const FLOW_MOVES = [
   { key: 'frame',    label: 'Frame',    icon: '◇', color: '#4a7c59', bg: 'rgba(74,124,89,0.15)' },
   { key: 'list',     label: 'List',     icon: '◈', color: '#1565c0', bg: 'rgba(21,101,192,0.12)' },
   { key: 'optimize', label: 'Optimize', icon: '◆', color: '#ad1457', bg: 'rgba(173,20,87,0.12)' },
