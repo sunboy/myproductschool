@@ -34,12 +34,18 @@ test.describe('readers', () => {
     await expect(page.getByTestId('reader-back')).toHaveAttribute('href', '/explore/autopsies/buffer')
     expect(await topOf(page, 'article h1')).toBeLessThanOrEqual(130)
     await expect(page.getByTestId('right-toc')).toBeVisible()
-    const save = page.locator('[data-testid=shell-topbar] button', { hasText: /save/i }).first()
+    const saveLocator = () => page.locator('[data-testid=shell-topbar] button', { hasText: /save/i }).first()
+    let save = saveLocator()
     await expect(save).toBeVisible({ timeout: 30_000 })
     const before = await save.textContent()
     await save.click()
     await expect(save).not.toHaveText(before ?? '', { timeout: 10_000 })
-    await save.click() // restore
+    // Re-locate before the restore click: the toggle re-renders through the
+    // shell-v2 reader-chrome slot, so the safest bet is a fresh handle rather
+    // than trusting the original locator hasn't gone stale.
+    save = saveLocator()
+    await expect(save).toBeEnabled({ timeout: 30_000 })
+    await save.click({ timeout: 30_000 }) // restore
   })
 
   test('mobile: no toc column, chrome present', async ({ page }) => {
