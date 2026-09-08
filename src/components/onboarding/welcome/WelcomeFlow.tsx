@@ -36,7 +36,14 @@ export function WelcomeFlow({ redo = false }: { redo?: boolean }) {
   }, [])
 
   useEffect(() => {
+    // Persist on every field change, not just step transitions — otherwise a
+    // refresh mid-step (e.g. after picking goal/timeline/context but before
+    // clicking Next) loses those selections and resume lands back on 'role'.
     persist(state)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state])
+
+  useEffect(() => {
     trackEvent(EVENT_ONBOARDING_STEP, { step: `welcome:${state.step}`, step_index: stepIndexFor(state.step) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.step])

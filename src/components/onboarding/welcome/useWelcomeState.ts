@@ -70,9 +70,18 @@ interface SavedWelcomeData {
 export function useWelcomeState() {
   const [state, dispatch] = useReducer(welcomeReducer, initialWelcomeState)
   const loaded = useRef(false)
+  const stateRef = useRef(state)
+  stateRef.current = state
   useEffect(() => {
     getOnboardingState<SavedWelcomeData>().then(saved => {
       loaded.current = true
+      // The fetch can resolve after the user has already started answering
+      // (role click, goal/timeline chips, typing target-company). Applying a
+      // stale/empty hydrate at that point stomps in-progress state and
+      // remounts the active step mid-interaction (observed as Playwright's
+      // "element was detached from the DOM" on a chip click). Once the user
+      // has diverged from the initial state, hydration is a no-op.
+      if (stateRef.current !== initialWelcomeState) return
       const d = saved?.data ?? {}
       const answers = d.answers ?? {}
       const screen = d.screen ?? ''
