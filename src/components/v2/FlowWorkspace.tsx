@@ -25,6 +25,7 @@ import type { StepCalibration } from './CalibrationPreview'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 import { useHatchContext } from '@/context/HatchContext'
+import { useUiShell } from '@/components/shell-v2/UiShellContext'
 import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
 import { CanvasEmptyState } from '@/components/challenge/CanvasEmptyState'
 import { canvasStarterTemplate, canvasTemplatesFor, type CanvasTemplate } from '@/lib/hatch/canvasSeeds'
@@ -561,6 +562,11 @@ const WORKSPACE_BTN_PRIMARY = 'inline-flex items-center gap-1.5 px-5 py-2 rounde
 const WORKSPACE_BTN_TONAL = 'inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-card-bright border border-hairline text-ink-strong font-label text-xs font-bold hover:bg-page-field disabled:opacity-50 transition-colors'
 
 export function FlowWorkspace(props: FlowWorkspaceProps) {
+  // Density shell (desktop) supplies its own back-to-Practice affordance via
+  // ShellV2's topLeft slot, so the legacy in-header pill would be a duplicate
+  // control there. Mobile chrome (icon-only back arrow) is unaffected — ShellV2
+  // is desktop-only (hidden below lg).
+  const { density } = useUiShell()
   const isApiMode = props.mode === 'api'
   const challengeId = isApiMode ? props.challengeId : ''
   const challengeSlug = isApiMode ? ((props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeSlug ?? challengeId) : ''
@@ -5228,7 +5234,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   ) : null
 
   // Read-only results/history keep navigation without controls for an absent editor.
-  const topChrome = <header className="workspace-focus-header"><button type="button" onClick={props.onExit ?? (() => window.history.back())} aria-label="Back to practice">← Practice</button><h1>{challengeTitle}</h1></header>
+  const topChrome = <header className="workspace-focus-header">{!density && <button type="button" onClick={props.onExit ?? (() => window.history.back())} aria-label="Back to practice">← Practice</button>}<h1>{challengeTitle}</h1></header>
 
   // Round-4 FLOW method strip: full-width card under the top bar holding the
   // Frame / List / Optimize / Win stepper (previews/round4/flow-workspace.html

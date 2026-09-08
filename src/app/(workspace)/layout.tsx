@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { TopNav } from '@/components/shell/TopNav'
 import { BottomTabs } from '@/components/shell/BottomTabs'
@@ -10,6 +11,25 @@ import { FloatingHatch } from '@/components/shell/FloatingHatch'
 import { HatchProvider } from '@/context/HatchContext'
 import { SessionProvider } from '@/context/SessionContext'
 import { UpgradeModalHost } from '@/components/paywalls/UpgradeModalHost'
+import { useDensityFlag } from '@/components/shell-v2/useDensityFlag'
+import { UiShellProvider } from '@/components/shell-v2/UiShellContext'
+import { ShellV2 } from '@/components/shell-v2/ShellV2'
+import { workspaceExitHref } from '@/lib/workspace/breadcrumbs'
+
+function WorkspaceBackLink() {
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
+  const fromPlan = searchParams.get('from_plan')
+  const fromDomain = searchParams.get('from_domain')
+  return (
+    <Link
+      href={workspaceExitHref({ fromPlan, fromDomain }, returnTo)}
+      className="rounded-full border border-hairline bg-card-bright px-3 py-1 text-[12px] font-semibold"
+    >
+      ← Practice
+    </Link>
+  )
+}
 
 function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -18,8 +38,34 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
   const fromDomain = searchParams.get('from_domain')
   const cid = searchParams.get('cid') ?? undefined
   const isShareRoute = /^\/workspace\/challenges\/[^/]+\/share(?:\/[^/]+)?$/.test(pathname)
+  const density = useDensityFlag()
 
   if (isShareRoute) return <>{children}</>
+
+  if (density === null) return null // one frame; avoids flashing the legacy pill nav
+
+  if (density) {
+    return (
+      <HatchProvider>
+        <SessionProvider>
+          <UiShellProvider density>
+            <ShellV2 fullBleed topLeft={<WorkspaceBackLink />}>
+              <div className="flex h-[calc(100vh-var(--shell-top-h))] min-w-0 overflow-hidden">
+                {fromPlan ? (
+                  <StudyPlanIndexPanel planSlug={fromPlan} activeChallengeId={cid} />
+                ) : fromDomain ? (
+                  <DomainIndexPanel domainSlug={fromDomain} activeChallengeId={cid} />
+                ) : null}
+                <main className="relative min-w-0 flex-1 overflow-hidden">{children}</main>
+              </div>
+            </ShellV2>
+            <FloatingHatch />
+            <UpgradeModalHost />
+          </UiShellProvider>
+        </SessionProvider>
+      </HatchProvider>
+    )
+  }
 
   return (
     <HatchProvider>
