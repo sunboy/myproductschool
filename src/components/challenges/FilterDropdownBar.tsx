@@ -288,7 +288,9 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
         ))}
       </div>
 
-      {/* Mobile filter bar */}
+      {/* Mobile filter bar — the ViewToggle instance here uses distinct
+          `-mobile` testids (see ViewToggle) so `getByTestId('view-cards')`
+          in E2E never targets the CSS-hidden desktop or mobile duplicate. */}
       <div className="flex items-center gap-2 rounded-xl border border-hairline bg-card-bright px-3 py-2 sm:hidden">
         <button
           type="button"
@@ -308,7 +310,7 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
           )}
         </button>
         <div className="min-w-0 flex-1" />
-        {showViewToggle && (density ? <ViewToggle /> : (
+        {showViewToggle && (density ? <ViewToggle testIdSuffix="-mobile" /> : (
           <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-hairline">
             <button
               type="button"
