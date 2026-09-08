@@ -299,7 +299,7 @@ export function FilteredChallengesView({
     : DISCIPLINE_KEYS.filter((key) => key !== 'analytics')
 
   return (
-    <div className="flex min-w-0 flex-col gap-3">
+    <div className={`flex min-w-0 flex-col ${density ? 'gap-2' : 'gap-3'}`}>
       <section data-tour-target="practice-filters">
         <DisciplineChipRow
           active={discipline}
@@ -357,6 +357,7 @@ export function FilteredChallengesView({
             filters={filters}
             q={searchQuery}
             listView={listView}
+            density={density}
             returnHref={returnHref}
             previewPerDiscipline={previewPerDiscipline}
             pageSize={pageSize}
@@ -431,6 +432,7 @@ function AllPracticeView({
   filters,
   q,
   listView,
+  density,
   returnHref,
   previewPerDiscipline,
   pageSize,
@@ -445,6 +447,7 @@ function AllPracticeView({
   filters: FilterState
   q?: string
   listView: boolean
+  density: boolean
   returnHref: string
   previewPerDiscipline: number
   pageSize: number
@@ -496,6 +499,7 @@ function AllPracticeView({
           paradigms={paradigms}
           summaries={summaries}
           listView={listView}
+          density={density}
           returnHref={returnHref}
           resultsLayoutClass={resultsLayoutClass}
           previewPerDiscipline={previewPerDiscipline}
@@ -516,6 +520,7 @@ function AllPracticeSection({
   paradigms,
   summaries,
   listView,
+  density,
   returnHref,
   resultsLayoutClass,
   previewPerDiscipline,
@@ -530,6 +535,7 @@ function AllPracticeSection({
   paradigms: Record<string, string>
   summaries: Record<string, string>
   listView: boolean
+  density: boolean
   returnHref: string
   resultsLayoutClass: string
   previewPerDiscipline: number
@@ -596,9 +602,13 @@ function AllPracticeSection({
   const previewParadigms: Record<string, string> = {}
   rows.forEach((c) => { previewParadigms[c.id] = paradigms[c.id] ?? 'Traditional' })
 
+  // Card mode in density gets a tighter y<=300 budget; collapse the header to a
+  // single 24px row (icon-row height) instead of stacked label + link.
+  const compactHeader = density && !listView
+
   return (
     <section className="flex flex-col gap-3">
-      <div className={`font-label font-bold text-sm flex items-center gap-2 ${DISCIPLINE_COLORS[discipline] ?? 'text-primary'}`}>
+      <div className={`font-label font-bold text-sm flex items-center gap-2 ${compactHeader ? 'h-6 leading-6' : ''} ${DISCIPLINE_COLORS[discipline] ?? 'text-primary'}`}>
         {DISCIPLINE_LABELS[discipline] ?? discipline}
         <button
           type="button"

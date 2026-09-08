@@ -116,7 +116,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
 
   if (density) {
     return (
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-2">
         <PracticeBand />
         {/* No BillingUsageFromProfile strip here — it pushed the first result
             card past the y<=270 layout budget. Free users still see usage via

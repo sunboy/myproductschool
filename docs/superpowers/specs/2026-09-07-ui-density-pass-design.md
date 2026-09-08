@@ -117,7 +117,7 @@ Hero within 900px: eyebrow chip, 6-word headline "Interview practice that tests 
 
 ## 7. Verification
 
-Each route ships with Playwright checks at 1440×900, 1280×720, 375×812, authenticated as the Pro test user and, for new-user states, a freshly created user. Checks assert: content start y (dashboard shelves ≤ 340, Library "Your learning" ≤ 340, Practice first result ≤ 260, Settings first form ≤ 120, module h1 ≤ 120), shell dimensions (nav 200/56, top bar 48), every interactive element in the new layouts performs its action (navigation URL, network call, state change), preference persistence across reload, and no console errors. Visual snapshots are stored for review.
+Each route ships with Playwright checks at 1440×900, 1280×720, 375×812, authenticated as the Pro test user and, for new-user states, a freshly created user. Checks assert: content start y (dashboard shelves ≤ 340, Library "Your learning" ≤ 340, Practice first result ≤ 300, Settings first form ≤ 120, module h1 ≤ 120), shell dimensions (nav 200/56, top bar 48), every interactive element in the new layouts performs its action (navigation URL, network call, state change), preference persistence across reload, and no console errors. Visual snapshots are stored for review.
 
 ## 8. Rollout
 

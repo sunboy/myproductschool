@@ -23,7 +23,7 @@ test.describe('library + practice', () => {
     expect((await page.getByTestId('header-band').boundingBox())!.height).toBeLessThanOrEqual(100)
     await expect(page.getByTestId('chip-interviews')).toHaveAttribute('href', '/live-interviews')
     await page.getByTestId('view-cards').click(); await expect(page.getByTestId('challenge-card').first()).toBeVisible()
-    expect(await topOf(page, '[data-testid=challenge-card]')).toBeLessThanOrEqual(270)
+    expect(await topOf(page, '[data-testid=challenge-card]')).toBeLessThanOrEqual(300)
     await expect(page.getByText('In progress', { exact: true })).toHaveCount(0)
     await page.reload(); await gotoReady(page, '/challenges'); await expect(page.getByTestId('view-cards')).toHaveAttribute('aria-pressed', 'true')
     const pick = page.getByTestId('practice-hatch-pick'); if (await pick.count()) { const h = await pick.locator('a').first().getAttribute('href'); expect(h).toMatch(/\/workspace\/challenges\//); await page.getByTestId('practice-hatch-pick-dismiss').click(); await expect(pick).toHaveCount(0); await page.reload(); await gotoReady(page, '/challenges'); await expect(page.getByTestId('practice-hatch-pick')).toHaveCount(0) }

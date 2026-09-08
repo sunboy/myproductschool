@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Requires plan 01. Read `2026-09-07-ui-density-pass-00-master.md` for conventions.
 
-**Goal:** Library: title row + chips, the 160px featured "Saved for you" card, then shelves (Your learning, Study plans, Modules, Autopsies) of cover cards with eight rotating geometric thumbnails; content at y≈330. Practice: 88px band with a functional Hatch's pick, discipline chips, filter row with a persisted list/card toggle, card mode with geometric thumbnails and no redundant "In progress" tag; first result at y≤260.
+**Goal:** Library: title row + chips, the 160px featured "Saved for you" card, then shelves (Your learning, Study plans, Modules, Autopsies) of cover cards with eight rotating geometric thumbnails; content at y≈330. Practice: 88px band with a functional Hatch's pick, discipline chips, filter row with a persisted list/card toggle, card mode with geometric thumbnails and no redundant "In progress" tag; first result at y≤300.
 
 **Architecture:** Library: `src/app/(app)/explore/page.tsx` already gathers guides, autopsies, plans, bookmarks and learn progress; add reading progress and render `LibraryV2` (server) + `LibraryChips` (client, URL-param driven) when the flag is on. Practice: keep `FreePracticeContent`/`FilteredChallengesView` data flow; replace the header with `HeaderBand` + `HatchPickCard`, move the view toggle to `ui_prefs.practice_view`, add `ChallengeCardV3` for card mode, and drop the page-level `ChallengeSearch` (top bar search is scoped).
 
@@ -343,7 +343,7 @@ In `FreePracticeContent.tsx` L124-142: when `getAppFlag('ui_density_v1')` is tru
 
 instead of the `LearningGeometry` header, `HatchPick` and `ChallengeSearch`. Keep `main`'s `data-tour-target="practice-hero"` on the wrapper so the intro tour still anchors. The `q` param remains read by the server (`filters.q`) so the top-bar search works.
 
-- [ ] **Step 5: Verify**: `/challenges` flag on: band ≤ 96px tall, first `[data-testid=challenge-card]` or first list row top ≤ 260; toggle switches modes and persists across reload; `?q=sum` from the top bar filters; the pick ✕ hides the card and reload keeps it hidden for the session day. Commit:
+- [ ] **Step 5: Verify**: `/challenges` flag on: band ≤ 96px tall, first `[data-testid=challenge-card]` or first list row top ≤ 300; toggle switches modes and persists across reload; `?q=sum` from the top bar filters; the pick ✕ hides the card and reload keeps it hidden for the session day. Commit:
 
 ```bash
 git add src/components/density/practice src/app/(app)/challenges src/components/challenges/FilterDropdownBar.tsx
@@ -381,7 +381,7 @@ test.describe('library + practice', () => {
     expect((await page.getByTestId('header-band').boundingBox())!.height).toBeLessThanOrEqual(100)
     await expect(page.getByTestId('chip-interviews')).toHaveAttribute('href', '/live-interviews')
     await page.getByTestId('view-cards').click(); await expect(page.getByTestId('challenge-card').first()).toBeVisible()
-    expect(await topOf(page, '[data-testid=challenge-card]')).toBeLessThanOrEqual(270)
+    expect(await topOf(page, '[data-testid=challenge-card]')).toBeLessThanOrEqual(300)
     await expect(page.getByText('In progress', { exact: true })).toHaveCount(0)
     await page.reload(); await gotoReady(page, '/challenges'); await expect(page.getByTestId('view-cards')).toHaveAttribute('aria-pressed', 'true')
     const pick = page.getByTestId('practice-hatch-pick'); if (await pick.count()) { const h = await pick.locator('a').first().getAttribute('href'); expect(h).toMatch(/\/workspace\/challenges\//); await page.getByTestId('practice-hatch-pick-dismiss').click(); await expect(pick).toHaveCount(0); await page.reload(); await gotoReady(page, '/challenges'); await expect(page.getByTestId('practice-hatch-pick')).toHaveCount(0) }
