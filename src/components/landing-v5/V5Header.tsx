@@ -73,7 +73,7 @@ function NavDropdown({ label, links, viewAllHref }: { label: string; links: type
   );
 }
 
-export function V5Header() {
+export function V5Header({ dense = false }: { dense?: boolean } = {}) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -103,10 +103,10 @@ export function V5Header() {
       <div className="header-inner reference-header-inner">
         <V5Brand />
         <nav className="desktop-nav reference-nav" aria-label="Primary navigation">
-          <Link href="/">Home</Link>
+          {!dense && <Link href="/">Home</Link>}
           <NavDropdown label="Practice" links={practiceLinks} viewAllHref="/practice" />
           <NavDropdown label="Library" links={resourceLinks} viewAllHref="/explore" />
-          <Link href="/progress">Progress</Link>
+          {dense ? <Link href="/pricing">Pricing</Link> : <Link href="/progress">Progress</Link>}
         </nav>
         <div className="header-actions reference-header-actions">
           <button type="button" className="text-link desktop-only" onClick={openLogin}>Log in</button>
@@ -121,10 +121,14 @@ export function V5Header() {
       {open && (
         <div className="mobile-menu">
           <nav>
-            <Link onClick={() => setOpen(false)} href="/">Home</Link>
+            {!dense && <Link onClick={() => setOpen(false)} href="/">Home</Link>}
             <Link onClick={() => setOpen(false)} href="/practice">Practice</Link>
             <Link onClick={() => setOpen(false)} href="/explore">Library</Link>
-            <Link onClick={() => setOpen(false)} href="/progress">Progress</Link>
+            {dense ? (
+              <Link onClick={() => setOpen(false)} href="/pricing">Pricing</Link>
+            ) : (
+              <Link onClick={() => setOpen(false)} href="/progress">Progress</Link>
+            )}
           </nav>
           <button className="button" onClick={() => { setOpen(false); openSignup(); }} type="button">
             Start practicing

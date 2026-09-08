@@ -67,13 +67,13 @@ const softwareJsonLd = {
   },
 }
 
-export function V5LandingPage() {
+export function V5LandingPage({ dense = false }: { dense?: boolean } = {}) {
   return (
     <div className="v5">
       <JsonLdScript data={[organizationJsonLd(), websiteJsonLd(), softwareJsonLd]} />
-      <V5Header />
+      <V5Header dense={dense} />
       <main>
-        <V5Hero />
+        <V5Hero dense={dense} />
         <V5PracticeGrid />
         <V5Grading />
         <V5AIWork />

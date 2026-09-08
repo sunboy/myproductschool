@@ -1814,3 +1814,40 @@
     padding: 18px 16px 18px;
   }
 }
+
+/* ── Density pass: hero within one 1440x900 / 1280x720 viewport ──────── */
+.v5 .hero-reference.is-dense {
+  height: auto;
+  min-height: auto;
+  padding-top: 24px;
+  padding-bottom: 0;
+}
+.v5 .hero-reference.is-dense .hero-reference-shell {
+  height: auto;
+}
+.v5 .hero-reference.is-dense h1 {
+  font-size: 54px;
+  line-height: 1.05;
+  max-width: 640px;
+}
+.v5 .hero-reference.is-dense .hero-reference-lede {
+  font-size: 18px;
+  max-width: 520px;
+  margin-top: 12px;
+}
+.v5 .hero-reference.is-dense .hero-reference-hatch img {
+  width: 420px;
+  height: auto;
+}
+.v5 .hero-reference.is-dense .hero-reference-review {
+  transform: scale(.9);
+  transform-origin: top left;
+}
+.v5 .hero-reference.is-dense .hero-reference-dimensions {
+  margin-top: 24px;
+}
+@media (max-width: 1024px) {
+  .v5 .hero-reference.is-dense h1 {
+    font-size: 40px;
+  }
+}
