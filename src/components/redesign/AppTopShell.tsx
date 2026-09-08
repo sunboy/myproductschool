@@ -33,21 +33,9 @@ function getInitials(name: string | null | undefined): string {
 export function AppTopShell() {
   const router = useRouter()
   const { profile } = useSession()
-  const [menuOpen, setMenuOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
-  const menuRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const { muted, toggleMuted } = useHatchSonics()
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-    if (menuOpen) document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [menuOpen])
 
   // ⌘K / Ctrl+K focuses the search input, matching the kbd hint in the pill.
   useEffect(() => {
@@ -60,18 +48,6 @@ export function AppTopShell() {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
-
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
-
-  function openUpgrade() {
-    window.dispatchEvent(new CustomEvent('open-upgrade-modal'))
-    setMenuOpen(false)
-  }
 
   function handleSearchSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -94,8 +70,102 @@ export function AppTopShell() {
     ? Math.max(0, Math.ceil((new Date(dunning.gracePeriodEndsAt).getTime() - Date.now()) / 86400000))
     : undefined
 
-  function AvatarMenu({ compact }: { compact?: boolean }) {
-    return (
+  return (
+    <>
+      {trialDaysLeft !== null && trialDaysLeft <= 7 && (
+        <TrialBanner daysLeft={trialDaysLeft} trialEndsAt={sub!.current_period_end!} />
+      )}
+      {showDunning && (
+        <DunningBanner message={dunningMessage} daysUntilSuspension={dunningDaysLeft} />
+      )}
+
+      {/* Desktop (lg+): full TopUtilityBar with live search, sound + tour toggles, avatar menu. */}
+      <div data-topnav className="hidden lg:block">
+        <TopUtilityBar
+          searchPlaceholder="Search topics, problems, or interviews..."
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+          onSearchSubmit={handleSearchSubmit}
+          searchInputRef={searchInputRef}
+          avatarInitial={getInitials(profile?.display_name)}
+          displayName={profile?.display_name ?? 'You'}
+          isPro={isPro}
+          avatarSlot={<AvatarMenu />}
+          endSlot={
+            <>
+              {!isPro && <SpendIndicator />}
+              <button
+                type="button"
+                onClick={toggleMuted}
+                aria-label={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+                title={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+                className="flex size-[34px] items-center justify-center rounded-lg border border-hairline bg-white text-ink-secondary"
+              >
+                {muted ? <VolumeX size={16} strokeWidth={1.8} /> : <Volume2 size={16} strokeWidth={1.8} />}
+              </button>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event('start-intro-tour'))}
+                aria-label="Take the tour"
+                title="Take the tour"
+                className="flex size-[34px] items-center justify-center rounded-lg border border-hairline bg-white text-ink-secondary"
+              >
+                <Compass size={16} strokeWidth={1.8} />
+              </button>
+            </>
+          }
+        />
+      </div>
+
+      {/* Mobile (<lg): collapsed bar — logo + avatar. No sidebar, no search box. */}
+      <div data-topnav className="flex items-center gap-3 border-b border-hairline bg-page-field px-4 py-3 lg:hidden">
+        <Link href="/dashboard" className="flex min-w-0 shrink-0 items-center">
+          <HackProductWordmark className="h-7 w-[147px] object-cover" />
+        </Link>
+
+        <div className="ml-auto flex items-center gap-4">
+          <AvatarMenu compact />
+        </div>
+      </div>
+    </>
+  )
+}
+
+/**
+ * Self-contained account/avatar dropdown: own open state, own logout and
+ * upgrade handlers. Reused by both AppTopShell (legacy) and AppTopBarV2
+ * (shell-v2, density pass) with zero prop plumbing required.
+ */
+export function AvatarMenu({ compact }: { compact?: boolean }) {
+  const router = useRouter()
+  const { profile } = useSession()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const isPro = profile?.plan === 'pro'
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
+
+  function openUpgrade() {
+    window.dispatchEvent(new CustomEvent('open-upgrade-modal'))
+    setMenuOpen(false)
+  }
+
+  return (
       <div className="relative" ref={menuRef}>
         <button
           type="button"
@@ -207,65 +277,4 @@ export function AppTopShell() {
         )}
       </div>
     )
-  }
-
-  return (
-    <>
-      {trialDaysLeft !== null && trialDaysLeft <= 7 && (
-        <TrialBanner daysLeft={trialDaysLeft} trialEndsAt={sub!.current_period_end!} />
-      )}
-      {showDunning && (
-        <DunningBanner message={dunningMessage} daysUntilSuspension={dunningDaysLeft} />
-      )}
-
-      {/* Desktop (lg+): full TopUtilityBar with live search, sound + tour toggles, avatar menu. */}
-      <div data-topnav className="hidden lg:block">
-        <TopUtilityBar
-          searchPlaceholder="Search topics, problems, or interviews..."
-          searchValue={searchValue}
-          onSearchChange={setSearchValue}
-          onSearchSubmit={handleSearchSubmit}
-          searchInputRef={searchInputRef}
-          avatarInitial={getInitials(profile?.display_name)}
-          displayName={profile?.display_name ?? 'You'}
-          isPro={isPro}
-          avatarSlot={<AvatarMenu />}
-          endSlot={
-            <>
-              {!isPro && <SpendIndicator />}
-              <button
-                type="button"
-                onClick={toggleMuted}
-                aria-label={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
-                title={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
-                className="flex size-[34px] items-center justify-center rounded-lg border border-hairline bg-white text-ink-secondary"
-              >
-                {muted ? <VolumeX size={16} strokeWidth={1.8} /> : <Volume2 size={16} strokeWidth={1.8} />}
-              </button>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new Event('start-intro-tour'))}
-                aria-label="Take the tour"
-                title="Take the tour"
-                className="flex size-[34px] items-center justify-center rounded-lg border border-hairline bg-white text-ink-secondary"
-              >
-                <Compass size={16} strokeWidth={1.8} />
-              </button>
-            </>
-          }
-        />
-      </div>
-
-      {/* Mobile (<lg): collapsed bar — logo + avatar. No sidebar, no search box. */}
-      <div data-topnav className="flex items-center gap-3 border-b border-hairline bg-page-field px-4 py-3 lg:hidden">
-        <Link href="/dashboard" className="flex min-w-0 shrink-0 items-center">
-          <HackProductWordmark className="h-7 w-[147px] object-cover" />
-        </Link>
-
-        <div className="ml-auto flex items-center gap-4">
-          <AvatarMenu compact />
-        </div>
-      </div>
-    </>
-  )
 }
