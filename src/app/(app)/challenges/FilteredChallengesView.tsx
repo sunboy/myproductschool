@@ -607,8 +607,8 @@ function AllPracticeSection({
   const compactHeader = density && !listView
 
   return (
-    <section className="flex flex-col gap-3">
-      <div className={`font-label font-bold text-sm flex items-center gap-2 ${compactHeader ? 'h-6 leading-6' : ''} ${DISCIPLINE_COLORS[discipline] ?? 'text-primary'}`}>
+    <section className={`flex flex-col ${compactHeader ? 'gap-1.5' : 'gap-3'}`}>
+      <div className={`font-label font-bold text-sm flex items-center gap-2 ${compactHeader ? 'h-5 leading-5' : ''} ${DISCIPLINE_COLORS[discipline] ?? 'text-primary'}`}>
         {DISCIPLINE_LABELS[discipline] ?? discipline}
         <button
           type="button"
