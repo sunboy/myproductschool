@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { VIEWPORTS, loginViaApi, gotoReady, topOf, expectNoConsoleErrors } from './helpers'
+import { VIEWPORTS, loginViaApi, gotoReady, topOf, expectNoConsoleErrors, resetOnboarding } from './helpers'
 
 test.describe('dashboard v4', () => {
   test('returning user: hero, shelves, every control acts', async ({ page }) => {
@@ -31,7 +31,15 @@ test.describe('dashboard v4', () => {
 
   test('new user: calibration card and first reps', async ({ page }) => {
     await loginViaApi(page, { email: 'hackproduct.onboarding.review@gmail.com', password: 'Review#Onboard89' })
-    await page.setViewportSize(VIEWPORTS.desktop); await gotoReady(page, '/dashboard')
+    const profile = await page.request.get('/api/profile').then(r => r.json())
+    await resetOnboarding(profile.id)
+    await page.setViewportSize(VIEWPORTS.desktop)
+    // New users are redirected /dashboard → /welcome until hp-welcome-seen is
+    // set (WelcomeFlow sets it on mount); visit /welcome first so the cookie
+    // is present, then land on /dashboard for the calibration-card assertions.
+    await gotoReady(page, '/welcome')
+    await expect(page.getByTestId('welcome')).toBeVisible()
+    await gotoReady(page, '/dashboard')
     await expect(page.getByTestId('calibration-card')).toBeVisible()
     await expect(page.getByTestId('calibration-start')).toHaveAttribute('href', '/welcome')
     await expect(page.getByTestId('calibration-skip')).toHaveAttribute('href', '/challenges')

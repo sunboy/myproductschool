@@ -37,6 +37,17 @@ export async function setDensityFlag(on: boolean) {
   if (error) throw error
 }
 
+/** Resets a user back to "brand new" — clears onboarding_completed_at and drops
+ *  any resumable onboarding_state row — so new-user E2E fixtures stay new-user
+ *  across repeated runs (the dashboard/welcome flow marks them complete). */
+export async function resetOnboarding(userId: string) {
+  const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
+  const { error: profileError } = await admin.from('profiles').update({ onboarding_completed_at: null }).eq('id', userId)
+  if (profileError) throw profileError
+  const { error: stateError } = await admin.from('onboarding_state').delete().eq('user_id', userId)
+  if (stateError) throw stateError
+}
+
 /** y of the first element matching `selector` relative to the viewport. */
 export async function topOf(page: Page, selector: string): Promise<number> {
   const box = await page.locator(selector).first().boundingBox()
