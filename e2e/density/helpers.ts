@@ -56,10 +56,18 @@ export async function topOf(page: Page, selector: string): Promise<number> {
 }
 
 export async function expectNoConsoleErrors(page: Page, run: () => Promise<void>) {
-  const errors: string[] = []
-  page.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
+  const errors: Array<{ text: string; url: string }> = []
+  page.on('console', m => { if (m.type() === 'error') errors.push({ text: m.text(), url: m.location()?.url ?? '' }) })
   await run()
-  expect(errors.filter(e => !e.includes('favicon')), 'console errors').toEqual([])
+  // Local `next start` has no Vercel Speed Insights endpoint, so the script 404s
+  // and the browser then logs a second "Refused to execute script" MIME error.
+  // Neither is a real regression; ignore both, plus favicon 404s.
+  const ignored = (e: { text: string; url: string }) =>
+    e.text.includes('favicon') ||
+    e.url.includes('_vercel/speed-insights') ||
+    e.text.includes('_vercel/speed-insights') ||
+    (e.text.includes('Failed to load resource: the server responded with a status of 404') && e.url.includes('_vercel/speed-insights'))
+  expect(errors.filter(e => !ignored(e)).map(e => e.text), 'console errors').toEqual([])
 }
 
 export async function gotoReady(page: Page, path: string) {
