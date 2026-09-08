@@ -11,6 +11,8 @@ import {
 } from '@/lib/live-interview/disciplines'
 import { HatchSays } from '@/components/redesign/HatchSays'
 import { LiveInterviewsShellClient } from './LiveInterviewsShellClient'
+import { getAppFlag } from '@/lib/config/app-flags'
+import { InterviewSetupV2 } from '@/components/density/interviews/InterviewSetupV2'
 
 export interface ScenarioBrief {
   id: string
@@ -155,12 +157,53 @@ async function getLastSessionBrief(): Promise<LastSessionBrief | null> {
   }
 }
 
+/**
+ * Count of in-progress multi-round loops, for the InterviewBand's
+ * "Multi-round · N active" chip. Mirrors countLoopSummary's
+ * status === 'in_progress' filter in LiveInterviewsShell, but as a
+ * head-only count query so the density band doesn't need the full
+ * loop + rounds payload.
+ */
+async function getLoopActiveCount(): Promise<number> {
+  if (IS_MOCK) return 0
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return 0
+
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const adminClient = createAdminClient()
+    const { count } = await adminClient
+      .from('interview_loops')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('status', 'in_progress')
+
+    return count ?? 0
+  } catch {
+    return 0
+  }
+}
+
 export default async function LiveInterviewsPage() {
-  const [personas, scenarios, lastSession] = await Promise.all([
+  const density = await getAppFlag('ui_density_v1', false)
+  const [personas, scenarios, lastSession, loopActive] = await Promise.all([
     getPersonas(),
     getScenarios(),
     getLastSessionBrief(),
+    density ? getLoopActiveCount() : Promise.resolve(0),
   ])
+
+  if (density) {
+    return (
+      <UsageProvider>
+        <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-8 sm:py-7">
+          <InterviewSetupV2 personas={personas} scenarios={scenarios} loopActive={loopActive} lastSession={lastSession} />
+        </div>
+      </UsageProvider>
+    )
+  }
 
   const hatchMessage = lastSession
     ? `Your latest session scored ${normalizeToTen(lastSession.overallScore, 5).toFixed(1)}/10${lastSession.disciplineLabel ? ` in ${lastSession.disciplineLabel}` : ''}. Open the debrief when you want to review the details.`

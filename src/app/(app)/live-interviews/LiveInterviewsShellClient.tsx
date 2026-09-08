@@ -20,6 +20,8 @@ const LiveInterviewsShell = dynamic(
 interface Props {
   personas: LiveInterviewPersona[]
   scenarios: ScenarioBrief[]
+  initialMode?: 'single' | 'loop'
+  hideHeader?: boolean
 }
 
 export function LiveInterviewsShellClient(props: Props) {

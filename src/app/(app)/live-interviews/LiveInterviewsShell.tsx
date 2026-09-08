@@ -1127,11 +1127,20 @@ function PastSessionsTable() {
 export function LiveInterviewsShell({
   personas,
   scenarios,
+  initialMode = 'single',
+  hideHeader = false,
 }: {
   personas: LiveInterviewPersona[]
   scenarios: ScenarioBrief[]
+  /** Density setup (InterviewSetupV2) picks the format via its own chips and
+   *  passes the choice down here instead of re-rendering this tab bar. */
+  initialMode?: 'single' | 'loop'
+  /** Density setup renders its own format chips and "Recent sessions" column,
+   *  so it mounts this shell with hideHeader to skip the duplicate tablist
+   *  and PastSessionsTable — it only wants the format panel itself. */
+  hideHeader?: boolean
 }) {
-  const [mode, setMode] = useState<'single' | 'loop'>('single')
+  const [mode, setMode] = useState<'single' | 'loop'>(initialMode)
   const [loopSummary, setLoopSummary] = useState<LoopSummary>({
     loading: true,
     inProgress: 0,
@@ -1176,37 +1185,39 @@ export function LiveInterviewsShell({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="font-label text-xs font-extrabold uppercase tracking-[0.11em] text-forest-700">Choose a format</p>
-          <h2 className="mt-1 font-headline text-2xl font-semibold text-ink-strong">Set up your session</h2>
+      {!hideHeader && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="font-label text-xs font-extrabold uppercase tracking-[0.11em] text-forest-700">Choose a format</p>
+            <h2 className="mt-1 font-headline text-2xl font-semibold text-ink-strong">Set up your session</h2>
+          </div>
+          <div className="inline-grid w-full grid-cols-2 rounded-xl border border-hairline bg-card-bright p-1 sm:w-auto" role="tablist" aria-label="Interview format">
+            <button
+              type="button"
+              role="tab"
+              id="interview-single-tab"
+              aria-controls="interview-format-panel"
+              aria-selected={mode === 'single'}
+              onClick={() => selectMode('single')}
+              className={`rounded-lg px-4 py-2.5 text-sm font-extrabold transition-colors ${mode === 'single' ? 'bg-forest-800 text-white' : 'text-ink-secondary hover:bg-page-field'}`}
+            >
+              Single interview
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="interview-multi-tab"
+              aria-controls="interview-format-panel"
+              aria-selected={mode === 'loop'}
+              onClick={() => selectMode('loop')}
+              className={`rounded-lg px-4 py-2.5 text-sm font-extrabold transition-colors ${mode === 'loop' ? 'bg-forest-800 text-white' : 'text-ink-secondary hover:bg-page-field'}`}
+            >
+              Multi-round
+              {!loopSummary.loading && loopSummary.inProgress > 0 ? ` · ${loopSummary.inProgress} active` : ''}
+            </button>
+          </div>
         </div>
-        <div className="inline-grid w-full grid-cols-2 rounded-xl border border-hairline bg-card-bright p-1 sm:w-auto" role="tablist" aria-label="Interview format">
-          <button
-            type="button"
-            role="tab"
-            id="interview-single-tab"
-            aria-controls="interview-format-panel"
-            aria-selected={mode === 'single'}
-            onClick={() => selectMode('single')}
-            className={`rounded-lg px-4 py-2.5 text-sm font-extrabold transition-colors ${mode === 'single' ? 'bg-forest-800 text-white' : 'text-ink-secondary hover:bg-page-field'}`}
-          >
-            Single interview
-          </button>
-          <button
-            type="button"
-            role="tab"
-            id="interview-multi-tab"
-            aria-controls="interview-format-panel"
-            aria-selected={mode === 'loop'}
-            onClick={() => selectMode('loop')}
-            className={`rounded-lg px-4 py-2.5 text-sm font-extrabold transition-colors ${mode === 'loop' ? 'bg-forest-800 text-white' : 'text-ink-secondary hover:bg-page-field'}`}
-          >
-            Multi-round
-            {!loopSummary.loading && loopSummary.inProgress > 0 ? ` · ${loopSummary.inProgress} active` : ''}
-          </button>
-        </div>
-      </div>
+      )}
 
       <div
         ref={activePanelRef}
@@ -1223,10 +1234,12 @@ export function LiveInterviewsShell({
         )}
       </div>
 
-      <div>
-        <h2 className="mb-3 font-headline text-2xl font-semibold text-ink-strong">Recent sessions</h2>
-        <PastSessionsTable />
-      </div>
+      {!hideHeader && (
+        <div>
+          <h2 className="mb-3 font-headline text-2xl font-semibold text-ink-strong">Recent sessions</h2>
+          <PastSessionsTable />
+        </div>
+      )}
     </div>
   )
 }
