@@ -14,10 +14,11 @@ export function filterByType(type: LibraryType, i: Pick<LibraryInput, 'guides' |
   }
 }
 
-export function buildLibraryShelves(i: LibraryInput) {
+export function buildLibraryShelves(i: LibraryInput, opts: { extractFeatured?: boolean } = {}) {
+  const extractFeatured = opts.extractFeatured ?? true
   const storyProgress = new Map(i.readingProgress.filter(r => r.content_type === 'autopsy_story').map(r => [`${r.parent_id}/${r.content_id}`, Number(r.progress)]))
   const stories = i.stories.map(s => ({ ...s, progress: Math.max(s.progress, storyProgress.get(`${s.companySlug}/${s.storySlug}`) ?? 0) }))
-  const featured = stories.find(s => s.saved) ?? stories[0] ?? null
+  const featured = extractFeatured ? (stories.find(s => s.saved) ?? stories[0] ?? null) : null
   const inProgressGuides = i.guides.filter(g => g.completed > 0 && g.completed < g.chapters)
   const inProgressStories = stories.filter(s => s.progress > 0 && s.progress < 0.98 && s.id !== featured?.id)
   const enrolledPlans = i.plans.filter(p => p.enrolled && p.done < p.reps)

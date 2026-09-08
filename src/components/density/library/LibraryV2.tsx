@@ -8,13 +8,16 @@ export function LibraryV2({ input, type, q }: { input: LibraryInput; type: Libra
   const filtered = filterByType(type, input)
   const query = (q ?? '').trim().toLowerCase()
   const match = (t: string) => !query || t.toLowerCase().includes(query)
-  const shelves = buildLibraryShelves({ ...input, guides: filtered.guides.filter(g => match(`${g.title} ${g.tagline}`)), plans: filtered.plans.filter(p => match(p.title)), stories: filtered.stories.filter(s => match(`${s.title} ${s.dek} ${s.company}`)) })
-  const showFeatured = type === 'all' && !query && shelves.featured
+  const unfiltered = type === 'all' && !query
+  const shelves = buildLibraryShelves({ ...input, guides: filtered.guides.filter(g => match(`${g.title} ${g.tagline}`)), plans: filtered.plans.filter(p => match(p.title)), stories: filtered.stories.filter(s => match(`${s.title} ${s.dek} ${s.company}`)) }, { extractFeatured: unfiltered })
+  // Chip counts always describe the whole library, not the current filter.
+  const totalCounts = buildLibraryShelves(input).counts
+  const showFeatured = unfiltered && shelves.featured
   return (
     <div className="mx-auto w-full max-w-[1400px] px-4 py-4 sm:px-6">
       <div className="mb-2.5 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
         <h1 className="font-headline text-[26px] font-bold leading-none">Library{query ? <span className="ml-2 text-[14px] font-normal text-ink-secondary">results for &ldquo;{q}&rdquo;</span> : null}</h1>
-        <Suspense><LibraryChips counts={shelves.counts} /></Suspense>
+        <Suspense><LibraryChips counts={totalCounts} /></Suspense>
       </div>
       {showFeatured && <EditorialCard href={shelves.featured!.href} eyebrow={`Saved for you · Autopsies`} title={shelves.featured!.title} sub={shelves.featured!.dek} meta={`${shelves.featured!.company} · ${readMins(shelves.featured!.readTime)} min read`} height={160} className="mb-3" testId="lib-featured" />}
       <LibraryShelf testId="shelf-learning" title="Your learning" moreHref="/explore/modules" moreLabel="Continue where you left off →" items={shelves.yourLearning} />

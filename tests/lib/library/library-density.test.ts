@@ -17,4 +17,9 @@ describe('library-density', () => {
     expect(filterByType('autopsies', { guides: [guide], plans: [plan], stories: [story] }).guides).toEqual([])
     expect(filterByType('saved', { guides: [guide], plans: [plan], stories: [story] }).stories).toHaveLength(1)
   })
+
+  it('keeps saved stories in the shelf when featured extraction is off', () => {
+    const s = buildLibraryShelves({ guides: [], plans: [], stories: [story], readingProgress: [] }, { extractFeatured: false })
+    expect(s.featured).toBeNull(); expect(s.autopsies.map(a => a.title)).toEqual(['Gmail Undo Send'])
+  })
 })

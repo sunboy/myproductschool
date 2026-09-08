@@ -23,7 +23,7 @@ test.describe('readers', () => {
       await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 }).toBeGreaterThan(before)
     }
     await page.mouse.wheel(0, 1500); await page.waitForTimeout(2000)
-    const rows = await page.request.get('/api/reading-progress?limit=5').then(r => r.json()); expect(rows.rows.some((r: any) => r.content_type === 'module_chapter' && r.parent_id === 'context-engineering')).toBe(true)
+    await expect.poll(async () => { const rows = await page.request.get('/api/reading-progress?limit=5').then(r => r.json()); return rows.rows.some((r: any) => r.content_type === 'module_chapter' && r.parent_id === 'context-engineering') }, { timeout: 15_000 }).toBe(true)
     await toc.locator('a').nth(1).click(); await expect(page).toHaveURL(/\?chapter=/)
   })
 
