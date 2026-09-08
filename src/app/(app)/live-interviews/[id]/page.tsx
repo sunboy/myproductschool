@@ -2111,38 +2111,110 @@ export default function SessionPage({
     }
 
     return (
-      <RoomLayoutV2
-        companyName={companyName}
-        roleName={roleName}
-        disciplineLabel={disciplineLabel}
-        isActive={interviewPhase === 'active'}
-        timerDisplay={timerDisplay}
-        isWarning={isWarning}
-        flowPhase={flowPhase}
-        hatchState={hatchState}
-        currentCaption={captionText}
-        isCaptionsOn={isCaptionsOn}
-        recentSignals={recentSignals}
-        turns={turns}
-        quickReplies={["I'm here", 'Give me a hint', 'I need a minute', 'Can we take a quick break?']}
-        chatInput={chatInput}
-        setChatInput={setChatInput}
-        isChatSending={isChatSending}
-        chatInputRef={chatInputRef}
-        onSendChatMessage={async (text) => {
-          setIsChatSending(true)
-          try {
-            await handleSendChatMessage(text)
-          } finally {
-            setIsChatSending(false)
-          }
-        }}
-        onQuickReply={(text) => { void handleQuickChatMessage(text) }}
-        onBack={() => router.push('/live-interviews')}
-        onEnd={handleEndInterview}
-        onReplayTour={() => { window.dispatchEvent(new Event('start-interview-tour')) }}
-        centerContent={centerContent}
-      />
+      <>
+        <RoomLayoutV2
+          companyName={companyName}
+          roleName={roleName}
+          disciplineLabel={disciplineLabel}
+          isActive={interviewPhase === 'active'}
+          timerDisplay={timerDisplay}
+          isWarning={isWarning}
+          flowPhase={flowPhase}
+          hatchState={hatchState}
+          currentCaption={captionText}
+          isCaptionsOn={isCaptionsOn}
+          recentSignals={recentSignals}
+          turns={turns}
+          quickReplies={["I'm here", 'Give me a hint', 'I need a minute', 'Can we take a quick break?']}
+          chatInput={chatInput}
+          setChatInput={setChatInput}
+          isChatSending={isChatSending}
+          chatInputRef={chatInputRef}
+          onSendChatMessage={async (text) => {
+            setIsChatSending(true)
+            try {
+              await handleSendChatMessage(text)
+            } finally {
+              setIsChatSending(false)
+            }
+          }}
+          onQuickReply={(text) => { void handleQuickChatMessage(text) }}
+          onBack={() => router.push('/live-interviews')}
+          onEnd={handleEndInterview}
+          onReplayTour={() => { window.dispatchEvent(new Event('start-interview-tour')) }}
+          centerContent={centerContent}
+        />
+
+        {/* Interview limit modal */}
+        <PaywallModal
+          open={showLimitModal}
+          feature="interviews"
+          used={interviewUsageData.used}
+          limit={interviewUsageData.limit}
+          dismissible={false}
+          onClose={() => setShowLimitModal(false)}
+          secondaryAction={{
+            label: 'End session & view debrief',
+            onClick: () => {
+              setShowLimitModal(false)
+              handleEndInterview()
+            },
+          }}
+        />
+
+        {/* End confirm modal — shared with legacy room, duplicated here since
+            the density branch returns early before the legacy JSX tree. */}
+        {showEndConfirm && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
+          >
+            <div
+              className="flex flex-col items-center gap-5 text-center mx-4 p-6"
+              style={{
+                background: '#1a2420',
+                borderRadius: 20,
+                maxWidth: 380,
+                width: '100%',
+                border: '1px solid rgba(255,255,255,0.08)',
+                animation: 'fadeUp 0.25s ease-out',
+              }}
+            >
+              <HatchImage size={56} state="reviewing" />
+              <div>
+                <h3 className="font-headline text-lg font-bold" style={{ color: 'rgba(243,237,224,0.95)' }}>
+                  End this interview?
+                </h3>
+                <p className="font-body text-sm mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  Hatch will analyze your performance and generate a detailed debrief.
+                </p>
+              </div>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setShowEndConfirm(false)}
+                  className="flex-1 py-2.5 rounded-full font-label text-sm font-semibold transition-colors"
+                  style={{
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: 'rgba(243,237,224,0.6)',
+                    background: 'transparent',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
+                >
+                  Keep going
+                </button>
+                <button
+                  onClick={confirmEndInterview}
+                  className="flex-1 py-2.5 rounded-full font-label text-sm font-semibold transition-opacity hover:opacity-90"
+                  style={{ background: '#b23a2a', color: '#fff' }}
+                >
+                  End &amp; debrief
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     )
   }
 

@@ -53,7 +53,11 @@ test.describe('interviews density', () => {
       { waitUntil: 'domcontentloaded' }
     )
 
-    await expect(page.getByTestId('room-layout-v2')).toBeVisible({ timeout: 30_000 })
+    // autostart=1 lands on the 'ready' pre-flight modal ("Your interviewer is
+    // spinning up. Breathe.") before the room renders; dismiss it via the
+    // chat fallback path (no mic dependency) to reach 'active'.
+    await page.getByRole('button', { name: /continue in chat/i }).click()
+    await expect(page.getByTestId('room-layout-v2')).toBeVisible({ timeout: 60_000 })
     await expect(page.getByTestId('room-bar-v2')).toBeVisible()
     await expect(page.getByTestId('hatch-column')).toBeVisible()
     await expect(page.getByTestId('interview-transcript-column')).toBeVisible()
@@ -90,7 +94,8 @@ test.describe('interviews density', () => {
       { waitUntil: 'domcontentloaded' }
     )
 
-    await expect(page.getByTestId('room-layout-v2')).toBeVisible({ timeout: 30_000 })
+    await page.getByRole('button', { name: /continue in chat/i }).click()
+    await expect(page.getByTestId('room-layout-v2')).toBeVisible({ timeout: 60_000 })
     await expect(page.getByTestId('hatch-column')).toBeVisible()
     await expect(page.getByTestId('interview-transcript-column')).toBeVisible()
   })
