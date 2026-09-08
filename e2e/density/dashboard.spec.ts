@@ -37,7 +37,9 @@ test.describe('dashboard v4', () => {
     // New users are redirected /dashboard → /welcome until hp-welcome-seen is
     // set (WelcomeFlow sets it on mount); visit /welcome first so the cookie
     // is present, then land on /dashboard for the calibration-card assertions.
-    await gotoReady(page, '/welcome')
+    // /welcome has no shell-v2 chrome, so use a plain goto (gotoReady waits
+    // for `[data-shell="v2"]`, which never attaches there and times out).
+    await page.goto('/welcome', { waitUntil: 'domcontentloaded' })
     await expect(page.getByTestId('welcome')).toBeVisible()
     await gotoReady(page, '/dashboard')
     await expect(page.getByTestId('calibration-card')).toBeVisible()
