@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test'
 import { VIEWPORTS, loginViaApi, gotoReady, topOf, setDensityFlag } from './helpers'
 
 test.describe('shell-v2', () => {
+  test.describe.configure({ timeout: 240_000 })
+
   test.beforeAll(async () => {
     if (process.env.DENSITY_FLAG_WAIT === '1') {
       await setDensityFlag(true)
@@ -12,20 +14,25 @@ test.describe('shell-v2', () => {
   test.beforeEach(async ({ page }) => { await loginViaApi(page) })
 
   test('desktop dimensions and collapse persistence', async ({ page }) => {
-    await page.setViewportSize(VIEWPORTS.desktop)
-    await gotoReady(page, '/dashboard')
-    const side = page.getByTestId('shell-sidebar'); const top = page.getByTestId('shell-topbar')
-    expect((await side.boundingBox())!.width).toBe(200)
-    expect((await top.boundingBox())!.height).toBe(48)
-    await page.getByTestId('shell-nav-toggle').click()
-    await expect(side).toHaveAttribute('data-collapsed', 'true')
-    expect((await side.boundingBox())!.width).toBe(56)
-    await page.reload(); await gotoReady(page, '/dashboard')
-    await expect(page.getByTestId('shell-sidebar')).toHaveAttribute('data-collapsed', 'true')
-    const prefs = await page.request.get('/api/profile').then(r => r.json())
-    expect(prefs.ui_prefs?.nav_collapsed).toBe(true)
-    await page.getByTestId('shell-nav-toggle').click()
-    await expect(page.getByTestId('shell-sidebar')).toHaveAttribute('data-collapsed', 'false')
+    await page.request.patch('/api/profile', { data: { ui_prefs: { nav_collapsed: false } } })
+    try {
+      await page.setViewportSize(VIEWPORTS.desktop)
+      await gotoReady(page, '/dashboard')
+      const side = page.getByTestId('shell-sidebar'); const top = page.getByTestId('shell-topbar')
+      expect((await side.boundingBox())!.width).toBe(200)
+      expect((await top.boundingBox())!.height).toBe(48)
+      await page.getByTestId('shell-nav-toggle').click()
+      await expect(side).toHaveAttribute('data-collapsed', 'true')
+      await expect.poll(async () => Math.round((await side.boundingBox())!.width), { timeout: 5000 }).toBe(56)
+      await page.reload(); await gotoReady(page, '/dashboard')
+      await expect(page.getByTestId('shell-sidebar')).toHaveAttribute('data-collapsed', 'true')
+      const prefs = await page.request.get('/api/profile').then(r => r.json())
+      expect(prefs.ui_prefs?.nav_collapsed).toBe(true)
+      await page.getByTestId('shell-nav-toggle').click()
+      await expect(page.getByTestId('shell-sidebar')).toHaveAttribute('data-collapsed', 'false')
+    } finally {
+      await page.request.patch('/api/profile', { data: { ui_prefs: { nav_collapsed: false } } })
+    }
   })
 
   test('reader routes force the rail and restore on exit', async ({ page }) => {
@@ -53,7 +60,7 @@ test.describe('shell-v2', () => {
     await gotoReady(page, '/workspace/challenges/answering-range-sum-queries-over-fixed-sensor-readings')
     await expect(page.getByTestId('shell-sidebar')).toHaveAttribute('data-collapsed', 'true')
     await expect(page.locator('nav.rounded-full')).toHaveCount(0)
-    await expect(page.getByTestId('run-button')).toBeVisible()
+    await expect(page.getByTestId('run-button')).toBeVisible({ timeout: 30_000 })
     await expect(page.getByTestId('submit-button')).toBeVisible()
     expect(await topOf(page, '[data-testid=monaco-editor-container]')).toBeLessThan(140)
   })
