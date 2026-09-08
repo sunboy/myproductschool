@@ -6,6 +6,7 @@ test.describe('readers', () => {
 
   test('module reader', async ({ page }) => {
     await expectNoConsoleErrors(page, async () => { await gotoReady(page, '/explore/modules/context-engineering') })
+    await expect(page.getByTestId('reader-back')).toBeVisible({ timeout: 30_000 })
     await expect(page.getByTestId('shell-sidebar')).toHaveAttribute('data-collapsed', 'true')
     await expect(page.getByTestId('reader-back')).toHaveAttribute('href', '/explore/modules')
     expect(await topOf(page, 'article h1')).toBeLessThanOrEqual(130)
@@ -19,6 +20,7 @@ test.describe('readers', () => {
 
   test('autopsy reader', async ({ page }) => {
     await gotoReady(page, '/explore/autopsies/buffer/stories/buffer-fake-landing-page-mvp')
+    await expect(page.getByTestId('reader-back')).toBeVisible({ timeout: 30_000 })
     await expect(page.locator('.reader-outline')).toHaveCount(0)
     await expect(page.getByTestId('reader-back')).toHaveAttribute('href', '/explore/autopsies/buffer')
     expect(await topOf(page, 'article h1')).toBeLessThanOrEqual(130)
@@ -29,6 +31,7 @@ test.describe('readers', () => {
 
   test('mobile: no toc column, chrome present', async ({ page }) => {
     await page.setViewportSize(VIEWPORTS.mobile); await gotoReady(page, '/explore/modules/context-engineering')
-    await expect(page.getByTestId('right-toc')).toBeHidden(); await expect(page.locator('#guide-chapter')).toBeVisible()
+    await expect(page.locator('#guide-chapter')).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByTestId('right-toc')).toBeHidden()
   })
 })
