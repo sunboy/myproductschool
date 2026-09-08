@@ -886,3 +886,10 @@ body::before {
   background-size: 100% 48rem;
   background-repeat: no-repeat;
 }
+
+/* shell-v2 (ui_density_v1) */
+:root {
+  --shell-nav-w: 200px;
+  --shell-rail-w: 56px;
+  --shell-top-h: 48px;
+}

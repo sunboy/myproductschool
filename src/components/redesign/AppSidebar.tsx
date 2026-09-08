@@ -30,7 +30,7 @@ interface NavEntry {
   showLivePill?: boolean
 }
 
-const MAIN_NAV_ENTRIES: NavEntry[] = [
+export const MAIN_NAV_ENTRIES: NavEntry[] = [
   { key: 'home', label: 'Home', href: '/dashboard', icon: Home },
   { key: 'practice', label: 'Practice', href: '/challenges', icon: Compass },
   { key: 'library', label: 'Library', href: '/explore', icon: BookOpen },
