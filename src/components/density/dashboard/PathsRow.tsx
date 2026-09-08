@@ -13,7 +13,7 @@ export function PathsRow({ paths, quickTake, week, streakDays, focusMove }: { pa
       {quickTake ? <QuickTakePanel compact prompt={quickTake.prompt} challengeId={quickTake.challengeId} move={quickTake.move} /> : <div />}
       <Link href="/progress" data-testid="week-card" className="rounded-2xl border border-hairline bg-card-bright p-3">
         <div className="text-[10px] font-bold uppercase tracking-[.08em] text-tertiary">Your week</div>
-        <div className="my-1.5 flex gap-1.5">{week.map(d => <i key={d.label + String(d.today)} title={d.label} className={`block size-5 rounded-md ${d.completed ? 'bg-gold' : 'border border-hairline'} ${d.today ? 'ring-2 ring-primary-fixed' : ''}`} />)}</div>
+        <div className="my-1.5 flex gap-1.5">{week.map((d, i) => <i key={`${i}-${d.label}`} title={d.label} className={`block size-5 rounded-md ${d.completed ? 'bg-gold' : 'border border-hairline'} ${d.today ? 'ring-2 ring-primary-fixed' : ''}`} />)}</div>
         <div className="flex justify-between rounded-lg bg-primary-fixed px-2 py-1 text-[11px]"><b>{focusMove ? `Focus: ${focusMove}` : `Streak: ${streakDays} day${streakDays === 1 ? '' : 's'}`}</b><span>{streakDays} day streak</span></div>
       </Link>
     </section>

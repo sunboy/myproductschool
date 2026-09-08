@@ -43,7 +43,7 @@ export function DashboardV4(p: DashboardV4Props) {
         <HatchThoughtCard key="h" message={p.hatchMessage} prompts={p.hatchPrompts} />,
       ].filter(Boolean) as React.ReactElement[]
   return (
-    <div className="mx-auto w-full max-w-[1400px] px-4 py-4 sm:px-6">
+    <div className="w-full">
       <HeroGrid greeting={greeting} cells={cells} />
       {p.isNewUser && <FirstRepsShelf reps={p.firstReps} />}
       <PracticeAreaShelf stats={p.areaStats} />
