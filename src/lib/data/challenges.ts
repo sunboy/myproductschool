@@ -40,6 +40,8 @@ export interface ChallengeListFilters {
   topic?: string | string[]
   technique?: string | string[]
   real_interview?: boolean
+  /** FLOW move slug (frame/list/optimize/win). Drives the Progress band's "Your next focus" deep link. */
+  move?: string
 }
 
 /**
@@ -135,8 +137,9 @@ function toChallengeWithDomain(
 /**
  * Apply the shared Practice filter set to a challenges query. Used by
  * getChallenges, getChallengeCounts, and the /api/challenges list/count routes
- * so the filter semantics stay identical everywhere. `move_tag` is intentionally
- * NOT supported — the FLOW Move filter was removed from Practice.
+ * so the filter semantics stay identical everywhere. `filters.move` is a
+ * single FLOW move slug driving the Progress band's "Your next focus" deep
+ * link (`/challenges?move=<weakest>`) — it is not a Practice UI filter chip.
  *
  * Typed generically over the PostgREST filter builder; each `.eq/.in/.contains`
  * returns the same builder type, so the chain stays type-safe for callers.
@@ -207,6 +210,7 @@ export function applyChallengeFilters<
   if (techniques.length > 0) query = query.overlaps('technique_tags', techniques)
 
   if (filters.real_interview) query = query.eq('is_real_interview', true)
+  if (filters.move) query = query.contains('move_tags', [filters.move])
   return query
 }
 

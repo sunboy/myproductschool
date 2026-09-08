@@ -79,6 +79,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
     // Client URL writer uses '1' (see writeFilterValues in FilteredChallengesView);
     // accept both '1' and 'true' for forward compat with any external link or test.
     real_interview: resolvedSearchParams.real_interview === '1' || resolvedSearchParams.real_interview === 'true',
+    move: resolvedSearchParams.move,
   }
 
   // Discipline chip counts (cheap HEAD counts — no row payload). The initial
