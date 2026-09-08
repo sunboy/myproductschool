@@ -1,6 +1,8 @@
 import { createClient, getCachedUser } from '@/lib/supabase/server'
 import { IS_MOCK } from '@/lib/mock'
+import { getAppFlag } from '@/lib/config/app-flags'
 import type { SessionProfile } from '@/context/SessionContext'
+import type { UiPrefs } from '@/lib/shell/ui-prefs'
 import { AppLayoutClient } from './AppLayoutClient'
 
 /**
@@ -13,6 +15,9 @@ import { AppLayoutClient } from './AppLayoutClient'
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   let initialProfile: SessionProfile | null = null
+  let initialPrefs: UiPrefs | null = null
+
+  const uiDensity = await getAppFlag('ui_density_v1', false)
 
   if (!IS_MOCK) {
     try {
@@ -22,7 +27,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         const [{ data: profile }, { data: bestStreakRow }] = await Promise.all([
           supabase
             .from('profiles')
-            .select('id, display_name, avatar_url, plan, streak_days, xp_total, onboarding_completed_at, has_seen_hatch_intro')
+            .select('id, display_name, avatar_url, plan, streak_days, xp_total, onboarding_completed_at, has_seen_hatch_intro, ui_prefs')
             .eq('id', user.id)
             .maybeSingle(),
           supabase
@@ -45,6 +50,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             onboarding_completed_at: profile.onboarding_completed_at ?? null,
             has_seen_hatch_intro: profile.has_seen_hatch_intro ?? false,
           }
+          initialPrefs = (profile.ui_prefs as UiPrefs | null) ?? null
         }
       }
     } catch {
@@ -53,5 +59,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     }
   }
 
-  return <AppLayoutClient initialProfile={initialProfile}>{children}</AppLayoutClient>
+  return (
+    <AppLayoutClient initialProfile={initialProfile} uiDensity={uiDensity} initialPrefs={initialPrefs}>
+      {children}
+    </AppLayoutClient>
+  )
 }
