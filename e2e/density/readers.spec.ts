@@ -22,8 +22,10 @@ test.describe('readers', () => {
       await headingBtns.last().click()
       await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 }).toBeGreaterThan(before)
     }
-    await page.mouse.wheel(0, 1500); await page.waitForTimeout(2000)
-    await expect.poll(async () => { const rows = await page.request.get('/api/reading-progress?limit=5').then(r => r.json()); return rows.rows.some((r: any) => r.content_type === 'module_chapter' && r.parent_id === 'context-engineering') }, { timeout: 15_000 }).toBe(true)
+    // Reading progress is reported (debounced PUT). Finished reads (>=0.98) are excluded from GET by design, so observe the PUT.
+    const put = page.waitForResponse(r => r.url().includes('/api/reading-progress') && r.request().method() === 'PUT' && r.ok(), { timeout: 15_000 })
+    await page.mouse.wheel(0, 600); await page.waitForTimeout(300); await page.mouse.wheel(0, 300)
+    const body = JSON.parse((await put).request().postData() ?? '{}'); expect(body.content_type).toBe('module_chapter'); expect(body.parent_id).toBe('context-engineering')
     await toc.locator('a').nth(1).click(); await expect(page).toHaveURL(/\?chapter=/)
   })
 
