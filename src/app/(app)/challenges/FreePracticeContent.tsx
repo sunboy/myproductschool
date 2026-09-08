@@ -118,7 +118,9 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
     return (
       <div className="flex min-w-0 flex-col gap-3">
         <PracticeBand />
-        <BillingUsageFromProfile className="lg:hidden sm:w-64 sm:flex-shrink-0" />
+        {/* No BillingUsageFromProfile strip here — it pushed the first result
+            card past the y<=270 layout budget. Free users still see usage via
+            the top-bar SpendIndicator, and paywall gates still apply. */}
         <FilteredChallengesView
           initialChallenges={initialChallenges}
           initialDiscipline={discipline}
