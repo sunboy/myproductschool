@@ -13,6 +13,7 @@ import { GroupedChallengeList } from '@/components/challenges/GroupedChallengeLi
 import { DisciplineChipRow } from '@/components/redesign/practice/DisciplineChipRow'
 import { SortSegmented, isPracticeSort, type PracticeSort } from '@/components/redesign/practice/SortSegmented'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
+import { useUiShell } from '@/components/shell-v2/UiShellContext'
 import type { ChallengeWithDomain } from '@/lib/types'
 import { isAnalyticsFeatureEnabled } from '@/lib/flags/analytics'
 
@@ -217,7 +218,8 @@ export function FilteredChallengesView({
   const sortParam = parsedParams.get('sort')
   const sort: PracticeSort = isPracticeSort(sortParam) ? sortParam : 'recommended'
 
-  const listView = parsedParams.get('view') !== 'grid'
+  const { density, practiceView, setPracticeView } = useUiShell()
+  const listView = density ? practiceView !== 'cards' : parsedParams.get('view') !== 'grid'
   const returnHref = `${pathname}${searchString ? `?${searchString}` : ''}`
 
   function updateParams(mutator: (params: URLSearchParams) => void) {
@@ -274,6 +276,10 @@ export function FilteredChallengesView({
   }
 
   function handleToggleView() {
+    if (density) {
+      setPracticeView(listView ? 'cards' : 'list')
+      return
+    }
     const params = new URLSearchParams(searchString)
     if (listView) params.set('view', 'grid')
     else params.delete('view')
@@ -315,7 +321,8 @@ export function FilteredChallengesView({
         onOpenMobileSheet={() => setMobileSheetOpen(true)}
         listView={listView}
         onToggleView={handleToggleView}
-        showViewToggle={discipline === 'all'}
+        showViewToggle={density || discipline === 'all'}
+        density={density}
       />
 
       {/* Active filter pills */}

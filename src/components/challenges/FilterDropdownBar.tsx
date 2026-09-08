@@ -7,6 +7,7 @@ import type { Discipline } from './DisciplineTabStrip'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { getTopicsForDiscipline, getTechniquesForDiscipline, type Discipline as TaxonomyDiscipline } from '@/lib/data/taxonomy'
 import { DIFFICULTY_OPTIONS as PRACTICE_DIFFICULTY_OPTIONS } from '@/lib/practice/difficulty'
+import { ViewToggle } from '@/components/density/practice/ViewToggle'
 
 /** Maps the UI discipline keys (from DisciplineTabStrip) to the taxonomy discipline keys.
  *  'all' has no taxonomy equivalent; 'algorithm' maps to 'coding'. */
@@ -85,6 +86,8 @@ interface Props {
   onToggleView: () => void
   /** Grid/list toggle only affects the cross-discipline 'all' view; hidden elsewhere (grouped list is list-only). */
   showViewToggle?: boolean
+  /** When true, render the persisted density ViewToggle instead of the legacy segmented control. */
+  density?: boolean
 }
 
 const CHIP_BASE = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-label text-xs whitespace-nowrap transition-colors'
@@ -147,7 +150,7 @@ function MultiSelectDropdown({
   )
 }
 
-export function FilterDropdownBar({ discipline, filters, onChange, resultCount, topicCounts = {}, techniqueCounts = {}, onOpenMobileSheet, listView, onToggleView, showViewToggle = true }: Props) {
+export function FilterDropdownBar({ discipline, filters, onChange, resultCount, topicCounts = {}, techniqueCounts = {}, onOpenMobileSheet, listView, onToggleView, showViewToggle = true, density = false }: Props) {
   const visibleDropdowns = DROPDOWNS.filter(
     (d) =>
       (d.disciplines.length === 0 || d.disciplines.includes(discipline)) &&
@@ -253,8 +256,9 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
         </span>
 
         {/* View toggle — segmented control. Only meaningful on the 'all' view;
-            single-discipline views render a list-only grouped layout. */}
-        {showViewToggle && (
+            single-discipline views render a list-only grouped layout. In density
+            mode, the persisted ViewToggle applies to every discipline instead. */}
+        {showViewToggle && (density ? <ViewToggle /> : (
           <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-hairline">
             <button
               type="button"
@@ -281,7 +285,7 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
               <List className="size-3.5" />
             </button>
           </div>
-        )}
+        ))}
       </div>
 
       {/* Mobile filter bar */}
@@ -304,7 +308,7 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
           )}
         </button>
         <div className="min-w-0 flex-1" />
-        {showViewToggle && (
+        {showViewToggle && (density ? <ViewToggle /> : (
           <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-hairline">
             <button
               type="button"
@@ -331,7 +335,7 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
               <List className="size-3.5" />
             </button>
           </div>
-        )}
+        ))}
         <span className="shrink-0 font-label text-xs text-ink-secondary tabular-nums">{resultCount}</span>
       </div>
     </>

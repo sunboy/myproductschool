@@ -14,6 +14,8 @@ import { FilteredChallengesView } from './FilteredChallengesView'
 import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
 import { challengeTaskSummary } from '@/lib/challenges/presentation'
 import { LearningGeometry } from '@/components/redesign/LearningGeometry'
+import { getAppFlag } from '@/lib/config/app-flags'
+import { PracticeBand } from '@/components/density/practice/PracticeBand'
 
 /** How many preview cards each discipline section shows in the "All practice" overview. */
 const PREVIEW_PER_DISCIPLINE = 6
@@ -56,6 +58,7 @@ function getParadigmLabel(paradigm?: string | null): string {
 export async function FreePracticeContent({ searchParams }: FreePracticeContentProps) {
   const resolvedSearchParams = await searchParams
   const { q } = resolvedSearchParams
+  const density = await getAppFlag('ui_density_v1', false)
 
   // Multi-select filters arrive comma-joined from the client URL writer.
   // For SSR we filter on the FIRST value only (the URL hash hydration on the
@@ -108,6 +111,24 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
   for (const [id, d] of Object.entries(descriptions)) {
     const summary = challengeTaskSummary(d)
     if (summary) summaryMap[id] = summary
+  }
+
+  if (density) {
+    return (
+      <div className="flex min-w-0 flex-col gap-3">
+        <PracticeBand />
+        <BillingUsageFromProfile className="lg:hidden sm:w-64 sm:flex-shrink-0" />
+        <FilteredChallengesView
+          initialChallenges={initialChallenges}
+          initialDiscipline={discipline}
+          counts={counts}
+          paradigms={paradigmMap}
+          summaries={summaryMap}
+          previewPerDiscipline={PREVIEW_PER_DISCIPLINE}
+          pageSize={DISCIPLINE_PAGE_SIZE}
+        />
+      </div>
+    )
   }
 
   return (
