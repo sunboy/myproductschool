@@ -57,7 +57,7 @@ export interface TestChallenge {
 // bypasses onboarding.
 // ---------------------------------------------------------------------------
 
-export async function createTestUser(opts: { executionsToday?: number } = {}): Promise<TestUser> {
+export async function createTestUser(opts: { executionsToday?: number; onboarded?: boolean } = {}): Promise<TestUser> {
   const admin = getAdminClient()
   const id = uuidv4()
   const email = `test-coding-${id.slice(0, 8)}@test.hackproduct.dev`
@@ -89,7 +89,7 @@ export async function createTestUser(opts: { executionsToday?: number } = {}): P
     plan: 'free',
     streak_days: 0,
     xp_total: 0,
-    onboarding_completed_at: new Date().toISOString(),
+    ...(opts.onboarded === false ? {} : { onboarding_completed_at: new Date().toISOString() }),
     // execution cap tracking — used by T18 test
     ...(opts.executionsToday !== undefined
       ? { daily_attempts_today: opts.executionsToday }
