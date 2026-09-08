@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useMemo, useRef } from 'react'
+import { useLayoutEffect, useMemo, useRef } from 'react'
 import { Bookmark } from 'lucide-react'
 import { ChapterBody } from '@/components/learning/ChapterBody'
 import { ReaderFrame } from '@/components/density/ReaderFrame'
@@ -24,16 +24,20 @@ export function ModuleReaderV2({ module, chapters, data, onSelectChapter, markCo
   const articleRef = useRef<HTMLElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
   const headings = useMemo(() => extractHeadings(data.body_mdx ?? ''), [data.body_mdx])
-  const activeId = useActiveHeading(headings.map(h => h.id))
-  const completed = chapters.filter(c => c.is_completed).length
-  const idx = chapters.findIndex(c => c.slug === data.slug)
-  const next = chapters[idx + 1]
-  const isCompleted = chapters[idx]?.is_completed ?? false
 
   // ChapterBody's markdown renderer does not assign heading ids. Assign them
   // here, in document order, matching extractHeadings' slug rule, so anchor
-  // links and IntersectionObserver-based active tracking work.
-  useEffect(() => {
+  // links and IntersectionObserver-based active tracking work. This must run
+  // as a layout effect (synchronously after DOM mutation, before paint and
+  // before any passive `useEffect`) so that `useActiveHeading` below —
+  // itself a `useEffect` — always observes elements that already carry
+  // their ids. A plain `useEffect` here raced with useActiveHeading's
+  // effect: on first mount neither is guaranteed to run first by
+  // declaration order alone once concurrent features are involved, so the
+  // observer could initialize against zero elements and never re-attach
+  // (its deps are the id list, which doesn't change), and any click before
+  // this ran would find no matching element for scrollIntoView.
+  useLayoutEffect(() => {
     const root = bodyRef.current
     if (!root) return
     const els = Array.from(root.querySelectorAll('h2, h3'))
@@ -45,6 +49,12 @@ export function ModuleReaderV2({ module, chapters, data, onSelectChapter, markCo
       if (slugifyHeading(text) === h.id) { el.id = h.id; i++ }
     }
   }, [headings, data.slug])
+
+  const activeId = useActiveHeading(headings.map(h => h.id))
+  const completed = chapters.filter(c => c.is_completed).length
+  const idx = chapters.findIndex(c => c.slug === data.slug)
+  const next = chapters[idx + 1]
+  const isCompleted = chapters[idx]?.is_completed ?? false
 
   useReaderChrome({
     left: (
