@@ -26,7 +26,7 @@ export function AppTopBarV2({ searchTotal, leftSlot, rightSlot }: { searchTotal?
   return (
     <header data-testid="shell-topbar" data-topnav className="flex shrink-0 items-center gap-3 border-b border-hairline bg-background px-4" style={{ height: 'var(--shell-top-h)' }}>
       {leftSlot ?? (
-        <form role="search" onSubmit={e => { e.preventDefault(); router.push(scope.buildHref(q)) }} className="flex h-8 w-full max-w-[360px] items-center gap-2 rounded-full border border-hairline bg-card-bright px-3 text-[13px] text-ink-secondary">
+        <form role="search" onSubmit={e => { e.preventDefault(); router.push(scope.buildHref(inputRef.current?.value ?? q)) }} className="flex h-8 w-full max-w-[360px] items-center gap-2 rounded-full border border-hairline bg-card-bright px-3 text-[13px] text-ink-secondary">
           <Search size={14} aria-hidden />
           <input ref={inputRef} data-testid="shell-search" value={q} onChange={e => setQ(e.target.value)} placeholder={scope.placeholder} aria-label={scope.placeholder} className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-ink-muted" />
           <kbd className="rounded bg-surface-container px-1 text-[10px]">⌘K</kbd>
