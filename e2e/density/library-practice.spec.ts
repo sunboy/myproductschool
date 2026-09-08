@@ -28,7 +28,7 @@ test.describe('library + practice', () => {
     await page.reload(); await gotoReady(page, '/challenges'); await expect(page.getByTestId('view-cards')).toHaveAttribute('aria-pressed', 'true')
     const pick = page.getByTestId('practice-hatch-pick'); if (await pick.count()) { const h = await pick.locator('a').first().getAttribute('href'); expect(h).toMatch(/\/workspace\/challenges\//); await page.getByTestId('practice-hatch-pick-dismiss').click(); await expect(pick).toHaveCount(0); await page.reload(); await gotoReady(page, '/challenges'); await expect(page.getByTestId('practice-hatch-pick')).toHaveCount(0) }
     await page.getByTestId('view-list').click(); await expect(page.getByTestId('challenge-card')).toHaveCount(0)
-    const cta = page.getByTestId('challenge-cta').or(page.locator('a:has-text("Resume"), a:has-text("Start")')).first(); const href = await cta.getAttribute('href'); expect(href).toMatch(/\/workspace\/challenges\/.+returnTo=/)
+    const cta = page.getByTestId('challenge-cta').or(page.locator('a[href*="/workspace/challenges/"]')).first(); const href = await cta.getAttribute('href'); expect(href).toMatch(/\/workspace\/challenges\/.+returnTo=/)
   })
 
   test('mobile', async ({ page }) => {

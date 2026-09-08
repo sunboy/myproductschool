@@ -37,17 +37,22 @@ export function ModuleReaderV2({ module, chapters, data, onSelectChapter, markCo
   // observer could initialize against zero elements and never re-attach
   // (its deps are the id list, which doesn't change), and any click before
   // this ran would find no matching element for scrollIntoView.
+  // ChapterBody renders its markdown client-side (dynamic import, ssr:false), so the
+  // headings appear after mount. Assign ids now and again on every DOM mutation.
   useLayoutEffect(() => {
     const root = bodyRef.current
     if (!root) return
-    const els = Array.from(root.querySelectorAll('h2, h3'))
-    let i = 0
-    for (const el of els) {
-      const h = headings[i]
-      if (!h) break
-      const text = (el.textContent ?? '').trim()
-      if (slugifyHeading(text) === h.id) { el.id = h.id; i++ }
+    const wanted = new Set(headings.map(h => h.id))
+    const assign = () => {
+      for (const el of Array.from(root.querySelectorAll('h2, h3'))) {
+        const id = slugifyHeading((el.textContent ?? '').trim())
+        if (wanted.has(id) && el.id !== id) el.id = id
+      }
     }
+    assign()
+    const mo = new MutationObserver(assign)
+    mo.observe(root, { childList: true, subtree: true })
+    return () => mo.disconnect()
   }, [headings, data.slug])
 
   const activeId = useActiveHeading(headings.map(h => h.id))

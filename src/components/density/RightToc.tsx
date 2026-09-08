@@ -20,7 +20,8 @@ export function RightToc({ groups, activeId, progressPct, onSelect, testId = 'ri
               : <button key={it.id} type="button" onClick={() => {
                   onSelect?.(it.id)
                   const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-                  document.getElementById(it.id)?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+                  const target = document.getElementById(it.id) ?? Array.from(document.querySelectorAll('article h2, article h3')).find(h => (h.textContent ?? '').trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-') === it.id) ?? null
+                  target?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
                 }} className={`w-full text-left ${cls}`} aria-current={isActive ? 'true' : undefined}>{it.done ? '✓ ' : ''}{it.label}</button>
           })}
         </div>
