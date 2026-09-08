@@ -1,4 +1,6 @@
 import { cache, Suspense } from 'react'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import type { ResumeOrStartAction } from '@/components/dashboard/cards/resume-or-start'
 import { ContinueLearning } from '@/components/redesign/dashboard/ContinueLearning'
@@ -332,6 +334,10 @@ async function DashboardContent() {
   const density = await getAppFlag('ui_density_v1', false)
   if (density && data.userId) {
     const isNewUser = !data.onboardingCompletedAt && !data.hasAnyAttempts
+    if (isNewUser) {
+      const cookieStore = await cookies()
+      if (!cookieStore.get('hp-welcome-seen')) redirect('/welcome')
+    }
     const [areaStats, reading, editorial] = await Promise.all([
       getAreaStats(data.userId),
       isNewUser ? null : getContinueReading(data.userId),

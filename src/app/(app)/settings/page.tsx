@@ -134,7 +134,11 @@ export default function SettingsPage() {
     setRedoingCalibration(true)
     try {
       await clearOnboardingState()
-      openModal('settings')
+      if (density) {
+        router.push('/welcome?redo=1')
+      } else {
+        openModal('settings')
+      }
     } finally {
       setRedoingCalibration(false)
     }
