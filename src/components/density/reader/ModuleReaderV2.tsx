@@ -1,0 +1,112 @@
+'use client'
+import Link from 'next/link'
+import { useEffect, useMemo, useRef } from 'react'
+import { Bookmark } from 'lucide-react'
+import { ChapterBody } from '@/components/learning/ChapterBody'
+import { ReaderFrame } from '@/components/density/ReaderFrame'
+import { RightToc } from '@/components/density/RightToc'
+import { useActiveHeading } from '@/components/density/useActiveHeading'
+import { useReaderChrome } from '@/components/shell-v2/ReaderChromeContext'
+import { extractHeadings, slugifyHeading } from '@/lib/reading/headings'
+import { ReaderHeader } from './ReaderHeader'
+import { HeroImageSlot } from './HeroImageSlot'
+import { useReadingProgressReporter } from './useReadingProgressReporter'
+import type { LearnChapter, LearnChapterWithProgress, LearnModule } from '@/lib/types'
+
+export function ModuleReaderV2({ module, chapters, data, onSelectChapter, markComplete, completing }: {
+  module: LearnModule
+  chapters: LearnChapterWithProgress[]
+  data: LearnChapter
+  onSelectChapter: (slug: string) => void
+  markComplete: () => Promise<void> | void
+  completing?: boolean
+}) {
+  const articleRef = useRef<HTMLElement>(null)
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const headings = useMemo(() => extractHeadings(data.body_mdx ?? ''), [data.body_mdx])
+  const activeId = useActiveHeading(headings.map(h => h.id))
+  const completed = chapters.filter(c => c.is_completed).length
+  const idx = chapters.findIndex(c => c.slug === data.slug)
+  const next = chapters[idx + 1]
+  const isCompleted = chapters[idx]?.is_completed ?? false
+
+  // ChapterBody's markdown renderer does not assign heading ids. Assign them
+  // here, in document order, matching extractHeadings' slug rule, so anchor
+  // links and IntersectionObserver-based active tracking work.
+  useEffect(() => {
+    const root = bodyRef.current
+    if (!root) return
+    const els = Array.from(root.querySelectorAll('h2, h3'))
+    let i = 0
+    for (const el of els) {
+      const h = headings[i]
+      if (!h) break
+      const text = (el.textContent ?? '').trim()
+      if (slugifyHeading(text) === h.id) { el.id = h.id; i++ }
+    }
+  }, [headings, data.slug])
+
+  useReaderChrome({
+    left: (
+      <Link href="/explore/modules" data-testid="reader-back" className="rounded-full border border-hairline bg-card-bright px-3 py-1 text-[12px] font-semibold">
+        ← All guides
+      </Link>
+    ),
+    right: (
+      <button
+        type="button"
+        data-testid="reader-complete"
+        disabled={isCompleted || completing}
+        onClick={() => markComplete()}
+        className="flex items-center gap-1.5 rounded-full border border-hairline bg-card-bright px-3 py-1 text-[12px] font-semibold disabled:opacity-60"
+      >
+        <Bookmark size={13} aria-hidden />
+        {isCompleted ? 'Completed' : completing ? 'Saving…' : 'Mark complete'}
+      </button>
+    ),
+  })
+
+  useReadingProgressReporter({ contentType: 'module_chapter', parentId: module.slug, contentId: data.slug, activeId, articleRef })
+
+  return (
+    <ReaderFrame
+      toc={
+        <RightToc
+          progressPct={module.chapter_count ? (completed / module.chapter_count) * 100 : 0}
+          activeId={activeId}
+          onSelect={() => {}}
+          groups={[
+            {
+              label: `Chapter ${data.sort_order} of ${module.chapter_count}`,
+              items: chapters.map(c => ({
+                id: `ch-${c.slug}`,
+                label: c.title,
+                done: c.is_completed,
+                href: c.is_unlocked || c.is_completed ? `/explore/modules/${module.slug}?chapter=${c.slug}` : undefined,
+              })),
+            },
+            { label: 'On this page', items: headings.map(h => ({ id: h.id, label: h.label })) },
+          ]}
+        />
+      }
+    >
+      <div ref={articleRef as React.RefObject<HTMLDivElement>} data-hatch-page-type="learning_module" data-hatch-entity-id={module.slug} data-hatch-active-chapter={data.slug}>
+        <ReaderHeader eyebrow={`${module.name} · Chapter ${data.sort_order} of ${module.chapter_count}`} title={data.title} lede={data.hook_text || data.subtitle} />
+        <HeroImageSlot src={data.hero_image_url ?? null} seed={`${module.slug}/${data.slug}`} />
+        <ChapterBody ref={bodyRef} body_mdx={data.body_mdx} figures={data.figures ?? []} hatchContextLabel="Active chapter body" />
+        <footer className="mt-8 flex items-center justify-between border-t border-hairline pt-4">
+          <Link href="/explore/modules" className="text-[13px] font-semibold text-ink-secondary">All guides</Link>
+          {next && (next.is_unlocked || next.is_completed || isCompleted) ? (
+            <button type="button" data-testid="reader-next" onClick={() => onSelectChapter(next.slug)} className="rounded-full bg-forest-800 px-4 py-2 text-[13px] font-bold text-white">
+              Next: {next.title} →
+            </button>
+          ) : !isCompleted ? (
+            <button type="button" onClick={() => markComplete()} className="rounded-full bg-forest-800 px-4 py-2 text-[13px] font-bold text-white">
+              Mark chapter complete
+            </button>
+          ) : null}
+        </footer>
+      </div>
+    </ReaderFrame>
+  )
+}
