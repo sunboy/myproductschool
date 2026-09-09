@@ -226,9 +226,15 @@ export async function POST(
   }
 
   let artifactGrading: Awaited<ReturnType<typeof gradeArtifact>> | null = null
-  if (artifactSnapshot && !noSubstance) {
+  // Notes-pad snapshots (density room, product_sense discipline) aren't a
+  // gradable artifact in the canvas/editor sense — they only feed Hatch's
+  // chat context via buildArtifactContextNote, not the artifact grader.
+  if (artifactSnapshot && artifactSnapshot.type !== 'notes' && !noSubstance) {
     try {
-      artifactGrading = await gradeArtifact(artifactSnapshot, { ...budget!, route: 'live_interview_artifact_grade' })
+      artifactGrading = await gradeArtifact(
+        artifactSnapshot as Extract<typeof artifactSnapshot, { type: 'canvas' | 'editor' }>,
+        { ...budget!, route: 'live_interview_artifact_grade' }
+      )
     } catch (err) {
       const response = aiBudgetResponse(err)
       if (response) return response

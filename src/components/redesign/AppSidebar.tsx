@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {
   Home,
   Compass,
+  Mic,
   BookOpen,
   ChartColumn,
   CircleHelp,
@@ -16,6 +17,7 @@ import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 export type SidebarItem =
   | 'home'
   | 'practice'
+  | 'interviews'
   | 'library'
   | 'progress'
 
@@ -30,9 +32,10 @@ interface NavEntry {
   showLivePill?: boolean
 }
 
-const MAIN_NAV_ENTRIES: NavEntry[] = [
+export const MAIN_NAV_ENTRIES: NavEntry[] = [
   { key: 'home', label: 'Home', href: '/dashboard', icon: Home },
   { key: 'practice', label: 'Practice', href: '/challenges', icon: Compass },
+  { key: 'interviews', label: 'Interviews', href: '/live-interviews', icon: Mic },
   { key: 'library', label: 'Library', href: '/explore', icon: BookOpen },
   { key: 'progress', label: 'Progress', href: '/progress', icon: ChartColumn },
 ]

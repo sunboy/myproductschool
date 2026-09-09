@@ -27,11 +27,20 @@ function summarizeCode(code: string | undefined): { lineCount: number; preview: 
 
 export function buildArtifactContextNote(snapshot?: LiveInterviewArtifactSnapshot | null): string {
   if (!snapshot) return ''
-  if (snapshot.type !== 'canvas' && snapshot.type !== 'editor') return ''
+  if (snapshot.type !== 'canvas' && snapshot.type !== 'editor' && snapshot.type !== 'notes') return ''
 
   const discipline = typeof snapshot.discipline === 'string'
     ? snapshot.discipline.replace(/_/g, ' ')
     : 'this'
+
+  if (snapshot.type === 'notes') {
+    const text = typeof snapshot.text === 'string' ? snapshot.text.trim() : ''
+    return `[WORKSPACE SNAPSHOT - NOTES]
+The candidate is using the notes pad for a ${discipline} interview.
+Candidate notes:
+${text || '(empty notes pad)'}
+`
+  }
 
   if (snapshot.type === 'canvas') {
     const elementTypes = snapshot.elementTypes && typeof snapshot.elementTypes === 'object'

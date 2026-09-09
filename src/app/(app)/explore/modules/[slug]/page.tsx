@@ -12,6 +12,8 @@ import { ChapterBody } from '@/components/learning/ChapterBody'
 import { BackCrumb } from '@/components/navigation/BackButton'
 import { ProgressRing } from '@/components/redesign/ProgressRing'
 import { HatchImage } from '@/components/redesign/HatchImage'
+import { useUiShell } from '@/components/shell-v2/UiShellContext'
+import { ModuleReaderV2 } from '@/components/density/reader/ModuleReaderV2'
 import type { LearnModule, LearnChapterWithProgress } from '@/lib/types'
 
 // Chapter body rendering stays in `src/components/learning/ChapterBody.tsx`
@@ -230,10 +232,61 @@ function ReadingColumn({
   )
 }
 
+// ─── DENSITY: chapter reader (fetches active chapter, renders ModuleReaderV2) ──
+
+function ModuleReaderV2Loader({
+  moduleSlug,
+  module,
+  chapterSlug,
+  chapters,
+  onSelectChapter,
+  onComplete,
+}: {
+  moduleSlug: string
+  module: LearnModule
+  chapterSlug: string
+  chapters: LearnChapterWithProgress[]
+  onSelectChapter: (slug: string) => void
+  onComplete: () => void
+}) {
+  const { data, isLoading, error, refetch, markComplete, isMarkingComplete } = useLearnChapter(moduleSlug, chapterSlug)
+
+  if (isLoading || !data) {
+    return (
+      <div className="mx-auto w-full max-w-[700px] animate-pulse space-y-4 px-6 pt-7">
+        <div className="h-8 w-3/4 rounded bg-surface-container" />
+        <div className="h-4 rounded bg-surface-container" />
+        <div className="h-4 w-5/6 rounded bg-surface-container" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div role="alert" className="mx-auto w-full max-w-[700px] rounded-xl border border-hairline bg-white p-6">
+        <p className="text-base text-ink-secondary">{error}</p>
+        <button type="button" onClick={() => void refetch()} className="mt-3 min-h-11 rounded-lg border border-forest-800 px-4 text-sm font-bold text-forest-800">Try again</button>
+      </div>
+    )
+  }
+
+  return (
+    <ModuleReaderV2
+      module={module}
+      chapters={chapters}
+      data={data}
+      onSelectChapter={onSelectChapter}
+      markComplete={async () => { await markComplete(); onComplete() }}
+      completing={isMarkingComplete}
+    />
+  )
+}
+
 // ─── Inner page (needs searchParams, wrapped in Suspense) ─────────────────────
 
 function ModulePageInner({ slug }: { slug: string }) {
   const router = useRouter()
+  const { density } = useUiShell()
 
   const searchParams = useSearchParams()
   const { data, isLoading, error, refetch } = useLearnModule(slug)
@@ -283,6 +336,44 @@ function ModulePageInner({ slug }: { slug: string }) {
 
   const { module, chapters } = data
   const completedCount = chapters.filter(c => c.is_completed).length
+
+  if (density) {
+    return (
+      <>
+        <div className="mx-auto flex max-w-[1080px] items-center px-4 pb-1 pt-4 sm:px-6 lg:hidden">
+          <label htmlFor="guide-chapter" className="sr-only">Chapter</label>
+          <select
+            id="guide-chapter"
+            value={activeChapterSlug ?? ''}
+            onChange={event => handleSelectChapter(event.target.value)}
+            className="min-h-11 w-full min-w-0 rounded-xl border border-hairline bg-white px-3 text-base text-ink-strong"
+          >
+            {chapters.map((chapter, index) => (
+              <option key={chapter.id} value={chapter.slug} disabled={!chapter.is_unlocked && !chapter.is_completed}>
+                {index + 1}. {chapter.title}{chapter.is_completed ? ' · Complete' : !chapter.is_unlocked ? ' · Locked' : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+        {activeChapterSlug ? (
+          <ModuleReaderV2Loader
+            key={activeChapterSlug}
+            moduleSlug={slug}
+            module={module}
+            chapterSlug={activeChapterSlug}
+            chapters={chapters}
+            onSelectChapter={handleSelectChapter}
+            onComplete={() => { setCompletedChapterSlug(activeChapterSlug); void refetch(); router.refresh() }}
+          />
+        ) : (
+          <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 text-center">
+            <HatchImage state="idle" size={56} />
+            <p className="font-body text-sm font-bold text-ink-muted">Select a chapter to start reading</p>
+          </div>
+        )}
+      </>
+    )
+  }
 
   return (
     <div

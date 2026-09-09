@@ -6,9 +6,12 @@ import { getAppFlag } from '@/lib/config/app-flags'
 // /api/billing/limits: short cache over a DB-backed config table so flipping
 // a flag in app_flags takes effect within ~60s, no deploy.
 export async function GET() {
-  const onboardingValueFirst = await getAppFlag('onboarding_value_first', false)
+  const [onboardingValueFirst, uiDensity] = await Promise.all([
+    getAppFlag('onboarding_value_first', false),
+    getAppFlag('ui_density_v1', false),
+  ])
   return NextResponse.json(
-    { onboarding_value_first: onboardingValueFirst },
+    { onboarding_value_first: onboardingValueFirst, ui_density_v1: uiDensity },
     { headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' } }
   )
 }

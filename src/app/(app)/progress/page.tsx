@@ -1,6 +1,8 @@
 'use client'
 
 import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
+import { ProgressBand } from '@/components/density/progress/ProgressBand'
+import { useUiShell } from '@/components/shell-v2/UiShellContext'
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -585,6 +587,7 @@ function TimelineRow({ item, isLast }: { item: TimelineItem; isLast: boolean }) 
 
 export default function ProgressPage() {
   const router = useRouter()
+  const { density } = useUiShell()
   const { moves } = useMoveLevels()
   const { profile, isLoading: profileLoading } = useProfile()
   const { data: dna } = useLearnerDNAData()
@@ -812,8 +815,14 @@ export default function ProgressPage() {
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 py-5 pb-12">
-      <LearningPageHeading eyebrow="Your progress" title="See how far you’ve come.">Your completed work, feedback, and learning history in one place.</LearningPageHeading>
-      {weakest && <section className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-hairline bg-card-bright p-6"><div><p className="text-xs uppercase tracking-wide text-ink-secondary">Your next focus</p><h2 className="mt-2 font-headline text-2xl font-medium text-forest-950">Build confidence in {weakest.k.toLowerCase()}.</h2></div><Link href="/challenges" className="inline-flex min-h-11 items-center rounded-xl bg-forest-950 px-5 text-sm font-semibold text-white">Find a challenge →</Link></section>}
+      {density ? (
+        <ProgressBand weakest={weakest ? { move: weakest.move, pct: weakest.pct } : null} />
+      ) : (
+        <>
+          <LearningPageHeading eyebrow="Your progress" title="See how far you’ve come.">Your completed work, feedback, and learning history in one place.</LearningPageHeading>
+          {weakest && <section className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-hairline bg-card-bright p-6"><div><p className="text-xs uppercase tracking-wide text-ink-secondary">Your next focus</p><h2 className="mt-2 font-headline text-2xl font-medium text-forest-950">Build confidence in {weakest.k.toLowerCase()}.</h2></div><Link href="/challenges" className="inline-flex min-h-11 items-center rounded-xl bg-forest-950 px-5 text-sm font-semibold text-white">Find a challenge →</Link></section>}
+        </>
+      )}
 
       {/* ── Stat strip (all values real; no invented deltas) ────────── */}
       <StatStrip

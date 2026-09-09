@@ -52,7 +52,7 @@ const OPTIONS_SWAP_VARIANTS = {
   exit: { opacity: 0, y: -4, transition: { duration: 0.14, ease: [0.7, 0, 0.84, 0] as const } },
 }
 
-interface CompanyEntry {
+export interface CompanyEntry {
   companyId: string
   companyName: string
   slug: string
@@ -60,7 +60,7 @@ interface CompanyEntry {
   roles: LiveInterviewPersona[]
 }
 
-function groupPersonasByCompany(personas: LiveInterviewPersona[]): CompanyEntry[] {
+export function groupPersonasByCompany(personas: LiveInterviewPersona[]): CompanyEntry[] {
   const map = new Map<string, CompanyEntry>()
   for (const p of personas) {
     const key = p.companyId || p.slug

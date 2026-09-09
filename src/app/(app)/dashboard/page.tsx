@@ -1,4 +1,6 @@
 import { cache, Suspense } from 'react'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import type { ResumeOrStartAction } from '@/components/dashboard/cards/resume-or-start'
 import { ContinueLearning } from '@/components/redesign/dashboard/ContinueLearning'
@@ -14,10 +16,46 @@ import { createClient } from '@/lib/supabase/server'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
 import { challengePath } from '@/lib/challenges/challengeNumber'
 import { expandDifficultiesForQuery, type PracticeDifficulty } from '@/lib/practice/difficulty'
-import { getCuratedFirstRepSlug, FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
+import { getCuratedFirstRepSlug, getCuratedFirstRepSlugs, FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
 import { getHatchContext, type HatchUserContext } from '@/lib/hatch-context'
 import { weakestMoveFrom } from '@/lib/hatch/weakest-move'
 import type { StudyPlanWithItems } from '@/lib/types'
+import { getAppFlag } from '@/lib/config/app-flags'
+import { DashboardV4 } from '@/components/density/dashboard/DashboardV4'
+import { getAreaStats, getContinueReading, getEditorialShelf } from '@/lib/data/dashboard-density'
+import type { FirstRep } from '@/components/density/dashboard/FirstRepsShelf'
+import type { PathCard } from '@/components/density/dashboard/PathsRow'
+
+const WEAKEST_PLAN: Record<string, string> = { frame: 'frame-like-a-pm', list: 'the-list-move', optimize: 'optimize-under-pressure', win: 'win-the-room' }
+const WEAKEST_PLAN_NAME: Record<string, string> = { frame: 'Frame like a PM', list: 'The List move', optimize: 'Optimize under pressure', win: 'Win the room' }
+
+async function loadFirstReps(role: string | null): Promise<FirstRep[]> {
+  const admin = createAdminClient()
+  const slugs = getCuratedFirstRepSlugs(role)
+  const { data } = await admin.from('challenges')
+    .select('id, slug, title, difficulty, challenge_type, estimated_minutes, scenario_context, prompt_text, technique_tags, move_tags')
+    .in('slug', slugs).eq('is_published', true)
+  const label: Record<string, string> = { flow: 'Product', freeform: 'Product', algorithm: 'Coding', sql: 'SQL', system_design: 'Design', data_modeling: 'Modeling' }
+  return slugs
+    .map(s => (data ?? []).find(c => c.slug === s))
+    .filter((c): c is NonNullable<typeof c> => Boolean(c))
+    .map(c => ({
+      href: challengePath(c),
+      title: c.title,
+      summary: (c.scenario_context ?? c.prompt_text ?? '').slice(0, 140),
+      typeLabel: label[c.challenge_type as string] ?? c.challenge_type ?? '',
+      difficulty: String(c.difficulty ?? 'easy').replace(/^./, m => m.toUpperCase()),
+      minutes: c.estimated_minutes ?? 10,
+      chip: c.technique_tags?.[0] ?? c.move_tags?.[0] ?? 'Start here',
+    }))
+}
+
+async function fetchHatchPick(userId: string): Promise<{ title: string; reason: string; href: string } | null> {
+  const { computeNextChallenge } = await import('@/app/api/challenges/next/logic')
+  const r = await computeNextChallenge(userId)
+  if (!r?.challenge) return null
+  return { title: r.challenge.title, reason: r.reason, href: `/workspace/challenges/${r.challenge.slug ?? r.challenge.id}` }
+}
 
 const FLOW_STEP_ORDER = ['frame', 'list', 'optimize', 'win'] as const
 
@@ -47,6 +85,13 @@ type DashboardData = {
   hatchPrompt: string
   quickTake: QuickTake | null
   pausedInterview: PausedInterview | null
+  // density-v1 extras (unused by the legacy tree, consumed by DashboardV4 branch)
+  userId: string | null
+  preferredRole: string | null
+  onboardingCompletedAt: string | null
+  hasAnyAttempts: boolean
+  resumeAction: ResumeOrStartAction | null
+  weakestMove: string | null
 }
 
 function capitalize(value: string) {
@@ -122,6 +167,8 @@ async function loadDashboard(): Promise<DashboardData> {
       hatchPrompt: 'Help me choose a practice area to start with.',
       quickTake: null,
       pausedInterview: null,
+      userId: null, preferredRole: null, onboardingCompletedAt: null,
+      hasAnyAttempts: false, resumeAction: null, weakestMove: null,
     }
   }
 
@@ -131,7 +178,7 @@ async function loadDashboard(): Promise<DashboardData> {
   monday.setHours(0, 0, 0, 0)
 
   const [profileResult, movesResult, attemptsResult, progressResult, inProgressResult, quickTakesResult, pausedInterviewResult, plansResult, hatchContext] = await Promise.all([
-    supabase.from('profiles').select('display_name, streak_days, primary_goal, prep_timeline, preferred_role').eq('id', user.id).single(),
+    supabase.from('profiles').select('display_name, streak_days, primary_goal, prep_timeline, preferred_role, onboarding_completed_at').eq('id', user.id).single(),
     admin.from('move_levels').select('move, xp, level, progress_pct').eq('user_id', user.id).order('xp', { ascending: true }),
     admin.from('challenge_attempts').select('id, challenge_id, status').eq('user_id', user.id),
     admin.from('user_streaks').select('date, completed').eq('user_id', user.id).gte('date', monday.toISOString().slice(0, 10)),
@@ -263,6 +310,10 @@ async function loadDashboard(): Promise<DashboardData> {
     plansUnavailable: plansResult.failed, hatchMessage, hatchPrompt,
     quickTake: quickTakeForReturningUser(quickTake?.prompt_text ? quickTake : null, hasAnyAttempts),
     pausedInterview,
+    userId: user.id,
+    preferredRole: profile?.preferred_role ?? null,
+    onboardingCompletedAt: (profile as { onboarding_completed_at?: string | null } | null)?.onboarding_completed_at ?? null,
+    hasAnyAttempts, resumeAction, weakestMove,
   }
 }
 
@@ -279,6 +330,51 @@ export default function DashboardPage() {
 
 async function DashboardContent() {
   const data = await getDashboard()
+
+  const density = await getAppFlag('ui_density_v1', false)
+  if (density && data.userId) {
+    const isNewUser = !data.onboardingCompletedAt && !data.hasAnyAttempts
+    if (isNewUser) {
+      const cookieStore = await cookies()
+      if (!cookieStore.get('hp-welcome-seen')) redirect('/welcome')
+    }
+    const [areaStats, reading, editorial] = await Promise.all([
+      getAreaStats(data.userId),
+      isNewUser ? null : getContinueReading(data.userId),
+      isNewUser ? { featured: null, items: [] } : getEditorialShelf(data.userId),
+    ])
+    const firstReps = isNewUser ? await loadFirstReps(data.preferredRole) : []
+    const pick = !data.resumeAction && !isNewUser ? await fetchHatchPick(data.userId) : null
+
+    const paths: PathCard[] = [
+      ...(data.continuePlan ? [{ slug: data.continuePlan.slug, name: data.continuePlan.title, eyebrow: 'Study plan', done: data.continuePlan.completed_count ?? 0, total: data.continuePlan.item_count ?? 0, unit: 'reps' as const }] : []),
+      ...(data.weakestMove && WEAKEST_PLAN[data.weakestMove] ? [{ slug: WEAKEST_PLAN[data.weakestMove], name: WEAKEST_PLAN_NAME[data.weakestMove], eyebrow: 'Weakest move', done: 0, total: 8, unit: 'reps' as const }] : []),
+    ]
+
+    return (
+      <DashboardV4
+        displayName={data.displayName}
+        isNewUser={isNewUser}
+        streakDays={data.streakDays}
+        resume={data.action?.kind === 'resume' ? { title: data.action.title, meta: `Step ${data.action.step ?? 1} of ${data.action.totalSteps ?? 4}`, href: data.action.href } : null}
+        reading={reading}
+        hatchPick={pick}
+        hatchMessage={data.hatchMessage}
+        hatchPrompts={isNewUser
+          ? [{ label: 'Pick my first challenge', prompt: 'Pick my first challenge based on my role.' }, { label: 'Show me around', event: 'start-intro-tour' }]
+          : [{ label: data.action?.kind === 'resume' ? 'Approach the next step' : 'Why this challenge?', prompt: data.hatchPrompt }, { label: 'What to learn next', prompt: 'Help me choose what to learn next based on my recent work and goals.' }]}
+        areaStats={areaStats}
+        editorial={editorial}
+        paths={paths}
+        quickTake={data.quickTake?.prompt_text ? { prompt: data.quickTake.prompt_text, challengeId: data.quickTake.id, move: data.quickTake.move_tags?.[0] ?? undefined } : null}
+        week={data.week}
+        focusMove={data.focusMove?.move ?? null}
+        firstReps={firstReps}
+        calibrationHref="/welcome"
+      />
+    )
+  }
+
   return (
     <div className="space-y-6 sm:space-y-7">
       <section className="learning-home-stage">

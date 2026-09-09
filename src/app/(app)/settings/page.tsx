@@ -1,6 +1,8 @@
 'use client'
 
 import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
+import { SettingsTitleRow } from '@/components/density/settings/SettingsTitleRow'
+import { useUiShell } from '@/components/shell-v2/UiShellContext'
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
@@ -90,6 +92,7 @@ function formatBillingDate(value?: string | null) {
 
 export default function SettingsPage() {
   const router = useRouter()
+  const { density } = useUiShell()
   const { openModal } = useOnboardingModal()
   const [redoingCalibration, setRedoingCalibration] = useState(false)
   const [displayName, setDisplayName] = useState('')
@@ -131,7 +134,11 @@ export default function SettingsPage() {
     setRedoingCalibration(true)
     try {
       await clearOnboardingState()
-      openModal('settings')
+      if (density) {
+        router.push('/welcome?redo=1')
+      } else {
+        openModal('settings')
+      }
     } finally {
       setRedoingCalibration(false)
     }
@@ -525,11 +532,15 @@ export default function SettingsPage() {
 
   return (
     <main className="learning-account mx-auto max-w-[1060px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-      <LearningPageHeading eyebrow="Your account" title="Make it yours." action={isPro ? <span className="rounded-full bg-note-amber px-4 py-2 text-sm font-semibold text-forest-950">Pro member</span> : undefined}>Manage your profile, sign-in preferences, and membership.</LearningPageHeading>
+      {density ? (
+        <SettingsTitleRow isPro={isPro} />
+      ) : (
+        <LearningPageHeading eyebrow="Your account" title="Make it yours." action={isPro ? <span className="rounded-full bg-note-amber px-4 py-2 text-sm font-semibold text-forest-950">Pro member</span> : undefined}>Manage your profile, sign-in preferences, and membership.</LearningPageHeading>
+      )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[360px_1fr]">
         {/* ── Profile & security card ─────────────────────────────────────── */}
-        <section className="h-fit rounded-2xl border border-hairline bg-card-bright p-5">
+        <section id="settings-account" className="h-fit scroll-mt-16 rounded-2xl border border-hairline bg-card-bright p-5">
           <div className="flex items-start gap-4">
             <button
               type="button"
@@ -748,7 +759,7 @@ export default function SettingsPage() {
         </section>
 
         {/* ── Plan & billing card ─────────────────────────────────────────── */}
-        <section className="h-fit overflow-hidden rounded-2xl border border-hairline bg-card-bright">
+        <section id="settings-membership" className="h-fit scroll-mt-16 overflow-hidden rounded-2xl border border-hairline bg-card-bright">
           {planLoading ? (
             /* Neutral skeleton while the plan/billing query resolves — never
                default to the free/upsell state during loading */

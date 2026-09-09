@@ -105,6 +105,42 @@
   --font-body:     var(--font-nunito-sans), 'Nunito Sans', sans-serif;
   --font-label:    var(--font-nunito-sans), 'Nunito Sans', sans-serif;
 
+
+  /* ── UI language (docs/design/ui-language.md) ──────────────────────
+     Type scale: utilities text-caption … text-display carry size + line-height. */
+  --text-caption: 11px;   --text-caption--line-height: 1.35;
+  --text-meta: 12px;      --text-meta--line-height: 1.4;
+  --text-ui: 13px;        --text-ui--line-height: 1.4;
+  --text-body: 14.5px;    --text-body--line-height: 1.6;
+  --text-lede: 16px;      --text-lede--line-height: 1.55;
+  --text-h4: 18px;        --text-h4--line-height: 1.25;
+  --text-h3: 22px;        --text-h3--line-height: 1.2;
+  --text-h2: 28px;        --text-h2--line-height: 1.15;
+  --text-h1: 34px;        --text-h1--line-height: 1.12;
+  --text-display: 44px;   --text-display--line-height: 1.05;
+  /* Weight scale: font-text (body copy), font-ui (labels, nav, meta), font-strong (titles in UI). */
+  --font-weight-text: 450;
+  --font-weight-ui: 550;
+  --font-weight-strong: 650;
+  /* Control heights: h-control-sm/md/lg, size-hit for minimum tap targets. */
+  --spacing-control-sm: 28px;
+  --spacing-control-md: 32px;
+  --spacing-control-lg: 40px;
+  --spacing-hit: 40px;
+  --spacing-gutter: 16px;
+  --spacing-card-gap: 12px;
+  /* Brand glyph heights: h-wordmark, h-mark. */
+  --spacing-wordmark: 13px;
+  --spacing-mark: 22px;
+  /* Radius roles: rounded-control (pill), rounded-tile, rounded-card, rounded-panel. */
+  --radius-control: 999px;
+  --radius-tile: 10px;
+  --radius-card: 14px;
+  --radius-panel: 18px;
+  /* Layout widths: max-w-content, max-w-reader. */
+  --container-content: 1180px;
+  --container-reader: 720px;
+
   /* Border radius (M3 shape scale) */
   --radius:    0.5rem;
   --radius-lg: 1rem;
@@ -236,11 +272,13 @@ body {
     radial-gradient(1200px 600px at 15% -10%, rgba(74, 124, 89, 0.06), transparent 60%),
     radial-gradient(1000px 500px at 110% 10%, rgba(201, 147, 58, 0.06), transparent 60%);
   font-family: var(--font-nunito-sans, 'Nunito Sans', sans-serif);
-  font-weight: 400;
+  /* UI language: variable font, base weight 450 with default smoothing so body
+     copy reads at full stroke on macOS (antialiased thinned it). */
+  font-weight: var(--font-weight-text, 450);
   color: #2e3230;
   line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
 }
 
 /* Font utilities retain their declared weights across the platform. */
@@ -885,4 +923,11 @@ body::before {
   background-image: linear-gradient(145deg, transparent 58%, rgba(213,199,173,.14) 58% 76%, transparent 76%), linear-gradient(35deg, transparent 64%, rgba(213,199,173,.12) 64% 80%, transparent 80%);
   background-size: 100% 48rem;
   background-repeat: no-repeat;
+}
+
+/* shell-v2 (ui_density_v1) */
+:root {
+  --shell-nav-w: 200px;
+  --shell-rail-w: 56px;
+  --shell-top-h: 48px;
 }

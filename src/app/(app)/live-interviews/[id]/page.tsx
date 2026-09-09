@@ -13,6 +13,10 @@ import type { TalkingHeadHandle } from '@/components/live-interview/TalkingHeadA
 import { LoopProgressBar } from '@/components/live-interviews/LoopProgressBar'
 import { PriorRoundRecap } from '@/components/live-interviews/PriorRoundRecap'
 import type { LoopRound } from '@/lib/interview-loops/types'
+import { useUiShell } from '@/components/shell-v2/UiShellContext'
+import { TranscriptComposer } from '@/components/density/interviews/room/TranscriptComposer'
+import { RoomLayoutV2 } from '@/components/density/interviews/room/RoomLayoutV2'
+import { derivePhase } from '@/lib/live-interview/flow-phase'
 
 const TalkingHeadAvatar = dynamic(
   () => import('@/components/live-interview/TalkingHeadAvatar'),
@@ -126,13 +130,13 @@ class AvatarErrorBoundary extends Component<
   }
 }
 
-interface CoachingSignal {
+export interface CoachingSignal {
   flowMove: string
   competency: string
   signal: string
 }
 
-interface TranscriptTurn {
+export interface TranscriptTurn {
   id: string
   role: 'hatch' | 'user'
   content: string
@@ -144,21 +148,21 @@ interface TranscriptTurn {
 type InterviewPhase = 'loading' | 'ready' | 'active' | 'ended'
 
 // FLOW move colors + names resolved from the single source of truth.
-const FLOW_COLORS: Record<string, string> = {
+export const FLOW_COLORS: Record<string, string> = {
   frame: FLOW_MOVES.frame.color,
   list: FLOW_MOVES.list.color,
   optimize: FLOW_MOVES.optimize.color,
   win: FLOW_MOVES.win.color,
 }
 
-const FLOW_NAMES: Record<string, string> = {
+export const FLOW_NAMES: Record<string, string> = {
   frame: FLOW_MOVES.frame.label,
   list: FLOW_MOVES.list.label,
   optimize: FLOW_MOVES.optimize.label,
   win: FLOW_MOVES.win.label,
 }
 
-const COMPETENCY_LABELS: Record<string, string> = {
+export const COMPETENCY_LABELS: Record<string, string> = {
   motivation_theory: 'Motivation',
   cognitive_empathy: 'Empathy',
   taste: 'Taste',
@@ -258,7 +262,7 @@ function SignalCard({ signal, index }: { signal: CoachingSignal; index: number }
 }
 
 // ─── Transcript Turn Bubble ───
-function TurnBubble({ turn }: { turn: TranscriptTurn }) {
+export function TurnBubble({ turn }: { turn: TranscriptTurn }) {
   const isHatch = turn.role === 'hatch'
 
   return (
@@ -352,7 +356,7 @@ function TurnBubble({ turn }: { turn: TranscriptTurn }) {
 }
 
 // ─── Control Button ───
-function CtrlBtn({
+export function CtrlBtn({
   icon,
   label,
   active,
@@ -473,6 +477,7 @@ export default function SessionPage({
   } = use(searchParams)
   const router = useRouter()
   const { isPro, isAdmin } = useEntitlements()
+  const { density } = useUiShell()
 
   const [sessionId, setSessionId] = useState<string>(IS_MOCK ? 'mock-session-id' : id)
   const [sessionStartAttempt, setSessionStartAttempt] = useState(0)
@@ -531,6 +536,10 @@ export default function SessionPage({
   const [lastRunResult, setLastRunResult] = useState<unknown>(null)
   const [editorPasteEvents, setEditorPasteEvents] = useState<PasteEvent[]>([])
   const [editorCursorLine, setEditorCursorLine] = useState<number | undefined>(undefined)
+  // Density room notes pad (product_sense / artifact:'none' disciplines).
+  // Kept separate from centerMode so the legacy 'orb' | 'canvas' | 'editor'
+  // union is untouched; read into the snapshot below so Hatch stays aware.
+  const [notesText, setNotesText] = useState('')
 
   // Mic pre-flight state (used in the 'ready' phase modal)
   const [micCheckState, setMicCheckState] = useState<'idle' | 'checking' | 'ok' | 'denied'>('idle')
@@ -622,6 +631,15 @@ export default function SessionPage({
       }
     }
 
+    if (effectiveMode === 'orb' && notesText.trim()) {
+      return {
+        type: 'notes',
+        discipline: discipline ?? undefined,
+        capturedAt: Date.now(),
+        text: notesText,
+      }
+    }
+
     return null
   }, [
     canvasScene,
@@ -632,6 +650,7 @@ export default function SessionPage({
     editorCursorLine,
     editorPasteEvents,
     lastRunResult,
+    notesText,
   ])
 
   // Set the editor's default language based on discipline (sql vs coding).
@@ -1559,8 +1578,10 @@ export default function SessionPage({
       return
     }
     try {
-      // Save artifact snapshot before ending so the end route can grade it
-      if (centerMode !== 'orb' && sessionId) {
+      // Save artifact snapshot before ending so the end route can grade it.
+      // Notes-pad text is captured even in 'orb' mode (product_sense has no
+      // canvas/editor, so centerMode never leaves 'orb' for that discipline).
+      if ((centerMode !== 'orb' || notesText.trim()) && sessionId) {
         const snapshot = buildCurrentArtifactSnapshot()
         try {
           if (snapshot) {
@@ -1590,7 +1611,7 @@ export default function SessionPage({
       // Allow a retry after a failed end.
       endTriggeredRef.current = false
     }
-  }, [sessionId, router, centerMode, buildCurrentArtifactSnapshot])
+  }, [sessionId, router, centerMode, buildCurrentArtifactSnapshot, notesText])
 
   const latestSignalFocus = useMemo<FocusSurfaceEvent | null>(() => {
     const signal = recentSignals[0]
@@ -2017,13 +2038,6 @@ export default function SessionPage({
   }
 
   // ─── Active Interview ───
-  const flowMoves = [
-    { key: 'frame' as const, label: 'F', name: 'Frame' },
-    { key: 'list' as const, label: 'L', name: 'List' },
-    { key: 'optimize' as const, label: 'O', name: 'Optimize' },
-    { key: 'win' as const, label: 'W', name: 'Win' },
-  ]
-
   const hatchStateLabel =
     hatchState === 'speaking'
       ? 'Hatch is speaking'
@@ -2043,6 +2057,174 @@ export default function SessionPage({
       : ''
 
   const captionIsItalic = hatchState !== 'speaking'
+
+  if (density) {
+    const flowPhase = derivePhase(recentSignals)
+    const disciplineLabel = discipline ? DISCIPLINE_META[discipline].label : 'Interview'
+    const artifactKind = discipline ? DISCIPLINE_META[discipline].artifact : 'none'
+
+    let centerContent: React.ReactNode
+    if (centerMode === 'canvas' || (centerMode === 'orb' && artifactKind === 'canvas')) {
+      centerContent = (
+        <div className="absolute inset-0" data-testid="live-interview-canvas">
+          <ExcalidrawCanvas sessionId={sessionId} onSnapshot={handleCanvasSnapshot} initialData={canvasScene ?? undefined} />
+        </div>
+      )
+    } else if (centerMode === 'editor' || (centerMode === 'orb' && artifactKind === 'editor')) {
+      centerContent = (
+        <div className="absolute inset-0 flex flex-col" data-testid="live-interview-editor">
+          <MonacoCodeEditor
+            value={currentCode}
+            onChange={(val) => setCurrentCode(val ?? '')}
+            language={currentLanguage}
+            theme="vs-dark"
+            height="100%"
+            onPaste={(event) => setEditorPasteEvents((prev) => [...prev.slice(-4), event])}
+            onCursorMove={(line) => setEditorCursorLine(line)}
+          />
+        </div>
+      )
+    } else {
+      centerContent = (
+        <div className="flex h-full flex-col p-4" data-testid="live-interview-notes">
+          <div className="mb-2 flex items-center gap-2">
+            <HatchImage state={hatchState === 'speaking' ? 'speaking' : 'listening'} size={40} />
+            <span className="font-label text-[12px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              {hatchStateLabel}
+            </span>
+          </div>
+          {isCaptionsOn && captionText && (
+            <p className="mb-3 font-body text-[13px]" style={{ color: captionIsItalic ? 'rgba(255,255,255,0.4)' : 'rgba(243,237,224,0.85)', fontStyle: captionIsItalic ? 'italic' : 'normal' }}>
+              {captionText}
+            </p>
+          )}
+          <textarea
+            data-testid="live-interview-notes-input"
+            value={notesText}
+            onChange={(e) => setNotesText(e.target.value)}
+            placeholder="Jot down your thinking as you talk it through..."
+            className="flex-1 resize-none rounded-xl p-3 font-body text-sm focus:outline-none"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(243,237,224,0.88)' }}
+          />
+        </div>
+      )
+    }
+
+    return (
+      <>
+        <RoomLayoutV2
+          companyName={companyName}
+          roleName={roleName}
+          disciplineLabel={disciplineLabel}
+          isActive={interviewPhase === 'active'}
+          timerDisplay={timerDisplay}
+          isWarning={isWarning}
+          flowPhase={flowPhase}
+          hatchState={hatchState}
+          currentCaption={captionText}
+          isCaptionsOn={isCaptionsOn}
+          recentSignals={recentSignals}
+          turns={turns}
+          quickReplies={["I'm here", 'Give me a hint', 'I need a minute', 'Can we take a quick break?']}
+          chatInput={chatInput}
+          setChatInput={setChatInput}
+          isChatSending={isChatSending}
+          chatInputRef={chatInputRef}
+          onSendChatMessage={async (text) => {
+            setIsChatSending(true)
+            try {
+              await handleSendChatMessage(text)
+            } finally {
+              setIsChatSending(false)
+            }
+          }}
+          onQuickReply={(text) => { void handleQuickChatMessage(text) }}
+          onBack={() => router.push('/live-interviews')}
+          onEnd={handleEndInterview}
+          onReplayTour={() => { window.dispatchEvent(new Event('start-interview-tour')) }}
+          centerContent={centerContent}
+        />
+
+        {/* Interview limit modal */}
+        <PaywallModal
+          open={showLimitModal}
+          feature="interviews"
+          used={interviewUsageData.used}
+          limit={interviewUsageData.limit}
+          dismissible={false}
+          onClose={() => setShowLimitModal(false)}
+          secondaryAction={{
+            label: 'End session & view debrief',
+            onClick: () => {
+              setShowLimitModal(false)
+              handleEndInterview()
+            },
+          }}
+        />
+
+        {/* End confirm modal — shared with legacy room, duplicated here since
+            the density branch returns early before the legacy JSX tree. */}
+        {showEndConfirm && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
+          >
+            <div
+              className="flex flex-col items-center gap-5 text-center mx-4 p-6"
+              style={{
+                background: '#1a2420',
+                borderRadius: 20,
+                maxWidth: 380,
+                width: '100%',
+                border: '1px solid rgba(255,255,255,0.08)',
+                animation: 'fadeUp 0.25s ease-out',
+              }}
+            >
+              <HatchImage size={56} state="reviewing" />
+              <div>
+                <h3 className="font-headline text-lg font-bold" style={{ color: 'rgba(243,237,224,0.95)' }}>
+                  End this interview?
+                </h3>
+                <p className="font-body text-sm mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  Hatch will analyze your performance and generate a detailed debrief.
+                </p>
+              </div>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setShowEndConfirm(false)}
+                  className="flex-1 py-2.5 rounded-full font-label text-sm font-semibold transition-colors"
+                  style={{
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: 'rgba(243,237,224,0.6)',
+                    background: 'transparent',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
+                >
+                  Keep going
+                </button>
+                <button
+                  onClick={confirmEndInterview}
+                  className="flex-1 py-2.5 rounded-full font-label text-sm font-semibold transition-opacity hover:opacity-90"
+                  style={{ background: '#b23a2a', color: '#fff' }}
+                >
+                  End &amp; debrief
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    )
+  }
+
+  const flowMoves = [
+    { key: 'frame' as const, label: 'F', name: 'Frame' },
+    { key: 'list' as const, label: 'L', name: 'List' },
+    { key: 'optimize' as const, label: 'O', name: 'Optimize' },
+    { key: 'win' as const, label: 'W', name: 'Win' },
+  ]
+
   const showTranscriptPanel = isTranscriptOpen && !isFocusMode && !isChatOpen
   const showFlowPanel = isFlowPanelOpen && !isFocusMode
 
@@ -2895,44 +3077,16 @@ export default function SessionPage({
         </div>
 
         {/* Input */}
-        <form
-          className="shrink-0 flex items-center gap-2 px-4 py-3"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
-          onSubmit={async (e) => {
-            e.preventDefault()
-            const text = chatInput.trim()
-            if (!text || isChatSending) return
+        <TranscriptComposer
+          value={chatInput}
+          onChange={setChatInput}
+          sending={isChatSending}
+          inputRef={chatInputRef}
+          onSubmit={async (text) => {
             setIsChatSending(true)
-            setChatInput('')
             try { await handleSendChatMessage(text) } finally { setIsChatSending(false) }
           }}
-        >
-          <input
-            ref={chatInputRef}
-            data-testid="live-interview-chat-input"
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            disabled={isChatSending}
-            placeholder="Type a message..."
-            className="flex-1 rounded-full px-4 py-2 font-body text-sm focus:outline-none disabled:opacity-50"
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: 'rgba(243,237,224,0.88)',
-            }}
-          />
-          <button
-            type="submit"
-            data-testid="live-interview-chat-send"
-            disabled={isChatSending || !chatInput.trim()}
-            className="flex items-center justify-center rounded-full disabled:opacity-40"
-            style={{ width: 38, height: 38, background: '#4a7c59' }}
-            aria-label="Send"
-          >
-            <span className="material-symbols-outlined text-[18px]" style={{ color: '#fff' }}>send</span>
-          </button>
-        </form>
+        />
       </PresencePanel>
 
       {ENABLE_DIRECT_VOICE_AGENT && (

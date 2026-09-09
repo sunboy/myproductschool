@@ -7,7 +7,7 @@ import { openFeedbackModal } from '@/components/feedback/FeedbackWidget'
 
 function resolveActive(pathname: string): SidebarItem {
   if (pathname === '/' || pathname.startsWith('/dashboard')) return 'home'
-  if (pathname.startsWith('/live-interviews')) return 'practice'
+  if (pathname.startsWith('/live-interviews')) return 'interviews'
   if (pathname.startsWith('/explore')) return 'library'
   if (pathname.startsWith('/progress')) return 'progress'
   if (pathname.startsWith('/challenges') || pathname.startsWith('/workspace/challenges')) return 'practice'

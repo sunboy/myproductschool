@@ -1,11 +1,15 @@
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getAppFlag } from '@/lib/config/app-flags'
 import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
 import { getStudyPlans, getStudyPlanSummaries } from '@/lib/data/study-plans'
 import { getReadableAppCompanies, getReadableAppStories } from '@/lib/autopsies/app-library'
 import { getAutopsyCompanies, getPublishedAutopsyStories } from '@/lib/autopsies/queries'
 import { getUserBookmarks } from '@/lib/showcase/bookmarks'
 import { LibraryCatalog, type LibraryItem } from './LibraryCatalog'
+import { LibraryV2 } from '@/components/density/library/LibraryV2'
+import type { LibraryInput, LibraryType } from '@/lib/data/library-density'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,9 +19,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/explore' },
 }
 
-export default async function ExplorePage() {
+export default async function ExplorePage({ searchParams }: { searchParams: Promise<{ type?: string; q?: string }> }) {
+  const { type, q } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const density = await getAppFlag('ui_density_v1', false)
   const [modulesResult, planCatalogResult, planDetailsResult, companiesResult, storiesResult, bookmarksResult, guideProgressResult] = await Promise.allSettled([
     getLearnModuleSummaries(),
     getStudyPlanSummaries(),
@@ -103,6 +109,61 @@ export default async function ExplorePage() {
     progress: plan.is_enrolled ? Math.round(plan.progress_percentage ?? 0) : undefined,
     searchText: [plan.title, plan.description, plan.difficulty, ...(plan.role_tags ?? []), ...(plan.disciplines ?? [])].filter(Boolean).join(' '),
   }))
+
+  if (density) {
+    const readingProgress = user
+      ? await createAdminClient()
+          .from('reading_progress')
+          .select('content_type, parent_id, content_id, progress')
+          .eq('user_id', user.id)
+          .gt('progress', 0)
+          .limit(20)
+          .then(r => r.data ?? [])
+      : []
+
+    const input: LibraryInput = {
+      guides: modules.map(module => ({
+        kind: 'guide',
+        id: module.id,
+        slug: module.slug,
+        title: module.name,
+        href: `/explore/modules/${module.slug}`,
+        chapters: module.chapter_count,
+        completed: completedByModule.get(module.id) ?? 0,
+        minutes: module.est_minutes,
+        tagline: module.tagline,
+      })),
+      plans: plans.map(plan => ({
+        kind: 'plan',
+        id: plan.id,
+        slug: plan.slug,
+        title: plan.title,
+        href: `/explore/plans/${plan.slug}`,
+        reps: plan.item_count ?? plan.challenge_count ?? 0,
+        done: plan.completed_count ?? 0,
+        move: plan.move_tag ?? null,
+        enrolled: !!plan.is_enrolled,
+      })),
+      stories: getReadableAppStories(stories).map(story => {
+        const company = companyBySlug.get(story.companySlug)
+        return {
+          kind: 'autopsy' as const,
+          id: `${story.companySlug}/${story.slug}`,
+          companySlug: story.companySlug,
+          storySlug: story.slug,
+          title: story.title,
+          dek: story.dek,
+          href: `/explore/autopsies/${story.companySlug}/stories/${story.slug}`,
+          readTime: story.estimatedReadTime,
+          company: company?.name ?? story.companySlug.replaceAll('-', ' '),
+          saved: savedStories.has(`${story.companySlug}/${story.slug}`),
+          progress: 0,
+        }
+      }),
+      readingProgress,
+    }
+    return <LibraryV2 input={input} type={(type as LibraryType) ?? 'all'} q={q ?? null} />
+  }
 
   return <LibraryCatalog items={[...guideItems, ...autopsyItems, ...planItems]} unavailableKinds={unavailableKinds} savedUnavailable={bookmarksResult.status === 'rejected'} />
 }

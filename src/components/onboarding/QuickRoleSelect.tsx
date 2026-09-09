@@ -12,7 +12,7 @@ import { FIRST_REP_FALLBACK_HREF } from '@/lib/onboarding/curated-first-rep'
 // straight into a curated first rep. Full calibration stays available later
 // as a dashboard CTA (CalibrationCtaCard) and reuses CalibrationFlow as-is.
 
-const ROLES = [
+export const ROLES = [
   { id: 'swe',            label: 'Software Engineer' },
   { id: 'data_eng',       label: 'Data Engineer' },
   { id: 'ml_eng',         label: 'ML Engineer' },

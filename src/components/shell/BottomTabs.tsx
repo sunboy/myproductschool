@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 const tabs = [
   { id: 'home', href: '/dashboard', icon: 'home', label: 'Home' },
   { id: 'practice', href: '/challenges', icon: 'track_changes', label: 'Practice' },
+  { id: 'interviews', href: '/live-interviews', icon: 'mic', label: 'Interviews' },
   { id: 'library', href: '/explore', icon: 'menu_book', label: 'Library' },
   { id: 'progress', href: '/progress', icon: 'bar_chart', label: 'Progress' },
 ] as const
@@ -13,8 +14,9 @@ const tabs = [
 function isTabActive(id: (typeof tabs)[number]['id'], pathname: string) {
   if (id === 'home') return pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/dashboard/')
   if (id === 'practice') {
-    return pathname.startsWith('/challenges') || pathname.startsWith('/workspace/challenges') || pathname.startsWith('/live-interviews')
+    return pathname.startsWith('/challenges') || pathname.startsWith('/workspace/challenges')
   }
+  if (id === 'interviews') return pathname.startsWith('/live-interviews')
   if (id === 'library') return pathname === '/explore' || pathname.startsWith('/explore/')
   return pathname === '/progress' || pathname.startsWith('/progress/')
 }

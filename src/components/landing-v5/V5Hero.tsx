@@ -29,7 +29,7 @@ function openSignup() {
   window.dispatchEvent(new CustomEvent("open-auth-modal", { detail: { mode: "signup" } }));
 }
 
-export function V5Hero() {
+export function V5Hero({ dense = false }: { dense?: boolean } = {}) {
   const visualRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function V5Hero() {
   }, []);
 
   return (
-    <section className="hero-reference" id="top">
+    <section className={`hero-reference${dense ? " is-dense" : ""}`} id="top" data-testid="landing-hero">
       <div className="hero-reference-shell">
         <div className="hero-reference-copy">
           <div className="hero-reference-kicker">
@@ -71,22 +71,35 @@ export function V5Hero() {
             ACE INTERVIEWS. BUILD WHAT&apos;S NEXT.
           </div>
 
-          <h1>
-            Practice for<br />
-            engineering<br />
-            interviews that<br />
-            test <em>more than code.</em>
-          </h1>
+          {dense ? (
+            <h1>
+              Interview practice that tests{" "}
+              <em>more than code.</em>
+            </h1>
+          ) : (
+            <h1>
+              Practice for<br />
+              engineering<br />
+              interviews that<br />
+              test <em>more than code.</em>
+            </h1>
+          )}
 
-          <p className="hero-reference-lede">
-            Practical learning for software engineers, tech leads,{" "}
-            <br className="hero-reference-desktop-break" />
-            staff engineers, EMs, AI engineers and FDEs across{" "}
-            <br className="hero-reference-desktop-break" />
-            coding, SQL, system design, product judgment{" "}
-            <br className="hero-reference-desktop-break" />
-            and AI-directed work.
-          </p>
+          {dense ? (
+            <p className="hero-reference-lede">
+              Coding, SQL, system design and product judgment, graded by Hatch.
+            </p>
+          ) : (
+            <p className="hero-reference-lede">
+              Practical learning for software engineers, tech leads,{" "}
+              <br className="hero-reference-desktop-break" />
+              staff engineers, EMs, AI engineers and FDEs across{" "}
+              <br className="hero-reference-desktop-break" />
+              coding, SQL, system design, product judgment{" "}
+              <br className="hero-reference-desktop-break" />
+              and AI-directed work.
+            </p>
+          )}
 
           <div className="hero-reference-roles" aria-label="Prep for">
             {roles.map((role, index) => (
@@ -128,7 +141,7 @@ export function V5Hero() {
           </div>
 
           <div className="hero-reference-hatch hero-reference-layer-hatch" aria-hidden="true">
-            <Image src="/landing-v5/hatch-transparent.png" alt="" width={585} height={751} priority />
+            <Image src="/landing-v5/hatch-peek.png" alt="" width={840} height={522} priority />
           </div>
 
           {/* Decorative sample of review output; not an interactive control. */}
@@ -168,7 +181,7 @@ export function V5Hero() {
             </a>
           </article>
 
-          <aside className="hero-reference-dimensions hero-reference-layer-side" aria-label="Example dimension breakdown">
+          <aside className="hero-reference-dimensions hero-reference-layer-side" aria-label="Example dimension breakdown" data-testid="landing-proof">
             <div className="hero-reference-dimensions-head">
               <span>DIMENSION BREAKDOWN</span>
               <span aria-hidden="true">⌄</span>

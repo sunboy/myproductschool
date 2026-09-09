@@ -69,7 +69,7 @@ function truncateUnknown(value: unknown, maxLength = 4000): unknown {
 }
 
 const RawLiveInterviewArtifactSnapshotSchema = z.object({
-  type: z.enum(['canvas', 'editor']),
+  type: z.enum(['canvas', 'editor', 'notes']),
   discipline: z.string().max(100).optional(),
   capturedAt: z.number().finite().nonnegative().optional(),
   elementCount: z.number().int().min(0).max(10000).optional(),
@@ -85,6 +85,8 @@ const RawLiveInterviewArtifactSnapshotSchema = z.object({
     timestamp: z.number().finite().nonnegative(),
   })).max(100).optional(),
   runResult: z.unknown().optional(),
+  /** Free-text notes pad (density room, product_sense discipline). */
+  text: z.string().max(8000).optional(),
 })
 
 type RawLiveInterviewArtifactSnapshot = z.infer<typeof RawLiveInterviewArtifactSnapshotSchema>
@@ -97,6 +99,7 @@ export function normalizeLiveInterviewArtifactSnapshot(
     code: typeof snapshot.code === 'string' ? snapshot.code.slice(0, 40000) : snapshot.code,
     textLabels: snapshot.textLabels?.slice(0, 1000),
     runResult: truncateUnknown(snapshot.runResult),
+    text: typeof snapshot.text === 'string' ? snapshot.text.slice(0, 8000) : snapshot.text,
   }
 }
 
