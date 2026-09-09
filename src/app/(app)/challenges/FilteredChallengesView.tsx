@@ -454,7 +454,7 @@ function AllPracticeView({
   onSeeAll: (d: Discipline) => void
 }) {
   const resultsLayoutClass = listView
-    ? 'grid grid-cols-1 gap-2'
+    ? density ? 'flex flex-col overflow-hidden rounded-card border border-hairline bg-card-bright' : 'grid grid-cols-1 gap-2'
     : 'grid grid-cols-1 sm:grid-cols-3 gap-3'
 
   // Seed each section from the SSR preview rows grouped by their discipline.

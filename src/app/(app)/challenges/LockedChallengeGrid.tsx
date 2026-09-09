@@ -3,7 +3,7 @@
 import { useIsAtLimit } from '@/context/UsageContext'
 import { MotionListItem } from '@/components/motion'
 import { ChallengeCard } from './ChallengeCard'
-import { ChallengeCardV3 } from '@/components/density/practice/ChallengeCardV3'
+import { ChallengeCardV3, ChallengeRowV3 } from '@/components/density/practice/ChallengeCardV3'
 import { useUiShell } from '@/components/shell-v2/UiShellContext'
 import { useNextChallenge } from '@/components/redesign/practice/useNextChallenge'
 import type { ChallengeWithDomain } from '@/lib/types'
@@ -32,7 +32,9 @@ export function LockedChallengeGrid({ challenges, paradigms, listView, returnHre
           layoutDependency={listView}
           className="min-w-0"
         >
-          {density && !listView ? (
+          {density && listView ? (
+            <ChallengeRowV3 challenge={challenge} returnHref={returnHref} locked={isAtLimit} hatchPick={challenge.id === nextPickId} />
+          ) : density ? (
             <ChallengeCardV3
               challenge={challenge}
               summary={summaries?.[challenge.id]}
