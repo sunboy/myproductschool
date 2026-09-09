@@ -20,10 +20,14 @@ export function Row({ leading, title, meta, action, asChild = false, className, 
       className={cn('grid min-h-control-lg grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3.5 border-b border-hairline px-3 py-1.5 text-ink-strong last:border-b-0 hover:bg-surface-container-low', className)}
       {...props}
     >
-      <div className="flex min-w-0 items-center">{leading}</div>
-      <div className={cn('min-w-0 truncate font-headline text-body font-strong', titleClassName)}>{title}</div>
-      <div className="whitespace-nowrap text-meta font-ui text-ink-secondary">{meta}</div>
-      <div className="flex items-center justify-end">{action}</div>
+      {asChild ? props.children : (
+        <>
+          <div className="flex min-w-0 items-center">{leading}</div>
+          <div className={cn('min-w-0 truncate font-headline text-body font-strong', titleClassName)}>{title}</div>
+          <div className="whitespace-nowrap text-meta font-ui text-ink-secondary">{meta}</div>
+          <div className="flex items-center justify-end">{action}</div>
+        </>
+      )}
     </Comp>
   )
 }

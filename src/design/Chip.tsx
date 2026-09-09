@@ -31,9 +31,7 @@ export function Chip({ variant = 'filter', selected = false, icon, count, asChil
       )}
       {...props}
     >
-      {icon}
-      {children}
-      {count !== undefined && <b className="font-bold">{count}</b>}
+      {asChild ? children : <>{icon}{children}{count !== undefined && <b className="font-bold">{count}</b>}</>}
     </Comp>
   )
 }
