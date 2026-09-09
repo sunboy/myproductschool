@@ -67,6 +67,20 @@ const eslintConfig = defineConfig([
     },
   },
   {
+    // UI language (docs/design/ui-language.md): density and shell-v2 code uses
+    // the token scale and src/design primitives, never ad-hoc sizes or layout.
+    files: ["src/design/**/*.{ts,tsx}", "src/components/shell-v2/**/*.{ts,tsx}", "src/components/density/**/*.{ts,tsx}", "src/components/onboarding/welcome/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": ["error",
+        { selector: "Literal[value=/\\btext-\\[\\d+(\\.\\d+)?px\\]/]", message: "Use the type scale (text-caption … text-display), not text-[Npx]." },
+        { selector: "TemplateElement[value.raw=/\\btext-\\[\\d+(\\.\\d+)?px\\]/]", message: "Use the type scale (text-caption … text-display), not text-[Npx]." },
+        { selector: "Literal[value=/\\b(?:h|min-h|max-h)-\\[\\d+px\\]/]", message: "No pixel heights; cards size to content (min-h, aspect-ratio)." },
+        { selector: "TemplateElement[value.raw=/\\b(?:h|min-h|max-h)-\\[\\d+px\\]/]", message: "No pixel heights; cards size to content (min-h, aspect-ratio)." },
+        { selector: "JSXAttribute[name.name='style'] Property[key.name=/^(display|gridTemplateColumns|flexDirection)$/]", message: "No inline layout styles; use grid/flex utilities." },
+      ],
+    },
+  },
+  {
     files: ["scripts/**/*.{js,mjs,cjs,ts,tsx}"],
     rules: {
       // Ingestion/maintenance scripts parse third-party JSON where strict shapes
