@@ -1,6 +1,6 @@
 # ui_density_v1 flag
 
-What it gates: the shell-v2 sidebar and top bar, DashboardV4 (returning and new-user), the Library shelves, the Practice band and card mode, ModuleReaderV2 and AutopsyReaderV2, the Progress band, the Settings title row, the interview setup panel and three-column room, the `/welcome` onboarding page, and the dense landing hero. Legacy components stay mounted and render when the flag is off.
+What it gates: the shell-v2 sidebar and top bar, DashboardV4 (returning and new-user), the Library shelves, the Practice band and card mode, ModuleReaderV2 and AutopsyReaderV2, the Progress band, the Settings title row, the guided interview setup (`InterviewWizard`, URL-stepped) and three-column room, the `/welcome` onboarding page, and the dense landing hero. All of it is built on the design system in `src/design/` (see `docs/design/ui-language.md`); `npm run lint` and `tests/design/ui-language.test.ts` reject ad-hoc sizes and layout in those trees. Legacy components stay mounted and render when the flag is off.
 
 Flip (takes effect within 60 seconds, no deploy; `getAppFlag` caches for 60s):
 

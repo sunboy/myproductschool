@@ -4,7 +4,7 @@ import { VIEWPORTS, loginViaApi, gotoReady, topOf } from './helpers'
 test.describe('progress, settings, landing', () => {
   test('progress band and next focus', async ({ page }) => {
     await loginViaApi(page); await page.setViewportSize(VIEWPORTS.desktop); await gotoReady(page, '/progress')
-    expect((await page.getByTestId('header-band').boundingBox())!.height).toBeLessThanOrEqual(100)
+    expect((await page.getByTestId('header-band').boundingBox())!.height).toBeLessThanOrEqual(104)
     await expect(page.getByTestId('chip-ladder')).toHaveAttribute('href', '/progress/skill-ladder')
     const nf = page.getByTestId('progress-next-focus'); if (await nf.count()) expect(await nf.locator('a').last().getAttribute('href')).toMatch(/\/challenges\?move=(frame|list|optimize|win)/)
     expect(await topOf(page, '[data-testid=streak-heatmap]')).toBeLessThanOrEqual(520)

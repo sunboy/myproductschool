@@ -31,7 +31,7 @@ export function HatchPickCard({ eyebrow, title, reason, href, ctaLabel, ctaVaria
   }, [dismissScope])
   if (hidden) return null
   return (
-    <Card tone="bright" padding="none" data-testid={testId} className="flex-row items-center gap-2.5 border-primary-fixed px-3 py-2">
+    <Card tone="bright" padding="none" data-testid={testId} className="flex-row items-center gap-2.5 border-primary-fixed px-3 py-1.5">
       <HatchImage state="speaking" size={36} />
       <div className="min-w-0 flex-1">
         <Text variant="caption" tone="primary">{eyebrow}</Text>

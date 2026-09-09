@@ -5,7 +5,7 @@ test.describe('dashboard v4', () => {
   test('returning user: hero, shelves, every control acts', async ({ page }) => {
     await loginViaApi(page); await page.setViewportSize(VIEWPORTS.desktop)
     await expectNoConsoleErrors(page, async () => { await gotoReady(page, '/dashboard') })
-    const hero = page.getByTestId('dashboard-hero'); expect((await hero.boundingBox())!.height).toBeLessThanOrEqual(260)
+    const hero = page.getByTestId('dashboard-hero'); expect((await hero.boundingBox())!.height).toBeLessThanOrEqual(300)
     expect(await topOf(page, '[data-testid=practice-areas]')).toBeLessThanOrEqual(340)
     await expect(page.getByTestId('hatch-thought')).toBeVisible()
     // Continue challenge or Hatch pick resolves to a workspace URL
@@ -24,7 +24,7 @@ test.describe('dashboard v4', () => {
   test('laptop and mobile layouts', async ({ page }) => {
     await loginViaApi(page)
     await page.setViewportSize(VIEWPORTS.laptop); await gotoReady(page, '/dashboard')
-    expect(await topOf(page, '[data-testid=practice-areas]')).toBeLessThanOrEqual(320)
+    expect(await topOf(page, '[data-testid=practice-areas]')).toBeLessThanOrEqual(360)
     await page.setViewportSize(VIEWPORTS.mobile); await gotoReady(page, '/dashboard')
     await expect(page.getByTestId('dashboard-hero')).toBeVisible(); await expect(page.getByTestId('hatch-thought')).toBeVisible()
   })

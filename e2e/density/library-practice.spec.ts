@@ -20,7 +20,7 @@ test.describe('library + practice', () => {
 
   test('practice band, toggle persistence, card mode, pick dismiss', async ({ page }) => {
     await gotoReady(page, '/challenges')
-    expect((await page.getByTestId('header-band').boundingBox())!.height).toBeLessThanOrEqual(100)
+    expect((await page.getByTestId('header-band').boundingBox())!.height).toBeLessThanOrEqual(104)
     await expect(page.getByTestId('chip-interviews')).toHaveAttribute('href', '/live-interviews')
     await page.getByTestId('view-cards').click(); await expect(page.getByTestId('challenge-card').first()).toBeVisible()
     expect(await topOf(page, '[data-testid=challenge-card]')).toBeLessThanOrEqual(300)

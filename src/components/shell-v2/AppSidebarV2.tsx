@@ -53,7 +53,7 @@ function NavPanel({ active, collapsed, overlay = false, onToggle }: { active: Na
   const streak = profile?.streak_days ?? 0
   const coachLine = streak > 0 ? `${streak}-day streak` : 'New here'
   const item = 'flex h-control-lg items-center gap-2.5 rounded-tile font-ui text-ui text-ink-strong transition-colors hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'
-  const railItem = 'size-control-lg justify-center px-0'
+  const railItem = 'size-control-lg shrink-0 justify-center px-0'
   const wrap = (key: string, label: string, node: React.ReactNode) =>
     collapsed ? <AppTooltip key={key} label={label} side="right" block className="justify-center">{node}</AppTooltip> : <div key={key} className="flex w-full">{node}</div>
 
