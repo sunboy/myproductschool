@@ -104,7 +104,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
 
     const { data: session } = await adminClient
       .from('live_interview_sessions')
-      .select('debrief_json, company_id, role_id, flow_coverage, total_turns, started_at, ended_at')
+      .select('debrief_json, company_id, role_id, flow_coverage, total_turns, started_at, ended_at, calibration_snapshot')
       .eq('id', id)
       .eq('user_id', user.id)
       .single()
@@ -124,7 +124,12 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
         .select('name')
         .eq('id', session.company_id)
         .single()
-      companyName = company?.name ?? ''
+      const calibration = session.calibration_snapshot as { companyName?: string; target_company?: string } | null
+      companyName = company?.name ?? calibration?.companyName ?? calibration?.target_company ?? (
+        /^[a-z][a-z _-]*$/i.test(session.company_id)
+          ? session.company_id.replace(/[-_]+/g, ' ').replace(/\b\w/g, (letter: string) => letter.toUpperCase())
+          : 'Interview'
+      )
     }
 
     role = session.role_id ?? ''
@@ -170,8 +175,8 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
       <BackButton href="/live-interviews" label="Back to Interviews" className="mb-6" />
 
       {/* Page title */}
-      <h1 className="font-headline text-2xl font-bold text-on-surface mb-1">
-        Live Interview Debrief
+      <h1 className="font-headline text-2xl font-semibold text-on-surface mb-1">
+        Your interview feedback
       </h1>
       <p className="text-sm text-on-surface-variant font-label mb-6">
         {companyName} {role && `· ${role}`} {sessionDate && `· ${sessionDate}`}{' '}
@@ -184,11 +189,13 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
             <ScoreHero
               raw={debrief.overallScore}
               scale={5}
+              size="md"
+              showRaw={false}
               headline={getGradeDescriptor(debrief.overallScore)}
             />
             {/* FLOW is the spine: the four moves live in the hero band. */}
             <div className="space-y-2.5 pt-1 border-t border-outline-variant/40">
-              <p className="font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant pt-3">The four moves</p>
+              <p className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant pt-3">The four moves</p>
               {FLOW_STEPS.map(step => {
                 const score = debrief.flowScores[step] ?? 0
                 const percent = scoreToPercent(score)
@@ -371,7 +378,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
           <div className="bg-surface-container rounded-xl p-6" data-fb-section>
             <h2 className="font-headline text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-error">warning</span>
-              Failure Patterns Detected
+              Patterns to work on
             </h2>
             <div className="space-y-3">
               {debrief.failurePatternsDetected.map((pattern, i) => (
@@ -559,7 +566,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
             href="/challenges"
             className="flex-1 py-3 border border-primary text-primary rounded-full font-bold hover:bg-primary/5 transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm"
           >
-            <span className="material-symbols-outlined">fitness_center</span>
+            <span className="material-symbols-outlined">track_changes</span>
             Practice Challenges
           </Link>
         </div>

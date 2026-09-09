@@ -53,14 +53,14 @@ function proLimits(limits: PublicPlanLimits) {
     `${limits.pro.challenges} challenge starts per month`,
     `${limits.pro.interviews} live AI interview starts per month`,
     'Fair-use Hatch AI coaching budget',
-    'Learner DNA, failure patterns, and study plans',
+    'Personalized recommendations and study plans',
   ]
 }
 
 const ANALYTICS_LIMITS = [
   'Everything in Pro',
   'Live Claude Code sessions on real BigQuery data',
-  'Hatch coaching inside the terminal',
+  'Contextual Hatch guidance alongside your analysis',
   'Reusable skills and shareable analyst reports',
 ]
 
@@ -82,9 +82,9 @@ function featureRows(limits: PublicPlanLimits) {
     pro: `${limits.pro.interviews} starts per month`,
   },
   {
-    feature: 'Learner DNA',
+    feature: 'Learning insights',
     free: 'Basic activity history',
-    pro: 'Radar, failure patterns, and next drills',
+    pro: 'Skill insights and personalized recommendations',
   },
   {
     feature: 'Study plans',
@@ -167,8 +167,8 @@ interface PricingClientProps {
 export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientProps) {
   const FREE_LIMITS = freeLimits(limits)
   const PRO_LIMITS = proLimits(limits)
-  const FEATURE_ROWS = featureRows(limits)
   const analyticsEnabled = isAnalyticsFeatureEnabled()
+  const FEATURE_ROWS = [...featureRows(limits).map(row => ({ ...row, analytics: row.feature === 'Billing' ? 'Monthly or annual' : row.pro })), ...(analyticsEnabled ? [{ feature: 'AI analytics', free: 'Not included', pro: 'Not included', analytics: 'Live Claude Code workspace with real data' }] : [])]
   const [billing, setBilling] = useState<BillingCycle>('annual')
   const [prices, setPrices] = useState<BillingPrices>(INITIAL_PRICES)
   // Analytics tier has its own monthly/annual sub-toggle, independent of Pro's.
@@ -277,7 +277,7 @@ export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientPro
               <span className="dot" />
               7-day free trial on Pro
             </p>
-            <h1>Pricing that matches focused practice.</h1>
+            <h1>Choose how you want to grow.</h1>
             <p className="v3-page-hero-sub">
               Start with the free plan, then move to Pro when Hatch coaching, live AI interviews,
               and deeper practice limits become part of your weekly routine.
@@ -312,10 +312,9 @@ export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientPro
       <section className="pricing-section">
         <div className="shell pricing-shell">
           <div className="pricing-copy">
-            <h2>One practice system. The plan that fits your sprint.</h2>
+            <h2>A plan for your next step.</h2>
             <p>
-              Free to start, then a single Pro tier that unlocks Hatch coaching, live AI
-              interviews, scoring, autopsies, and study plans in one place.
+              {analyticsEnabled ? 'Start free. Choose Pro for more challenges, interviews and personalized guidance, or add AI analytics to learn with a live Claude Code workspace.' : 'Start free. Choose Pro for more challenges, interviews and personalized guidance.'}
             </p>
           </div>
 
@@ -488,7 +487,7 @@ export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientPro
           <div className="pricing-note">
             <ShieldCheck aria-hidden="true" strokeWidth={2} />
             <span>
-              Trial first. Cancel anytime from the customer portal. Billing is handled through Stripe.
+              Manage or cancel your plan from the customer portal. Billing is handled through Stripe.
             </span>
           </div>
         </div>
@@ -517,6 +516,7 @@ export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientPro
                     <p className="font-bold text-primary">Pro</p>
                     <p className="mt-1 font-semibold text-on-surface">{row.pro}</p>
                   </div>
+                  {analyticsEnabled && <div><p className="font-bold text-primary">Analytics</p><p className="mt-1 text-on-surface">{row.analytics}</p></div>}
                 </div>
               </article>
             ))}
@@ -535,6 +535,7 @@ export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientPro
                   <th className="w-1/3 px-5 py-4 text-sm font-extrabold text-on-surface">
                     Pro
                   </th>
+                  {analyticsEnabled && <th className="px-5 py-4 text-sm font-bold text-on-surface">Analytics</th>}
                 </tr>
               </thead>
               <tbody>
@@ -543,6 +544,7 @@ export function PricingClient({ limits = DEFAULT_PLAN_LIMITS }: PricingClientPro
                     <td className="px-5 py-4 font-bold text-on-surface">{row.feature}</td>
                     <td className="px-5 py-4 text-on-surface-variant">{row.free}</td>
                     <td className="px-5 py-4 font-semibold text-on-surface">{row.pro}</td>
+                    {analyticsEnabled && <td className="px-5 py-4 text-on-surface">{row.analytics}</td>}
                   </tr>
                 ))}
               </tbody>

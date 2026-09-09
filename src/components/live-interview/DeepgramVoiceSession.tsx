@@ -2,6 +2,10 @@
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react'
 import { stripMarkdownForSpeech } from '@/lib/text/stripMarkdownForSpeech'
+import {
+  stopAndDrainAudioSources,
+  voiceCloseAction,
+} from '@/lib/live-interview/audio-lifecycle'
 
 export interface DeepgramVoiceSessionHandle {
   injectAgentMessage: (content: string) => boolean
@@ -99,6 +103,7 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
     const requestIdRef = useRef<string>('none')
     const callbackOriginRef = useRef<string>('none')
     const wsOpenedAtRef = useRef<number>(0)
+    const isMutedRef = useRef(Boolean(isMuted))
 
     const sendJson = useCallback((payload: unknown) => {
       const ws = wsRef.current
@@ -108,10 +113,7 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
     }, [])
 
     const stopScheduledAudio = useCallback(() => {
-      for (const source of scheduledSourcesRef.current) {
-        try { source.stop() } catch { /* source may already be stopped */ }
-      }
-      scheduledSourcesRef.current.clear()
+      stopAndDrainAudioSources(scheduledSourcesRef.current)
       const ctx = ttsCtxRef.current
       ttsStartTimeRef.current = ctx ? ctx.currentTime + TTS_PREBUFFER_SECONDS : 0
     }, [])
@@ -230,10 +232,17 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
 
       // Decide whether a close is benign-and-recoverable (reconnect) or terminal
       // (surface the chat fallback). Mirrors the close-handler classification.
-      const handleRecoverableClose = () => {
-        if (intentionallyClosed) return
-        if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-          if (connectedRef.current) onError('Voice connection closed. Using chat mode.')
+      const handleRecoverableClose = (closedSocket: WebSocket) => {
+        const action = voiceCloseAction({
+          intentionallyClosed,
+          isCurrentSocket: wsRef.current === closedSocket,
+          reconnectAttempts,
+          maxReconnectAttempts: MAX_RECONNECT_ATTEMPTS,
+        })
+        if (action === 'ignore') return
+        if (action === 'fallback') {
+          teardownConnection()
+          onError('Voice connection closed. Using chat mode.')
           return
         }
         const backoff = RECONNECT_BACKOFF_MS[reconnectAttempts] ?? 1200
@@ -265,17 +274,38 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
             audio: audioConstraints,
           })
 
-          if (intentionallyClosed || !canSend(wsRef.current)) {
+          if (intentionallyClosed || wsRef.current !== ws || !canSend(wsRef.current)) {
             stream.getTracks().forEach((track) => track.stop())
             return
           }
 
+          stream.getAudioTracks().forEach((track) => {
+            track.enabled = !isMutedRef.current
+          })
           streamRef.current = stream
 
           const micCtx = new AudioContext({ sampleRate: TTS_SAMPLE_RATE, latencyHint: 'interactive' })
           micCtxRef.current = micCtx
 
           await micCtx.audioWorklet.addModule('/audio-capture-processor.js')
+
+          // addModule can outlive a socket close, fallback, or navigation. Do not
+          // attach its stale graph to a newer connection after that async boundary.
+          if (
+            intentionallyClosed ||
+            wsRef.current !== ws ||
+            micCtxRef.current !== micCtx ||
+            streamRef.current !== stream ||
+            !canSend(wsRef.current)
+          ) {
+            stream.getTracks().forEach((track) => track.stop())
+            if (micCtxRef.current === micCtx) {
+              micCtxRef.current = null
+              void micCtx.close().catch(() => {})
+            }
+            if (streamRef.current === stream) streamRef.current = null
+            return
+          }
 
           const source = micCtx.createMediaStreamSource(stream)
           const workletNode = new AudioWorkletNode(micCtx, 'audio-capture-processor')
@@ -290,7 +320,10 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
           connectedRef.current = true
           onConnected()
         } catch (err) {
-          onError(err instanceof Error ? err.message : 'Microphone access denied')
+          if (!intentionallyClosed && wsRef.current === ws) {
+            teardownConnection()
+            onError(err instanceof Error ? err.message : 'Microphone access denied')
+          }
         }
       }
 
@@ -347,10 +380,10 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
         }
 
         source.addEventListener('ended', () => {
-          scheduledSourcesRef.current.delete(source)
+          const wasScheduled = scheduledSourcesRef.current.delete(source)
           try { source.disconnect() } catch { /* already disconnected */ }
           try { gain.disconnect() } catch { /* already disconnected */ }
-          if (scheduledSourcesRef.current.size === 0) {
+          if (wasScheduled && scheduledSourcesRef.current.size === 0) {
             onAgentDoneSpeaking?.()
           }
         })
@@ -370,7 +403,9 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
           const settingsResponse = await fetch(`/api/live-interview/${sessionId}/voice-settings`)
           if (!settingsResponse.ok) {
             const body = await settingsResponse.json().catch(() => null) as { error?: unknown } | null
-            onError(typeof body?.error === 'string' ? body.error : 'Voice mode is unavailable. Use chat mode.')
+            if (!intentionallyClosed) {
+              onError(typeof body?.error === 'string' ? body.error : 'Voice mode is unavailable. Use chat mode.')
+            }
             return
           }
 
@@ -379,11 +414,11 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
           deepgramToken = typeof payload.deepgramToken === 'string' ? payload.deepgramToken : ''
           requestIdRef.current = typeof payload.requestId === 'string' ? payload.requestId : 'none'
           callbackOriginRef.current = typeof payload.callbackOrigin === 'string' ? payload.callbackOrigin : 'none'
+          if (intentionallyClosed) return
           if (!settings || typeof settings !== 'object' || !deepgramToken) {
             onError('Voice mode is unavailable. Use chat mode.')
             return
           }
-          if (intentionallyClosed) return
 
           const ws = new WebSocket('wss://agent.deepgram.com/v1/agent/converse', ['bearer', deepgramToken])
           wsRef.current = ws
@@ -402,11 +437,13 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
           onAnalyserReady?.(analyser)
 
           ws.addEventListener('open', () => {
+            if (intentionallyClosed || wsRef.current !== ws) return
             wsOpenedAtRef.current = Date.now()
             void ttsCtx.resume().catch(() => {})
           })
 
           ws.addEventListener('message', (event) => {
+            if (intentionallyClosed || wsRef.current !== ws) return
             if (event.data instanceof ArrayBuffer) {
               playAudio(event.data)
               return
@@ -482,6 +519,8 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
               if (payload.type === 'Error') lastDeepgramErrorRef.current = payload
               if (payload.type === 'Warning') lastDeepgramWarningRef.current = payload
               if (payload.type === 'Error') {
+                intentionallyClosed = true
+                teardownConnection()
                 onError(payload.description ?? payload.message ?? 'Deepgram error')
               }
             } catch {
@@ -511,18 +550,15 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
               msSinceOpen: wsOpenedAtRef.current ? Date.now() - wsOpenedAtRef.current : null,
               intentional: intentionallyClosed,
             }))
-            if (intentionallyClosed) return
-            // Code 1000 after transcripts have flowed = natural session end (Deepgram closed its turn).
-            // Surface the fallback only for abnormal closes or sessions that never produced a transcript.
-            const isNormalClose = event.code === 1000
-            const hadActivity = hasReceivedTranscriptRef.current
-            if (isNormalClose && hadActivity) return
-            // Abnormal close (or a session that never produced a transcript): try to
-            // silently rebuild the socket before falling back to chat.
-            handleRecoverableClose()
+            // Any provider-initiated close leaves the application session active.
+            // Rebuild it, then fall back to chat if the retry budget is exhausted.
+            handleRecoverableClose(ws)
           })
         } catch {
-          if (!intentionallyClosed) onError('Voice mode is unavailable. Use chat mode.')
+          if (!intentionallyClosed) {
+            teardownConnection()
+            onError('Voice mode is unavailable. Use chat mode.')
+          }
         }
       }
 
@@ -566,6 +602,7 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
     }, [disabled, sessionId, stopScheduledAudio, preferredDeviceId])
 
     useEffect(() => {
+      isMutedRef.current = Boolean(isMuted)
       const stream = streamRef.current
       if (!stream) return
 

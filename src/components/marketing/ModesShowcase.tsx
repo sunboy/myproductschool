@@ -4,7 +4,7 @@ const MODES = [
     title: 'Spotlight',
     subtitle: 'Focused sprint',
     description:
-      '10 minutes, no hints. Pure pressure. Closest to the real interview.',
+      '10 minutes with no hints. A focused way to prepare for the real interview.',
   },
   {
     icon: 'school',

@@ -26,6 +26,7 @@ export const MARKETING_ROUTES = [
   '/flow',
   '/hatch-preview',
   '/hatch-motion',
+  '/design-review',
   '/role-transitions',
   '/uplevel',
   '/salary-negotiation',

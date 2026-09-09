@@ -952,6 +952,7 @@ export interface LearnChapter {
   hook_text: string
   body_mdx: string
   figures: ChapterFigure[]
+  hero_image_url?: string | null
   created_at: string
 }
 

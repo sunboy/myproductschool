@@ -56,6 +56,8 @@ export interface AnalystGradingInput {
   markedFindings?: Array<{ id: string; text: string; verdict?: string }>
   /** Optional terminal transcript tail. */
   transcript?: string | null
+  /** Reusable skills persisted from the sandbox user's ~/.claude state. */
+  persistedSkills?: Array<{ filename: string; preview: string }>
   budget?: AiBudget
 }
 
@@ -159,7 +161,10 @@ function parseDimensions(raw: unknown, rubric: LabRubricSpec): AnalystDimensionR
 
 export async function gradeAnalystSession(input: AnalystGradingInput): Promise<AnalystGradeResult> {
   const rubric = input.rubric ?? ANALYST_RUBRIC_SPEC
-  const evidence = await inspectWorkspace(input.transcriptUri)
+  const workspaceEvidence = await inspectWorkspace(input.transcriptUri)
+  const skillsByName = new Map(workspaceEvidence.skills.map((skill) => [skill.filename, skill]))
+  for (const skill of input.persistedSkills ?? []) skillsByName.set(skill.filename, skill)
+  const evidence: WorkspaceEvidence = { ...workspaceEvidence, skills: [...skillsByName.values()] }
   const userContent = buildUserContent(input, evidence, rubric)
   const system = loadGraderSkill(rubric)
 

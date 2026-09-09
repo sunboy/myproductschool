@@ -157,7 +157,8 @@ function toGradePayload(
   if (challengeType === 'sql' || challengeType === 'algorithm') {
     return {
       ...base,
-      dimensions: base.dimensions as GradingFeedback['dimensions'],
+      dimensions: base.headline.includes('Scored from your test results.') ? {} : base.dimensions as GradingFeedback['dimensions'],
+      degraded: base.headline.includes('Scored from your test results.'),
       what_a_5_would_look_like: extractFiveBar(grade.canvas_annotations),
       score_breakdown: extractScoreBreakdown(grade.canvas_annotations),
     }

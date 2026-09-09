@@ -1,5 +1,19 @@
 import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { extendTailwindMerge } from "tailwind-merge"
+
+// Teach tailwind-merge the UI-language scale (docs/design/ui-language.md) so
+// `text-ui` is a font size (not a colour) and `font-ui` is a weight (not a
+// family); otherwise cn() drops `text-white` after `text-meta` and buttons lose
+// their labels on dark fills.
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      'font-size': [{ text: ['caption', 'meta', 'ui', 'body', 'lede', 'h4', 'h3', 'h2', 'h1', 'display'] }],
+      'font-weight': [{ font: ['text', 'ui', 'strong'] }],
+      'font-family': [{ font: ['headline', 'body', 'label'] }],
+    },
+  },
+})
 import { IS_MOCK } from '@/lib/mock'
 import { coerceDifficulty, DIFFICULTY_LABELS } from '@/lib/practice/difficulty'
 

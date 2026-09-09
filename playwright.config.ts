@@ -1,4 +1,12 @@
 import { defineConfig } from '@playwright/test'
+import { config as loadDotenv } from 'dotenv'
+
+// Playwright does not auto-load .env.local (a Next.js convention). Several
+// specs' admin helpers (e2e/helpers.ts, e2e/density/helpers.ts) read
+// NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY at module-eval time, so
+// this must run before any spec file is imported — loading it here in the
+// config (evaluated first) rather than in a helper file guarantees that.
+loadDotenv({ path: '.env.local' })
 
 export default defineConfig({
   testDir: './e2e',

@@ -10,6 +10,8 @@ interface AppTooltipProps {
   side?: TooltipSide
   className?: string
   disabled?: boolean
+  /** Fill the parent's width (for nav rails) instead of shrink-wrapping. */
+  block?: boolean
 }
 
 const SIDE_CLASS: Record<TooltipSide, string> = {
@@ -27,6 +29,7 @@ export function AppTooltip({
   side = 'top',
   className = '',
   disabled = false,
+  block = false,
 }: AppTooltipProps) {
   const [open, setOpen] = useState(false)
   const timerRef = useRef<number | null>(null)
@@ -58,7 +61,7 @@ export function AppTooltip({
     // interactive child (button/link) this wraps.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <span
-      className={['group/tooltip relative inline-flex min-w-0', className].filter(Boolean).join(' ')}
+      className={['group/tooltip relative min-w-0', block ? 'flex w-full' : 'inline-flex', className].filter(Boolean).join(' ')}
       onMouseEnter={show}
       onMouseLeave={hide}
       onFocus={show}

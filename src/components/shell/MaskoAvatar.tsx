@@ -1,6 +1,7 @@
 'use client'
 
 import type { CSSProperties } from 'react'
+import { useEffect, useRef } from 'react'
 import type { HatchAnimation } from '@/context/HatchContext'
 
 interface MaskoAvatarProps {
@@ -50,9 +51,30 @@ export function MaskoAvatar({
   animation = 'wave',
 }: MaskoAvatarProps) {
   const asset = HATCH_MASKO_ANIMATION_ASSETS[animation] ?? DEFAULT_MASKO_ASSET
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  // Autoplay/loop has no CSS prefers-reduced-motion equivalent for <video>;
+  // pause on the first frame for reduced-motion users instead of looping.
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const apply = () => {
+      if (mql.matches) {
+        video.pause()
+        video.currentTime = 0
+      } else {
+        video.play().catch(() => {})
+      }
+    }
+    apply()
+    mql.addEventListener('change', apply)
+    return () => mql.removeEventListener('change', apply)
+  }, [])
 
   return (
     <video
+      ref={videoRef}
       autoPlay
       loop
       muted

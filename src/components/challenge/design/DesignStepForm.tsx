@@ -57,8 +57,8 @@ export function DesignStepForm({
   return (
     <div className={cn('flex flex-col', className)}>
       <div className="pb-4">
-        <h2 className="text-[17px] font-bold text-ink-strong">{step.title}</h2>
-        <p className="mt-0.5 text-[13px] leading-relaxed text-ink-secondary">{step.intro}</p>
+        <h2 className="font-headline text-2xl font-medium text-ink-strong">{step.title}</h2>
+        <p className="mt-0.5 text-base leading-relaxed text-ink-secondary">{step.intro}</p>
       </div>
 
       <div className="divide-y divide-hairline">
@@ -85,10 +85,10 @@ export function DesignStepForm({
                   {done ? <Check size={12} strokeWidth={2.2} className="animate-check-in" /> : i + 1}
                 </span>
                 <div className="min-w-0">
-                  <h3 className="text-[13.5px] font-bold leading-snug text-ink-strong">
+                  <h3 className="text-base font-semibold leading-snug text-ink-strong">
                     {section.label}
                   </h3>
-                  <p className="mt-0.5 text-xs leading-normal text-ink-secondary">{section.prompt}</p>
+                  <p className="mt-0.5 text-sm leading-relaxed text-ink-secondary">{section.prompt}</p>
                 </div>
               </div>
 
@@ -104,6 +104,7 @@ export function DesignStepForm({
               ) : (
                 <div className="ml-[30px]">
                   <textarea
+                    aria-label={section.label}
                     value={value}
                     onFocus={() => onSectionFocus?.(section.id)}
                     onChange={(e) => {
@@ -116,11 +117,11 @@ export function DesignStepForm({
                     maxLength={section.maxChars}
                     placeholder={section.placeholder}
                     rows={section.maxChars !== undefined && section.maxChars >= 1200 ? 6 : 4}
-                    className="w-full resize-y rounded-lg border border-hairline bg-card-bright px-3 py-2.5 text-[13.5px] leading-relaxed text-ink-strong outline-none transition-colors placeholder:text-ink-muted focus:border-forest-600"
+                    className="w-full resize-y rounded-lg border border-hairline bg-card-bright px-3 py-2.5 text-base leading-relaxed text-ink-strong outline-none transition-colors placeholder:text-ink-muted focus:border-forest-600"
                   />
                   {section.maxChars !== undefined && (
                     <div className="mt-1 flex justify-end">
-                      <span className="text-[11px] font-semibold tabular-nums text-ink-muted">
+                      <span className="text-xs font-semibold tabular-nums text-ink-muted">
                         {value.length} / {section.maxChars}
                       </span>
                     </div>

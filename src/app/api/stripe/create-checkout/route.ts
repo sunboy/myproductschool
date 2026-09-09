@@ -13,6 +13,10 @@ import {
   affiliateCheckoutMetadata,
   resolveAffiliateForCheckout,
 } from '@/lib/stripe/affiliates'
+import {
+  resolveOrCreateCheckoutCustomer,
+  type BillingCustomerResolution,
+} from '@/lib/stripe/billing-customer'
 
 const PRO_TRIAL_DAYS = 7
 
@@ -64,6 +68,106 @@ export async function POST(req: NextRequest) {
 
   const config = getStripePlanConfig(plan)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+
+  const { data: storedBilling, error: storedBillingError } = await admin
+    .from('subscriptions')
+    .select('stripe_customer_id, stripe_subscription_id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (storedBillingError) {
+    console.error('[create-checkout] Subscription lookup failed', storedBillingError)
+    return NextResponse.json(
+      { error: 'Could not verify your billing account. Please try again.' },
+      { status: 500 }
+    )
+  }
+
+  let billing: BillingCustomerResolution
+  try {
+    billing = await resolveOrCreateCheckoutCustomer({
+      stripe,
+      mode: stripeRuntime.mode,
+      userId: user.id,
+      email: user.email,
+      stored: storedBilling,
+      persistence: {
+        persistIfUnclaimed: async (customerId) => {
+          if (storedBilling) {
+            const { data, error } = await admin
+              .from('subscriptions')
+              .update({ stripe_customer_id: customerId })
+              .eq('user_id', user.id)
+              .is('stripe_customer_id', null)
+              .is('stripe_subscription_id', null)
+              .select('stripe_customer_id')
+              .maybeSingle()
+            if (error) throw new Error(error.message)
+            return data?.stripe_customer_id === customerId
+          }
+
+          const { error } = await admin.from('subscriptions').insert({
+            user_id: user.id,
+            stripe_customer_id: customerId,
+            plan: 'free',
+          })
+          if (!error) return true
+          if (error.code === '23505') return false
+          throw new Error(error.message)
+        },
+        reloadStored: async () => {
+          const { data, error } = await admin
+            .from('subscriptions')
+            .select('stripe_customer_id, stripe_subscription_id')
+            .eq('user_id', user.id)
+            .maybeSingle()
+          if (error) throw new Error(error.message)
+          return data
+        },
+      },
+    })
+  } catch (error) {
+    console.error('[create-checkout] Stripe customer verification failed', error)
+    return NextResponse.json(
+      { error: 'Could not verify your billing account. Please try again.' },
+      { status: 502 }
+    )
+  }
+
+  if (
+    billing.source === 'stored_subscription'
+    && billing.customerId
+    && billing.customerId !== storedBilling?.stripe_customer_id
+  ) {
+    const { error: backfillError } = await admin
+      .from('subscriptions')
+      .update({ stripe_customer_id: billing.customerId })
+      .eq('user_id', user.id)
+    if (backfillError) {
+      console.error('[create-checkout] Customer reference backfill failed', backfillError)
+    }
+  }
+
+  if (billing.customerId && billing.blockingSubscription) {
+    try {
+      const portal = await stripe.billingPortal.sessions.create({
+        customer: billing.customerId,
+        return_url: new URL('/settings', appUrl).toString(),
+      })
+      return NextResponse.json({
+        url: portal.url,
+        action: 'manage_subscription',
+        mode: stripeRuntime.mode,
+      })
+    } catch (error) {
+      console.error('[create-checkout] Billing portal creation failed', error)
+      return NextResponse.json(
+        { error: 'Could not open your billing account. Please try again.' },
+        { status: 502 }
+      )
+    }
+  }
+
   const affiliate = await resolveAffiliateForCheckout(admin, req, user.id)
   const referralMetadata = affiliateCheckoutMetadata(affiliate)
   const metadata = {
@@ -94,7 +198,12 @@ export async function POST(req: NextRequest) {
     payment_method_types: ['card'],
     mode: 'subscription',
     line_items: [lineItem],
-    customer_email: user.email,
+    ...(billing.customerId
+      ? {
+          customer: billing.customerId,
+          customer_update: { address: 'auto' },
+        }
+      : { customer_email: user.email }),
     client_reference_id: user.id,
     metadata,
     subscription_data: {

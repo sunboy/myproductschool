@@ -11,7 +11,7 @@ export function LandingHero() {
 
       <div className="relative z-10 space-y-8">
         <h1 className="font-headline text-5xl md:text-6xl font-bold text-on-surface leading-tight">
-          The practice gym for{' '}
+          A focused practice system for{' '}
           <span className="bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent">
             product thinking
           </span>
@@ -27,7 +27,7 @@ export function LandingHero() {
             href="/signup"
             className="bg-primary text-on-primary rounded-full px-8 py-3 font-label font-semibold hover:opacity-90 transition-opacity"
           >
-            Try a Free Challenge
+            Start practicing free
           </Link>
           <a
             href="#demo"

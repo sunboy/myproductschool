@@ -17,7 +17,7 @@ import { usePlanLimits } from '@/lib/usage/use-plan-limits'
 
 const proFeatures = [
   'Live interviews across product, system design, SQL, and coding',
-  'Live AI data analyst sessions, using Claude Code',
+  'Hands-on coding, SQL, product, and system design challenges',
   'Hatch feedback and scoring on every answer',
   'Autopsies, study plans, and Hatch coaching included',
 ]
@@ -25,7 +25,7 @@ const proFeatures = [
 const analyticsFeatures = [
   'Everything in Pro',
   'Live Claude Code sessions on real BigQuery data',
-  'Hatch coaching inside the terminal',
+  'Contextual Hatch guidance alongside your analysis',
   'Reusable skills and shareable analyst reports',
 ]
 
@@ -60,7 +60,7 @@ export function V3PricingSection() {
     <section className="pricing-section" id="pricing" aria-labelledby="pricing-heading">
       <div className="shell pricing-shell">
         <div className="pricing-copy">
-          <h2 id="pricing-heading">One practice system. The plan that fits your sprint.</h2>
+          <h2 id="pricing-heading">One practice system. The plan that fits your learning needs.</h2>
           <p>AI coaching, real interview practice, and scoring in one place.</p>
         </div>
 
@@ -78,7 +78,7 @@ export function V3PricingSection() {
               <small>/ forever</small>
             </div>
             <p className="pricing-card-copy">
-              Enough monthly reps to test the system before you commit anything.
+              Enough monthly practice to test the system before you commit anything.
             </p>
             <ul>
               <li>
@@ -91,7 +91,7 @@ export function V3PricingSection() {
               </li>
               <li>
                 <Check aria-hidden="true" strokeWidth={2.2} />
-                <span>Hatch feedback and scoring on every rep</span>
+                <span>Hatch feedback on every answer</span>
               </li>
               <li>
                 <Check aria-hidden="true" strokeWidth={2.2} />

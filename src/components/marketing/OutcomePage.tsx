@@ -8,7 +8,7 @@ import type { OutcomePageEntry } from '@/lib/seo/outcomes'
 const FLOW = [
   ['Frame', 'Define the real career moment and the signal you need to show.'],
   ['List', 'Open the possible paths, examples, and drill types before choosing one.'],
-  ['Optimize', 'Prioritize the rep that most improves the next high-stakes moment.'],
+  ['Optimize', 'Prioritize the practice that most improves the next high-stakes moment.'],
   ['Win', 'Turn the evidence into a clear story someone can act on.'],
 ] as const
 
@@ -26,15 +26,15 @@ const OUTCOME_DETAIL: Record<OutcomePageEntry['slug'], {
     hatchImage: '/images/hacky_practice.png',
     hatchAlt: 'Hatch preparing an interview practice session',
     samplePrompt: 'Spotify listening time dropped 15%, but DAU is flat and premium conversion is unchanged. Diagnose what changed.',
-    signupHook: 'Open the workspace to get live follow-ups, a scored rubric, and the weak move Hatch would drill next.',
+    signupHook: 'Open the workspace to get live follow-ups, a clear rubric, and the weak move Hatch would address next.',
     quickWins: [
       'Find the missing clarifying question before the interviewer has to ask.',
       'Practice a product sense answer and a systems answer in the same session.',
       'Leave with a readiness map for Frame, List, Optimize, and Win.',
     ],
     playbook: [
-      ['Diagnostic rep', 'Start with one ambiguous product or technical prompt and expose the weak move.'],
-      ['Follow-up pressure', 'Hatch asks the second question that usually appears in live loops.'],
+      ['Diagnostic practice', 'Start with one ambiguous product or technical prompt and expose the weak move.'],
+      ['Follow-up pressure', 'Hatch asks the second question that usually appears in live interviews.'],
       ['Rubric receipt', 'Save what worked, what broke, and what to drill before the next interview.'],
     ],
   },
@@ -81,7 +81,7 @@ const OUTCOME_DETAIL: Record<OutcomePageEntry['slug'], {
       'Prepare a stronger level story without making compensation guarantees.',
     ],
     playbook: [
-      ['Inventory receipts', 'Pull strong reps, weak-move improvements, and saved decision artifacts.'],
+      ['Inventory receipts', 'Pull strong practice sessions and weak-move improvements, and saved decision artifacts.'],
       ['Map level signal', 'Connect evidence to scope, ambiguity, influence, and decision quality.'],
       ['Draft the story', 'Build a concise proof narrative for the conversation.'],
     ],
@@ -109,8 +109,8 @@ export function OutcomePage({ outcome }: { outcome: OutcomePageEntry }) {
         ]}
       />
 
-      {/* Sample rep preview card */}
-      <V3Section eyebrow="Sample rep preview" title="See a rep before you sign up.">
+      {/* Sample practice preview card */}
+      <V3Section eyebrow="Sample practice preview" title="See the practice before you sign up.">
         <div
           style={{
             background: 'var(--paper)',
@@ -139,7 +139,7 @@ export function OutcomePage({ outcome }: { outcome: OutcomePageEntry }) {
                 color: 'var(--ink-1)',
               }}
             >
-              Sample rep preview
+              Sample practice preview
             </span>
             <Image src={detail.hatchImage} width={74} height={58} alt={detail.hatchAlt} style={{ height: 'auto', width: '74px' }} />
           </div>
@@ -233,7 +233,7 @@ export function OutcomePage({ outcome }: { outcome: OutcomePageEntry }) {
       <V3Section
         eyebrow="What you can do today"
         title="Useful before signup, stronger inside the workspace."
-        subtitle="This page gives the path, examples, and proof model. The product unlocks the rep, follow-up pressure, scored feedback, and saved evidence."
+        subtitle="This page gives the path, examples, and proof model. The product unlocks the practice, follow-up pressure, clear feedback, and saved evidence."
       >
         <div
           style={{
@@ -266,7 +266,7 @@ export function OutcomePage({ outcome }: { outcome: OutcomePageEntry }) {
       <V3Section
         eyebrow="Recommended path"
         title="A practical three-step playbook."
-        subtitle="Each step maps to real product behavior: run the rep, get pushed, then save the receipt."
+        subtitle="Each step maps to real product behavior: run the practice, get pushed, then save the receipt."
       >
         <div style={{ display: 'grid', gap: '12px', maxWidth: '760px' }}>
           {detail.playbook.map(([title, body], index) => (
@@ -320,9 +320,9 @@ export function OutcomePage({ outcome }: { outcome: OutcomePageEntry }) {
         </div>
       </V3Section>
 
-      {/* Reps to open next */}
+      {/* Practice to open next */}
       <V3Section
-        eyebrow="Reps to open next"
+        eyebrow="Practice to open next"
         title="Start with drills that create useful evidence."
       >
         <div style={{ display: 'grid', gap: '12px', maxWidth: '760px' }}>
@@ -396,7 +396,7 @@ export function OutcomePage({ outcome }: { outcome: OutcomePageEntry }) {
 
       <V3CtaBand
         title="Train for your next career move."
-        subtitle="Pick the outcome, run the rep, let Hatch follow up, and keep the receipts that show how your judgment is improving."
+        subtitle="Pick the outcome, run the practice, let Hatch follow up, and keep the receipts that show how your judgment is improving."
         ctas={[{ label: outcome.ctaLabel, href: outcome.ctaHref }]}
       />
     </V3PageShell>

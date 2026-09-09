@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { CompanyArt } from '@/components/showcase/CompanyArt';
 import { getReaderHeroImage } from '@/lib/autopsies/images';
+import { readerTopicTags } from '@/lib/autopsies/display-tags';
 import type { FeatureAutopsy } from '@/lib/autopsies/types';
 
 interface ParallaxHeroProps {
@@ -34,7 +35,8 @@ export function ParallaxHero({ story, companyName, companyAccent }: ParallaxHero
         style={{ y: heroY, filter: heroFilter }}
       >
         {heroImage && !imageFailed ? (
-          // eslint-disable-next-line @next/next/no-img-element
+          // onError handles image loading, not a user interaction.
+          // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/no-noninteractive-element-interactions
           <img
             src={heroImage.src}
             alt={heroImage.alt}
@@ -68,7 +70,7 @@ export function ParallaxHero({ story, companyName, companyAccent }: ParallaxHero
         <p className="sc-reader-hero-dek">{story.dek}</p>
         <div className="sc-reader-meta">
           <span>{story.estimatedReadTime}</span>
-          {story.tags.slice(0, 3).map(tag => (
+          {readerTopicTags(story.tags).slice(0, 3).map(tag => (
             <span key={tag}>
               <span className="dot" aria-hidden="true" />
               {tag}

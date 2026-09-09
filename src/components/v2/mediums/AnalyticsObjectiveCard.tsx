@@ -15,6 +15,8 @@ interface AnalyticsObjectiveCardProps {
   /** Open-guidance learners see no teaching notes (design §3.3). */
   hideTeachingNote?: boolean
   onMark: (finding: string) => Promise<MarkVerdict>
+  checkpointPending?: boolean
+  savedVerdict?: MarkVerdict | null
 }
 
 export function AnalyticsObjectiveCard({
@@ -27,19 +29,32 @@ export function AnalyticsObjectiveCard({
   reportWritten = false,
   hideTeachingNote = false,
   onMark,
+  checkpointPending = false,
+  savedVerdict = null,
 }: AnalyticsObjectiveCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [finding, setFinding] = useState('')
   const [loading, setLoading] = useState(false)
   const [lastVerdict, setLastVerdict] = useState<MarkVerdict | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [teachDismissed, setTeachDismissed] = useState(false)
 
   // Per-step teaching note: dismissible, remembered so it does not nag on revisit.
   useEffect(() => {
+    setSubmitError(null)
+    setLastVerdict(null)
+    setFinding('')
     try {
       setTeachDismissed(localStorage.getItem(`cc-teach-${subProblem.id}`) === '1')
     } catch { /* SSR / no storage */ }
   }, [subProblem.id])
+  useEffect(() => {
+    if (!checkpointPending && savedVerdict) {
+      setSubmitError(null)
+      setLastVerdict(savedVerdict)
+    }
+  }, [checkpointPending, savedVerdict])
+
   function dismissTeach() {
     setTeachDismissed(true)
     try { localStorage.setItem(`cc-teach-${subProblem.id}`, '1') } catch { /* ignore */ }
@@ -67,8 +82,9 @@ export function AnalyticsObjectiveCard({
     : null
 
   async function handleSubmit() {
-    if (!finding.trim() || loading) return
+    if (!finding.trim() || loading || checkpointPending) return
     setLoading(true)
+    setSubmitError(null)
     setLastVerdict(null)
     try {
       const v = await onMark(finding.trim())
@@ -77,6 +93,8 @@ export function AnalyticsObjectiveCard({
         setExpanded(false)
         setFinding('')
       }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Your finding could not be saved. Please retry.')
     } finally {
       setLoading(false)
     }
@@ -237,34 +255,39 @@ export function AnalyticsObjectiveCard({
       {/* Expanded finding input */}
       {expanded && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <label style={{
+          <label htmlFor={`analytics-finding-${subProblem.id}`} style={{
             fontSize: 11, fontWeight: 700,
             color: 'var(--color-on-surface-variant)',
             fontFamily: 'var(--font-label)',
           }}>
-            Paste your finding (one line):
+            Explain your finding and the evidence behind it:
           </label>
-          <input
-            type="text"
+          <textarea
+            disabled={checkpointPending}
+            id={`analytics-finding-${subProblem.id}`}
+            rows={4}
+            aria-label="Your finding and supporting evidence"
             value={finding}
             onChange={e => setFinding(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleSubmit() }}
+            onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); void handleSubmit() } }}
             placeholder={subProblem.successCriterion}
-            autoFocus
             style={{
               padding: '8px 12px',
               borderRadius: 8,
               border: '1px solid var(--color-outline-variant)',
               background: 'var(--color-surface-container-low)',
               color: 'var(--color-on-surface)',
-              fontSize: 13,
+              fontSize: 16,
+              lineHeight: 1.6,
+              resize: 'vertical',
               outline: 'none',
               width: '100%',
               boxSizing: 'border-box',
             }}
           />
 
-          {lastVerdict && (
+          {submitError && <p role="alert">{submitError}</p>}
+          {lastVerdict && !checkpointPending && (
             <div style={{
               fontSize: 12, fontWeight: 600,
               color: verdictColors[lastVerdict],
@@ -279,7 +302,7 @@ export function AnalyticsObjectiveCard({
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleSubmit}
-              disabled={!finding.trim() || loading}
+              disabled={!finding.trim() || loading || checkpointPending}
               style={{
                 padding: '7px 14px', borderRadius: 99,
                 background: 'var(--color-primary)',
@@ -289,7 +312,7 @@ export function AnalyticsObjectiveCard({
                 opacity: loading || !finding.trim() ? 0.6 : 1,
               }}
             >
-              {loading ? 'Checking…' : 'Submit'}
+              {loading ? 'Reviewing…' : 'Review finding'}
             </button>
             <button
               onClick={() => { setExpanded(false); setFinding(''); setLastVerdict(null) }}

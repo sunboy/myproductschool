@@ -22,7 +22,7 @@ const steps: Step[] = [
   {
     number: '3',
     title: 'Track and improve',
-    body: 'See your scoring over time, find the weak move, and close the gap faster.',
+    body: 'See your progress over time, find the weak move, and close the gap faster.',
   },
 ]
 

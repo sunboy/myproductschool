@@ -50,7 +50,7 @@ export default async function ProfilePage() {
   // Find top dimension
   const topDimension = getTopDimension(analytics.dimensions)
   const topDimensionLabel = DIMENSION_LABELS[topDimension.key as keyof typeof DIMENSION_LABELS] ?? topDimension.key
-  const percentile = 28
+  const percentile = null
 
   const activities = analytics.recent_attempts.map((attempt) => ({
     date: formatAttemptDate(attempt.created_at),
@@ -110,7 +110,7 @@ export default async function ProfilePage() {
           </span>
         </div>
         <p className="text-sm text-on-surface-variant mt-2">
-          Top {percentile}% of product thinkers
+          A snapshot of your product judgment
         </p>
       </div>
 
@@ -134,11 +134,9 @@ export default async function ProfilePage() {
               <p className="font-label font-semibold text-primary mb-1">
                 Hatch&apos;s Insight
               </p>
-              Your strongest dimension is <strong>{topDimensionLabel}</strong> at{' '}
-              {topDimension.score}/100. You consistently propose actionable next steps
-              backed by evidence. Watch for the <em>Metric Recitation</em> pattern.
-              You&apos;ve triggered it 5 times this month. Try anchoring
-              metrics in user behavior rather than listing them.
+              Your strongest dimension in this snapshot is <strong>{topDimensionLabel}</strong> at{' '}
+              {topDimension.score}/100. <strong>Suggestion:</strong> support your next recommendation
+              with one concrete piece of user evidence.
             </blockquote>
           </div>
         </div>

@@ -719,7 +719,7 @@ export function AutopsyReaderClient({
   // (resolvePracticeCards) — the rail panel omits itself when empty.
 
   useEffect(() => {
-    if (!heroRef.current) return
+    if (!heroRef.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
       if (heroBgRef.current) {
@@ -857,7 +857,7 @@ export function AutopsyReaderClient({
   ].filter((c): c is string => Boolean(c))
 
   return (
-    <div className="min-h-screen bg-page-field font-body">
+    <div className="learning-story min-h-screen bg-page-field font-body">
       {/* Back bar — desktop-only; the sticky stage rail also carries a back link. */}
       <div className="hidden items-center gap-2 border-b border-hairline bg-surface-container-low px-4 py-2 lg:flex">
         <BackCrumb href={`/explore/autopsies/${product.slug}`} label={product.name} />

@@ -7,13 +7,21 @@ const LiveInterviewsShell = dynamic(
   () => import('./LiveInterviewsShell').then(m => ({ default: m.LiveInterviewsShell })),
   {
     ssr: false,
-    loading: () => <div className="flex-1 bg-surface-container animate-pulse rounded-xl" />,
+    loading: () => (
+      <div
+        className="h-72 animate-pulse rounded-2xl border border-hairline bg-surface-container"
+        role="status"
+        aria-label="Loading interview setup"
+      />
+    ),
   }
 )
 
 interface Props {
   personas: LiveInterviewPersona[]
   scenarios: ScenarioBrief[]
+  initialMode?: 'single' | 'loop'
+  hideHeader?: boolean
 }
 
 export function LiveInterviewsShellClient(props: Props) {

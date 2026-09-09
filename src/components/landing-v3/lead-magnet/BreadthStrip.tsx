@@ -1,7 +1,7 @@
 import { BREADTH_DISCIPLINES, BREADTH_HEADLINE, BREADTH_SUBLINE } from '@/lib/lead-magnets/config'
 
 /**
- * The "one connected gym" positioning strip, shown above the footer on every
+ * The "one connected practice library" positioning strip, shown above the footer on every
  * /go/* page. Doubles as cross-sell: whichever magnet brought the visitor in,
  * this reinforces that the same tool trains every other skill too.
  *
@@ -13,7 +13,7 @@ export function BreadthStrip() {
     <section className="lm-breadth">
       <div className="shell">
         <p className="lm-breadth-proof">Built from 104 real product decisions, dissected move by move.</p>
-        <p className="eyebrow"><span className="dot" />One connected gym</p>
+        <p className="eyebrow"><span className="dot" />One connected practice library</p>
         <h2 className="lm-breadth-head">{BREADTH_HEADLINE}</h2>
         <p className="lm-breadth-sub">{BREADTH_SUBLINE}</p>
         <ul className="lm-breadth-list">

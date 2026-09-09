@@ -17,6 +17,55 @@ test('active and trialing pro subscriptions are entitled before expiry', () => {
   assert.equal(subscriptionEntitlesPro({ plan: 'pro', status: 'trialing', current_period_end: FUTURE }, NOW), true)
 })
 
+test('active and unexpired trialing Analytics subscriptions include Pro entitlement', () => {
+  assert.equal(subscriptionEntitlesPro(
+    { plan: 'analytics_monthly', status: 'active', current_period_end: FUTURE },
+    NOW,
+  ), true)
+  assert.equal(subscriptionEntitlesPro(
+    { plan: 'analytics_annual', status: 'trialing', current_period_end: FUTURE },
+    NOW,
+  ), true)
+
+  assert.equal(effectivePlanFromRows(
+    { plan: 'pro', pro_access: true, subscription_status: 'active' },
+    { plan: 'analytics_monthly', status: 'active', current_period_end: FUTURE },
+    NOW,
+  ), 'pro')
+})
+
+test('Analytics subscriptions retain the same cancellation and expiry guards as Pro', () => {
+  assert.equal(subscriptionEntitlesPro(
+    { plan: 'analytics_monthly', status: 'canceled', current_period_end: FUTURE },
+    NOW,
+  ), false)
+  assert.equal(subscriptionEntitlesPro(
+    { plan: 'analytics_annual', status: 'trialing', current_period_end: PAST },
+    NOW,
+  ), false)
+  assert.equal(subscriptionEntitlesPro({
+    plan: 'analytics_monthly',
+    status: 'active',
+    current_period_end: PAST,
+    cancel_at_period_end: true,
+  }, NOW), false)
+  assert.equal(subscriptionEntitlesPro(
+    { plan: 'analytics_enterprise', status: 'active', current_period_end: FUTURE },
+    NOW,
+  ), false)
+})
+
+test('Analytics subscriptions use the same past-due grace window as Pro', () => {
+  assert.equal(subscriptionEntitlesPro(
+    { plan: 'analytics_monthly', status: 'past_due', past_due_since: PAST_DUE_IN_GRACE },
+    NOW,
+  ), true)
+  assert.equal(subscriptionEntitlesPro(
+    { plan: 'analytics_annual', status: 'past_due', past_due_since: PAST_DUE_PAST_GRACE },
+    NOW,
+  ), false)
+})
+
 test('past-due pro subscriptions keep access during billing grace', () => {
   // Grace keys off past_due_since (not current_period_end). Within the 7-day window → entitled.
   assert.equal(subscriptionEntitlesPro(

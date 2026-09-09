@@ -96,6 +96,7 @@ const RequestSchema = z.object({
   guidance_level: z.enum(['scaffolded', 'guided', 'open']).optional(),
   artifact_state: z.string().max(4000).nullable().optional(),
   mcp_connected: z.boolean().optional(),
+  problem_statement: z.string().max(12000).optional(),
   terminal_tail: z.string().max(4000).nullable().optional(),
   active_sub_problem_id: z.string().max(200).nullable().optional(),
   active_sub_problem_sequence: z.number().int().positive().optional(),
@@ -258,11 +259,12 @@ export async function POST(req: NextRequest) {
       `The user has been idle. Decide: nudge or stay silent. One sentence, reference their actual code or failing tests, point at the next move without writing the solution. Respond with the JSON schema: { "nudge": "..." | null }`,
     ].filter(Boolean).join('\n\n')
   } else if (isAnalytics) {
-    const stepBlock = body.active_sub_problem_title
+    const missionBlock = body.problem_statement ? `Mission: ${body.problem_statement}\n\n` : ''
+    const stepBlock = missionBlock + (body.active_sub_problem_title
       ? `Active step: ${body.active_sub_problem_title}` +
         (body.active_sub_problem_objective ? `\nObjective: ${body.active_sub_problem_objective}` : '') +
         (body.active_sub_problem_success_criterion ? `\nDone when: ${body.active_sub_problem_success_criterion}` : '')
-      : 'No active step.'
+      : 'No active step.')
     const sessionState = [
       `BigQuery MCP connected: ${body.mcp_connected ? 'yes' : 'no'}`,
       `Skills written: ${(body.skills_written ?? []).length > 0 ? (body.skills_written ?? []).join(', ') : 'none'}`,

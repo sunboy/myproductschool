@@ -119,7 +119,7 @@ export function V3TryRep() {
     return (
       <div className="lm-card" style={{ display: 'grid', gap: 14 }}>
         <div>
-          <p className="lm-quiz-eyebrow" style={{ margin: '0 0 4px' }}>Your grade</p>
+          <p className="lm-quiz-eyebrow" style={{ margin: '0 0 4px' }}>Your feedback</p>
           <p className="lm-result-band" style={{ color: GRADE_COLORS[result.gradeLabel], margin: 0 }}>
             {result.gradeLabel}
           </p>
@@ -127,7 +127,7 @@ export function V3TryRep() {
         </div>
 
         <div style={{ borderTop: '1px solid var(--line-2)', paddingTop: 12 }}>
-          <p className="lm-quiz-eyebrow" style={{ margin: '0 0 4px' }}>The move to train</p>
+          <p className="lm-quiz-eyebrow" style={{ margin: '0 0 4px' }}>A skill to develop</p>
           <p style={{ fontWeight: 700, color: 'var(--ink-1)', fontSize: 15, margin: 0 }}>
             {MOVE_LABELS[result.move] ?? result.move}
           </p>
@@ -137,7 +137,7 @@ export function V3TryRep() {
           Create your free account <span aria-hidden>→</span>
         </button>
         <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-4)', textAlign: 'center' }}>
-          Keep this result and get the full four-step breakdown.
+          Create an account to explore full challenges and personalized feedback.
         </p>
       </div>
     )
@@ -146,7 +146,7 @@ export function V3TryRep() {
   return (
     <form onSubmit={handleSubmit} className="lm-card" style={{ display: 'grid', gap: 12 }}>
       <div>
-        <p className="lm-quiz-eyebrow" style={{ margin: '0 0 6px' }}>Try one rep, no signup</p>
+        <p className="lm-quiz-eyebrow" style={{ margin: '0 0 6px' }}>Try a challenge, no signup</p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.45, color: 'var(--ink-2)' }}>
           {prompt.context}
         </p>
@@ -184,7 +184,7 @@ export function V3TryRep() {
           className="btn btn-forest"
           disabled={status === 'grading' || answer.trim().length < 20}
         >
-          {status === 'grading' ? 'Grading…' : 'Grade my answer'}
+          {status === 'grading' ? 'Reviewing…' : 'Get feedback'}
         </button>
         <span style={{ fontSize: 12, color: 'var(--ink-4)' }}>{answer.length} / {MAX_CHARS}</span>
       </div>
@@ -194,7 +194,7 @@ export function V3TryRep() {
       )}
       {status === 'limit' && (
         <p style={{ margin: 0, fontSize: 13, color: 'var(--ink-2)' }}>
-          Three free grades a day. The full mock with a four-step breakdown is inside the platform.{' '}
+          Three free reviews a day. The full mock with a four-step breakdown is inside the platform.{' '}
           <button
             type="button"
             onClick={openSignup}

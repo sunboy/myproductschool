@@ -1,3 +1,4 @@
+import { activateProvisioning } from './provisioning-lease'
 // Shared provisioning core for Claude Code Analytics sessions.
 //
 // Why this exists: Vercel Hobby caps a function at 60s and KILLS it at the
@@ -18,10 +19,16 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getSandbox } from '@/lib/sandbox'
 import type { SessionEnv } from '@/lib/sandbox/types'
 import { mintSnapshotToken } from '@/lib/sandbox/snapshot-token'
-import { mintSessionVirtualKey, isGatewayConfigured, warmGateway } from '@/lib/sandbox/llm-gateway'
+import {
+  blockSessionKey,
+  mintSessionVirtualKey,
+  isGatewayConfigured,
+  warmGateway,
+} from '@/lib/sandbox/llm-gateway'
 import { ensureSqlRunnable, isSqlAutostartConfigured } from '@/lib/sandbox/cloud-sql-admin'
 import { recordUsageEvent } from '@/lib/usage/check-limit'
 import { captureServerImmediate } from '@/lib/posthog/server'
+import { allowsDirectProviderKey } from '@/lib/sandbox/cost-policy'
 
 /**
  * Step where provisioning died — surfaced to Sentry/PostHog so the next incident
@@ -29,7 +36,12 @@ import { captureServerImmediate } from '@/lib/posthog/server'
  * gateway-400 root cause took a deep log dive to find). Also persisted on the row
  * (failure_code) so the client can decide whether to silently retry.
  */
-type ProvisionFailureCode = 'sql_wake_timeout' | 'gateway_key_mint' | 'create_session' | 'readiness_timeout'
+export type ProvisionFailureCode =
+  | 'gateway_unconfigured'
+  | 'sql_wake_timeout'
+  | 'gateway_key_mint'
+  | 'create_session'
+  | 'readiness_timeout'
 
 /**
  * Coarse provisioning phase the client renders as staged progress. Ordered; the
@@ -119,13 +131,53 @@ export type ProvisionResult =
   | { ok: true; wssUrl: string; expiresAt: string; pending?: boolean }
   | { ok: false; status: number; error: string }
 
+export interface ProvisionFailure {
+  code: ProvisionFailureCode
+  userId?: string
+  challengeId?: string
+  /** The HTTP status from the upstream dependency (e.g. gateway 400), if known. */
+  gatewayStatus?: number
+  error?: unknown
+}
+
+/** Small injection seam for exercising the production fail-closed boundary. */
+export interface ProvisionSessionDependencies {
+  createAdminClient: typeof createAdminClient
+  isGatewayConfigured: typeof isGatewayConfigured
+  allowsDirectProviderKey: typeof allowsDirectProviderKey
+  markFailed: (
+    admin: ReturnType<typeof createAdminClient>,
+    sessionId: string,
+    failure?: ProvisionFailure,
+  ) => Promise<boolean>
+}
+
+/** Only the request that won provisioning→failed may revoke the shared alias. */
+export async function blockOwnedFailedProvisioningKey(
+  failureOwned: boolean,
+  sessionId: string,
+  block: typeof blockSessionKey = blockSessionKey,
+) {
+  if (!failureOwned) return null
+  const result = await block(sessionId, 4000)
+  if (result.status === 'failed' || result.status === 'not_found') {
+    const reason = result.status === 'failed' ? result.reason : result.status
+    console.error(`[cc/provision] session key block failed (${reason})`)
+  }
+  return result
+}
+
 /**
  * Run the full provisioning pipeline for an existing `provisioning` row. Flips
  * the row to `active` (with wss_url) on success or `failed` on any step error.
  * Safe to call once per session row; idempotency/dedup lives in the start route.
  */
-export async function provisionSession(input: ProvisionInput): Promise<ProvisionResult> {
-  const admin = createAdminClient()
+export async function provisionSession(
+  input: ProvisionInput,
+  dependencies: Partial<ProvisionSessionDependencies> = {},
+): Promise<ProvisionResult> {
+  const admin = (dependencies.createAdminClient ?? createAdminClient)()
+  const fail = dependencies.markFailed ?? markFailed
   const { sessionId, ttlSeconds } = input
 
   // Prefer the provisioning request's own origin so the container POSTs snapshots
@@ -139,6 +191,26 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   const orchestratorSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/snapshot`
   const userStateSnapshotUrl = `${baseUrl}/api/claude-code/session/${sessionId}/user-state`
   const snapshotToken = mintSnapshotToken(sessionId, process.env.SESSION_TOKEN_SECRET ?? '')
+  const gatewayConfigured = (dependencies.isGatewayConfigured ?? isGatewayConfigured)()
+  const directKeyAllowed = (dependencies.allowsDirectProviderKey ?? allowsDirectProviderKey)()
+
+  // A production sandbox must never receive the shared Anthropic provider key.
+  // Local development can opt in explicitly, but production fails closed when
+  // the spend-enforcing gateway is absent or misconfigured.
+  if (!gatewayConfigured && !directKeyAllowed) {
+    const error = new Error('LiteLLM gateway is required for a budgeted analytics session')
+    await fail(admin, sessionId, {
+      code: 'gateway_unconfigured',
+      userId: input.userId,
+      challengeId: input.challengeId,
+      error,
+    })
+    return {
+      ok: false,
+      status: 503,
+      error: 'The analytics environment is temporarily unavailable. Please try again.',
+    }
+  }
 
   // --- Wake Cloud SQL AND warm the gateway CONCURRENTLY (both feed the key mint).
   // Serially these are the two long poles on a cold start (~40s + ~40s > Hobby's
@@ -148,13 +220,13 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   // the client's first /state poll already shows a real phase.
   await advancePhase(admin, sessionId, 'waking_database')
 
-  if (isGatewayConfigured()) {
+  if (gatewayConfigured) {
     const warm = warmGateway() // triggers gateway container boot in parallel
     if (isSqlAutostartConfigured()) {
       const sql = await ensureSqlRunnable(SQL_WAKE_MS)
       if (!sql.ready) {
         console.error('[cc/provision] cc-llm-db not RUNNABLE in time (state:', sql.state, ')')
-        await markFailed(admin, sessionId, {
+        await fail(admin, sessionId, {
           code: 'sql_wake_timeout',
           userId: input.userId,
           challengeId: input.challengeId,
@@ -174,7 +246,7 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   await advancePhase(admin, sessionId, 'starting_gateway')
 
   // --- Mint a per-session virtual key with a hard spend cap ---
-  let anthropicKey = process.env.ANTHROPIC_API_KEY ?? ''
+  let anthropicKey = directKeyAllowed ? (process.env.ANTHROPIC_API_KEY ?? '') : ''
   let anthropicBaseUrl: string | undefined
   try {
     const vkey = await mintSessionVirtualKey(sessionId, ttlSeconds)
@@ -186,7 +258,7 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
     console.error('[cc/provision] virtual key mint failed:', err)
     // FAIL CLOSED when the gateway is configured — never hand a session the
     // shared uncapped key. Only the no-gateway (local/dev) path may fall back.
-    if (isGatewayConfigured()) {
+    if (gatewayConfigured) {
       // Pull the upstream gateway HTTP status out of the mint error message so
       // Sentry tags it — a surfaced 400 "key_alias already exists" is self-
       // diagnosing. Covers both mint error formats: terminal `... failed (400):`
@@ -195,18 +267,37 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
       const gatewayStatus = Number(
         msg.match(/\((\d{3})\)/)?.[1] ?? msg.match(/key\/generate (\d{3})[: ]/)?.[1],
       ) || undefined
-      await markFailed(admin, sessionId, {
+      const failureOwned = await fail(admin, sessionId, {
         code: 'gateway_key_mint',
         userId: input.userId,
         challengeId: input.challengeId,
         gatewayStatus,
         error: err,
       })
+      // The gateway may have persisted the key before a response was lost or
+      // malformed. Only the request that won the provisioning→failed CAS may
+      // block it; a racing request may already have activated the same key.
+      await blockOwnedFailedProvisioningKey(failureOwned, sessionId)
       return {
         ok: false,
         status: 503,
         error: 'Could not start a budgeted session. Please try again.',
       }
+    }
+  }
+
+  if (!anthropicKey) {
+    const error = new Error('No budgeted analytics credential was issued')
+    await fail(admin, sessionId, {
+      code: 'gateway_unconfigured',
+      userId: input.userId,
+      challengeId: input.challengeId,
+      error,
+    })
+    return {
+      ok: false,
+      status: 503,
+      error: 'The analytics environment is temporarily unavailable. Please try again.',
     }
   }
 
@@ -248,18 +339,24 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   } catch (err) {
     console.error('[cc/provision] createSession failed:', err)
     // A partially-created revision still pins an instance — tear it down.
-    const partialHostId = sandbox.deriveHostInstanceId?.(sessionId)
-    if (partialHostId) {
-      await sandbox
-        .destroySession(partialHostId)
-        .catch((e) => console.error('[cc/provision] partial teardown failed:', e))
-    }
-    await markFailed(admin, sessionId, {
+    const failureOwned = await fail(admin, sessionId, {
       code: 'create_session',
       userId: input.userId,
       challengeId: input.challengeId,
       error: err,
     })
+    await blockOwnedFailedProvisioningKey(failureOwned, sessionId)
+    if (failureOwned) {
+      // A partially-created revision can still pin an instance. The request
+      // that won the failure CAS owns teardown; a racing winner may be live on
+      // the same deterministic host id.
+      const partialHostId = sandbox.deriveHostInstanceId?.(sessionId)
+      if (partialHostId) {
+        await sandbox
+          .destroySession(partialHostId)
+          .catch((e) => console.error('[cc/provision] partial teardown failed:', e))
+      }
+    }
     return { ok: false, status: 503, error: 'Sandbox provisioning failed. Please try again.' }
   }
 
@@ -283,13 +380,12 @@ export async function provisionSession(input: ProvisionInput): Promise<Provision
   // a cold one does not, and that's fine — the client's /state poll takes over. ---
   const ready = await sandbox.awaitReady(provision.hostInstanceId, READINESS_OPTIMISTIC_MS)
   if (ready) {
-    await markActiveAndMeter(admin, sessionId, input, provision.provider)
-    return { ok: true, wssUrl: provision.wssUrl, expiresAt }
+    const activated = await markActiveAndMeter(admin, sessionId, input, provision.provider)
+    if (activated) return { ok: true, wssUrl: provision.wssUrl, expiresAt }
   }
 
-  // Not Ready yet — the revision is still booting. Leave the row `provisioning`
-  // (host/wss persisted) and let /state finish it. This is a SUCCESS for the
-  // request: the client keeps showing progress and polling.
+  // Not ready, or another lifecycle transition won activation. Let /state read
+  // the authoritative status; do not claim this request activated the sandbox.
   return { ok: true, wssUrl: provision.wssUrl, expiresAt, pending: true }
 }
 
@@ -311,8 +407,8 @@ export async function probeAndActivate(
   // Single short probe (a few seconds) — the /state route is called repeatedly.
   const ready = await sandbox.awaitReady(hostInstanceId, 3000)
   if (!ready) return null
-  await markActiveAndMeter(admin, sessionId, { userId, challengeId } as ProvisionInput, provider)
-  return wssUrl
+  const activated = await markActiveAndMeter(admin, sessionId, { userId, challengeId } as ProvisionInput, provider)
+  return activated ? wssUrl : null
 }
 
 async function markActiveAndMeter(
@@ -320,36 +416,24 @@ async function markActiveAndMeter(
   sessionId: string,
   input: Pick<ProvisionInput, 'userId' | 'challengeId'>,
   provider: string,
-): Promise<void> {
+): Promise<boolean> {
   // Guard: only the first transition out of `provisioning` records usage, so a
   // race between the provision wait and a /state probe can't double-count.
-  const { data: flipped } = await admin
-    .from('claude_code_sessions')
-    .update({ status: 'active', started_at: new Date().toISOString(), provision_phase: 'ready' })
-    .eq('id', sessionId)
-    .eq('status', 'provisioning')
-    .select('id')
-  if (!flipped || flipped.length === 0) return
+  if (!(await activateProvisioning(admin, sessionId))) return false
 
   await recordUsageEvent(input.userId, 'claude_code_sessions', 1, {
     challenge_id: input.challengeId,
     session_id: sessionId,
     provider,
   })
+  return true
 }
 
 async function markFailed(
   admin: ReturnType<typeof createAdminClient>,
   sessionId: string,
-  failure?: {
-    code: ProvisionFailureCode
-    userId?: string
-    challengeId?: string
-    /** The HTTP status from the upstream dependency (e.g. gateway 400), if known. */
-    gatewayStatus?: number
-    error?: unknown
-  },
-): Promise<void> {
+  failure?: ProvisionFailure,
+): Promise<boolean> {
   // CAS guard: only fail a row that is still `provisioning`. If a concurrent
   // provision attempt for the same session already flipped it to `active`, this
   // update matches nothing and we must NOT clobber the live session or emit a
@@ -367,7 +451,7 @@ async function markFailed(
     .eq('status', 'provisioning')
     .select('id')
 
-  if (!failure || !flipped || flipped.length === 0) return
+  if (!failure || !flipped || flipped.length === 0) return false
 
   // Surface the failure to both observability planes. Before this, the start/
   // provision path captured NOTHING — the user saw a friendly string and the real
@@ -400,4 +484,5 @@ async function markFailed(
       ...(failure.userId ? {} : { $process_person_profile: false }),
     },
   }).catch(() => {})
+  return true
 }

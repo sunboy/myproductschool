@@ -267,28 +267,38 @@ if [[ -n "${ORCHESTRATOR_SNAPSHOT_URL:-}" ]]; then
 
       # Workspace snapshot (per-session, graded)
       TARBALL_PATH=$(mktemp /tmp/snapshot-XXXXXX.tar.gz)
-      tar -czf "$TARBALL_PATH" -C / workspace 2>/dev/null || true
-      curl -fsSL -X POST \
-        -H "Authorization: Bearer ${SNAPSHOT_AUTH_TOKEN:-}" \
-        -H "Content-Type: application/gzip" \
-        --data-binary "@$TARBALL_PATH" \
-        "${ORCHESTRATOR_SNAPSHOT_URL}" 2>/dev/null || true
+      CAPTURE_STARTED_AT_MS=$(date +%s%3N)
+      CAPTURE_ID="${CAPTURE_STARTED_AT_MS}-${BASHPID:-$$}-${RANDOM}"
+      if tar -czf "$TARBALL_PATH" -C / workspace 2>/dev/null; then
+        curl -fsSL --connect-timeout 5 --max-time 20 --retry 2 --retry-all-errors --retry-max-time 45 -X POST \
+          -H "Authorization: Bearer ${SNAPSHOT_AUTH_TOKEN:-}" \
+          -H "Content-Type: application/gzip" \
+          -H "X-Snapshot-Provenance-Version: 2" \
+          -H "X-Snapshot-Capture-Started-At: ${CAPTURE_STARTED_AT_MS}" \
+          -H "X-Snapshot-Capture-Id: ${CAPTURE_ID}" \
+          --data-binary "@$TARBALL_PATH" \
+          "${ORCHESTRATOR_SNAPSHOT_URL}" 2>/dev/null || true
+      fi
       rm -f "$TARBALL_PATH"
 
       # Per-user ~/.claude snapshot (portable: .mcp.json + skills + .claude.json)
       if [[ -n "${USER_STATE_SNAPSHOT_URL:-}" ]]; then
         STATE_PATH=$(mktemp /tmp/userstate-XXXXXX.tar.gz)
+        STATE_CAPTURE_STARTED_AT_MS=$(date +%s%3N)
+        STATE_CAPTURE_ID="${STATE_CAPTURE_STARTED_AT_MS}-${BASHPID:-$$}-${RANDOM}"
         # -C $HOME so paths are relative (.mcp.json, .claude/skills, ...) for a
         # clean extract into ~/.claude on the next boot.
-        tar -czf "$STATE_PATH" -C "$HOME" \
+        if tar -czf "$STATE_PATH" -C "$HOME" \
           $( [[ -f "$HOME/.mcp.json" ]] && echo .mcp.json ) \
           $( [[ -d "$HOME/.claude/skills" ]] && echo .claude/skills ) \
           $( [[ -f "$HOME/.claude.json" ]] && echo .claude.json ) \
-          2>/dev/null || true
-        if [[ -s "$STATE_PATH" ]]; then
-          curl -fsSL -X POST \
+          2>/dev/null && [[ -s "$STATE_PATH" ]]; then
+          curl -fsSL --connect-timeout 5 --max-time 20 --retry 2 --retry-all-errors --retry-max-time 45 -X POST \
             -H "Authorization: Bearer ${SNAPSHOT_AUTH_TOKEN:-}" \
             -H "Content-Type: application/gzip" \
+            -H "X-Snapshot-Provenance-Version: 2" \
+            -H "X-Snapshot-Capture-Started-At: ${STATE_CAPTURE_STARTED_AT_MS}" \
+            -H "X-Snapshot-Capture-Id: ${STATE_CAPTURE_ID}" \
             --data-binary "@$STATE_PATH" \
             "${USER_STATE_SNAPSHOT_URL}" 2>/dev/null || true
         fi

@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Flame, Zap, Volume2, VolumeX, Compass, LogOut, Settings, Handshake, Sparkles, MessageSquare } from 'lucide-react'
+import { Volume2, VolumeX, Compass, LogOut, Settings, Handshake, Sparkles, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { levelFromXp } from '@/lib/utils'
 import { useSession } from '@/context/SessionContext'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { FreemiumUsageSummary, SpendIndicator } from '@/components/billing/FreemiumUsageSummary'
@@ -26,30 +25,17 @@ function getInitials(name: string | null | undefined): string {
 }
 
 /**
- * Desktop TopUtilityBar (real search, streak/XP, sound + tour toggles,
- * avatar dropdown) and the collapsed mobile top bar (logo + streak/XP +
- * avatar, no sidebar, no search). Replaces TopNav inside (app)/layout.tsx
+ * Desktop TopUtilityBar (real search, sound + tour toggles,
+ * avatar dropdown) and the collapsed mobile top bar (logo + avatar, no sidebar, no search). Replaces TopNav inside (app)/layout.tsx
  * only — TopNav itself stays mounted by (workspace)/layout.tsx and other
  * surfaces that still import it directly.
  */
 export function AppTopShell() {
   const router = useRouter()
   const { profile } = useSession()
-  const [menuOpen, setMenuOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
-  const menuRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const { muted, toggleMuted } = useHatchSonics()
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-    if (menuOpen) document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [menuOpen])
 
   // ⌘K / Ctrl+K focuses the search input, matching the kbd hint in the pill.
   useEffect(() => {
@@ -63,28 +49,12 @@ export function AppTopShell() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
-
-  function openUpgrade() {
-    window.dispatchEvent(new CustomEvent('open-upgrade-modal'))
-    setMenuOpen(false)
-  }
-
   function handleSearchSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const q = searchValue.trim()
     router.push(q ? `/challenges?q=${encodeURIComponent(q)}` : '/challenges')
   }
 
-  const streak = profile?.streak_days ?? 0
-  const bestStreak = Math.max(profile?.longest_streak ?? 0, streak)
-  const xp = profile?.xp_total ?? 0
-  const level = levelFromXp(xp)
   const isPro = profile?.plan === 'pro'
 
   // Derive trial/dunning banners from already-fetched profile data (same logic as TopNav).
@@ -100,8 +70,102 @@ export function AppTopShell() {
     ? Math.max(0, Math.ceil((new Date(dunning.gracePeriodEndsAt).getTime() - Date.now()) / 86400000))
     : undefined
 
-  function AvatarMenu({ compact }: { compact?: boolean }) {
-    return (
+  return (
+    <>
+      {trialDaysLeft !== null && trialDaysLeft <= 7 && (
+        <TrialBanner daysLeft={trialDaysLeft} trialEndsAt={sub!.current_period_end!} />
+      )}
+      {showDunning && (
+        <DunningBanner message={dunningMessage} daysUntilSuspension={dunningDaysLeft} />
+      )}
+
+      {/* Desktop (lg+): full TopUtilityBar with live search, sound + tour toggles, avatar menu. */}
+      <div data-topnav className="hidden lg:block">
+        <TopUtilityBar
+          searchPlaceholder="Search topics, problems, or interviews..."
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+          onSearchSubmit={handleSearchSubmit}
+          searchInputRef={searchInputRef}
+          avatarInitial={getInitials(profile?.display_name)}
+          displayName={profile?.display_name ?? 'You'}
+          isPro={isPro}
+          avatarSlot={<AvatarMenu />}
+          endSlot={
+            <>
+              {!isPro && <SpendIndicator />}
+              <button
+                type="button"
+                onClick={toggleMuted}
+                aria-label={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+                title={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+                className="flex size-[34px] items-center justify-center rounded-lg border border-hairline bg-white text-ink-secondary"
+              >
+                {muted ? <VolumeX size={16} strokeWidth={1.8} /> : <Volume2 size={16} strokeWidth={1.8} />}
+              </button>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event('start-intro-tour'))}
+                aria-label="Take the tour"
+                title="Take the tour"
+                className="flex size-[34px] items-center justify-center rounded-lg border border-hairline bg-white text-ink-secondary"
+              >
+                <Compass size={16} strokeWidth={1.8} />
+              </button>
+            </>
+          }
+        />
+      </div>
+
+      {/* Mobile (<lg): collapsed bar — logo + avatar. No sidebar, no search box. */}
+      <div data-topnav className="flex items-center gap-3 border-b border-hairline bg-page-field px-4 py-3 lg:hidden">
+        <Link href="/dashboard" className="flex min-w-0 shrink-0 items-center">
+          <HackProductWordmark className="h-7 w-[147px] object-cover" />
+        </Link>
+
+        <div className="ml-auto flex items-center gap-4">
+          <AvatarMenu compact />
+        </div>
+      </div>
+    </>
+  )
+}
+
+/**
+ * Self-contained account/avatar dropdown: own open state, own logout and
+ * upgrade handlers. Reused by both AppTopShell (legacy) and AppTopBarV2
+ * (shell-v2, density pass) with zero prop plumbing required.
+ */
+export function AvatarMenu({ compact }: { compact?: boolean }) {
+  const router = useRouter()
+  const { profile } = useSession()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const isPro = profile?.plan === 'pro'
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
+
+  function openUpgrade() {
+    window.dispatchEvent(new CustomEvent('open-upgrade-modal'))
+    setMenuOpen(false)
+  }
+
+  return (
       <div className="relative" ref={menuRef}>
         <button
           type="button"
@@ -213,81 +277,4 @@ export function AppTopShell() {
         )}
       </div>
     )
-  }
-
-  return (
-    <>
-      {trialDaysLeft !== null && trialDaysLeft <= 7 && (
-        <TrialBanner daysLeft={trialDaysLeft} trialEndsAt={sub!.current_period_end!} />
-      )}
-      {showDunning && (
-        <DunningBanner message={dunningMessage} daysUntilSuspension={dunningDaysLeft} />
-      )}
-
-      {/* Desktop (lg+): full TopUtilityBar with live search, streak/XP, sound + tour toggles, avatar menu. */}
-      <div data-topnav className="hidden lg:block">
-        <TopUtilityBar
-          searchPlaceholder="Search topics, problems, or interviews..."
-          searchValue={searchValue}
-          onSearchChange={setSearchValue}
-          onSearchSubmit={handleSearchSubmit}
-          searchInputRef={searchInputRef}
-          streakDays={streak > 0 ? streak : undefined}
-          bestStreakDays={streak > 0 ? bestStreak : undefined}
-          totalXp={xp > 0 ? xp : undefined}
-          level={xp > 0 ? level : undefined}
-          avatarInitial={getInitials(profile?.display_name)}
-          displayName={profile?.display_name ?? 'You'}
-          isPro={isPro}
-          avatarSlot={<AvatarMenu />}
-          endSlot={
-            <>
-              {!isPro && <SpendIndicator />}
-              <button
-                type="button"
-                onClick={toggleMuted}
-                aria-label={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
-                title={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
-                className="flex size-[34px] items-center justify-center rounded-lg border border-hairline bg-white text-ink-secondary"
-              >
-                {muted ? <VolumeX size={16} strokeWidth={1.8} /> : <Volume2 size={16} strokeWidth={1.8} />}
-              </button>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new Event('start-intro-tour'))}
-                aria-label="Take the tour"
-                title="Take the tour"
-                className="flex size-[34px] items-center justify-center rounded-lg border border-hairline bg-white text-ink-secondary"
-              >
-                <Compass size={16} strokeWidth={1.8} />
-              </button>
-            </>
-          }
-        />
-      </div>
-
-      {/* Mobile (<lg): collapsed bar — logo + streak/XP + avatar. No sidebar, no search box. */}
-      <div data-topnav className="flex items-center gap-3 border-b border-hairline bg-page-field px-4 py-3 lg:hidden">
-        <Link href="/dashboard" className="flex min-w-0 shrink-0 items-center">
-          <HackProductWordmark className="h-7 w-[147px] object-cover" />
-        </Link>
-
-        <div className="ml-auto flex items-center gap-4">
-          {streak > 0 && (
-            <div className="flex items-center gap-1">
-              <Flame size={15} strokeWidth={1.8} className="text-flame" />
-              <span className="text-[13px] font-extrabold tabular-nums text-ink-strong">{streak}d</span>
-            </div>
-          )}
-          {xp > 0 && (
-            <div className="flex items-center gap-1">
-              <Zap size={15} strokeWidth={1.8} className="text-gold" />
-              <span className="text-[13px] font-extrabold tabular-nums text-ink-strong">{xp.toLocaleString()}</span>
-            </div>
-          )}
-          <AvatarMenu compact />
-        </div>
-      </div>
-    </>
-  )
 }

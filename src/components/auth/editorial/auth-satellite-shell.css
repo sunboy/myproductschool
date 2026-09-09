@@ -1,0 +1,50 @@
+/* Variant-neutral auth satellite shell. Uses the same .hp-auth card
+   family as the 3 login concepts (editorial-auth-card.css) but its own
+   quiet cream page chrome — no concept-specific hero/story content. */
+
+.auth-satellite-shell {
+  --hp-forest: #4a7c59;
+  --hp-forest-deep: #173c2a;
+  --hp-forest-ink: #1d4637;
+  --hp-cream: #fdfaf7;
+  --hp-cream-2: #f8f4ed;
+  --hp-taupe: #8d806f;
+  --hp-taupe-soft: #ddd6cc;
+  --hp-amber: #d99a34;
+  --hp-ink: #18251f;
+  --hp-muted: #6b7378;
+  --hp-line: #e5dfd7;
+  --hp-surface: #fffefd;
+  --hp-sans: 'Nunito Sans', sans-serif;
+  --hp-serif: 'Literata', serif;
+  --hp-shadow-sm: 0 10px 28px rgba(33, 48, 40, .08);
+  --hp-shadow-md: 0 20px 48px rgba(33, 48, 40, .12);
+
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--hp-cream);
+  color: var(--hp-ink);
+  font-family: var(--hp-sans);
+  -webkit-font-smoothing: antialiased;
+  padding: 38px 32px;
+}
+.auth-satellite-shell > header { display: flex; justify-content: center; }
+.auth-satellite-shell .auth-satellite-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+}
+.auth-satellite-shell .auth-card { width: 100%; max-width: 460px; }
+.auth-satellite-shell .auth-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  padding: 8px 0;
+}
+.auth-satellite-shell .auth-status .material-symbols-outlined { font-size: 34px; color: var(--hp-forest); }
+.auth-satellite-shell .auth-status.error .material-symbols-outlined { color: #b83230; }

@@ -1,5 +1,8 @@
+import { feedbackSummaryScore } from '@/lib/feedback/summary-score'
+import { HatchSuggestionCard } from '@/components/redesign/dashboard/HatchSuggestionCard'
 import { getChallengeById } from '@/lib/data/challenges'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
+import { workspaceLocation } from '@/lib/workspace/location'
 import Link from 'next/link'
 import {
   Share2, ArrowRight, ChevronRight, CheckCircle2, Play, BookOpen,
@@ -47,6 +50,7 @@ const FLOW_STEP_ACCENT: Record<string, string> = {
 }
 
 function toFiniteNumber(value: unknown): number | null {
+  if (value == null || value === '') return null
   const number = Number(value)
   return Number.isFinite(number) ? number : null
 }
@@ -105,6 +109,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     } else {
       noGradedAttempt = true
     }
+  }
+
+  if (!isMock && attempt && (challenge.challenge_type === 'algorithm' || challenge.challenge_type === 'sql')) {
+    // Coding/SQL reviews are stored in interview_grades, not the FLOW feedback
+    // payload. Preserve the exact attempt and let the owned history view load it.
+    redirect(workspaceLocation(id, { attempt, returnTo: returnTo ?? undefined }))
   }
 
   let feedback: HatchFeedbackItem[] = isMock ? MOCK_FEEDBACK : []
@@ -290,7 +300,8 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   // If we're in a real (non-mock) flow but resolved no graded content at all
   // (attempt belonged to another user, was deleted, or has no feedback), do not
   // fall through to MOCK_FEEDBACK_FULL — show the honest empty state.
-  if (!isMock && feedback.length === 0 && !mentalModelsBreakdown) {
+  const hasFeedbackSignal = feedback.length > 0 || Boolean(mentalModelsBreakdown?.length) || rawOverallScore !== null || Boolean(feedbackFull?.overall || feedbackFull?.what_worked?.length || feedbackFull?.what_to_fix?.length || feedbackFull?.key_insight)
+  if (!isMock && !hasFeedbackSignal) {
     noGradedAttempt = true
   }
 
@@ -303,12 +314,10 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
         <div className="rounded-2xl border border-hairline bg-card-bright p-8 md:p-10 text-center">
           <HatchImage state="idle" size={72} className="mx-auto mb-5" />
           <h1 className="font-headline text-2xl font-semibold text-forest-950 mb-2">
-            No graded attempt yet
+            No feedback yet
           </h1>
           <p className="text-sm text-ink-secondary leading-relaxed max-w-md mx-auto mb-7">
-            Hatch grades your reasoning the moment you submit. Run this challenge and
-            it will read your actual work, then break down what landed and the one
-            move that closes the gap.
+            Submit your work to receive personalized feedback on your reasoning and suggestions for what to explore next.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -330,12 +339,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     )
   }
 
-  // Compute overall score on /100 scale
-  const overallScoreNum = rawOverallScore != null
-    ? rawOverallScore
-    : feedback.length > 0
-      ? Math.round(feedback.reduce((s, f) => s + f.score, 0) / feedback.length * 10)
-      : 70
+  const overallScoreNum = feedbackSummaryScore(rawOverallScore, feedback)
 
   // Only the mock/demo path may fall back to MOCK_FEEDBACK_FULL. On the real
   // path (e.g. an attempt that has mental_models_breakdown but no feedback_json)
@@ -353,23 +357,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   const full = feedbackFull ?? (isMock ? MOCK_FEEDBACK_FULL : EMPTY_FEEDBACK_FULL)
   const items = feedback.length > 0 ? feedback : (full.dimensions as HatchFeedbackItem[])
 
-  // Determine score descriptor (one highlighter word per page, spec §7)
-  const scoreDescriptor = overallScoreNum >= 90
-    ? <>That&rsquo;s the run that gets the <span className="hl-word">offer</span></>
-    : overallScoreNum >= 75
-      ? <>Strong run. One <span className="hl-word">sharpening</span> move below and this is yours for good</>
-      : overallScoreNum >= 60
-        ? <>The shape is there. The gap below is the <span className="hl-word">rep</span> that closes it</>
-        : <>Better to miss it <span className="hl-word">here</span> than in the room. Here&rsquo;s exactly where</>
-
   // Format submission date
   const formattedDate = submissionDate
     ? new Date(submissionDate).toLocaleDateString('en-US', {
         month: 'short', day: 'numeric', year: 'numeric',
       })
-    : new Date().toLocaleDateString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
-      })
+    : null
 
   // Word count from response or estimate
   const wordCount = responseText
@@ -401,12 +394,6 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   const shareHref = `/workspace/challenges/${id}/share${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`
   const browseHref = returnTo ?? '/challenges'
 
-  // Score-hero ring geometry (static SVG, preview .ring-wrap: 108px, r=46)
-  const RING = 108
-  const RING_R = 46
-  const RING_C = 2 * Math.PI * RING_R
-  const ringPct = Math.max(0, Math.min(100, Math.round(overallScoreNum)))
-
   // Lowest-scoring FLOW step gets the "Needs focus" treatment (scores are the
   // rollup's real 0-100 percents; steps without a score never get the tag).
   const flowScores = (mentalModelsBreakdown ?? [])
@@ -417,20 +404,18 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   const evidenceCards = detectedPatterns.filter(dp => dp.evidence && dp.evidence.trim().length > 0)
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-5">
+    <div className="learning-feedback max-w-[1240px] mx-auto px-4 md:px-6 py-5">
 
       {/* Crumb row */}
       <div className="mb-3 flex items-center gap-3">
         <BackButton href={browseHref} label="Back to practice" />
-        <span className="rounded-full bg-sd-bg px-3 py-1 text-xs font-bold text-forest-600 tabular-nums">
-          Completed {formattedDate}
-        </span>
+        {formattedDate && <span className="rounded-full bg-sd-bg px-3 py-1 text-xs font-bold text-forest-600 tabular-nums">Completed {formattedDate ?? 'Not recorded'}</span>}
       </div>
 
       {/* Title row */}
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="font-headline text-[28px] font-bold text-forest-950">Session debrief</h1>
+          <h1 className="font-headline text-[28px] font-bold text-forest-950">Reflect on your work</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-[13.5px] text-ink-secondary">
             <span>{challenge.title}</span>
             <span className="text-ink-muted">&middot;</span>
@@ -439,59 +424,61 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <span className="tabular-nums">{challenge.estimated_minutes} min</span>
           </div>
         </div>
-        <Link
+        {overallScoreNum !== null && (<Link
           href={shareHref}
           className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-hairline bg-card-bright px-4 py-2 text-[13px] font-bold text-ink-strong hover:bg-page-field transition-colors"
         >
           <Share2 size={15} strokeWidth={1.8} />
           Share debrief
-        </Link>
+        </Link>)}
       </div>
 
       {/* Center column + right rail */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         <section className="min-w-0 space-y-5">
 
-          {/* ── Score hero band ── */}
-          <div
-            className="relative flex flex-col items-start gap-5 overflow-hidden rounded-2xl px-6 py-5 md:flex-row md:items-center"
-            style={{ background: 'linear-gradient(120deg, var(--color-forest-950) 0%, var(--color-forest-900) 45%, var(--color-forest-800) 100%)' }}
-          >
-            <div className="relative shrink-0" style={{ width: RING, height: RING }}>
-              <svg width={RING} height={RING} viewBox={`0 0 ${RING} ${RING}`} style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx={RING / 2} cy={RING / 2} r={RING_R} fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth={10} />
-                <circle
-                  cx={RING / 2} cy={RING / 2} r={RING_R} fill="none"
-                  stroke="var(--color-gold)" strokeWidth={10} strokeLinecap="round"
-                  strokeDasharray={RING_C} strokeDashoffset={RING_C * (1 - ringPct / 100)}
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-headline text-[25px] font-bold leading-none text-white tabular-nums">
-                  {ringPct}<sup className="text-[13px]">%</sup>
-                </span>
-              </div>
+          <div className="learning-feedback-summary">
+            <div><p className="text-xs font-bold uppercase tracking-wide text-ink-secondary">Your feedback</p><h2 className="font-headline text-2xl font-medium">Understand your work. Choose your next step.</h2>
+              {full.overall && <FeedbackText className="mt-3 block text-base leading-relaxed text-ink-secondary">{full.overall}</FeedbackText>}
             </div>
+            {overallScoreNum !== null && <div className="learning-feedback-score" aria-label={`Assessment score ${overallScoreNum} out of 100`}><strong>{overallScoreNum}</strong><span>out of 100</span></div>}
+          </div>
 
-            <div className="relative z-[1] min-w-0 flex-1">
-              <h2 className="font-headline text-xl font-semibold leading-tight text-on-hero-strong max-w-[520px]">
-                {scoreDescriptor}
-              </h2>
-              {full.overall && (
-                <FeedbackText className="mt-2 block max-w-[470px] text-[13px] leading-relaxed text-on-hero-muted">
-                  {full.overall}
-                </FeedbackText>
-              )}
-            </div>
+          <div className="grid gap-4 md:grid-cols-2">
+          {/* Strengths — mint (coach/positive) */}
+          {full.what_worked.length > 0 && (
+            <NoteCard tint="mint" className="rounded-xl p-4">
+              <h4 className="mb-2.5 text-[14px] font-bold text-ink-strong">What worked</h4>
+              <ul className="space-y-2">
+                {full.what_worked.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-forest-600 text-white">
+                      <CheckCircle2 size={12} strokeWidth={2.2} className="text-white" />
+                    </span>
+                    <FeedbackText className="min-w-0 flex-1 text-[13px] leading-snug text-ink-strong">{item}</FeedbackText>
+                  </li>
+                ))}
+              </ul>
+            </NoteCard>
+          )}
 
-            <div className="relative z-[1] flex w-[128px] shrink-0 flex-col items-center self-center">
-              <HatchImage state="celebrating" size={100} priority />
-              {weakestCompetency && (
-                <div className="mt-1 max-w-[140px] rounded-[10px] bg-white/95 px-3 py-2 text-center text-[11px] font-bold leading-snug text-forest-900">
-                  {formatCompetencyLabel(weakestCompetency)} is the gap. Drill it next.
-                </div>
-              )}
-            </div>
+          {/* Growth areas — blush (review) */}
+          {full.what_to_fix.length > 0 && (
+            <NoteCard tint="blush" className="rounded-xl p-4">
+              <h4 className="mb-2.5 text-[14px] font-bold text-ink-strong">Where to go deeper</h4>
+              <ul className="space-y-2">
+                {full.what_to_fix.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    {/* Raw hex kept intentionally: nearest token (note-blush-border #dcbcd6) is far
+                        lighter and the bullet would lose contrast against the blush note fill. */}
+                    <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#b06ba3]" />
+                    <FeedbackText className="min-w-0 flex-1 text-[13px] leading-snug text-ink-strong">{item}</FeedbackText>
+                  </li>
+                ))}
+              </ul>
+            </NoteCard>
+          )}
+
           </div>
 
           {/* ── FLOW breakdown ── */}
@@ -581,7 +568,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           {/* Per-dimension coaching: the one shared DimensionCard. */}
           {dimensionPanels.length > 0 && (
             <div>
-              <h3 className="font-headline text-lg font-semibold text-forest-950">Where the score came from</h3>
+              <h3 className="font-headline text-lg font-semibold text-forest-950">Feedback by skill</h3>
               <div className="mt-3 flex flex-col gap-2.5">
                 {(() => {
                   const lowest = dimensionPanels.reduce(
@@ -615,7 +602,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             </NoteCard>
           )}
 
-          {/* ── Recommended next rep ── */}
+          {/* ── Recommended challenge ── */}
           {nextChallenge && nextChallengeHref && (
             <div
               className="flex flex-col items-start gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:gap-6"
@@ -625,11 +612,11 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               }}
             >
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-wider text-forest-600">Recommended next rep</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-forest-600">Recommended challenge</p>
                 <p className="mt-1 font-headline text-[19px] font-semibold leading-snug text-forest-950">{nextChallenge.title}</p>
                 {weakestCompetency && (
                   <p className="mt-1 text-[13px] text-ink-secondary">
-                    Picked because {formatCompetencyLabel(weakestCompetency)} was your weakest move this run.
+                    Picked because {formatCompetencyLabel(weakestCompetency)} is an area you can develop further.
                   </p>
                 )}
               </div>
@@ -638,14 +625,14 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                   href={nextChallengeHref}
                   className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-forest-950 px-4 py-2.5 text-sm font-bold text-white hover:opacity-90 transition-opacity"
                 >
-                  Start this rep
+                  Open challenge
                   <ArrowRight size={15} strokeWidth={2} />
                 </Link>
                 <Link
                   href={browseHref}
                   className="inline-flex items-center gap-1 text-[12.5px] font-bold text-forest-700 hover:underline"
                 >
-                  Pick a different rep
+                  Browse challenges
                   <ChevronRight size={13} strokeWidth={1.9} />
                 </Link>
               </div>
@@ -668,13 +655,13 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               <PenLine size={15} strokeWidth={1.8} />
               Try again
             </Link>
-            <Link
+            {overallScoreNum !== null && (<Link
               href={shareHref}
               className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-hairline bg-card-bright py-2.5 text-sm font-bold text-ink-strong hover:bg-page-field transition-colors"
             >
               <Share2 size={15} strokeWidth={1.8} />
-              Share scorecard
-            </Link>
+              Share feedback
+            </Link>)}
           </div>
 
           {/* Links row */}
@@ -698,40 +685,8 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
 
         {/* ── Right rail ── */}
         <aside className="min-w-0 space-y-3">
-
-          {/* Strengths — mint (coach/positive) */}
-          {full.what_worked.length > 0 && (
-            <NoteCard tint="mint" className="rounded-xl p-4">
-              <h4 className="mb-2.5 text-[14px] font-bold text-ink-strong">Strengths</h4>
-              <ul className="space-y-2">
-                {full.what_worked.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-forest-600 text-white">
-                      <CheckCircle2 size={12} strokeWidth={2.2} className="text-white" />
-                    </span>
-                    <FeedbackText className="min-w-0 flex-1 text-[13px] leading-snug text-ink-strong">{item}</FeedbackText>
-                  </li>
-                ))}
-              </ul>
-            </NoteCard>
-          )}
-
-          {/* Growth areas — blush (review) */}
-          {full.what_to_fix.length > 0 && (
-            <NoteCard tint="blush" className="rounded-xl p-4">
-              <h4 className="mb-2.5 text-[14px] font-bold text-ink-strong">Growth areas</h4>
-              <ul className="space-y-2">
-                {full.what_to_fix.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    {/* Raw hex kept intentionally: nearest token (note-blush-border #dcbcd6) is far
-                        lighter and the bullet would lose contrast against the blush note fill. */}
-                    <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#b06ba3]" />
-                    <FeedbackText className="min-w-0 flex-1 text-[13px] leading-snug text-ink-strong">{item}</FeedbackText>
-                  </li>
-                ))}
-              </ul>
-            </NoteCard>
-          )}
+          <HatchSuggestionCard message="Make sense of your feedback" buttonLabel="Help me understand my feedback" prompt={`Help me understand my feedback for ${challenge.title}. ${full.overall}`} />
+          <Link href="/explore" className="block rounded-xl border border-hairline p-4 text-sm font-bold text-forest-800">Browse the Library →</Link>
 
           {/* Case context */}
           <div className="rounded-xl border border-hairline bg-card-bright p-4">
@@ -756,7 +711,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <div className="mt-3 space-y-1.5 border-t border-hairline pt-3 text-[12px] text-ink-secondary">
               <div className="flex items-center justify-between">
                 <span>Submitted</span>
-                <span className="font-bold text-ink-strong tabular-nums">{formattedDate}</span>
+                <span className="font-bold text-ink-strong tabular-nums">{formattedDate ?? 'Not recorded'}</span>
               </div>
               {wordCount && (
                 <div className="flex items-center justify-between">

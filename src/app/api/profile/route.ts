@@ -6,11 +6,13 @@ import { getUsageForUser } from '@/lib/usage/check-limit'
 import { effectivePlanFromRows } from '@/lib/billing/entitlements'
 import { computeDunningStatus } from '@/lib/billing/dunning'
 import { apiError } from '@/lib/api/error'
+import { UiPrefsSchema, mergeUiPrefs } from '@/lib/shell/ui-prefs'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = z.object({
   display_name: z.string().trim().min(1).max(80).optional(),
   avatar_url: z.union([z.string().url().max(2048), z.literal(''), z.null()]).optional(),
+  ui_prefs: UiPrefsSchema.optional(),
 }).superRefine((body, ctx) => {
   if (Object.keys(body).length === 0) {
     ctx.addIssue({
@@ -64,7 +66,7 @@ export async function GET() {
   const adminClient = createAdminClient()
 
   const [profileResult, subscriptionResult, attemptsResult] = await Promise.all([
-    adminClient.from('profiles').select('id, display_name, avatar_url, plan, role, preferred_role, streak_days, streak_shield_count, xp_total, onboarding_completed_at, has_seen_hatch_intro, archetype, archetype_description, created_at, updated_at, pro_access, subscription_status, payment_failures, past_due_since').eq('id', user.id).single(),
+    adminClient.from('profiles').select('id, display_name, avatar_url, plan, role, preferred_role, streak_days, streak_shield_count, xp_total, onboarding_completed_at, has_seen_hatch_intro, archetype, archetype_description, created_at, updated_at, pro_access, subscription_status, payment_failures, past_due_since, ui_prefs').eq('id', user.id).single(),
     adminClient
       .from('subscriptions')
       .select('plan, status, current_period_end, billing_interval, stripe_price_id, cancel_at_period_end, cancel_at, canceled_at')
@@ -134,7 +136,14 @@ export async function PATCH(request: Request) {
   }
 
   const adminClient = createAdminClient()
-  const { data, error } = await adminClient.from('profiles').update(updates).eq('id', user.id).select().single()
+
+  let updatePayload: Record<string, unknown> = { ...updates }
+  if (updates.ui_prefs) {
+    const { data: existing } = await adminClient.from('profiles').select('ui_prefs').eq('id', user.id).maybeSingle()
+    updatePayload = { ...updatePayload, ui_prefs: mergeUiPrefs((existing?.ui_prefs as Record<string, unknown> | null) ?? {}, updates.ui_prefs) }
+  }
+
+  const { data, error } = await adminClient.from('profiles').update(updatePayload).eq('id', user.id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   return NextResponse.json(data)

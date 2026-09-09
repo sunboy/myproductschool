@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: PublicSharePageProps): Promis
     }
   }
 
-  const title = `${scorecard.scoreLabel} on ${scorecard.challengeTitle}`
+  const title = `My work on ${scorecard.challengeTitle}`
   const description = `A HackProduct practice scorecard with FLOW levels across Frame, List, Optimize, and Win.`
   const url = `${SITE_URL}/workspace/challenges/${id}/share/${shareId}`
 
@@ -119,7 +119,7 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
   if (!scorecard) notFound()
 
   const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? SITE_URL}/workspace/challenges/${id}/share/${shareId}`
-  const shareText = `I scored ${scorecard.scoreLabel} on ${scorecard.challengeTitle} with HackProduct.`
+  const shareText = `Here is my work on ${scorecard.challengeTitle} with HackProduct.`
   const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
   const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
 
@@ -137,14 +137,12 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
               <span className="font-headline text-lg font-bold text-primary">HackProduct</span>
             </div>
             <span className="rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold text-on-primary-fixed-variant">
-              Scorecard
+              Shared work
             </span>
           </div>
 
           <div className="mt-8 text-center">
-            <div className="font-headline text-[72px] font-black leading-none text-primary">
-              {scorecard.scoreLabel}
-            </div>
+            {scorecard.scorePercent !== null && <div className="font-headline text-[48px] font-medium leading-none text-primary">{scorecard.scoreLabel}</div>}
             <p className="mt-3 text-base font-bold">{scorecard.challengeTitle}</p>
             <p className="mt-1 text-sm text-outline">{scorecard.gradeLabel ?? formatDuration(scorecard.timeSpentSeconds)}</p>
           </div>

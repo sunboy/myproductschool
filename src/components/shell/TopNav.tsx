@@ -13,12 +13,11 @@ import { DunningBanner } from '@/components/billing/DunningBanner'
 import { HackProductWordmark } from '@/components/brand/HackProductBrand'
 
 const NAV_ITEMS = [
-  { id: 'home',       href: '/',               icon: 'home',          label: 'Home'       },
-  { id: 'explore',    href: '/explore',         icon: 'explore',       label: 'Explore'    },
-  { id: 'practice',   href: '/challenges',      icon: 'track_changes', label: 'Practice'   },
-  { id: 'interviews', href: '/live-interviews', icon: 'graphic_eq',    label: 'Interviews' },
-  { id: 'progress',   href: '/progress',        icon: 'bar_chart',     label: 'Progress'   },
-]
+  { id: 'home', href: '/dashboard', icon: 'home', label: 'Home' },
+  { id: 'practice', href: '/challenges', icon: 'track_changes', label: 'Practice' },
+  { id: 'library', href: '/explore', icon: 'menu_book', label: 'Library' },
+  { id: 'progress', href: '/progress', icon: 'bar_chart', label: 'Progress' },
+] as const
 
 const AFFILIATES_ENABLED = process.env.NEXT_PUBLIC_ENABLE_AFFILIATES === 'true'
 
@@ -51,6 +50,15 @@ export function TopNav() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [menuOpen])
 
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [menuOpen])
+
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -63,14 +71,13 @@ export function TopNav() {
     setMenuOpen(false)
   }
 
-  const streak = profile?.streak_days ?? 0
-  const xp = profile?.xp_total ?? 0
   const isPro = profile?.plan === 'pro'
 
-  function isActive(item: typeof NAV_ITEMS[0]) {
-    if (item.id === 'home') return pathname === '/' || pathname === '/dashboard'
-    if (item.id === 'interviews') return pathname.startsWith('/live-interviews')
-    return pathname.startsWith(item.href)
+  function isActive(item: (typeof NAV_ITEMS)[number]) {
+    if (item.id === 'home') return pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/dashboard/')
+    if (item.id === 'practice') return pathname.startsWith('/challenges') || pathname.startsWith('/workspace/challenges') || pathname.startsWith('/live-interviews')
+    if (item.id === 'library') return pathname === '/explore' || pathname.startsWith('/explore/')
+    return pathname === '/progress' || pathname.startsWith('/progress/')
   }
 
   // Derive trial/dunning banners from already-fetched profile data
@@ -116,7 +123,7 @@ export function TopNav() {
         </Link>
 
         {/* Column 2: Nav pills (centered) */}
-        <div className="hidden min-w-0 flex-1 justify-center md:flex">
+        <div className="hidden min-w-0 flex-1 justify-center lg:flex">
         <nav
           className="flex min-w-0 gap-1 rounded-full border p-1"
           style={{
@@ -131,24 +138,22 @@ export function TopNav() {
               <AppTooltip
                 key={item.id}
                 label={
-                  item.id === 'practice' ? 'Find the right rep by discipline, role, company, and difficulty.'
-                    : item.id === 'interviews' ? 'Run Hatch-led mock loops across product, systems, data, SQL, and coding.'
+                  item.id === 'practice' ? 'Choose practice by discipline, role, company, and difficulty.'
                     : item.id === 'progress' ? 'See your FLOW levels, discipline coverage, and readiness signals.'
-                    : item.id === 'explore' ? 'Browse study plans, guides, autopsies, and learning domains.'
+                    : item.id === 'library' ? 'Browse study plans, guides, autopsies, and learning domains.'
                     : 'Return to your personalized dashboard.'
                 }
                 side="bottom"
               >
-                <Link href={href} className="no-underline">
-                  <button
-                    data-hatch-sound={active ? undefined : 'open'}
+                <Link
+                  href={href}
+                  aria-current={active ? 'page' : undefined}
+                  data-hatch-sound={active ? undefined : 'open'}
                     data-hatch-target={item.id === 'home' ? 'nav-dashboard' : `nav-${item.id}`}
-                    aria-label={item.label}
-                    className={cn(
-                      // Icon-only in the md→lg range (where 5 labelled pills + brand
-                      // + right cluster used to collide), labels return at lg.
-                      'inline-flex items-center gap-[7px] px-2.5 lg:px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
-                      'text-[13px] font-bold transition-[background,color] duration-200',
+                  aria-label={item.label}
+                  className={cn(
+                                            'inline-flex items-center gap-[7px] px-2.5 lg:px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
+                      'text-[14px] font-bold transition-[background,color] duration-200 min-h-11',
                       active
                         ? 'text-white'
                         : 'hover:bg-[var(--color-surface-container)]',
@@ -165,8 +170,7 @@ export function TopNav() {
                     >
                       {item.icon}
                     </span>
-                    <span className="hidden lg:inline">{item.label}</span>
-                  </button>
+                    <span>{item.label}</span>
                 </Link>
               </AppTooltip>
             )
@@ -177,33 +181,7 @@ export function TopNav() {
         {/* Column 3: Right cluster */}
         <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
 
-          {/* Streak */}
-          <AppTooltip label="Your current practice streak." side="bottom" className="hidden sm:inline-flex">
-            <div
-              className="inline-flex items-center gap-[5px] text-[13px] font-bold"
-              style={{ color: '#c9933a' }}
-              suppressHydrationWarning
-            >
-              <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                local_fire_department
-              </span>
-              {streak}d
-            </div>
-          </AppTooltip>
-
-          {/* XP */}
-          <AppTooltip label="XP grows as you complete reps, interviews, and study plan work." side="bottom" className="hidden md:inline-flex">
-            <div
-              className="inline-flex items-center gap-[5px] text-[13px] font-bold"
-              style={{ color: 'var(--color-primary)' }}
-              suppressHydrationWarning
-            >
-              <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                bolt
-              </span>
-              {xp.toLocaleString()}
-            </div>
-          </AppTooltip>
+          {/* Account metrics are available in Progress and the account menu. */}
 
           <AppTooltip
             label={muted ? 'Turn Hatch sounds on.' : 'Mute Hatch sounds.'}
@@ -241,7 +219,7 @@ export function TopNav() {
           )}
 
           {!isPro && (
-            <AppTooltip label="Upgrade for more practice, mock loops, and Analytics Lab." side="bottom" className="hidden lg:inline-flex">
+            <AppTooltip label="Upgrade for more practice, interviews, and Analytics Lab." side="bottom" className="hidden lg:inline-flex">
               <button
                 type="button"
                 onClick={openUpgrade}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { gradeInterviewSession, neutralInterviewGradeFallback } from '@/lib/v2/skills/interview-grading'
+import { gradeInterviewSession } from '@/lib/v2/skills/interview-grading'
 import type { ChallengeType } from '@/lib/types'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
@@ -119,22 +119,22 @@ export const POST = withRoute(async (
       }
     : null
 
-  await supabase
+  const { error: snapshotError } = await supabase
     .from('challenge_attempts')
     .update({
       canvas_final_snapshot: snapshotWithContext,
       canvas_png_url: canvasPngUrl ?? null,
     })
     .eq('id', attemptId)
+  if (snapshotError) {
+    console.error('Could not save canvas submission:', snapshotError.message)
+    return NextResponse.json({ error: 'We could not save your submission. Your work is still in the editor. Please retry.' }, { status: 503 })
+  }
 
   // Grade.
   //
-  // Grading a session the user already finished is the payoff, not a metered
-  // feature. When the AI grading-runs limit (or the observe-only budget) is hit,
-  // we do NOT 402 and strand the attempt in_progress — we fall open to a neutral
-  // fallback grade (mid score, honest headline) so the user still completes and
-  // can re-submit later for a detailed grade. The rep-count limit stays enforced
-  // on *starting* a rep.
+  // Keep a saved attempt retryable when review is unavailable. A service or
+  // usage limit must never be converted into an invented score and XP award.
   const userPlan = await getUserPlanForBudget(user.id)
   let grade
   try {
@@ -146,10 +146,10 @@ export const POST = withRoute(async (
     })
   } catch (err) {
     if (err instanceof PlanLimitExceeded || err instanceof AiBudgetExceededError) {
-      grade = neutralInterviewGradeFallback(challengeType)
+      return NextResponse.json({ error: 'Your work is saved. Your feedback allowance is currently reached; retry when it resets.', code: 'limit_reached' }, { status: 402 })
     } else {
       console.error('Interview grading failed:', err)
-      return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
+      return NextResponse.json({ error: 'Your work is saved, but Hatch could not finish the review. Please retry.' }, { status: 503 })
     }
   }
 

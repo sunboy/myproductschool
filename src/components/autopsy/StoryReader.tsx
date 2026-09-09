@@ -1,6 +1,5 @@
 'use client'
 import React from 'react'
-import { cn } from '@/lib/utils'
 import type { AutopsyStory } from '@/lib/types'
 import { trackEvent } from '@/lib/posthog/client'
 import {
@@ -107,11 +106,11 @@ export function StoryReader({ story, productName, productSlug, backHref, forceVi
   }, [story.sections, productSlug])
 
   const scrollToSection = (id: string) => {
-    document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: 'smooth' })
+    document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }
 
   return (
-    <div className="relative">
+    <div className="learning-story relative">
       {/* Scroll progress bar - Terra green */}
       <div
         className="fixed top-0 left-0 right-0 h-[2px] z-50 pointer-events-none"
@@ -132,22 +131,14 @@ export function StoryReader({ story, productName, productSlug, backHref, forceVi
         )}
       </div>
 
-      {/* Section navigation dots - right side, hidden mobile */}
-      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col gap-2.5">
-        {story.sections.map((s, i) => (
-          <button
-            key={s.id}
-            onClick={() => scrollToSection(s.id)}
-            aria-label={`Go to section ${i + 1}`}
-            className={cn('rounded-full transition-all duration-300', i === activeIndex ? 'w-2 h-2' : 'w-1.5 h-1.5')}
-            style={{
-              backgroundColor: '#4a7c59',
-              opacity: i === activeIndex ? 1 : visitedSet.has(i) ? 0.35 : 0.15,
-              boxShadow: i === activeIndex ? '0 0 6px 1px rgba(74,124,89,0.3)' : 'none',
-            }}
-          />
-        ))}
-      </div>
+      <details className="learning-story-contents">
+        <summary>In this story</summary>
+        <nav aria-label="Story contents">{story.sections.map((section, index) => {
+          const content = section.content
+          const label = 'title' in content ? content.title : 'headline' in content ? content.headline : 'principle' in content ? 'The principle' : 'quote' in content ? 'Perspective' : 'context' in content ? content.context : `Section ${index + 1}`
+          return <button type="button" key={section.id} aria-current={activeIndex === index ? 'location' : undefined} onClick={() => scrollToSection(section.id)}>{index + 1}. {label}</button>
+        })}</nav>
+      </details>
 
       <div>
         {story.sections.map((section, i) => (

@@ -48,9 +48,9 @@ const RUBRIC_PREVIEWS: Record<string, string[]> = {
 
 const LOCKED_WORKSPACE = [
   'Answer workspace with timers, notes, schema or code context where relevant.',
-  'Hatch follow-ups that adapt to your weak move instead of giving generic hints.',
-  'FLOW score receipts across Frame, List, Optimize, and Win.',
-  'Next-drill routing into the career goal you are training for.',
+  'Hatch follow-ups that adapt to the skill you are building instead of giving generic hints.',
+  'FLOW scores across Frame, List, Optimize, and Win.',
+  'A recommended next challenge matched to the career goal you are training for.',
 ]
 
 export function generateStaticParams() {
@@ -73,6 +73,25 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
   const { slug } = await params
   const practice = getPractice(slug)
   if (!practice) notFound()
+
+  // Published workspace slugs verified against the content catalog. Other
+  // public examples lead to the relevant catalog rather than implying an
+  // exact workspace exists for a marketing-only scenario.
+  const workspaceSlugs: Record<string, string> = {
+    'spotify-session-drop-product-sense': 'spotifys-15-session-drop',
+    'realtime-notification-system': 'design-a-notification-system',
+    'analytics-funnel-drop-investigation': 'checkout-funnel-drop',
+  }
+  const disciplines: Record<string, string> = {
+    'Product sense': 'product_sense', 'System design': 'system_design',
+    'Data modeling': 'data_modeling', SQL: 'sql', Coding: 'coding', Analytics: 'analytics',
+  }
+  const workspaceSlug = workspaceSlugs[practice.slug]
+  const destination = workspaceSlug
+    ? `/workspace/challenges/${workspaceSlug}`
+    : `/challenges?discipline=${disciplines[practice.discipline] ?? 'all'}`
+  const entryHref = `/login?returnTo=${encodeURIComponent(destination)}`
+  const entryLabel = workspaceSlug ? 'Open this challenge' : 'Browse related challenges'
 
   const learningResourceJsonLd = {
     '@context': 'https://schema.org',
@@ -106,10 +125,10 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
         eyebrow={practice.discipline}
         title={practice.title}
         subtitle={practice.summary}
-        ctas={[{ label: 'Practice in the app', href: '/login' }]}
+        ctas={[{ label: entryLabel, href: entryHref }]}
       />
 
-      <V3Section eyebrow="Scenario" title="Prompt preview">
+      <V3Section eyebrow="Scenario" title="Challenge prompt">
         <V3ProseSection>
           <V3ProseBlock>
             <p>{practice.scenario}</p>
@@ -117,7 +136,7 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
         </V3ProseSection>
       </V3Section>
 
-      <V3Section eyebrow="Skills" title="Skills this rep trains">
+      <V3Section eyebrow="Skills" title="Skills this challenge builds">
         <V3ProseSection>
           <V3ProseBlock>
             <ul>
@@ -131,8 +150,8 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
 
       <V3Section
         eyebrow="Rubric preview"
-        title="How FLOW will score the full answer"
-        subtitle="The public preview shows what good evidence looks like. The app scores your actual answer and stores the receipt."
+        title="How FLOW scores the full answer"
+        subtitle="The public preview shows what strong evidence looks like. The app scores your actual answer and keeps the result in your learning history."
       >
         <V3CardGrid>
           {(RUBRIC_PREVIEWS[practice.slug] ?? practice.prompts).map((item) => (
@@ -141,7 +160,7 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
         </V3CardGrid>
       </V3Section>
 
-      <V3Section eyebrow="Follow-ups" title="Hatch-style coaching prompts">
+      <V3Section eyebrow="Follow-ups" title="Hatch coaching prompts">
         <V3CardGrid>
           {practice.prompts.map((item) => (
             <V3Card key={item} title={item} />
@@ -158,9 +177,9 @@ export default async function PracticeDirectoryDetailPage({ params }: Props) {
       </V3Section>
 
       <V3CtaBand
-        title="Open the full workspace to answer, run, and get scored."
-        subtitle="Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress."
-        ctas={[{ label: 'Start a free rep', href: '/login' }]}
+        title="Continue learning in the app."
+        subtitle="Public previews show the challenge. The app gives you guided feedback, Hatch follow-ups, FLOW scoring, and a clear next step."
+        ctas={[{ label: entryLabel, href: entryHref }]}
       />
     </V3PageShell>
   )

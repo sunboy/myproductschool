@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test'
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3002'
-const E2E_EMAIL = process.env.E2E_EMAIL || 'test-e2e-1774745731@hackproduct.dev'
-const E2E_PASSWORD = process.env.E2E_PASSWORD || 'e2etest123!'
+const E2E_EMAIL = process.env.E2E_EMAIL || ''
+const E2E_PASSWORD = process.env.E2E_PASSWORD || ''
+
+
 
 async function login(page: import('@playwright/test').Page, email = E2E_EMAIL, password = E2E_PASSWORD) {
   await page.goto(`${BASE_URL}/login`)
@@ -126,3 +128,6 @@ test.describe('Proactive Hatch', () => {
     await expect(page.getByTestId('hatch-chat-panel')).toHaveCount(0)
   })
 })
+
+// Missing credentials are reported as skipped, without blocking public test discovery.
+test.beforeEach(() => { test.skip(!E2E_EMAIL || !E2E_PASSWORD, 'Requires explicit authorized E2E credentials.') })

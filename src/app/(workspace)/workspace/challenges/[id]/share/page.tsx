@@ -107,7 +107,7 @@ export default async function ShareScoreCardGatePage({ params, searchParams }: S
   const publishedSubmission = submission as SubmissionShareRow | null
   const score = attemptRow.max_score && attemptRow.max_score > 0 && attemptRow.total_score !== null
     ? Math.round((attemptRow.total_score / attemptRow.max_score) * 100)
-    : 0
+    : null
   const move = challenge?.move_tags?.[0] ?? 'frame'
   const challengeHref = `/workspace/challenges/${challenge?.slug ?? attemptRow.challenge_id}`
   const displayName = formatCommunityDisplayName(publishedSubmission?.display_mode ?? 'anonymous', profile?.display_name ?? null)
@@ -133,10 +133,10 @@ export default async function ShareScoreCardGatePage({ params, searchParams }: S
             )}
           </div>
 
-          <div className="mt-8 text-center">
+          {score !== null && <div className="mt-8 text-center">
             <span className="font-headline text-[68px] font-bold leading-none text-primary">{score}</span>
             <span className="font-headline text-2xl text-primary/60">/100</span>
-          </div>
+          </div>}
 
           <div className="mt-3 text-center">
             <p className="px-4 text-base font-semibold text-on-surface">{challenge?.title ?? 'Practice challenge'}</p>

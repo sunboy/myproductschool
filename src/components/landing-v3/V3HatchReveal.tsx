@@ -9,12 +9,12 @@ const callouts = [
   {
     className: 'callout-trained',
     label: 'Trained on interviews',
-    text: 'Rubrics, loops, and real practice patterns shape every nudge.',
+    text: 'Rubrics and real interview patterns shape every nudge.',
   },
   {
     className: 'callout-native',
     label: 'AI native',
-    text: 'Hatch reads the rep, not just the answer key.',
+    text: 'Hatch reads your answer, not just the answer key.',
   },
   {
     className: 'callout-calibrated',
@@ -90,8 +90,8 @@ export function V3HatchReveal() {
       <div className="hatch-reveal-sticky">
         <div className="shell hatch-reveal-shell">
           <div className="hatch-reveal-copy">
-            <h2 id="hatch-reveal-heading">Hatch grades every rep and names the gap.</h2>
-            <p>It scores every answer live and tells you what to fix next.</p>
+            <h2 id="hatch-reveal-heading">Hatch reads your answer and names the gap.</h2>
+            <p>It gives specific feedback while you work and tells you what to improve next.</p>
           </div>
 
           <div className="hatch-stage" aria-label="Scroll animation introducing Hatch">

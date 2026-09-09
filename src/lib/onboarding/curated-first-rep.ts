@@ -39,3 +39,16 @@ export function getCuratedFirstRepSlug(role: string | null | undefined): string 
 
 /** `/challenges` is the safe catch-all if a curated slug ever fails to resolve at runtime. */
 export const FIRST_REP_FALLBACK_HREF = '/challenges'
+
+/**
+ * Three curated first reps: the role's product-sense pick, one coding, one system design.
+ * Coding slug verified published (algorithm, easy). Design slug verified published
+ * (system_design, medium) — the plan's suggested slug did not exist in the live DB, so
+ * this uses 'design-dropbox' instead (verified 2026-09-08).
+ */
+export const FIRST_REP_CODING_SLUG = 'counting-distinct-senders-behind-support-ticket-aliases'
+export const FIRST_REP_DESIGN_SLUG = 'design-dropbox'
+
+export function getCuratedFirstRepSlugs(role: string | null | undefined): [string, string, string] {
+  return [getCuratedFirstRepSlug(role), FIRST_REP_CODING_SLUG, FIRST_REP_DESIGN_SLUG]
+}

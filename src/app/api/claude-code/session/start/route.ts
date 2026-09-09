@@ -1,3 +1,5 @@
+import { readAnalyticsProgress } from '@/lib/sandbox/analytics-progress'
+import { freshProvisioningState } from '@/lib/sandbox/provisioning-lease'
 // POST /api/claude-code/session/start
 //
 // Provisions (or reconnects to) a Claude Code Analytics sandbox session.
@@ -247,6 +249,7 @@ export async function POST(req: NextRequest) {
           sub_problems: persistedAdaptive?.arc?.length ? persistedAdaptive.arc : subProblems,
           arc_complete: Boolean(persistedAdaptive?.arc?.length),
           guidance: persistedAdaptive?.guidance ?? 'guided',
+          progress: readAnalyticsProgress(existingSession?.final_artifact),
         })
       }
       // Stale active row (container reaped) — retire it and re-provision below.
@@ -266,6 +269,7 @@ export async function POST(req: NextRequest) {
         sub_problems: persistedAdaptive?.arc?.length ? persistedAdaptive.arc : subProblems,
         arc_complete: Boolean(persistedAdaptive?.arc?.length),
         guidance: persistedAdaptive?.guidance ?? 'guided',
+          progress: readAnalyticsProgress(existingSession?.final_artifact),
       })
     } else {
       // Reaped/expired/terminated prior session: carry its workspace forward.
@@ -292,7 +296,9 @@ export async function POST(req: NextRequest) {
     console.error('[cc/session/start] guidance derivation failed, using guided:', err)
   }
   const labClient = getLabClient(labIdForChallengeType(challenge.challenge_type))
-  const arc = mergeArc(
+  const restoredProgress = readAnalyticsProgress(existingSession?.final_artifact)
+  if (restoredProgress && persistedAdaptive?.guidance) guidance = persistedAdaptive.guidance
+  const arc = restoredProgress && persistedAdaptive?.arc?.length ? persistedAdaptive.arc : mergeArc(
     (challenge as { difficulty?: string | null }).difficulty,
     subProblems as Partial<AnalyticsSubProblem>[],
     guidance,
@@ -301,31 +307,20 @@ export async function POST(req: NextRequest) {
 
   const { error: upsertErr } = await admin.from('claude_code_sessions').upsert(
     {
-      id: sessionId,
+      ...freshProvisioningState(sessionId),
       attempt_id: attemptId,
       user_id: user.id,
       challenge_id,
-      status: 'provisioning',
       // Persist the guidance-shaped arc so reconnect paths (this route's early
       // returns, `current`, `state`) return the SAME arc after a refresh.
       // Spread the prior artifact first: this upsert REPLACES a reaped row for
       // the same attempt_id, and a previously graded artifact must survive.
       final_artifact: {
         ...((existingSession?.final_artifact as Record<string, unknown> | null) ?? {}),
-        adaptive: { guidance, arc, source: 'start', decided_at: new Date().toISOString() },
+        adaptive: { guidance, arc, ...(restoredProgress ? { progress: restoredProgress } : {}), source: 'start', decided_at: new Date().toISOString() },
       },
       // Carry the prior workspace forward so provision can presign + restore it.
       transcript_uri: resumeSnapshotUri,
-      // CRITICAL: this upsert REPLACES a prior reaped/terminated row for the same
-      // attempt_id (onConflict). The prior row carries a stale host_instance_id +
-      // wss_url pointing at a revision that's gone. If we don't null them, the
-      // provision route's idempotency guard (status==='provisioning' && host &&
-      // wss_url) short-circuits and hands the client the DEAD revision/token →
-      // "Connecting…" forever against a 404 host. Reset them so provision runs
-      // fresh and derives a new revision + token from this new sessionId.
-      host_instance_id: null,
-      wss_url: null,
-      ended_at: null,
     },
     { onConflict: 'attempt_id', ignoreDuplicates: false },
   )
@@ -356,5 +351,6 @@ export async function POST(req: NextRequest) {
     sub_problems: arc,
     arc_complete: true,
     guidance,
+    progress: restoredProgress,
   })
 }

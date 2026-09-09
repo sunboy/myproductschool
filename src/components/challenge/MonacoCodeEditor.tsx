@@ -21,6 +21,8 @@ export interface MonacoCodeEditorProps {
   onCursorMove?: (line: number) => void
   readOnly?: boolean
   height?: string
+  /** Native input supports phone keyboards while sharing the same saved buffer. */
+  preferPlainEditor?: boolean
 }
 
 // Simple throttle - no lodash dep needed
@@ -68,6 +70,7 @@ export function MonacoCodeEditor({
   onCursorMove,
   readOnly = false,
   height = '100%',
+  preferPlainEditor = false,
 }: MonacoCodeEditorProps) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const [isMonacoReady, setIsMonacoReady] = useState(() => Boolean(loader.__getMonacoInstance()))
@@ -119,7 +122,7 @@ export function MonacoCodeEditor({
   }, [onChange])
 
   useEffect(() => {
-    if (isMonacoReady || didMonacoFail) return
+    if (preferPlainEditor || isMonacoReady || didMonacoFail) return
 
     let isActive = true
     const cancelable = loader.init()
@@ -154,9 +157,9 @@ export function MonacoCodeEditor({
       window.removeEventListener('error', handleWindowError)
       if (!loader.__getMonacoInstance()) cancelable.cancel()
     }
-  }, [didMonacoFail, isMonacoReady])
+  }, [didMonacoFail, isMonacoReady, preferPlainEditor])
 
-  if (didMonacoFail) {
+  if (preferPlainEditor || didMonacoFail) {
     return (
       <div className="w-full h-full bg-[#101612] rounded overflow-hidden" data-testid="monaco-editor-fallback">
         <textarea
@@ -180,7 +183,10 @@ export function MonacoCodeEditor({
           }}
           readOnly={readOnly}
           spellCheck={false}
-          className="h-full w-full resize-none border-0 bg-transparent p-4 font-mono text-sm leading-6 text-[#f3ede0] outline-none placeholder:text-white/35"
+          autoCapitalize="off"
+          autoCorrect="off"
+          autoComplete="off"
+          className="h-full w-full resize-none border-0 bg-transparent p-4 font-mono text-base leading-6 text-[#f3ede0] outline-none placeholder:text-white/35"
           style={{ height }}
           aria-label={`${language} code editor`}
           placeholder={`Write ${language} here...`}

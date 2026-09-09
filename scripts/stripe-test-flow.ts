@@ -6,27 +6,12 @@ import {
   type BillingPlanConfig,
   type BillingPlanId,
 } from '../src/lib/billing/plans'
-import { STRIPE_API_VERSION } from '../src/lib/stripe/config'
+import { getStripeTestSecretKey, STRIPE_API_VERSION } from '../src/lib/stripe/config'
 
 loadEnvConfig(process.cwd())
 
 const args = new Set(process.argv.slice(2))
 const createPaymentLink = args.has('--payment-link')
-
-function getTestSecretKey(): string {
-  const key = process.env.STRIPE_TEST_SECRET_KEY
-    ?? (process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_') || process.env.STRIPE_SECRET_KEY?.startsWith('rk_test_')
-      ? process.env.STRIPE_SECRET_KEY
-      : null)
-
-  if (!key) {
-    throw new Error(
-      'Set STRIPE_TEST_SECRET_KEY=sk_test_... before running this script. It refuses to use live Stripe keys.'
-    )
-  }
-
-  return key
-}
 
 async function findOrCreateProduct(stripe: Stripe): Promise<Stripe.Product> {
   const products = await stripe.products.list({ active: true, limit: 100 })
@@ -81,7 +66,7 @@ async function findOrCreatePrice(
 }
 
 async function main() {
-  const stripe = new Stripe(getTestSecretKey(), { apiVersion: STRIPE_API_VERSION })
+  const stripe = new Stripe(getStripeTestSecretKey(), { apiVersion: STRIPE_API_VERSION })
   const account = await stripe.accounts.retrieve()
   const product = await findOrCreateProduct(stripe)
   const priceEntries = await Promise.all(

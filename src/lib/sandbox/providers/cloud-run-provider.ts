@@ -19,6 +19,11 @@ import {
   SandboxUnconfiguredError,
 } from '../types'
 import { buildWssUrl } from '../session-token'
+import { resolveSessionTtlSeconds } from '../cost-policy'
+import {
+  planSessionTrafficCreate,
+  planSessionTrafficRemoval,
+} from '../cloud-run-traffic'
 
 const RUN_API = 'https://run.googleapis.com/v2'
 const TOKEN_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
@@ -35,6 +40,8 @@ interface CloudRunConfig {
   runtimeServiceAccount: string
   /** Container image for the sandbox (PATCH must supply it explicitly). */
   image: string
+  /** Sterile revision that receives untagged service traffic. */
+  baseRevision?: string
 }
 
 function loadConfig(): CloudRunConfig {
@@ -55,7 +62,8 @@ function loadConfig(): CloudRunConfig {
   const image =
     process.env.CLOUD_RUN_IMAGE ??
     `${region}-docker.pkg.dev/${project}/cc/sandbox:mvp`
-  return { project, region, serviceName, wssHost, saJson, runtimeServiceAccount, image }
+  const baseRevision = process.env.CLOUD_RUN_BASE_REVISION || undefined
+  return { project, region, serviceName, wssHost, saJson, runtimeServiceAccount, image, baseRevision }
 }
 
 let authClient: GoogleAuth | null = null
@@ -83,8 +91,27 @@ async function getToken(cfg: CloudRunConfig): Promise<string> {
   return token
 }
 
+export interface CloudRunProviderDependencies {
+  requestTimeoutMs: number
+  fetchFn: typeof fetch
+  accessToken: () => Promise<string>
+}
+
 export class CloudRunProvider implements HostProvider {
   readonly name = 'cloud_run' as const
+
+  constructor(private readonly dependencies: Partial<CloudRunProviderDependencies> = {}) {}
+
+  private request(input: string | URL, init?: RequestInit): Promise<Response> {
+    const timeout = AbortSignal.timeout(this.dependencies.requestTimeoutMs ?? 8_000)
+    const signal = init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout
+    signal.throwIfAborted()
+    return (this.dependencies.fetchFn ?? globalThis.fetch)(input, { ...init, signal })
+  }
+
+  private accessToken(cfg: CloudRunConfig): Promise<string> {
+    return this.dependencies.accessToken?.() ?? getToken(cfg)
+  }
 
   // The per-session revision tag is a pure function of the session id, so the
   // orchestrator can reconstruct it for cleanup even when createSession threw
@@ -96,8 +123,9 @@ export class CloudRunProvider implements HostProvider {
 
   async createSession(input: CreateSessionInput): Promise<CreateSessionResult> {
     const cfg = loadConfig()
-    const token = await getToken(cfg)
-    const expiresAt = new Date(Date.now() + input.ttlSeconds * 1000).toISOString()
+    const token = await this.accessToken(cfg)
+    const ttlSeconds = resolveSessionTtlSeconds(input.ttlSeconds)
+    const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString()
 
     // Per-session isolation via TAGGED revisions (the supported Cloud Run pattern
     // for addressing a specific revision independent of traffic split). Each
@@ -114,26 +142,34 @@ export class CloudRunProvider implements HostProvider {
     // must accumulate one tagged target per concurrent session; a wholesale
     // replace would drop other live sessions' tags (404-ing their URLs). So we
     // fetch the current service, keep all existing REVISION-tagged targets, and
-    // append this session's tag with 0% traffic. LATEST keeps 100% of prod.
-    const getRes = await fetch(`${RUN_API}/${servicePath}`, {
+    // append this session's tag with 0% traffic. An explicit sterile base
+    // revision keeps 100% of untagged traffic; a user revision never becomes the
+    // service's default target.
+    const getRes = await this.request(`${RUN_API}/${servicePath}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let existingTraffic: any[] = []
-    if (getRes.ok) {
-      const svc = await getRes.json()
-      existingTraffic = Array.isArray(svc.traffic) ? svc.traffic : []
+    if (!getRes.ok) {
+      const detail = await getRes.text().catch(() => '')
+      throw new Error(`Cloud Run service read failed (${getRes.status}): ${detail.slice(0, 300)}`)
     }
-    const keptTagged = existingTraffic.filter(
-      (t) => t?.type === 'TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION' && t?.tag && t.tag !== tag,
-    )
-    const traffic = [
-      { type: 'TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST', percent: 100 },
-      ...keptTagged,
-      { type: 'TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION', revision: revisionName, tag, percent: 0 },
-    ]
+    const svc = await getRes.json()
+    let createTraffic
+    try {
+      createTraffic = planSessionTrafficCreate(
+        cfg.serviceName,
+        svc,
+        tag,
+        revisionName,
+        cfg.baseRevision,
+      )
+    } catch (err) {
+      throw new SandboxUnconfiguredError(
+        `${err instanceof Error ? err.message : String(err)}; set CLOUD_RUN_BASE_REVISION if needed.`,
+      )
+    }
 
     const body = {
+      etag: createTraffic.etag,
       template: {
         revision: revisionName,
         serviceAccount: cfg.runtimeServiceAccount,
@@ -154,7 +190,7 @@ export class CloudRunProvider implements HostProvider {
         // coexist on the same instance. The PTY bridge still scopes one shell
         // per connection, so this does not multiplex sessions.
         maxInstanceRequestConcurrency: 6,
-        timeout: `${input.ttlSeconds}s`,
+        timeout: `${ttlSeconds}s`,
         containers: [
           {
             image: cfg.image,
@@ -190,10 +226,10 @@ export class CloudRunProvider implements HostProvider {
           },
         ],
       },
-      traffic,
+      traffic: createTraffic.traffic,
     }
 
-    const res = await fetch(`${RUN_API}/${servicePath}`, {
+    const res = await this.request(`${RUN_API}/${servicePath}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -233,14 +269,14 @@ export class CloudRunProvider implements HostProvider {
     } catch {
       return false
     }
-    const token = await getToken(cfg)
+    const token = await this.accessToken(cfg)
     const revName = `${cfg.serviceName}-${hostInstanceId}`
     const revPath = `projects/${cfg.project}/locations/${cfg.region}/services/${cfg.serviceName}/revisions/${revName}`
     const deadline = Date.now() + deadlineMs
 
     while (Date.now() < deadline) {
       try {
-        const res = await fetch(`${RUN_API}/${revPath}`, {
+        const res = await this.request(`${RUN_API}/${revPath}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (res.ok) {
@@ -260,7 +296,8 @@ export class CloudRunProvider implements HostProvider {
     return false
   }
 
-  async destroySession(hostInstanceId: string): Promise<void> {
+  async destroySession(hostInstanceId: string, options?: { signal?: AbortSignal }): Promise<void> {
+    const signal = options?.signal ?? AbortSignal.timeout(35_000)
     // hostInstanceId is the revision tag. Teardown is two steps and ORDER MATTERS:
     //   1. Remove this tag from the service's traffic array (read-modify-write
     //      PATCH, keeping every OTHER live session's tag).
@@ -277,46 +314,63 @@ export class CloudRunProvider implements HostProvider {
       return // unconfigured: nothing to destroy
     }
 
-    const token = await getToken(cfg)
+    const token = await this.accessToken(cfg)
     const servicePath = `projects/${cfg.project}/locations/${cfg.region}/services/${cfg.serviceName}`
     const revName = `${cfg.serviceName}-${hostInstanceId}`
 
-    // Step 1: drop this session's tag from traffic (keep all others + LATEST).
+    // Step 1: drop this session's tag from traffic. The service etag makes a
+    // concurrent session update fail instead of silently losing another tag.
+    let trafficDetached = false
     try {
-      const getRes = await fetch(`${RUN_API}/${servicePath}`, {
+      const getRes = await this.request(`${RUN_API}/${servicePath}`, {
         headers: { Authorization: `Bearer ${token}` },
+        signal,
       })
       if (getRes.ok) {
         const svc = await getRes.json()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const existing: any[] = Array.isArray(svc.traffic) ? svc.traffic : []
-        const keptTagged = existing.filter(
-          (t) => t?.type === 'TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION' && t?.tag && t.tag !== hostInstanceId,
+        const removal = planSessionTrafficRemoval(
+          cfg.serviceName,
+          svc,
+          hostInstanceId,
+          cfg.baseRevision,
         )
-        const traffic = [
-          { type: 'TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST', percent: 100 },
-          ...keptTagged,
-        ]
         // updateMask=traffic scopes the PATCH to the traffic field only, so Cloud
         // Run doesn't re-validate the template's serviceAccount (which would need
         // iam.serviceAccounts.actAs and 403 for the orchestrator SA).
-        await fetch(`${RUN_API}/${servicePath}?updateMask=traffic`, {
+        const patchRes = await this.request(`${RUN_API}/${servicePath}?updateMask=traffic`, {
           method: 'PATCH',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ traffic }),
+          signal,
+          body: JSON.stringify({
+            traffic: removal.traffic,
+            etag: removal.etag,
+          }),
         })
+        trafficDetached = patchRes.ok
+        if (!patchRes.ok) {
+          const detail = await patchRes.text().catch(() => '')
+          console.error(
+            `[cloud-run] traffic detach failed (${patchRes.status}): ${detail.slice(0, 300)}`,
+          )
+        }
       }
-    } catch {
-      // Best-effort: if the traffic PATCH fails, still try the revision delete.
+    } catch (err) {
+      console.error('[cloud-run] traffic detach threw:', err)
+    }
+    if (!trafficDetached) {
+      // Continue only after a conclusive, conflict-free tag removal. The reaper
+      // will retry with a fresh service etag on its next sweep.
+      throw new Error(`Failed to detach session traffic tag ${hostInstanceId}`)
     }
 
     // Step 2: delete the now-untagged revision (releases its pinned instance).
     const revPath = `${servicePath}/revisions/${revName}`
     let deleted = false
     try {
-      const delRes = await fetch(`${RUN_API}/${revPath}`, {
+      const delRes = await this.request(`${RUN_API}/${revPath}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
+        signal,
       })
       // 404 = already gone (fine). 2xx = deleted. Anything else we must NOT
       // swallow blindly: the prior code ignored the response and a silent
@@ -332,10 +386,11 @@ export class CloudRunProvider implements HostProvider {
         // (minScale=1) and billing. Recover by bumping the base service to make a
         // NEW latest-created revision, which un-blocks the delete.
         if (delRes.status === 400 && /latest created Revision/i.test(detail)) {
-          await this.bumpLatestRevision(cfg, token, hostInstanceId)
-          const retry = await fetch(`${RUN_API}/${revPath}`, {
+          await this.bumpLatestRevision(cfg, token, hostInstanceId, signal)
+          const retry = await this.request(`${RUN_API}/${revPath}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
+            signal,
           })
           deleted = retry.ok || retry.status === 404
           if (!deleted) {
@@ -364,14 +419,20 @@ export class CloudRunProvider implements HostProvider {
   // no cost) and becomes deletable itself once a later session/bump supersedes
   // it. Scoped via updateMask=template so we don't touch traffic. Idempotent
   // label toggle keeps the change minimal.
-  private async bumpLatestRevision(cfg: CloudRunConfig, token: string, stuckHostId: string): Promise<void> {
+  private async bumpLatestRevision(cfg: CloudRunConfig, token: string, stuckHostId: string, signal: AbortSignal): Promise<void> {
     const servicePath = `projects/${cfg.project}/locations/${cfg.region}/services/${cfg.serviceName}`
     try {
-      const getRes = await fetch(`${RUN_API}/${servicePath}`, {
+      const getRes = await this.request(`${RUN_API}/${servicePath}`, {
         headers: { Authorization: `Bearer ${token}` },
+        signal,
       })
       if (!getRes.ok) return
       const svc = await getRes.json()
+      const etag = typeof svc?.etag === 'string' ? svc.etag.trim() : ''
+      if (!etag) {
+        console.error('[cloud-run] base bump skipped: service response has no etag')
+        return
+      }
       // Build a STERILE base template from scratch rather than cloning svc.template
       // — after a createSession PATCH the service template still carries that
       // session's env (incl. ANTHROPIC_API_KEY, HOST_ID, BigQuery creds), pinned
@@ -390,10 +451,11 @@ export class CloudRunProvider implements HostProvider {
         serviceAccount: cfg.runtimeServiceAccount,
         containers: [{ image: cfg.image, ports: [{ containerPort: 7681 }] }],
       }
-      const patchRes = await fetch(`${RUN_API}/${servicePath}?updateMask=template`, {
+      const patchRes = await this.request(`${RUN_API}/${servicePath}?updateMask=template`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ template }),
+        signal,
+        body: JSON.stringify({ template, etag }),
       })
       if (!patchRes.ok) {
         console.error(`[cloud-run] base bump PATCH failed (${patchRes.status}):`, (await patchRes.text()).slice(0, 300))
@@ -405,9 +467,9 @@ export class CloudRunProvider implements HostProvider {
       // reaper will retry the whole teardown on its next sweep).
       const stuckName = `${servicePath}/revisions/${cfg.serviceName}-${stuckHostId}`
       const deadline = Date.now() + 25_000
-      while (Date.now() < deadline) {
+      while (Date.now() < deadline && !signal.aborted) {
         await new Promise((r) => setTimeout(r, 2000))
-        const chk = await fetch(`${RUN_API}/${servicePath}`, { headers: { Authorization: `Bearer ${token}` } })
+        const chk = await this.request(`${RUN_API}/${servicePath}`, { headers: { Authorization: `Bearer ${token}` }, signal })
         if (!chk.ok) continue
         const cur = await chk.json()
         const latest: string = cur?.latestCreatedRevision ?? ''
@@ -424,7 +486,8 @@ export class CloudRunProvider implements HostProvider {
   // to 20 [a-z0-9]. Base-service revisions are named `${serviceName}-NNNNN-xxx`
   // (a 5-digit generation + suffix), which we exclude. We return the TAG
   // (hostInstanceId) for each, matching what destroySession expects.
-  async listSessionHostIds(): Promise<string[]> {
+  async listSessionHostIds(options?: { signal?: AbortSignal }): Promise<string[]> {
+    const signal = options?.signal ?? AbortSignal.timeout(15_000)
     let cfg: CloudRunConfig
     try {
       cfg = loadConfig()
@@ -433,7 +496,7 @@ export class CloudRunProvider implements HostProvider {
     }
     let token: string
     try {
-      token = await getToken(cfg)
+      token = await this.accessToken(cfg)
     } catch {
       return []
     }
@@ -448,8 +511,9 @@ export class CloudRunProvider implements HostProvider {
         const url = new URL(`${RUN_API}/${parent}/revisions`)
         url.searchParams.set('pageSize', '500')
         if (pageToken) url.searchParams.set('pageToken', pageToken)
-        const res = await fetch(url.toString(), {
+        const res = await this.request(url.toString(), {
           headers: { Authorization: `Bearer ${token}` },
+          signal,
         })
         if (!res.ok) break
         const data = await res.json()
@@ -465,7 +529,7 @@ export class CloudRunProvider implements HostProvider {
           hostIds.push(tail)
         }
         pageToken = data?.nextPageToken || undefined
-      } while (pageToken)
+      } while (pageToken && !signal.aborted)
     } catch {
       return hostIds
     }

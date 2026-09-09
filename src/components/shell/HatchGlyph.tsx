@@ -1,5 +1,7 @@
 'use client'
 
+import { useMotionPreference } from '@/components/motion/primitives'
+
 export type HatchState = 'idle' | 'listening' | 'reviewing' | 'speaking' | 'celebrating' | 'intrigued' | 'challenging' | 'delighted' | 'none'
 
 interface HatchGlyphProps {
@@ -16,7 +18,14 @@ export function HatchGlyph({
   state: stateProp,
   animated,
 }: HatchGlyphProps) {
-  const state: HatchState = stateProp ?? (animated ? 'idle' : 'none')
+  const requestedState: HatchState = stateProp ?? (animated ? 'idle' : 'none')
+  // SVG SMIL `<animate>`/`<animateTransform>` elements are not stopped by the
+  // CSS `prefers-reduced-motion` media query (browser limitation — it only
+  // affects CSS animations/transitions). Force the static ('none') render
+  // path here so reduced-motion users never see the ~40 looping SMIL nodes
+  // below, while keeping the base glyph shape visible.
+  const { prefersReducedMotion } = useMotionPreference()
+  const state: HatchState = prefersReducedMotion ? 'none' : requestedState
 
   return (
     <svg

@@ -354,6 +354,10 @@ test.describe('live interview rendered QA hooks', () => {
     test.skip(!authenticated, 'Requires Supabase test credentials for authenticated UI coverage.')
 
     let finalPayload: { artifactSnapshot?: { type?: string; elementCount?: number } } | null = null
+    const voiceRequests: string[] = []
+    page.on('request', (request) => {
+      if (request.url().includes('/voice-settings')) voiceRequests.push(request.url())
+    })
 
     await page.route('**/api/live-interview/e2e-ui-system/status', (route) =>
       route.fulfill({
@@ -383,6 +387,7 @@ test.describe('live interview rendered QA hooks', () => {
     })
 
     await page.goto(`${BASE_URL}/live-interviews/e2e-ui-system?autostart=1&discipline=system_design`, { waitUntil: 'domcontentloaded' })
+    await page.getByRole('button', { name: 'Continue in chat, no mic', exact: true }).click()
 
     await expect(page.locator('[data-testid="live-interview-workspace"]')).toBeVisible({ timeout: 45000 })
     await page.locator('[data-testid="live-interview-mode-canvas"]').click()
@@ -393,6 +398,7 @@ test.describe('live interview rendered QA hooks', () => {
 
     await expect.poll(() => finalPayload?.artifactSnapshot?.type, { timeout: 5000 }).toBe('canvas')
     expect(finalPayload?.artifactSnapshot?.elementCount).toBe(0)
+    expect(voiceRequests).toEqual([])
   })
 
   test('real UI sends SQL editor snapshots with SQL language', async ({ page }) => {
@@ -431,6 +437,7 @@ test.describe('live interview rendered QA hooks', () => {
     })
 
     await page.goto(`${BASE_URL}/live-interviews/e2e-ui-sql?autostart=1&discipline=sql`, { waitUntil: 'domcontentloaded' })
+    await page.getByRole('button', { name: 'Continue in chat, no mic', exact: true }).click()
 
     await expect(page.locator('[data-testid="live-interview-workspace"]')).toBeVisible({ timeout: 45000 })
     await page.locator('[data-testid="live-interview-mode-editor"]').click()

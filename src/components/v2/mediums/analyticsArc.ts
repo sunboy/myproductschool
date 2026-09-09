@@ -136,7 +136,7 @@ export const DEFAULT_ANALYTICS_ARC: AnalyticsSubProblem[] = [
     objective: 'Encode the reusable analysis as a .claude/skills file so the next session inherits it.',
     successCriterion: 'Confirm the skill file name you wrote.',
     suggestedPrompts: [
-      'Write a .claude/skills/funnel-analyst.md that captures these steps',
+      'Write /home/analyst/.claude/skills/funnel-analyst/SKILL.md that captures these steps',
       'Make the skill generalize to any funnel, not just this dataset',
     ],
     kind: 'skill',

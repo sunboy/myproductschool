@@ -4,9 +4,36 @@ import {
   getStripeMode,
   getStripePlanConfig,
   getStripeRuntimeConfig,
+  getStripeTestSecretKey,
 } from '../../src/lib/stripe/config'
 
 describe('Stripe runtime config', () => {
+  it.each(['sk_live_fixture', 'rk_live_fixture', 'invalid', '', '   '])(
+    'refuses a non-test key in the test variable (%s), even with a valid fallback', key => {
+      expect(() => getStripeTestSecretKey({
+        STRIPE_TEST_SECRET_KEY: key,
+        STRIPE_SECRET_KEY: 'rk_test_fixture',
+      })).toThrow('Live and invalid keys are refused')
+    }
+  )
+
+  it.each(['sk_test_fixture', 'rk_test_fixture'])('accepts test key %s', key => {
+    expect(getStripeTestSecretKey({ STRIPE_TEST_SECRET_KEY: ` ${key}\n` })).toBe(key)
+    expect(getStripeTestSecretKey({ STRIPE_SECRET_KEY: key })).toBe(key)
+  })
+
+  it('rejects missing keys and live fallback keys without exposing the value', () => {
+    expect(() => getStripeTestSecretKey({})).toThrow('test setup requires')
+    const key = 'sk_live_do_not_expose'
+    try {
+      getStripeTestSecretKey({ STRIPE_SECRET_KEY: key })
+      expect.fail('Live key should have been refused')
+    } catch (error) {
+      expect(String(error)).toContain('Live and invalid keys are refused')
+      expect(String(error)).not.toContain(key)
+    }
+  })
+
   it('rejects legacy or invalid secret key formats', () => {
     const config = getStripeRuntimeConfig({
       STRIPE_SECRET_KEY: 'mk_live_legacy',

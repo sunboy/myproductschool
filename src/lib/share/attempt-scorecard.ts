@@ -15,7 +15,7 @@ export interface SharedAttemptScorecard {
   challengeId: string
   challengeTitle: string
   shareId: string
-  scorePercent: number
+  scorePercent: number | null
   scoreLabel: string
   gradeLabel: string | null
   timeSpentSeconds: number | null
@@ -64,7 +64,7 @@ function numberValue(value: number | string | null | undefined) {
 function scorePercent(totalScore: number | string | null, maxScore: number | string | null) {
   const total = numberValue(totalScore)
   const max = numberValue(maxScore)
-  if (total == null || !max) return 0
+  if (total == null || max == null || max <= 0) return null
   return Math.max(0, Math.min(100, Math.round((total / max) * 100)))
 }
 

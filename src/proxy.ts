@@ -1,3 +1,4 @@
+import { authRedirectFromParams } from '@/lib/auth/redirect'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
@@ -157,9 +158,10 @@ export async function proxy(request: NextRequest) {
   if (user) {
     // Password reset page must stay accessible even after setSession() establishes a session
     if (pathname === '/reset-password') return supabaseResponse
-    // Logged-in users hitting auth pages → redirect to dashboard
+    // Preserve a selected challenge or checkout when an existing session reaches login.
     if (isAuthRoute) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      const destination = authRedirectFromParams(Object.fromEntries(request.nextUrl.searchParams))
+      return NextResponse.redirect(new URL(destination ?? '/dashboard', request.url))
     }
     // Authenticated users can access all app routes freely.
     // The dashboard owns the calibrated/uncalibrated experience.
@@ -178,7 +180,9 @@ export async function proxy(request: NextRequest) {
   }
 
   // Unauthenticated users on any other route → redirect to login
-  return NextResponse.redirect(new URL('/login', request.url))
+  const loginUrl = new URL('/login', request.url)
+  loginUrl.searchParams.set('returnTo', `${pathname}${request.nextUrl.search}`)
+  return NextResponse.redirect(loginUrl)
 }
 
 export const config = {

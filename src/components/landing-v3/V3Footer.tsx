@@ -62,7 +62,7 @@ export function V3Footer() {
             Our mission is to make product and technical judgment trainable.
           </h2>
           <p>
-            To do this, we built the AI-native practice system for interviews, role transitions,
+            To do this, we built a focused learning system for interviews, role transitions,
             and high-stakes career moments.
           </p>
         </div>
