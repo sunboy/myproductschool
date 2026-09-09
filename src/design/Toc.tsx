@@ -1,17 +1,16 @@
 'use client'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { resolveReadingTarget } from './reading'
 
 export interface TocGroup { label: string; items: Array<{ id: string; label: string; done?: boolean; href?: string }> }
-
-function slugOf(text: string) { return text.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-') }
 
 /** Right-hand table of contents. 13px/550 items, active 650 forest with a bar. */
 export function Toc({ groups, activeId, progressPct, onSelect, testId = 'right-toc', className }: { groups: TocGroup[]; activeId: string | null; progressPct?: number; onSelect?: (id: string) => void; testId?: string; className?: string }) {
   const scrollTo = (id: string) => {
     onSelect?.(id)
     const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const target = document.getElementById(id) ?? Array.from(document.querySelectorAll('article h2, article h3')).find(h => slugOf(h.textContent ?? '') === id) ?? null
+    const target = resolveReadingTarget(id)
     target?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
   }
   return (

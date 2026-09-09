@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
+import { Toc } from '@/design'
 
-/** Single reading column (720px) with an optional right TOC. Used inside ShellV2 (rail forced). */
+/** Legacy frame without tracking; prefer `Reader` from '@/design'. */
 export function ReaderFrame({ children, toc, testId = 'reader-frame' }: { children: ReactNode; toc?: ReactNode; testId?: string }) {
   return (
     <div data-testid={testId} className="mx-auto flex w-full max-w-[1100px] items-start gap-10 px-6 pb-24 pt-7 lg:px-10">
@@ -9,3 +10,4 @@ export function ReaderFrame({ children, toc, testId = 'reader-frame' }: { childr
     </div>
   )
 }
+export { Toc as ReaderToc }

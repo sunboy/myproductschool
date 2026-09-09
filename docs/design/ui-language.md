@@ -15,6 +15,7 @@ One system, consumed everywhere under `src/design`, `src/components/density`, `s
 - Tabs inside panes: `SegmentedTabs`.
 - Back navigation: declare once with `useReaderChrome({ left: <BackLink … /> })`. The top bar renders it. Pages never render their own.
 - Brand: `Brand.Wordmark` (expanded) and `Brand.Mark` (rail). Never the raw wordmark PNG.
+- Long-form reading: `Reader` (column + sticky `Toc` + scroll-tracked active section). Pass `ids` in document order; targets resolve by `id`, `data-section-id`, or heading text. Never hand-roll a reading layout.
 
 ## Use the tokens
 

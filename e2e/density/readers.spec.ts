@@ -40,6 +40,13 @@ test.describe('readers', () => {
     await expect(page.getByTestId('reader-back')).toHaveAttribute('href', '/explore/autopsies/buffer')
     expect(await topOf(page, 'article h1')).toBeLessThanOrEqual(130)
     await expect(page.getByTestId('right-toc')).toBeVisible()
+    // Active section follows the scroll (sections are data-section-id targets).
+    const items = page.getByTestId('right-toc').locator('button')
+    await expect(items.first()).toHaveAttribute('aria-current', 'true')
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    await expect(items.last()).toHaveAttribute('aria-current', 'true', { timeout: 5000 })
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await expect(items.first()).toHaveAttribute('aria-current', 'true', { timeout: 5000 })
     const saveLocator = () => page.locator('[data-testid=shell-topbar] button', { hasText: /save/i }).first()
     let save = saveLocator()
     await expect(save).toBeVisible({ timeout: 30_000 })
