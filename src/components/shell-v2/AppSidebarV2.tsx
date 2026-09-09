@@ -39,7 +39,7 @@ function NavOverlay({ active, onClose }: { active: NavKey | null; onClose: () =>
     return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onDown) }
   }, [onClose])
   return (
-    <div ref={ref} data-testid="shell-nav-overlay" className="absolute inset-y-0 left-0 z-40 shadow-xl">
+    <div ref={ref} data-testid="shell-nav-overlay" className="fixed inset-y-0 left-0 z-50 shadow-xl">
       <NavPanel active={active} collapsed={false} overlay onToggle={onClose} />
     </div>
   )

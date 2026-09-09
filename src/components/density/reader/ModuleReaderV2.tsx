@@ -78,7 +78,7 @@ export function ModuleReaderV2({ module, chapters, data, onSelectChapter, markCo
         {isCompleted ? 'Completed' : completing ? 'Saving…' : 'Mark complete'}
       </button>
     ),
-  })
+  }, [data.slug, isCompleted, completing])
 
   useReadingProgressReporter({ contentType: 'module_chapter', parentId: module.slug, contentId: data.slug, activeId, articleRef })
 

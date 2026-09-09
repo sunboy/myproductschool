@@ -27,7 +27,7 @@ export function AutopsyReaderV2({ story, companyName, initialBookmarked, section
       <BackLink href={`/explore/autopsies/${story.companySlug}`} label={companyName} testId="reader-back" />
     ),
     right: <BookmarkToggle companySlug={story.companySlug} storySlug={story.slug} initialBookmarked={initialBookmarked} />,
-  })
+  }, [story.companySlug, story.slug, companyName, initialBookmarked])
   useReadingProgressReporter({ contentType: 'autopsy_story', parentId: story.companySlug, contentId: story.slug, activeId, articleRef })
   return (
     <ReaderFrame
@@ -39,7 +39,7 @@ export function AutopsyReaderV2({ story, companyName, initialBookmarked, section
         />
       }
     >
-      <div ref={articleRef as React.RefObject<HTMLDivElement>}>
+      <div ref={articleRef as React.RefObject<HTMLDivElement>} className="reader-content" data-hatch-context-root data-hatch-context={`Reading "${story.title}"`}>
         <ReaderHeader eyebrow={`Product autopsy · ${(story.tags ?? [])[0] ?? companyName} · ${story.estimatedReadTime}`} title={story.title} lede={story.dek} />
         <HeroImageSlot src={coverUrl} seed={`${story.companySlug}/${story.slug}`} ratio="700/150" />
         {children}
