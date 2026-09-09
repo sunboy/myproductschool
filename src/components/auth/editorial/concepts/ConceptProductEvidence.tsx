@@ -65,7 +65,7 @@ export function ConceptProductEvidence({ mode, redirectTo, archetype }: ConceptP
           <div className="shape green" />
           <div className="shape amber" />
           <div className="hatch-peek">
-            <Image src="/landing-v5/hatch-transparent.png" alt="" width={581} height={747} priority />
+            <Image src="/landing-v5/hatch-peek.png" alt="" width={840} height={522} priority />
           </div>
           <article className="review-card">
             <header>

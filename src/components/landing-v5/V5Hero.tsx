@@ -141,7 +141,7 @@ export function V5Hero({ dense = false }: { dense?: boolean } = {}) {
           </div>
 
           <div className="hero-reference-hatch hero-reference-layer-hatch" aria-hidden="true">
-            <Image src="/landing-v5/hatch-transparent.png" alt="" width={585} height={751} priority />
+            <Image src="/landing-v5/hatch-peek.png" alt="" width={840} height={522} priority />
           </div>
 
           {/* Decorative sample of review output; not an interactive control. */}

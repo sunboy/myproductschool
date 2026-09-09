@@ -1314,10 +1314,12 @@
    window. */.v5 .hero-reference-hatch {
   position: absolute;
   z-index: 4;
-  top: 40px;
-  left: 300px;
-  width: 300px;
-  height: 340px;
+  /* hatch-peek.png is the peeking crop itself (840x522); its bottom edge is
+     the hand, which should rest on the review card's top edge (231px). */
+  top: 4px;
+  left: 280px;
+  width: 380px;
+  height: 236px;
   overflow: hidden;
   pointer-events: none;
   transform: translate(calc(var(--mx) * 5px), calc(var(--my) * 4px));
@@ -1327,7 +1329,7 @@
   top: 0;
   left: 0;
   display: block;
-  width: 340px !important;
+  width: 380px !important;
   height: auto !important;
   max-width: none !important;
 }
@@ -1836,7 +1838,7 @@
   margin-top: 12px;
 }
 .v5 .hero-reference.is-dense .hero-reference-hatch img {
-  width: 420px;
+  width: 380px;
   height: auto;
 }
 .v5 .hero-reference.is-dense .hero-reference-review {
