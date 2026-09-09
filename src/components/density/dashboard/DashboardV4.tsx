@@ -8,6 +8,7 @@ import { EditorialShelf } from './EditorialShelf'
 import { PathsRow, type PathCard, type WeekDay } from './PathsRow'
 import { FirstRepsShelf, type FirstRep } from './FirstRepsShelf'
 import { HatchPickCard } from '@/components/density/HatchPickCard'
+import { Text } from '@/design'
 import type { AreaStat, EditorialItem } from '@/lib/data/dashboard-density'
 
 export interface DashboardV4Props {
@@ -31,12 +32,12 @@ export interface DashboardV4Props {
 
 export function DashboardV4(p: DashboardV4Props) {
   const greeting = p.isNewUser ? (
-    <><div className="text-[10px] font-bold uppercase tracking-[.08em] text-forest-800">Welcome, {p.displayName}</div><h1 className="mt-1.5 font-headline text-[28px] font-bold leading-[1.05]">Find your <em className="font-medium not-italic text-tertiary">next possibility.</em></h1><p className="mt-2 text-[12px] text-ink-secondary">Two ways in: calibrate in five minutes, or just start a rep.</p></>
+    <><Text variant="caption" tone="forest">Welcome, {p.displayName}</Text><Text variant="h2" as="h1" className="mt-1.5 leading-[1.05]">Find your <em className="font-medium not-italic text-tertiary">next possibility.</em></Text><Text variant="meta" className="mt-2">Two ways in: calibrate in five minutes, or just start a rep.</Text></>
   ) : (
-    <><div className="text-[10px] font-bold uppercase tracking-[.08em] text-forest-800">Welcome back, {p.displayName}</div><h1 className="mt-1.5 font-headline text-[28px] font-bold leading-[1.05]">Keep your <em className="font-medium not-italic text-tertiary">curiosity going.</em></h1><p className="mt-2 text-[12px] text-ink-secondary">{p.streakDays > 0 ? `Day ${p.streakDays} of your streak. One rep keeps it alive.` : 'One rep today starts a streak.'}</p></>
+    <><Text variant="caption" tone="forest">Welcome back, {p.displayName}</Text><Text variant="h2" as="h1" className="mt-1.5 leading-[1.05]">Keep your <em className="font-medium not-italic text-tertiary">curiosity going.</em></Text><Text variant="meta" className="mt-2">{p.streakDays > 0 ? `Day ${p.streakDays} of your streak. One rep keeps it alive.` : 'One rep today starts a streak.'}</Text></>
   )
   const cells = p.isNewUser
-    ? [<CalibrationCard key="cal" startHref={p.calibrationHref} skipHref="/challenges" />, <HatchThoughtCard key="h" message={p.hatchMessage} prompts={p.hatchPrompts} />]
+    ? [<CalibrationCard key="cal" startHref={p.calibrationHref} skipHref="/challenges" />, <HatchThoughtCard key="h" message={p.hatchMessage} prompts={p.hatchPrompts} subtitle="New here? Start with me" />]
     : [
         p.resume ? <ContinueChallengeCard key="c" {...p.resume} /> : p.hatchPick ? <HatchPickCard key="pick" eyebrow="Hatch's pick today" title={p.hatchPick.title} reason={p.hatchPick.reason} href={p.hatchPick.href} ctaLabel="Start" dismissScope="dashboard" /> : null,
         p.reading ? <ContinueReadingCard key="r" {...p.reading} /> : p.hatchPick && p.resume ? <HatchPickCard key="pick2" eyebrow="Hatch's pick today" title={p.hatchPick.title} reason={p.hatchPick.reason} href={p.hatchPick.href} ctaLabel="Start" dismissScope="dashboard" /> : null,

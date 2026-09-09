@@ -38,14 +38,14 @@ export function RoomBar({ companyName, roleName, disciplineLabel, isActive, time
           className="flex items-center justify-center rounded-full"
           style={{ width: 28, height: 28, color: 'rgba(243,237,224,0.75)' }}
         >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span className="material-symbols-outlined text-h4">arrow_back</span>
         </button>
-        <span className="truncate font-label text-[12px] font-semibold" style={{ color: 'rgba(243,237,224,0.9)' }}>
+        <span className="truncate font-label text-meta font-semibold" style={{ color: 'rgba(243,237,224,0.9)' }}>
           {companyName || 'Interview'} <span style={{ color: 'rgba(243,237,224,0.4)' }}>·</span> {roleName} <span style={{ color: 'rgba(243,237,224,0.4)' }}>·</span> {disciplineLabel}
         </span>
         {isActive && (
           <span
-            className="ml-1 hidden shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-label text-[10px] font-bold uppercase tracking-wider sm:inline-flex"
+            className="ml-1 hidden shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-label text-caption font-bold uppercase tracking-wider sm:inline-flex"
             style={{ background: 'rgba(178,58,42,0.2)', color: '#ff8a7a' }}
           >
             <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#ff8a7a', animation: 'pulseSoft 1.5s ease-in-out infinite' }} />
@@ -55,14 +55,14 @@ export function RoomBar({ companyName, roleName, disciplineLabel, isActive, time
         <button
           type="button"
           onClick={onReplayTour}
-          className="hidden lg:inline-flex font-label text-[11px]"
+          className="hidden lg:inline-flex font-label text-caption"
           style={{ color: 'rgba(243,237,224,0.4)' }}
         >
           Replay tour
         </button>
       </div>
 
-      <div className="hidden shrink-0 font-label text-[13px] font-bold tabular-nums sm:block" style={{ color: isWarning ? '#e37d4a' : 'rgba(243,237,224,0.85)' }}>
+      <div className="hidden shrink-0 font-label text-ui font-bold tabular-nums sm:block" style={{ color: isWarning ? '#e37d4a' : 'rgba(243,237,224,0.85)' }}>
         {timerDisplay}
       </div>
 
@@ -79,7 +79,7 @@ export function RoomBar({ companyName, roleName, disciplineLabel, isActive, time
           type="button"
           onClick={onEnd}
           data-testid="live-interview-end"
-          className="ml-2 rounded-full px-3 py-1 font-label text-[11px] font-bold"
+          className="ml-2 rounded-full px-3 py-1 font-label text-caption font-bold"
           style={{ background: 'rgba(178,58,42,0.18)', color: '#ff8a7a' }}
         >
           End interview
@@ -89,7 +89,7 @@ export function RoomBar({ companyName, roleName, disciplineLabel, isActive, time
         type="button"
         onClick={onEnd}
         data-testid="live-interview-end-mobile"
-        className="rounded-full px-3 py-1 font-label text-[11px] font-bold sm:hidden"
+        className="rounded-full px-3 py-1 font-label text-caption font-bold sm:hidden"
         style={{ background: 'rgba(178,58,42,0.18)', color: '#ff8a7a' }}
       >
         End

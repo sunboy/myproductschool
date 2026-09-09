@@ -41,7 +41,7 @@ export function AutopsyReaderV2({ story, companyName, initialBookmarked, section
     >
       <div ref={articleRef as React.RefObject<HTMLDivElement>}>
         <ReaderHeader eyebrow={`Product autopsy · ${(story.tags ?? [])[0] ?? companyName} · ${story.estimatedReadTime}`} title={story.title} lede={story.dek} />
-        <HeroImageSlot src={coverUrl} seed={`${story.companySlug}/${story.slug}`} height={150} />
+        <HeroImageSlot src={coverUrl} seed={`${story.companySlug}/${story.slug}`} ratio="700/150" />
         {children}
       </div>
     </ReaderFrame>

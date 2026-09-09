@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { HatchImage } from '@/components/redesign/HatchImage'
+import { Button, Card, IconButton, Text } from '@/design'
 
 const DISMISS_MS = 24 * 60 * 60 * 1000
 export function hatchPickDismissKey(scope: string) { return `hp:hatch-pick-dismissed:${scope}` }
@@ -20,6 +21,8 @@ export interface HatchPickCardProps {
   testId?: string
 }
 
+/** Compact recommendation card: Hatch pose, eyebrow, title, reason, one CTA,
+ *  optional dismiss that reserves its own space (never overlaps the CTA). */
 export function HatchPickCard({ eyebrow, title, reason, href, ctaLabel, ctaVariant = 'primary', dismissScope, onCta, testId = 'hatch-pick' }: HatchPickCardProps) {
   const [hidden, setHidden] = useState(false)
   useEffect(() => {
@@ -28,19 +31,21 @@ export function HatchPickCard({ eyebrow, title, reason, href, ctaLabel, ctaVaria
   }, [dismissScope])
   if (hidden) return null
   return (
-    <div data-testid={testId} className="relative flex items-center gap-2.5 rounded-xl border border-primary-fixed bg-card-bright px-3 py-2">
+    <Card tone="bright" padding="none" data-testid={testId} className="flex-row items-center gap-2.5 border-primary-fixed px-3 py-2">
       <HatchImage state="speaking" size={36} />
       <div className="min-w-0 flex-1">
-        <div className="text-[9px] font-bold uppercase tracking-[.08em] text-primary">{eyebrow}</div>
-        <Link href={href} className="block truncate font-headline text-[14px] font-bold leading-tight text-ink-strong hover:underline">{title}</Link>
-        {reason && <div className="truncate text-[11px] text-ink-secondary">{reason}</div>}
+        <Text variant="caption" tone="primary">{eyebrow}</Text>
+        <Link href={href} onClick={onCta} className="block truncate font-headline text-body font-bold leading-tight text-ink-strong hover:underline">{title}</Link>
+        {reason && <Text variant="meta" className="truncate">{reason}</Text>}
       </div>
-      <Link href={href} onClick={onCta} data-testid={`${testId}-cta`} className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold ${ctaVariant === 'primary' ? 'bg-forest-800 text-white' : 'border border-forest-800 bg-card-bright text-forest-800'}`}>{ctaLabel}</Link>
+      <Button asChild size="sm" variant={ctaVariant === 'primary' ? 'primary' : 'outline'} className={ctaVariant === 'outline' ? 'border-forest-800 text-forest-800' : undefined}>
+        <Link href={href} onClick={onCta} data-testid={`${testId}-cta`}>{ctaLabel}</Link>
+      </Button>
       {dismissScope && (
-        <button type="button" aria-label="Dismiss for today" data-testid={`${testId}-dismiss`} onClick={() => { try { localStorage.setItem(hatchPickDismissKey(dismissScope), String(Date.now())) } catch {} ; setHidden(true) }} className="absolute right-1.5 top-1.5 grid size-5 place-items-center rounded-full text-ink-muted hover:bg-surface-container">
-          <X size={12} aria-hidden />
-        </button>
+        <IconButton size="sm" variant="ghost" label="Dismiss for today" tooltip={false} data-testid={`${testId}-dismiss`} onClick={() => { try { localStorage.setItem(hatchPickDismissKey(dismissScope), String(Date.now())) } catch {} ; setHidden(true) }} className="text-ink-muted">
+          <X aria-hidden />
+        </IconButton>
       )}
-    </div>
+    </Card>
   )
 }

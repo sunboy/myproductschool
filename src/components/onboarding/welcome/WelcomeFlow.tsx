@@ -117,22 +117,22 @@ export function WelcomeFlow({ redo = false }: { redo?: boolean }) {
           <div className="flex gap-1.5" aria-label={`Step ${cur} of 5`}>
             {dots.map(d => <i key={d} className="block h-2 rounded-full" style={{ width: d === cur ? 22 : 8, background: d <= cur ? 'var(--color-forest-800)' : 'var(--color-surface-container-highest)' }} />)}
           </div>
-          {state.step !== 'results' && <button type="button" data-testid="welcome-skip" onClick={skip} disabled={submitting} className="rounded-full border border-hairline bg-card-bright px-3 py-1 text-[12px] font-semibold">Skip for now</button>}
+          {state.step !== 'results' && <button type="button" data-testid="welcome-skip" onClick={skip} disabled={submitting} className="rounded-full border border-hairline bg-card-bright px-3 py-1 text-meta font-semibold">Skip for now</button>}
         </div>
         <div className="flex max-w-[640px] flex-1 flex-col justify-center py-6">
           {state.step === 'role' && <RoleStep role={state.role} alsoRoles={state.alsoRoles} onRole={r => dispatch({ type: 'setRole', role: r })} onToggleAlso={r => dispatch({ type: 'toggleAlsoRole', role: r })} />}
           {state.step === 'goal' && <GoalStep goal={state.goal} timeline={state.timeline} context={state.context} company={state.targetCompany} onGoal={v => dispatch({ type: 'setGoal', goal: v })} onTimeline={v => dispatch({ type: 'setTimeline', timeline: v })} onContext={v => dispatch({ type: 'setContext', context: v })} onCompany={v => dispatch({ type: 'setCompany', company: v })} />}
           {['q0', 'q1', 'q2', 'q3'].includes(state.step) && <ScenarioStep index={Number(state.step.slice(1))} answers={state.answers} onAnswer={(m, o) => dispatch({ type: 'answer', move: m, optionId: o })} />}
           {state.step === 'results' && results && <ResultsStep results={results} onStart={() => complete('challenge')} onPlan={() => complete('plan')} />}
-          {error && <p role="alert" className="mt-3 text-[13px] text-error">{error}</p>}
+          {error && <p role="alert" className="mt-3 text-ui text-error">{error}</p>}
         </div>
         {state.step !== 'results' && (
           <div className="flex items-center justify-between">
-            <button type="button" data-testid="welcome-back" onClick={() => dispatch({ type: 'back' })} disabled={state.step === 'role'} className="rounded-full border border-hairline bg-card-bright px-3 py-1 text-[12px] font-semibold disabled:opacity-40">← Back</button>
-            <button type="button" data-testid="welcome-next" onClick={next} disabled={!canAdvance || submitting} className="rounded-full bg-forest-800 px-7 py-3 text-[15px] font-bold text-white disabled:opacity-50">{submitting ? 'Scoring…' : 'Next →'}</button>
+            <button type="button" data-testid="welcome-back" onClick={() => dispatch({ type: 'back' })} disabled={state.step === 'role'} className="rounded-full border border-hairline bg-card-bright px-3 py-1 text-meta font-semibold disabled:opacity-40">← Back</button>
+            <button type="button" data-testid="welcome-next" onClick={next} disabled={!canAdvance || submitting} className="rounded-full bg-forest-800 px-7 py-3 text-body font-bold text-white disabled:opacity-50">{submitting ? 'Scoring…' : 'Next →'}</button>
           </div>
         )}
-        {redo && <Link href="/settings" className="mt-3 text-[12px] text-ink-secondary">Cancel and go back to Settings</Link>}
+        {redo && <Link href="/settings" className="mt-3 text-meta text-ink-secondary">Cancel and go back to Settings</Link>}
       </section>
     </div>
   )

@@ -53,7 +53,7 @@ export function TranscriptComposer({ value, onChange, onSubmit, sending, inputRe
         style={{ width: 38, height: 38, background: '#4a7c59' }}
         aria-label="Send"
       >
-        <span className="material-symbols-outlined text-[18px]" style={{ color: '#fff' }}>send</span>
+        <span className="material-symbols-outlined text-h4" style={{ color: '#fff' }}>send</span>
       </button>
     </form>
   )

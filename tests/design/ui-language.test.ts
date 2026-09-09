@@ -9,7 +9,7 @@ const RULES: Array<{ name: string; re: RegExp; allow?: RegExp }> = [
   { name: 'arbitrary font size (use text-caption … text-display)', re: /\btext-\[\d+(?:\.\d+)?px\]/g },
   { name: 'pixel height on an element (cards size to content; use min-h or aspect-ratio)', re: /\b(?:h|min-h|max-h)-\[\d+px\]/g },
   { name: 'inline layout style (use grid/flex utilities)', re: /style=\{\{[^}]*\b(?:display|gridTemplateColumns|flexDirection)\s*:/g, allow: /data-geo|dashboard-hero/ },
-  { name: 'hex colour in className (use a token)', re: /className=[^>]*#[0-9a-fA-F]{3,6}/g, allow: /src\/design\/Badge\.tsx/ },
+  { name: 'hex colour in className (use a token)', re: /className=(?:"[^"]*|'[^']*|\{`[^`]*)#[0-9a-fA-F]{3,6}/g, allow: /src\/design\/Badge\.tsx/ },
 ]
 
 function walk(dir: string, out: string[] = []) {

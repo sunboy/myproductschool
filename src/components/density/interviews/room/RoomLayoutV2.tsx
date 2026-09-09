@@ -99,7 +99,7 @@ export function RoomLayoutV2({
         <div className="flex h-full w-[340px] shrink-0 flex-col" data-tour-target="interview-transcript" data-testid="interview-transcript-column">
           <div className="flex-1 overflow-y-auto px-3 py-3">
             {turns.length === 0 ? (
-              <p className="mt-6 text-center font-body text-[12.5px]" style={{ color: 'rgba(243,237,224,0.35)' }}>
+              <p className="mt-6 text-center font-body text-meta" style={{ color: 'rgba(243,237,224,0.35)' }}>
                 Your conversation will appear here.
               </p>
             ) : (

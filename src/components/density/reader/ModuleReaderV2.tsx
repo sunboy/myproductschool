@@ -7,7 +7,7 @@ import { ReaderFrame } from '@/components/density/ReaderFrame'
 import { RightToc } from '@/components/density/RightToc'
 import { useActiveHeading } from '@/components/density/useActiveHeading'
 import { useReaderChrome } from '@/components/shell-v2/ReaderChromeContext'
-import { BackLink } from '@/design'
+import { BackLink, Button } from '@/design'
 import { extractHeadings, slugifyHeading } from '@/lib/reading/headings'
 import { ReaderHeader } from './ReaderHeader'
 import { HeroImageSlot } from './HeroImageSlot'
@@ -72,9 +72,9 @@ export function ModuleReaderV2({ module, chapters, data, onSelectChapter, markCo
         data-testid="reader-complete"
         disabled={isCompleted || completing}
         onClick={() => markComplete()}
-        className="flex items-center gap-1.5 rounded-full border border-hairline bg-card-bright px-3 py-1 text-[12px] font-semibold disabled:opacity-60"
+        className="inline-flex h-control-md items-center gap-1.5 rounded-control border border-hairline bg-card-bright px-3 text-ui font-ui text-ink-strong hover:bg-surface-container-low disabled:opacity-60"
       >
-        <Bookmark size={13} aria-hidden />
+        <Bookmark size={16} aria-hidden />
         {isCompleted ? 'Completed' : completing ? 'Saving…' : 'Mark complete'}
       </button>
     ),
@@ -109,15 +109,15 @@ export function ModuleReaderV2({ module, chapters, data, onSelectChapter, markCo
         <HeroImageSlot src={data.hero_image_url ?? null} seed={`${module.slug}/${data.slug}`} />
         <ChapterBody ref={bodyRef} body_mdx={data.body_mdx} figures={data.figures ?? []} hatchContextLabel="Active chapter body" />
         <footer className="mt-8 flex items-center justify-between border-t border-hairline pt-4">
-          <Link href="/explore/modules" className="text-[13px] font-semibold text-ink-secondary">All guides</Link>
+          <Link href="/explore/modules" className="text-ui font-ui text-ink-secondary hover:text-ink-strong">All guides</Link>
           {next && (next.is_unlocked || next.is_completed || isCompleted) ? (
-            <button type="button" data-testid="reader-next" onClick={() => onSelectChapter(next.slug)} className="rounded-full bg-forest-800 px-4 py-2 text-[13px] font-bold text-white">
+            <Button data-testid="reader-next" onClick={() => onSelectChapter(next.slug)}>
               Next: {next.title} →
-            </button>
+            </Button>
           ) : !isCompleted ? (
-            <button type="button" onClick={() => markComplete()} className="rounded-full bg-forest-800 px-4 py-2 text-[13px] font-bold text-white">
+            <Button onClick={() => markComplete()}>
               Mark chapter complete
-            </button>
+            </Button>
           ) : null}
         </footer>
       </div>

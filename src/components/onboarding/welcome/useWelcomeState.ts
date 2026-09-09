@@ -71,7 +71,7 @@ export function useWelcomeState() {
   const [state, dispatch] = useReducer(welcomeReducer, initialWelcomeState)
   const loaded = useRef(false)
   const stateRef = useRef(state)
-  stateRef.current = state
+  useEffect(() => { stateRef.current = state }, [state])
   useEffect(() => {
     getOnboardingState<SavedWelcomeData>().then(saved => {
       loaded.current = true

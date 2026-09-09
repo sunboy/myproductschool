@@ -362,7 +362,7 @@ async function DashboardContent() {
         hatchMessage={data.hatchMessage}
         hatchPrompts={isNewUser
           ? [{ label: 'Pick my first challenge', prompt: 'Pick my first challenge based on my role.' }, { label: 'Show me around', event: 'start-intro-tour' }]
-          : [{ label: data.hatchPrompt, prompt: data.hatchPrompt }, { label: 'Help me choose what to learn next', prompt: 'Help me choose what to learn next based on my recent work and goals.' }]}
+          : [{ label: data.action?.kind === 'resume' ? 'Approach the next step' : 'Why this challenge?', prompt: data.hatchPrompt }, { label: 'What to learn next', prompt: 'Help me choose what to learn next based on my recent work and goals.' }]}
         areaStats={areaStats}
         editorial={editorial}
         paths={paths}
