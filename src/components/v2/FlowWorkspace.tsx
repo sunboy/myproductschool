@@ -44,6 +44,8 @@ import { TourRunner } from '@/components/shell/TourRunner'
 import { CANVAS_TOUR, canvasTourSeen } from '@/lib/tours/canvasTour'
 import { setCursor } from '@/lib/tours/shepherdEngine'
 import { AppTooltip } from '@/components/ui/AppTooltip'
+import { Badge, buttonVariants, IconButton, SegmentedTabs } from '@/design'
+import { Play, Upload, LoaderCircle, Maximize2, CloudCheck } from 'lucide-react'
 import { summarizeScene, type CanvasScene } from '@/lib/hatch/canvas-scene'
 import { useCanvasGuidance } from '@/hooks/useCanvasGuidance'
 import type { CanvasChallengeType } from '@/lib/hatch/canvasGuidance'
@@ -558,8 +560,9 @@ function CanvasTourMount({ active: canvasActive }: { active: boolean }) {
 // Shared workspace action button treatments — round-4 chrome (spec §5):
 // buttons are rounded rectangles, not pills. Primary = forest-950 fill with a
 // subtle inner light; secondary = card surface + hairline border.
-const WORKSPACE_BTN_PRIMARY = 'inline-flex items-center gap-1.5 px-5 py-2 rounded-[10px] bg-forest-950 text-white font-label text-xs font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:opacity-90 disabled:opacity-50 transition-opacity'
-const WORKSPACE_BTN_TONAL = 'inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-card-bright border border-hairline text-ink-strong font-label text-xs font-bold hover:bg-page-field disabled:opacity-50 transition-colors'
+// Workspace buttons come from the design system (docs/design/ui-language.md).
+const WORKSPACE_BTN_PRIMARY = buttonVariants({ variant: 'primary', size: 'md' })
+const WORKSPACE_BTN_TONAL = buttonVariants({ variant: 'tonal', size: 'md' })
 
 export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Density shell (desktop) supplies its own back-to-Practice affordance via
@@ -5106,7 +5109,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         overflow: 'hidden',
         minHeight: 0,
       }}>
-      {<nav className="workspace-reference-nav" aria-label="Challenge reference">{(isCodingChallenge ? [...codingPrimaryTabs, ...codingMoreTabs] : tabs).map(tab => <button key={tab} type="button" aria-pressed={leftTab === tab} onClick={() => setLeftTab(tab)}>{tab === 'Description' ? 'The brief' : tab}{tab === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, leftTab === tab)}{tab === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, leftTab === tab)}</button>)}</nav>}
+      {density ? (
+        <div className="shrink-0 border-b border-hairline px-3 py-2" data-testid="workspace-reference-tabs">
+          <SegmentedTabs
+            ariaLabel="Challenge reference"
+            value={leftTab as string}
+            onChange={t => setLeftTab(t as typeof leftTab)}
+            items={(isCodingChallenge ? [...codingPrimaryTabs, ...codingMoreTabs] : tabs).map(tab => ({
+              value: tab as string,
+              label: <>{tab === 'Description' ? 'Brief' : tab === 'Discussions' ? 'Discuss' : tab}{tab === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, leftTab === tab)}{tab === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, leftTab === tab)}</>,
+            }))}
+          />
+        </div>
+      ) : <nav className="workspace-reference-nav" aria-label="Challenge reference">{(isCodingChallenge ? [...codingPrimaryTabs, ...codingMoreTabs] : tabs).map(tab => <button key={tab} type="button" aria-pressed={leftTab === tab} onClick={() => setLeftTab(tab)}>{tab === 'Description' ? 'The brief' : tab}{tab === 'Discussions' && discussionsLoaded && workspaceTabBadge(discussions.length, leftTab === tab)}{tab === 'Submissions' && submissionBadgeCount > 0 && workspaceTabBadge(submissionBadgeCount, leftTab === tab)}</button>)}</nav>}
       {leftTab === 'Description' && descriptionPane}
       {leftTab === 'Examples' && examplesPane}
       {leftTab === 'Constraints' && constraintsPane}
@@ -5158,77 +5173,75 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         >
           <span
             data-testid="autosave-indicator"
-            className="inline-flex h-6 w-6 items-center justify-center text-ink-muted"
+            className="inline-grid size-control-md place-items-center text-primary"
             aria-label="Autosave status"
           >
-            {codingSaveState === 'saving' ? (
-              <span className="material-symbols-outlined animate-spin text-[15px]">progress_activity</span>
-            ) : (
-              <span className="material-symbols-outlined text-[15px]">cloud_done</span>
-            )}
+            {codingSaveState === 'saving' ? <LoaderCircle size={16} aria-hidden className="animate-spin text-ink-secondary" /> : <CloudCheck size={16} aria-hidden />}
           </span>
         </AppTooltip>
       )}
+      <AppTooltip label="Run tests · ⌘'" side="bottom">
       <button
         onClick={handleCodingRun}
         disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-        className={WORKSPACE_BTN_TONAL}
+        data-slot="button" className={WORKSPACE_BTN_TONAL}
         data-testid="run-button"
       >
         {codeRunner.status === 'running' ? (
           <>
-            <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
-            Running…
+            <LoaderCircle aria-hidden className="animate-spin" />
+            <span className="max-[1100px]:sr-only">Running…</span>
           </>
         ) : (
           <>
-            <span className="material-symbols-outlined text-[14px]">play_arrow</span>
-            Run
-            <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-hairline bg-page-field text-ink-muted">⌘'</kbd>
+            <Play aria-hidden />
+            <span className="max-[1100px]:sr-only">Run</span>
           </>
         )}
       </button>
+      </AppTooltip>
       {codingParts.length > 0 ? (
         activePartId && codingParts.find(p => p.id === activePartId)?.response_type === 'coding_subtask' ? (
           <button
             onClick={handleSubmitPart}
             disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-            className={WORKSPACE_BTN_PRIMARY}
+            data-slot="button" className={WORKSPACE_BTN_PRIMARY}
             data-testid="submit-part-button"
           >
             {isSubmittingCoding ? (
               <>
-                <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
-                Submitting…
+                <LoaderCircle aria-hidden className="animate-spin" />
+                <span className="max-[1100px]:sr-only">Submitting…</span>
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-[14px]">upload</span>
-                Submit Part
+                <Upload aria-hidden />
+                <span className="max-[1100px]:sr-only">Submit Part</span>
               </>
             )}
           </button>
         ) : null
       ) : (
+        <AppTooltip label="Submit for grading · ⌘⏎" side="bottom">
         <button
           onClick={handleCodingSubmit}
           disabled={codeRunner.status === 'running' || codeRunner.status === 'hydrating' || isSubmittingCoding}
-          className={WORKSPACE_BTN_PRIMARY}
+          data-slot="button" className={WORKSPACE_BTN_PRIMARY}
           data-testid="submit-button"
         >
           {isSubmittingCoding ? (
             <>
-              <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
-              Submitting…
+              <LoaderCircle aria-hidden className="animate-spin" />
+              <span className="max-[1100px]:sr-only">Submitting…</span>
             </>
           ) : (
             <>
-              <span className="material-symbols-outlined text-[14px]">upload</span>
-              Submit
-              <kbd className="hidden min-[1280px]:inline text-[11px] font-semibold px-1.5 py-0.5 rounded border border-white/30 bg-transparent text-white/70">⌘⏎</kbd>
+              <Upload aria-hidden />
+              <span className="max-[1100px]:sr-only">Submit</span>
             </>
           )}
         </button>
+        </AppTooltip>
       )}
     </div>
   ) : null
@@ -5764,6 +5777,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           {<header className="workspace-focus-header">
             {!density && <button type="button" onClick={props.onExit ?? (() => window.history.back())} aria-label="Back to practice">← <span>Practice</span></button>}
             <h1 title={challengeTitle ?? undefined}>{challengeTitle}</h1>
+            {density && (() => {
+              const ch = isApiMode ? detail?.challenge : adapterChallenge
+              const diff = ch?.difficulty ? coerceDifficulty(ch.difficulty) : null
+              const type = isApiMode ? ((ch as { challenge_type?: string } | null | undefined)?.challenge_type ?? apiChallengeType) : 'flow'
+              return (
+                <span className="hidden shrink-0 items-center gap-1.5 md:inline-flex" data-testid="workspace-header-badges">
+                  {type && <Badge tone="type" value={type}>{CHALLENGE_TYPE_FILTER_COPY[type]?.label ?? type}</Badge>}
+                  {diff && <Badge tone="difficulty" value={diff}>{DIFFICULTY_LABEL[diff] ?? diff}</Badge>}
+                </span>
+              )
+            })()}
             {/* Coding: the advisory stepper and Run/Submit live in the title row so
                 the work pane starts at the editor (one 48px command row, not a
                 title band plus a toolbar band). Canvas keeps its in-pane toolbar. */}
@@ -5777,7 +5801,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   } else if (id === 'test') setConsoleCollapsed(false)
                 }} />
                 {codingActions}
-                <button type="button" onClick={() => setCodingMaximised(v => !v)} aria-label="Full screen workspace" title="Full screen">⛶</button>
+                <IconButton variant="ghost" label="Full screen" onClick={() => setCodingMaximised(v => !v)}><Maximize2 aria-hidden /></IconButton>
               </div>
             )}
             {!isInterviewChallenge && <button type="button" aria-pressed={hintOpen} onClick={() => setHintOpen(v => !v)}>Need a hint?</button>}
@@ -5928,7 +5952,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                               <button
                                 type="button"
                                 onClick={() => selectDesignStep(prev.id)}
-                                className={WORKSPACE_BTN_TONAL}
+                                data-slot="button" className={WORKSPACE_BTN_TONAL}
                               >
                                 <span className="material-symbols-outlined text-[15px]">arrow_back</span>
                                 {prev.label}
@@ -5938,7 +5962,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                               <button
                                 type="button"
                                 onClick={() => selectDesignStep(next.id)}
-                                className={WORKSPACE_BTN_PRIMARY}
+                                data-slot="button" className={WORKSPACE_BTN_PRIMARY}
                               >
                                 Next: {next.label}
                                 <span className="material-symbols-outlined text-[15px]">arrow_forward</span>

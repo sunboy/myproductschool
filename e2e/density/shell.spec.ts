@@ -90,6 +90,18 @@ test.describe('shell-v2', () => {
     await expect(page.getByTestId('run-button')).toBeVisible({ timeout: 30_000 })
     await expect(page.getByTestId('submit-button')).toBeVisible()
     expect(await topOf(page, '[data-testid=monaco-editor-container]')).toBeLessThan(140)
+    // One back link, owned by the top bar; the workspace header renders none.
+    await expect(page.getByTestId('workspace-back')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Back to practice' })).toHaveCount(0)
+    // Submit keeps its forest fill (no CSS override repaints it) and Run is tonal.
+    const submitBg = await page.getByTestId('submit-button').evaluate(el => getComputedStyle(el).backgroundColor)
+    const runBg = await page.getByTestId('run-button').evaluate(el => getComputedStyle(el).backgroundColor)
+    expect(submitBg).toBe('rgb(18, 59, 32)')
+    expect(runBg).not.toBe(submitBg)
+    for (const id of ['run-button', 'submit-button']) expect(Math.round((await page.getByTestId(id).boundingBox())!.height)).toBe(32)
+    // Type + difficulty badges sit next to the title; the brief uses segmented tabs.
+    await expect(page.getByTestId('workspace-header-badges')).toBeVisible()
+    await expect(page.getByTestId('workspace-reference-tabs').getByRole('tab', { name: /brief/i })).toHaveAttribute('aria-selected', 'true')
   })
 
   test('mobile keeps the bottom tabs and a 44px bar', async ({ page }) => {
