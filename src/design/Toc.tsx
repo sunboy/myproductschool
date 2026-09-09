@@ -22,7 +22,7 @@ export function Toc({ groups, activeId, progressPct, onSelect, testId = 'right-t
         </div>
       )}
       {groups.map(g => (
-        <div key={g.label} className="mb-4">
+        <div key={g.label} data-toc-group={g.label} className="mb-4">
           <div className="mb-1.5 text-caption font-bold uppercase tracking-[.08em] text-ink-muted">{g.label}</div>
           {g.items.map(it => {
             const isActive = it.id === activeId

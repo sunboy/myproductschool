@@ -16,7 +16,7 @@ test.describe('readers', () => {
     expect(await topOf(page, 'article h1')).toBeLessThanOrEqual(130)
     await expect(page.getByTestId('reader-hero')).toBeVisible()
     const toc = page.getByTestId('right-toc'); await expect(toc).toBeVisible(); expect(await toc.locator('a').count()).toBeGreaterThanOrEqual(5)
-    const headingBtns = toc.locator('button'); const btnCount = await headingBtns.count()
+    const headingBtns = toc.locator('[data-toc-group="On this page"] button'); const btnCount = await headingBtns.count()
     if (btnCount > 1) {
       const before = await page.evaluate(() => window.scrollY)
       await headingBtns.last().click()
