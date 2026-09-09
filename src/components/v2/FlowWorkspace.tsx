@@ -5762,7 +5762,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       ) : (
         <>
           {<header className="workspace-focus-header">
-            <button type="button" onClick={props.onExit ?? (() => window.history.back())} aria-label="Back to practice">← <span>Practice</span></button>
+            {!density && <button type="button" onClick={props.onExit ?? (() => window.history.back())} aria-label="Back to practice">← <span>Practice</span></button>}
             <h1 title={challengeTitle ?? undefined}>{challengeTitle}</h1>
             {/* Coding: the advisory stepper and Run/Submit live in the title row so
                 the work pane starts at the editor (one 48px command row, not a

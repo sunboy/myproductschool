@@ -1,7 +1,6 @@
 'use client'
 
 import { Suspense } from 'react'
-import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { TopNav } from '@/components/shell/TopNav'
 import { BottomTabs } from '@/components/shell/BottomTabs'
@@ -15,20 +14,14 @@ import { useDensityFlag } from '@/components/shell-v2/useDensityFlag'
 import { UiShellProvider } from '@/components/shell-v2/UiShellContext'
 import { ShellV2 } from '@/components/shell-v2/ShellV2'
 import { workspaceExitHref } from '@/lib/workspace/breadcrumbs'
+import { BackLink } from '@/design'
 
 function WorkspaceBackLink() {
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('returnTo')
   const fromPlan = searchParams.get('from_plan')
   const fromDomain = searchParams.get('from_domain')
-  return (
-    <Link
-      href={workspaceExitHref({ fromPlan, fromDomain }, returnTo)}
-      className="rounded-full border border-hairline bg-card-bright px-3 py-1 text-[12px] font-semibold"
-    >
-      ← Practice
-    </Link>
-  )
+  return <BackLink href={workspaceExitHref({ fromPlan, fromDomain }, returnTo)} label="Practice" testId="workspace-back" />
 }
 
 function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {

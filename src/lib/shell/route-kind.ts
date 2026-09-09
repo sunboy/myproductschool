@@ -1,5 +1,5 @@
 export type RouteKind = 'hub' | 'reader' | 'workspace' | 'interview-room'
-export type NavKey = 'home' | 'practice' | 'library' | 'progress'
+export type NavKey = 'home' | 'practice' | 'interviews' | 'library' | 'progress'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -18,7 +18,8 @@ export function forcedRail(pathname: string): boolean {
 
 export function activeNavKey(pathname: string): NavKey | null {
   if (pathname === '/' || pathname.startsWith('/dashboard')) return 'home'
-  if (pathname.startsWith('/challenges') || pathname.startsWith('/workspace') || pathname.startsWith('/live-interviews')) return 'practice'
+  if (pathname.startsWith('/live-interviews')) return 'interviews'
+  if (pathname.startsWith('/challenges') || pathname.startsWith('/workspace')) return 'practice'
   if (pathname.startsWith('/explore')) return 'library'
   if (pathname.startsWith('/progress')) return 'progress'
   return null

@@ -7,6 +7,7 @@ import { ReaderFrame } from '@/components/density/ReaderFrame'
 import { RightToc } from '@/components/density/RightToc'
 import { useActiveHeading } from '@/components/density/useActiveHeading'
 import { useReaderChrome } from '@/components/shell-v2/ReaderChromeContext'
+import { BackLink } from '@/design'
 import { extractHeadings, slugifyHeading } from '@/lib/reading/headings'
 import { ReaderHeader } from './ReaderHeader'
 import { HeroImageSlot } from './HeroImageSlot'
@@ -63,9 +64,7 @@ export function ModuleReaderV2({ module, chapters, data, onSelectChapter, markCo
 
   useReaderChrome({
     left: (
-      <Link href="/explore/modules" data-testid="reader-back" className="rounded-full border border-hairline bg-card-bright px-3 py-1 text-[12px] font-semibold">
-        ← All guides
-      </Link>
+      <BackLink href="/explore/modules" label="All guides" testId="reader-back" />
     ),
     right: (
       <button

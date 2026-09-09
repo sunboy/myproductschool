@@ -1,10 +1,10 @@
 'use client'
-import Link from 'next/link'
 import { useRef } from 'react'
 import { ReaderFrame } from '@/components/density/ReaderFrame'
 import { RightToc } from '@/components/density/RightToc'
 import { useActiveHeading } from '@/components/density/useActiveHeading'
 import { useReaderChrome } from '@/components/shell-v2/ReaderChromeContext'
+import { BackLink } from '@/design'
 import { BookmarkToggle } from '@/components/showcase/reader/BookmarkToggle'
 import { ReaderHeader } from './ReaderHeader'
 import { HeroImageSlot } from './HeroImageSlot'
@@ -24,9 +24,7 @@ export function AutopsyReaderV2({ story, companyName, initialBookmarked, section
   const idx = Math.max(0, sectionIds.indexOf(activeId ?? ''))
   useReaderChrome({
     left: (
-      <Link href={`/explore/autopsies/${story.companySlug}`} data-testid="reader-back" className="rounded-full border border-hairline bg-card-bright px-3 py-1 text-[12px] font-semibold">
-        ← {companyName}
-      </Link>
+      <BackLink href={`/explore/autopsies/${story.companySlug}`} label={companyName} testId="reader-back" />
     ),
     right: <BookmarkToggle companySlug={story.companySlug} storySlug={story.slug} initialBookmarked={initialBookmarked} />,
   })

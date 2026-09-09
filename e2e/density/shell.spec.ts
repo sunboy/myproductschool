@@ -35,13 +35,40 @@ test.describe('shell-v2', () => {
     }
   })
 
-  test('reader routes force the rail and restore on exit', async ({ page }) => {
+  test('reader routes force the rail, expand as an overlay, and restore on exit', async ({ page }) => {
     await page.setViewportSize(VIEWPORTS.desktop)
     await gotoReady(page, '/explore/modules/context-engineering')
-    await expect(page.getByTestId('shell-sidebar')).toHaveAttribute('data-collapsed', 'true')
-    await expect(page.getByTestId('shell-nav-toggle')).toBeDisabled()
+    const side = page.getByTestId('shell-sidebar')
+    await expect(side).toHaveAttribute('data-collapsed', 'true')
+    // Every rail item is a 40px target centred in the 56px track.
+    for (const link of await side.locator('nav a').all()) {
+      const box = (await link.boundingBox())!
+      expect(box.width).toBeGreaterThanOrEqual(40); expect(box.height).toBeGreaterThanOrEqual(40)
+      expect(Math.round(box.x + box.width / 2)).toBe(28)
+    }
+    // The monogram replaces the wordmark in the rail.
+    await expect(side.locator('img[src*="logo-mark"]')).toBeVisible()
+    // Expand is never disabled: on forced routes it opens an overlay drawer.
+    const toggle = page.getByTestId('shell-nav-toggle')
+    await expect(toggle).toBeEnabled()
+    await toggle.click()
+    const overlay = page.getByTestId('shell-nav-overlay')
+    await expect(overlay).toBeVisible()
+    await expect(overlay.getByText('Interviews')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(overlay).toHaveCount(0)
+    await expect(side).toHaveAttribute('data-collapsed', 'true')
     await gotoReady(page, '/explore')
     await expect(page.getByTestId('shell-sidebar')).toHaveAttribute('data-collapsed', 'false')
+  })
+
+  test('interviews is a primary route and the top bar has no tour button', async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS.desktop)
+    await gotoReady(page, '/live-interviews')
+    const active = page.getByTestId('shell-sidebar').locator('nav a[aria-current="page"]')
+    await expect(active).toHaveText('Interviews')
+    await expect(active).toHaveAttribute('href', '/live-interviews')
+    await expect(page.getByTestId('shell-topbar').getByLabel('Take the tour')).toHaveCount(0)
   })
 
   test('route-scoped search', async ({ page }) => {
