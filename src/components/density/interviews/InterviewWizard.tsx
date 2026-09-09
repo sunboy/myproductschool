@@ -143,6 +143,12 @@ export function InterviewWizard({ personas, scenarios, loopActive, lastSession, 
                   ))}
                   {companies.length === 0 && <Text variant="meta">No company interview profiles are available right now.</Text>}
                 </div>
+                {!company && companies.length > 0 && (
+                  <Card tone="tinted" padding="md" className="mt-5 items-center justify-center text-center" data-testid="wiz-company-hint">
+                    <HatchImage state="pointing" size={40} />
+                    <Text variant="ui" tone="secondary" className="mt-2 max-w-sm">Pick a company and I&apos;ll show you the rounds it runs. Every round can be voice or chat.</Text>
+                  </Card>
+                )}
                 {company && (
                   <>
                     {company.roles.length > 1 && (

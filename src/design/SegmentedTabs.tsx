@@ -5,11 +5,11 @@ import { cn } from '@/lib/utils'
 export interface SegmentedTab<T extends string = string> { value: T; label: React.ReactNode; testId?: string }
 
 /** Pill tabs in a tonal track. Reads as a control at a glance. */
-export function SegmentedTabs<T extends string>({ items, value, onChange, size = 'sm', className, ariaLabel }: {
-  items: SegmentedTab<T>[]; value: T; onChange: (v: T) => void; size?: 'sm' | 'md'; className?: string; ariaLabel?: string
+export function SegmentedTabs<T extends string>({ items, value, onChange, size = 'sm', className, ariaLabel, wrap = false }: {
+  items: SegmentedTab<T>[]; value: T; onChange: (v: T) => void; size?: 'sm' | 'md'; className?: string; ariaLabel?: string; wrap?: boolean
 }) {
   return (
-    <div role="tablist" aria-label={ariaLabel} data-slot="segmented-tabs" className={cn('inline-flex max-w-full gap-0.5 overflow-x-auto rounded-control bg-surface-container p-[3px]', className)}>
+    <div role="tablist" aria-label={ariaLabel} data-slot="segmented-tabs" className={cn('inline-flex max-w-full gap-0.5 rounded-control bg-surface-container p-[3px]', wrap ? 'flex-wrap rounded-card' : 'overflow-x-auto', className)}>
       {items.map(it => {
         const on = it.value === value
         return (

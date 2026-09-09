@@ -1,6 +1,17 @@
 'use client'
 import { useEffect, useState } from 'react'
 
+/** Nearest scrollable ancestor, or null when the window scrolls. */
+function scrollParent(el: HTMLElement): HTMLElement | null {
+  let node: HTMLElement | null = el.parentElement
+  while (node && node !== document.body) {
+    const { overflowY } = getComputedStyle(node)
+    if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) return node
+    node = node.parentElement
+  }
+  return null
+}
+
 /** Tracks which of `ids` is nearest the top of the viewport. Recomputes on
  *  every scroll frame (rAF-throttled) and on resize, and clamps to the last
  *  heading when the page is scrolled to the bottom, so the TOC never stalls
@@ -15,11 +26,18 @@ export function useActiveHeading(ids: string[], offset = 96) {
     let cancelled = false
     let els: HTMLElement[] = []
 
+    const resolve = () => { els = ids.map(id => document.getElementById(id)).filter((e): e is HTMLElement => !!e) }
     const compute = () => {
       raf = 0
+      // Markdown headings get their ids after mount; keep resolving until all are present.
+      if (els.length < ids.length) resolve()
       if (!els.length) return
-      const doc = document.documentElement
-      const atBottom = window.innerHeight + window.scrollY >= doc.scrollHeight - 2
+      // Clamp to the last heading once the scrolling element is at its end
+      // (window or an inner scroll container: the reader lives in one).
+      const scroller = scrollParent(els[0])
+      const atBottom = scroller
+        ? scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2
+        : window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
       if (atBottom) { setActive(els[els.length - 1].id); return }
       let best: { id: string; top: number } | null = null
       for (const el of els) {
@@ -34,18 +52,19 @@ export function useActiveHeading(ids: string[], offset = 96) {
     // (markdown renders client-side); retry across a few frames.
     const attach = (attempt = 0) => {
       if (cancelled) return
-      els = ids.map(id => document.getElementById(id)).filter((e): e is HTMLElement => !!e)
-      if (!els.length) { if (attempt < 10) attachRaf = requestAnimationFrame(() => attach(attempt + 1)); return }
-      compute()
+      resolve()
+      if (els.length < ids.length && attempt < 30) { attachRaf = requestAnimationFrame(() => attach(attempt + 1)) }
+      if (els.length) compute()
     }
     attach()
-    window.addEventListener('scroll', schedule, { passive: true })
+    // Capture-phase listener sees scrolls of any element, not only the window.
+    document.addEventListener('scroll', schedule, { capture: true, passive: true })
     window.addEventListener('resize', schedule)
     return () => {
       cancelled = true
       if (raf) cancelAnimationFrame(raf)
       if (attachRaf) cancelAnimationFrame(attachRaf)
-      window.removeEventListener('scroll', schedule)
+      document.removeEventListener('scroll', schedule, { capture: true })
       window.removeEventListener('resize', schedule)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

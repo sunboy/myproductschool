@@ -21,6 +21,10 @@ test.describe('readers', () => {
       const before = await page.evaluate(() => window.scrollY)
       await headingBtns.last().click()
       await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 }).toBeGreaterThan(before)
+      // The active marker follows the scroll position, not just the click.
+      await expect(headingBtns.last()).toHaveAttribute('aria-current', 'true', { timeout: 5000 })
+      await page.evaluate(() => window.scrollTo(0, 0))
+      await expect(headingBtns.first()).toHaveAttribute('aria-current', 'true', { timeout: 5000 })
     }
     // Reading progress is reported (debounced PUT). Finished reads (>=0.98) are excluded from GET by design, so observe the PUT.
     const put = page.waitForResponse(r => r.url().includes('/api/reading-progress') && r.request().method() === 'PUT' && r.ok(), { timeout: 15_000 })

@@ -5112,6 +5112,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       {density ? (
         <div className="shrink-0 border-b border-hairline px-3 py-2" data-testid="workspace-reference-tabs">
           <SegmentedTabs
+            wrap
             ariaLabel="Challenge reference"
             value={leftTab as string}
             onChange={t => setLeftTab(t as typeof leftTab)}
