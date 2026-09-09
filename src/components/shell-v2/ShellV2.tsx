@@ -34,7 +34,7 @@ function ShellV2Inner({ children, topLeft, topRight, hideTopBar, fullBleed }: {
   return (
     <div className="hp-learning-shell min-h-screen bg-background" data-shell="v2" data-route-kind={kind}>
       <div className="flex min-h-screen w-full">
-        <div className="sticky top-0 hidden h-screen shrink-0 lg:block"><AppSidebarV2 active={activeNavKey(pathname)} /></div>
+        <div className="sticky top-0 z-30 hidden h-screen shrink-0 lg:block"><AppSidebarV2 active={activeNavKey(pathname)} /></div>
         <div className="flex min-w-0 flex-1 flex-col">
           {!hideTopBar && <AppTopBarV2 leftSlot={topLeft ?? slots.left} rightSlot={topRight ?? slots.right} />}
           <main className={fullBleed ? 'min-w-0 flex-1' : 'min-w-0 flex-1 pb-20 lg:pb-6'}>{children}</main>
