@@ -29,8 +29,9 @@ export function useActiveHeading(ids: string[], offset = 96) {
     const resolve = () => { els = ids.map(id => document.getElementById(id)).filter((e): e is HTMLElement => !!e) }
     const compute = () => {
       raf = 0
-      // Markdown headings get their ids after mount; keep resolving until all are present.
-      if (els.length < ids.length) resolve()
+      // Markdown headings get their ids after mount and the body can re-render
+      // (replacing nodes); re-resolve whenever the cache is short or stale.
+      if (els.length < ids.length || els.some(e => !e.isConnected)) resolve()
       if (!els.length) return
       // Clamp to the last heading once the scrolling element is at its end
       // (window or an inner scroll container: the reader lives in one).
