@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { PanelLeftClose, PanelLeftOpen, MessageSquare, LifeBuoy } from 'lucide-react'
 import { MAIN_NAV_ENTRIES } from '@/components/redesign/AppSidebar'
@@ -38,10 +39,16 @@ function NavOverlay({ active, onClose }: { active: NavKey | null; onClose: () =>
     document.addEventListener('keydown', onKey); document.addEventListener('mousedown', onDown)
     return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onDown) }
   }, [onClose])
-  return (
+  // Portal to body: the shell's sticky rail wrapper clips absolutely and even
+  // fixed-positioned children, so the drawer must live outside it.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+  if (!mounted) return null
+  return createPortal(
     <div ref={ref} data-testid="shell-nav-overlay" className="fixed inset-y-0 left-0 z-50 shadow-xl">
       <NavPanel active={active} collapsed={false} overlay onToggle={onClose} />
-    </div>
+    </div>,
+    document.body,
   )
 }
 
