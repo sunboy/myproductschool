@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { LearningPageHeading } from '@/components/redesign/LearningPageHeading'
 import { normalizeToTen } from '@/lib/feedback/score'
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
@@ -12,7 +13,8 @@ import {
 import { HatchSays } from '@/components/redesign/HatchSays'
 import { LiveInterviewsShellClient } from './LiveInterviewsShellClient'
 import { getAppFlag } from '@/lib/config/app-flags'
-import { InterviewSetupV2 } from '@/components/density/interviews/InterviewSetupV2'
+import { InterviewWizard } from '@/components/density/interviews/InterviewWizard'
+import { getSessionHistory, type SessionHistoryRow } from '@/lib/live-interview/history'
 
 export interface ScenarioBrief {
   id: string
@@ -186,20 +188,35 @@ async function getLoopActiveCount(): Promise<number> {
   }
 }
 
+/** Recent sessions for the density setup page (server-rendered, capped). */
+async function getRecentSessions(): Promise<SessionHistoryRow[]> {
+  if (IS_MOCK) return []
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return []
+    return await getSessionHistory(user.id, 20)
+  } catch {
+    return []
+  }
+}
+
 export default async function LiveInterviewsPage() {
   const density = await getAppFlag('ui_density_v1', false)
-  const [personas, scenarios, lastSession, loopActive] = await Promise.all([
+  const [personas, scenarios, lastSession, loopActive, recentSessions] = await Promise.all([
     getPersonas(),
     getScenarios(),
     getLastSessionBrief(),
     density ? getLoopActiveCount() : Promise.resolve(0),
+    density ? getRecentSessions() : Promise.resolve([] as SessionHistoryRow[]),
   ])
 
   if (density) {
     return (
       <UsageProvider>
         <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-8 sm:py-7">
-          <InterviewSetupV2 personas={personas} scenarios={scenarios} loopActive={loopActive} lastSession={lastSession} />
+          <Suspense><InterviewWizard personas={personas} scenarios={scenarios} loopActive={loopActive} lastSession={lastSession} recentSessions={recentSessions} /></Suspense>
         </div>
       </UsageProvider>
     )

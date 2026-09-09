@@ -19,18 +19,42 @@ async function pickCompanyRole(): Promise<{ companyId: string; roleId: string; d
 test.describe('interviews density', () => {
   test.beforeAll(async () => { await setDensityFlag(true) })
 
-  test('setup band, panel, and recent sessions column render', async ({ page }) => {
+  test('guided setup: steps live in the URL, sessions list below, loop mode swaps in', async ({ page }) => {
     await loginViaApi(page)
     await page.setViewportSize(VIEWPORTS.desktop)
     await gotoReady(page, '/live-interviews')
 
     await expect(page.getByTestId('chip-mode-single')).toBeVisible()
     await expect(page.getByTestId('chip-mode-loop')).toBeVisible()
-    await expect(page.getByTestId('interview-setup-panel')).toBeVisible()
-    await expect(page.getByTestId('recent-sessions-column')).toBeVisible()
+    const wizard = page.getByTestId('interview-wizard')
+    await expect(wizard).toHaveAttribute('data-step', '1')
+    await expect(page.getByTestId('wizard-next')).toBeDisabled()
 
+    // Step 1: company chip + round card enable Continue and land in the URL.
+    const company = wizard.locator('[data-testid^="wiz-company-"]').first()
+    const companyId = (await company.getAttribute('data-testid'))!.replace('wiz-company-', '')
+    await company.click()
+    await expect(page).toHaveURL(new RegExp(`company=${companyId}`))
+    await page.getByTestId('wiz-discipline-product_sense').click()
+    await expect(page).toHaveURL(/discipline=product_sense/)
+    await expect(page.getByTestId('wizard-next')).toBeEnabled()
+    await page.getByTestId('wizard-next').click()
+
+    // Step 2 (prompts exist for product sense): pick the recommendation → step 3.
+    await expect(wizard).toHaveAttribute('data-step', '2')
+    await expect(page).toHaveURL(/step=2/)
+    await page.getByTestId('wiz-recommended').getByRole('button', { name: 'Select' }).click()
+    await expect(wizard).toHaveAttribute('data-step', '3')
+    await expect(page.getByTestId('wizard-start')).toBeVisible()
+
+    // Refresh keeps the step (URL state), Back walks down.
+    await page.reload(); await gotoReady(page, page.url().replace(/^https?:\/\/[^/]+/, ''))
+    await expect(page.getByTestId('interview-wizard')).toHaveAttribute('data-step', '3')
+    await page.getByTestId('wizard-back').click()
+    await expect(page.getByTestId('interview-wizard')).toHaveAttribute('data-step', '2')
+
+    // Multi-round chip swaps the wizard for the loop panel.
     await page.getByTestId('chip-mode-loop').click()
-    await page.waitForTimeout(300)
     await expect(page.getByTestId('chip-mode-loop')).toHaveAttribute('aria-pressed', 'true')
     await expect(page.getByTestId('interview-setup-panel')).toBeVisible()
   })

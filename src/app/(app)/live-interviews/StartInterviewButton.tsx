@@ -9,8 +9,10 @@ import { useIsAtLimit, useUsage } from '@/context/UsageContext'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { HatchImage } from '@/components/redesign/HatchImage'
 import { DISCIPLINE_META, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
+import { Button } from '@/design'
+import { Lock, ArrowRight } from 'lucide-react'
 
-export type StartInterviewButtonVariant = 'chip' | 'hero'
+export type StartInterviewButtonVariant = 'chip' | 'hero' | 'primary'
 
 interface StartInterviewButtonProps {
   companyId: string
@@ -20,6 +22,9 @@ interface StartInterviewButtonProps {
   discipline?: LiveInterviewDiscipline | string
   variant?: StartInterviewButtonVariant
   label?: string
+  /** Runs before the start request (e.g. to remember the setup). */
+  onBeforeStart?: () => void
+  testId?: string
 }
 
 export default function StartInterviewButton({
@@ -30,6 +35,8 @@ export default function StartInterviewButton({
   discipline,
   variant = 'chip',
   label,
+  onBeforeStart,
+  testId,
 }: StartInterviewButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -60,6 +67,7 @@ export default function StartInterviewButton({
       return
     }
 
+    onBeforeStart?.()
     play('submit')
     setLoading(true)
     setSessionError(null)
@@ -237,7 +245,11 @@ export default function StartInterviewButton({
 
   return (
     <>
-      {variant === 'hero' ? (
+      {variant === 'primary' ? (
+        <Button size="lg" onClick={handleClick} disabled={loading} data-testid={testId} variant={isAtLimit ? 'tonal' : 'primary'}>
+          {isAtLimit ? <><Lock aria-hidden />Upgrade to start an interview</> : <>{loading ? 'Starting…' : heroLabel}{!loading && <ArrowRight aria-hidden />}</>}
+        </Button>
+      ) : variant === 'hero' ? (
         <button
           onClick={handleClick}
           disabled={loading}
